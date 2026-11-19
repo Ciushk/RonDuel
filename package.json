@@ -1,0 +1,37 @@
+{
+  "name": "ronduel",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,emulators -c cyan,yellow \"pnpm --filter @ronduel/web dev\" \"pnpm emulators\"",
+    "dev:web": "pnpm --filter @ronduel/web dev",
+    "emulators": "firebase emulators:start --project demo-ronduel",
+    "build": "pnpm --filter @ronduel/shared build && pnpm --filter @ronduel/functions build && pnpm --filter @ronduel/web build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@eslint/js": "^9.22.0",
+    "@playwright/test": "^1.51.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1",
+    "vitest": "^3.0.9"
+  }
+}
