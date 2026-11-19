@@ -1,0 +1,547 @@
+[
+  {
+    "id": "q-mcq-01",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["science"],
+    "content": {
+      "en": {
+        "prompt": "Which planet has the shortest year?",
+        "options": ["Mercury", "Venus", "Mars", "Earth"],
+        "explanation": "Mercury orbits the Sun in just 88 Earth days."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-02",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["geography"],
+    "content": {
+      "en": {
+        "prompt": "What is the capital of Australia?",
+        "options": ["Canberra", "Sydney", "Melbourne", "Perth"],
+        "explanation": "Canberra was chosen in 1908 as a compromise between Sydney and Melbourne."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-03",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["science"],
+    "content": {
+      "en": {
+        "prompt": "Which chemical element has the symbol \"Fe\"?",
+        "options": ["Iron", "Fluorine", "Lead", "Tin"],
+        "explanation": "Fe comes from the Latin word ferrum, meaning iron."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-04",
+    "type": "mcq",
+    "difficulty": 2,
+    "topics": ["history"],
+    "content": {
+      "en": {
+        "prompt": "In which year did the Berlin Wall fall?",
+        "options": ["1989", "1991", "1985", "1979"],
+        "explanation": "The Berlin Wall fell on 9 November 1989."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-05",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["geography"],
+    "content": {
+      "en": {
+        "prompt": "What is the largest ocean on Earth?",
+        "options": ["Pacific", "Atlantic", "Indian", "Arctic"],
+        "explanation": "The Pacific Ocean covers more than 30% of Earth's surface."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-06",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["history"],
+    "content": {
+      "en": {
+        "prompt": "Which country gave the Statue of Liberty to the United States?",
+        "options": ["France", "United Kingdom", "Spain", "Italy"],
+        "explanation": "France gifted the Statue of Liberty to the US in 1886."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-07",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["art"],
+    "content": {
+      "en": {
+        "prompt": "Who painted the Mona Lisa?",
+        "options": ["Leonardo da Vinci", "Michelangelo", "Raphael", "Botticelli"],
+        "explanation": "Leonardo da Vinci painted the Mona Lisa in the early 1500s."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-08",
+    "type": "mcq",
+    "difficulty": 2,
+    "topics": ["geography"],
+    "content": {
+      "en": {
+        "prompt": "What is the longest river in South America?",
+        "options": ["Amazon", "Paraná", "Orinoco", "São Francisco"],
+        "explanation": "The Amazon River stretches roughly 6,400 km across South America."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-09",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["science"],
+    "content": {
+      "en": {
+        "prompt": "Which gas do plants mainly absorb from the air for photosynthesis?",
+        "options": ["Carbon dioxide", "Oxygen", "Nitrogen", "Helium"],
+        "explanation": "Plants absorb CO2 and release oxygen during photosynthesis."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-mcq-10",
+    "type": "mcq",
+    "difficulty": 1,
+    "topics": ["math"],
+    "content": {
+      "en": {
+        "prompt": "What is the smallest prime number?",
+        "options": ["2", "1", "3", "0"],
+        "explanation": "2 is the smallest prime number and the only even prime."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-order-01",
+    "type": "order",
+    "difficulty": 1,
+    "topics": ["science"],
+    "content": {
+      "en": {
+        "prompt": "Order these planets by distance from the Sun, closest first:",
+        "options": ["Venus", "Earth", "Mars", "Jupiter"],
+        "explanation": "From the Sun outward: Mercury, Venus, Earth, Mars, Jupiter."
+      }
+    },
+    "answer": {},
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-order-02",
+    "type": "order",
+    "difficulty": 2,
+    "topics": ["history"],
+    "content": {
+      "en": {
+        "prompt": "Order these events from earliest to latest:",
+        "options": [
+          "First Moon landing",
+          "Fall of the Berlin Wall",
+          "Euro coins enter circulation",
+          "First iPhone released"
+        ],
+        "explanation": "1969 → 1989 → 2002 → 2007."
+      }
+    },
+    "answer": {},
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-order-03",
+    "type": "order",
+    "difficulty": 1,
+    "topics": ["tech"],
+    "content": {
+      "en": {
+        "prompt": "Order from smallest to largest:",
+        "options": ["Byte", "Kilobyte", "Megabyte", "Gigabyte"],
+        "explanation": "Each unit scales up by 1,000 (or 1,024 in binary)."
+      }
+    },
+    "answer": {},
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-order-04",
+    "type": "order",
+    "difficulty": 2,
+    "topics": ["geography"],
+    "content": {
+      "en": {
+        "prompt": "Order these countries by land area, largest first:",
+        "options": ["Russia", "Canada", "Brazil", "Australia"],
+        "explanation": "Russia > Canada > Brazil > Australia by land area."
+      }
+    },
+    "answer": {},
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-order-05",
+    "type": "order",
+    "difficulty": 2,
+    "topics": ["math"],
+    "content": {
+      "en": {
+        "prompt": "Order these numbers from smallest to largest:",
+        "options": ["0.5", "2/3", "0.7", "3/4"],
+        "explanation": "0.5 < 0.666… (2/3) < 0.7 < 0.75 (3/4)."
+      }
+    },
+    "answer": {},
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-odd-01",
+    "type": "odd",
+    "difficulty": 1,
+    "topics": ["nature"],
+    "content": {
+      "en": {
+        "prompt": "Which is NOT a mammal?",
+        "options": ["Shark", "Dolphin", "Bat", "Whale"],
+        "explanation": "Sharks are fish; dolphins, bats, and whales are mammals."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-odd-02",
+    "type": "odd",
+    "difficulty": 1,
+    "topics": ["math"],
+    "content": {
+      "en": {
+        "prompt": "Which is NOT a prime number?",
+        "options": ["15", "7", "11", "13"],
+        "explanation": "15 = 3 × 5."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-odd-03",
+    "type": "odd",
+    "difficulty": 1,
+    "topics": ["music"],
+    "content": {
+      "en": {
+        "prompt": "Which is NOT a string instrument?",
+        "options": ["Trumpet", "Violin", "Cello", "Viola"],
+        "explanation": "A trumpet is a brass instrument."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-odd-04",
+    "type": "odd",
+    "difficulty": 1,
+    "topics": ["geography"],
+    "content": {
+      "en": {
+        "prompt": "Which is NOT a national capital?",
+        "options": ["Barcelona", "Paris", "Rome", "Madrid"],
+        "explanation": "Madrid is the capital of Spain; Barcelona is the capital of Catalonia."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-odd-05",
+    "type": "odd",
+    "difficulty": 1,
+    "topics": ["science"],
+    "content": {
+      "en": {
+        "prompt": "Which is NOT a planet?",
+        "options": ["The Moon", "Mercury", "Venus", "Mars"],
+        "explanation": "The Moon is Earth's natural satellite."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-01",
+    "type": "logic",
+    "difficulty": 1,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "What comes next: 2, 4, 8, 16, …?",
+        "options": ["32", "24", "30", "18"],
+        "explanation": "Each number doubles the previous one."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-02",
+    "type": "logic",
+    "difficulty": 1,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "What comes next: 1, 1, 2, 3, 5, 8, …?",
+        "options": ["13", "11", "12", "15"],
+        "explanation": "Fibonacci sequence: 5 + 8 = 13."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-03",
+    "type": "logic",
+    "difficulty": 3,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "If 3 cats catch 3 mice in 3 minutes, how many cats are needed to catch 100 mice in 100 minutes?",
+        "options": ["3", "100", "33", "9"],
+        "explanation": "Each cat catches 1 mouse every 3 minutes, so 3 cats catch 100 mice in 100 minutes."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-04",
+    "type": "logic",
+    "difficulty": 3,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much is the ball?",
+        "options": ["$0.05", "$0.10", "$0.15", "$0.01"],
+        "explanation": "Ball = $0.05, bat = $1.05, total = $1.10."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-05",
+    "type": "logic",
+    "difficulty": 1,
+    "topics": ["math"],
+    "content": {
+      "en": {
+        "prompt": "What is 15% of 200?",
+        "options": ["30", "15", "20", "35"],
+        "explanation": "10% of 200 is 20, plus 5% (10) equals 30."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-06",
+    "type": "logic",
+    "difficulty": 1,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "Ana is older than Ben. Ben is older than Cara. Who is the youngest?",
+        "options": ["Cara", "Ana", "Ben", "Can't tell"],
+        "explanation": "Ana > Ben > Cara, so Cara is the youngest."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-07",
+    "type": "logic",
+    "difficulty": 2,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "What is the angle between the hour and minute hands at exactly 3:00?",
+        "options": ["90°", "45°", "180°", "60°"],
+        "explanation": "A quarter of a 360° circle is 90°."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-08",
+    "type": "logic",
+    "difficulty": 2,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "What comes next: 3, 6, 11, 18, 27, …?",
+        "options": ["38", "36", "35", "40"],
+        "explanation": "The differences grow by 2 (3, 5, 7, 9, 11)."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-09",
+    "type": "logic",
+    "difficulty": 1,
+    "topics": ["math"],
+    "content": {
+      "en": {
+        "prompt": "How many minutes are there in 2.5 hours?",
+        "options": ["150", "125", "250", "130"],
+        "explanation": "2.5 × 60 = 150 minutes."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  },
+  {
+    "id": "q-logic-10",
+    "type": "logic",
+    "difficulty": 2,
+    "topics": ["logic"],
+    "content": {
+      "en": {
+        "prompt": "A clock shows 9:00. What time will it show 15 hours later?",
+        "options": ["12:00", "6:00", "3:00", "9:00"],
+        "explanation": "On a 12-hour clock, 12 hours brings it back to 9:00, plus 3 hours = 12:00."
+      }
+    },
+    "answer": { "correctIndex": 0 },
+    "translationStatus": { "en": "reviewed", "es": "missing", "pt": "missing", "ro": "missing" },
+    "source": "human",
+    "reviewStatus": "approved",
+    "usageCount": 0
+  }
+]

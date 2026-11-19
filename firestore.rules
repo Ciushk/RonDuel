@@ -2,7 +2,98 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny. Specific collection rules are added in Phase 1+.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isLeagueMember(leagueId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/leagues/$(leagueId)/members/$(request.auth.uid));
+    }
+
+    // Users: read own, update only safe client fields (never pro, streaks, isAnonymous)
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow update: if isOwner(uid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locale', 'notif', 'consent']);
+      allow create, delete: if false;
+
+      match /pushTokens/{token} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Public round metadata only (never questions or answers)
+    match /roundsPublic/{date} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Plays: owner read only, functions write only
+    match /plays/{playId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Invite codes: signed-in read for O(1) lookup
+    match /inviteCodes/{code} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Leagues & subcollections: member read only; today's scores require lastFinishedDate == date
+    match /leagues/{leagueId} {
+      allow read: if isLeagueMember(leagueId) || isAdmin();
+      allow write: if false;
+
+      match /members/{uid} {
+        allow read: if isLeagueMember(leagueId) || isAdmin();
+        allow write: if false;
+      }
+
+      match /days/{date}/scores/{uid} {
+        allow read: if isLeagueMember(leagueId) &&
+          get(/databases/$(database)/documents/leagues/$(leagueId)/members/$(request.auth.uid)).data.lastFinishedDate == date;
+        allow write: if false;
+      }
+
+      match /weeks/{isoWeek} {
+        allow read: if isLeagueMember(leagueId) || isAdmin();
+        allow write: if false;
+      }
+
+      match /feed/{eventId} {
+        allow read: if isLeagueMember(leagueId) || isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // Subscriptions: owner read only, webhooks write only
+    match /subscriptions/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // Admin-only collections (questions, rounds, reports)
+    match /questions/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /rounds/{date} {
+      allow read, write: if isAdmin();
+    }
+    match /reports/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // Server-only secrets & internal docs: default deny
     match /{document=**} {
       allow read, write: if false;
     }

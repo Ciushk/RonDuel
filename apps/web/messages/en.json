@@ -1,0 +1,79 @@
+{
+  "brand": {
+    "tagline": "The daily duel for your group chat.",
+    "playToday": "Play today's round",
+    "continueRound": "Continue today's round",
+    "viewResult": "See today's result",
+    "roundBadge": "Round #{number}"
+  },
+  "nav": {
+    "home": "Today",
+    "leagues": "Leagues",
+    "settings": "Settings"
+  },
+  "onboarding": {
+    "pickNickname": "Pick your nickname",
+    "nicknameLabel": "Nickname",
+    "nicknamePlaceholder": "e.g. Alex",
+    "ageConfirm": "I'm 16 or older",
+    "termsNotice": "By playing you agree to our Terms and Privacy Policy.",
+    "startPlaying": "Join & play today's round",
+    "invalidNickname": "Use 2–20 letters, numbers, spaces, _ or -."
+  },
+  "play": {
+    "readyTitle": "Ready for today's duel?",
+    "readySubtitle": "6 quick questions. ~60 seconds. One attempt per day.",
+    "startNow": "Start 3-2-1",
+    "itemCounter": "{current}/{total}",
+    "correct": "Correct!",
+    "wrong": "Not quite",
+    "timedOut": "Time's up!",
+    "submitOrder": "Lock in order",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "enFallback": "EN",
+    "leaveConfirm": "Leave? This attempt still counts."
+  },
+  "result": {
+    "title": "Round #{number} complete",
+    "scoreLabel": "Your score",
+    "streak": "{days}-day streak",
+    "shareCta": "Share to your group",
+    "shareHint": "Share to your group. It becomes your league.",
+    "copied": "Result copied to clipboard!",
+    "reviewTitle": "Answer review",
+    "openLeague": "Open league leaderboard",
+    "playAgainTomorrow": "Next round unlocks at local midnight."
+  },
+  "league": {
+    "joinTitle": "You're invited to {name}",
+    "joinCta": "Join & play today's round",
+    "membersCount": "{count} members",
+    "tabToday": "Today",
+    "tabWeek": "This week",
+    "tabAllTime": "All-time",
+    "scoresHidden": "Play today's round to unlock everyone's scores.",
+    "invite": "Copy invite link",
+    "inviteCopied": "Invite link copied!",
+    "empty": "No scores yet today. Be the first!"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "relaxedTimer": "Relaxed timer (+50% time)",
+    "analyticsConsent": "Analytics consent (PostHog EU)",
+    "exportData": "Export my data (JSON)",
+    "deleteAccount": "Delete my account",
+    "deleted": "Your local session & data have been removed."
+  },
+  "consent": {
+    "message": "We use essential storage to save your progress. Allow privacy-friendly EU analytics?",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "offline": {
+    "title": "You're offline",
+    "body": "Today's round needs a connection so scores stay fair."
+  }
+}

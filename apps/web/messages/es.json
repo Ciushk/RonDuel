@@ -1,0 +1,79 @@
+{
+  "brand": {
+    "tagline": "El duelo diario para tu grupo de chat.",
+    "playToday": "Jugar la ronda de hoy",
+    "continueRound": "Continuar la ronda de hoy",
+    "viewResult": "Ver resultado de hoy",
+    "roundBadge": "Ronda #{number}"
+  },
+  "nav": {
+    "home": "Hoy",
+    "leagues": "Ligas",
+    "settings": "Ajustes"
+  },
+  "onboarding": {
+    "pickNickname": "Elige tu apodo",
+    "nicknameLabel": "Apodo",
+    "nicknamePlaceholder": "ej. Lucía",
+    "ageConfirm": "Tengo 16 años o más",
+    "termsNotice": "Al jugar aceptas los Términos y la Política de privacidad.",
+    "startPlaying": "Entrar y jugar hoy",
+    "invalidNickname": "Usa 2–20 letras, números, espacios, _ o -."
+  },
+  "play": {
+    "readyTitle": "¿Listo para el duelo de hoy?",
+    "readySubtitle": "6 preguntas rápidas. ~60 segundos. Un intento al día.",
+    "startNow": "Empezar 3-2-1",
+    "itemCounter": "{current}/{total}",
+    "correct": "¡Correcto!",
+    "wrong": "Casi",
+    "timedOut": "¡Tiempo agotado!",
+    "submitOrder": "Confirmar orden",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
+    "enFallback": "EN",
+    "leaveConfirm": "¿Salir? Este intento seguirá contando."
+  },
+  "result": {
+    "title": "Ronda #{number} completada",
+    "scoreLabel": "Tu puntuación",
+    "streak": "Racha de {days} días",
+    "shareCta": "Compartir en tu grupo",
+    "shareHint": "Compártelo en tu grupo. Se convierte en vuestra liga.",
+    "copied": "¡Resultado copiado!",
+    "reviewTitle": "Repaso de respuestas",
+    "openLeague": "Ver clasificación de la liga",
+    "playAgainTomorrow": "La próxima ronda llega a medianoche."
+  },
+  "league": {
+    "joinTitle": "Te invitaron a {name}",
+    "joinCta": "Entrar y jugar hoy",
+    "membersCount": "{count} miembros",
+    "tabToday": "Hoy",
+    "tabWeek": "Semana",
+    "tabAllTime": "Histórico",
+    "scoresHidden": "Juega hoy para desbloquear las puntuaciones.",
+    "invite": "Copiar enlace de invitación",
+    "inviteCopied": "¡Enlace copiado!",
+    "empty": "Aún no hay puntuaciones hoy. ¡Sé el primero!"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "theme": "Tema",
+    "relaxedTimer": "Temporizador relajado (+50% tiempo)",
+    "analyticsConsent": "Consentimiento de analítica (PostHog UE)",
+    "exportData": "Exportar mis datos (JSON)",
+    "deleteAccount": "Eliminar mi cuenta",
+    "deleted": "Tu sesión y datos han sido eliminados."
+  },
+  "consent": {
+    "message": "Usamos almacenamiento esencial para tu progreso. ¿Permites analítica en la UE?",
+    "accept": "Aceptar",
+    "reject": "Rechazar"
+  },
+  "offline": {
+    "title": "Sin conexión",
+    "body": "La ronda de hoy necesita conexión para validar tu puntuación."
+  }
+}

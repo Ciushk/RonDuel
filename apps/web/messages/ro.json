@@ -1,0 +1,79 @@
+{
+  "brand": {
+    "tagline": "Duelul zilnic pentru grupul tău de prieteni.",
+    "playToday": "Joacă runda de azi",
+    "continueRound": "Continuă runda de azi",
+    "viewResult": "Vezi rezultatul de azi",
+    "roundBadge": "Runda #{number}"
+  },
+  "nav": {
+    "home": "Azi",
+    "leagues": "Ligi",
+    "settings": "Setări"
+  },
+  "onboarding": {
+    "pickNickname": "Alege-ți porecla",
+    "nicknameLabel": "Poreclă",
+    "nicknamePlaceholder": "ex. Ștefan",
+    "ageConfirm": "Am cel puțin 16 ani",
+    "termsNotice": "Jucând, ești de acord cu Termenii și Politica de confidențialitate.",
+    "startPlaying": "Intră și joacă runda de azi",
+    "invalidNickname": "Folosește 2–20 litere, cifre, spații, _ sau -."
+  },
+  "play": {
+    "readyTitle": "Pregătit pentru duelul de azi?",
+    "readySubtitle": "6 întrebări rapide. ~60 de secunde. O singură încercare pe zi.",
+    "startNow": "Începe 3-2-1",
+    "itemCounter": "{current}/{total}",
+    "correct": "Corect!",
+    "wrong": "Pe aproape",
+    "timedOut": "Timpul a expirat!",
+    "submitOrder": "Confirmă ordinea",
+    "moveUp": "Mută sus",
+    "moveDown": "Mută jos",
+    "enFallback": "EN",
+    "leaveConfirm": "Ieși? Această încercare se pune oricum."
+  },
+  "result": {
+    "title": "Runda #{number} terminată",
+    "scoreLabel": "Scorul tău",
+    "streak": "Serie de {days} zile",
+    "shareCta": "Trimite pe grup",
+    "shareHint": "Trimite pe grup. Devine automat liga voastră.",
+    "copied": "Rezultatul a fost copiat!",
+    "reviewTitle": "Răspunsurile rundei",
+    "openLeague": "Deschide clasamentul ligii",
+    "playAgainTomorrow": "Următoarea rundă apare la miezul nopții."
+  },
+  "league": {
+    "joinTitle": "Ești invitat în {name}",
+    "joinCta": "Intră și joacă runda de azi",
+    "membersCount": "{count} membri",
+    "tabToday": "Azi",
+    "tabWeek": "Săptămâna",
+    "tabAllTime": "All-time",
+    "scoresHidden": "Joacă runda de azi ca să vezi scorurile colegilor.",
+    "invite": "Copiază linkul de invitație",
+    "inviteCopied": "Link copiat!",
+    "empty": "Niciun scor azi încă. Fii primul!"
+  },
+  "settings": {
+    "title": "Setări",
+    "language": "Limbă",
+    "theme": "Temă",
+    "relaxedTimer": "Cronometru relaxat (+50% timp)",
+    "analyticsConsent": "Consimțământ analytics (PostHog EU)",
+    "exportData": "Exportă datele mele (JSON)",
+    "deleteAccount": "Șterge contul meu",
+    "deleted": "Sesiunea și datele tale au fost șterse."
+  },
+  "consent": {
+    "message": "Folosim stocare esențială pentru progres. Permiți analytics anonim în UE?",
+    "accept": "Acceptă",
+    "reject": "Refuză"
+  },
+  "offline": {
+    "title": "Ești offline",
+    "body": "Runda de azi necesită conexiune pentru scoruri corecte."
+  }
+}

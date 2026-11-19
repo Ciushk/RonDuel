@@ -1,0 +1,79 @@
+{
+  "brand": {
+    "tagline": "O duelo diário para o seu grupo.",
+    "playToday": "Jogar a rodada de hoje",
+    "continueRound": "Continuar a rodada de hoje",
+    "viewResult": "Ver resultado de hoje",
+    "roundBadge": "Rodada #{number}"
+  },
+  "nav": {
+    "home": "Hoje",
+    "leagues": "Ligas",
+    "settings": "Ajustes"
+  },
+  "onboarding": {
+    "pickNickname": "Escolha seu apelido",
+    "nicknameLabel": "Apelido",
+    "nicknamePlaceholder": "ex. João",
+    "ageConfirm": "Tenho 16 anos ou mais",
+    "termsNotice": "Ao jogar você concorda com os Termos e a Política de Privacidade.",
+    "startPlaying": "Entrar e jogar hoje",
+    "invalidNickname": "Use 2–20 letras, números, espaços, _ ou -."
+  },
+  "play": {
+    "readyTitle": "Pronto para o duelo de hoje?",
+    "readySubtitle": "6 perguntas rápidas. ~60 segundos. Uma tentativa por dia.",
+    "startNow": "Começar 3-2-1",
+    "itemCounter": "{current}/{total}",
+    "correct": "Correto!",
+    "wrong": "Quase lá",
+    "timedOut": "Tempo esgotado!",
+    "submitOrder": "Confirmar ordem",
+    "moveUp": "Subir",
+    "moveDown": "Descer",
+    "enFallback": "EN",
+    "leaveConfirm": "Sair? Esta tentativa ainda conta."
+  },
+  "result": {
+    "title": "Rodada #{number} concluída",
+    "scoreLabel": "Sua pontuação",
+    "streak": "Sequência de {days} dias",
+    "shareCta": "Compartilhar no grupo",
+    "shareHint": "Compartilhe no grupo. Ele vira a sua liga.",
+    "copied": "Resultado copiado!",
+    "reviewTitle": "Revisão das respostas",
+    "openLeague": "Abrir ranking da liga",
+    "playAgainTomorrow": "A próxima rodada abre à meia-noite."
+  },
+  "league": {
+    "joinTitle": "Você foi convidado para {name}",
+    "joinCta": "Entrar e jogar hoje",
+    "membersCount": "{count} membros",
+    "tabToday": "Hoje",
+    "tabWeek": "Semana",
+    "tabAllTime": "Geral",
+    "scoresHidden": "Jogue hoje para liberar as pontuações do grupo.",
+    "invite": "Copiar link de convite",
+    "inviteCopied": "Link copiado!",
+    "empty": "Nenhuma pontuação hoje ainda. Seja o primeiro!"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "theme": "Tema",
+    "relaxedTimer": "Tempo relaxado (+50% tempo)",
+    "analyticsConsent": "Consentimento de analytics (PostHog UE)",
+    "exportData": "Exportar meus dados (JSON)",
+    "deleteAccount": "Excluir minha conta",
+    "deleted": "Sua sessão e dados foram removidos."
+  },
+  "consent": {
+    "message": "Usamos armazenamento essencial para seu progresso. Permitir analytics na UE?",
+    "accept": "Aceitar",
+    "reject": "Recusar"
+  },
+  "offline": {
+    "title": "Você está offline",
+    "body": "A rodada de hoje precisa de conexão para validar os pontos."
+  }
+}
