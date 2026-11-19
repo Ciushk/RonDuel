@@ -1,10 +1,10 @@
 'use client';
 
-import { Flame, ShareNetwork, Trophy } from '@phosphor-icons/react';
+import { Flame, ShareNetwork, Sword, Trophy } from '@phosphor-icons/react';
 import { buildShareCardText } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button, Card, Chip, Toast } from '@/components/ui';
@@ -19,6 +19,7 @@ interface ResultData {
   emojiLine: string;
   streakCurrent: number;
   streakBest: number;
+  finishedPlaysCount?: number;
   review: Array<{
     index: number;
     prompt: string;
@@ -33,6 +34,7 @@ interface ResultData {
 export default function ResultPage() {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const params = useParams<{ playId: string }>();
   const playId = decodeURIComponent(params.playId);
 
@@ -65,7 +67,6 @@ export default function ResultPage() {
     const session = getLocalSession();
     let activeLeague = leagueInfo;
 
-    // Auto-create league on first share (§3)
     if (!activeLeague) {
       const res = await fetch('/api/leagues', {
         method: 'POST',
@@ -108,6 +109,24 @@ export default function ResultPage() {
     setTimeout(() => setToast(''), 3000);
   };
 
+  const handleCreateDuel = async () => {
+    const s = getLocalSession();
+    const res = await fetch('/api/duels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        challengerUid: s.uid,
+        nickname: s.nickname || undefined,
+        tz: getBrowserTimeZone(),
+        leagueId: leagueInfo?.id,
+      }),
+    });
+    const created = await res.json();
+    if (created.duelId) {
+      router.push(`/${locale}/duel/${encodeURIComponent(created.duelId)}`);
+    }
+  };
+
   if (!data) {
     return (
       <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">Loading…</main>
@@ -135,6 +154,18 @@ export default function ResultPage() {
           {t('result.shareCta')}
         </Button>
 
+        <Button fullWidth size="md" variant="secondary" onClick={() => void handleCreateDuel()}>
+          <Sword size={18} weight="bold" aria-hidden="true" />
+          {t('result.challengeFriend')}
+        </Button>
+
+        <Link
+          href={`/${locale}/me`}
+          className="text-duel-strong inline-block text-xs font-bold underline"
+        >
+          {t('result.remindTomorrow')} →
+        </Link>
+
         {!leagueInfo && <p className="text-muted text-xs">{t('result.shareHint')}</p>}
 
         {leagueInfo && (
@@ -147,6 +178,14 @@ export default function ResultPage() {
           </Link>
         )}
       </Card>
+
+      {/* Install prompt shown only after the 2nd completed round (§6.1) */}
+      {(data.finishedPlaysCount ?? 0) >= 2 && (
+        <Card variant="secondary" className="space-y-1.5 text-center">
+          <p className="font-display text-base font-extrabold">{t('result.installTitle')}</p>
+          <p className="text-muted text-xs">{t('result.installBody')}</p>
+        </Card>
+      )}
 
       {toast && (
         <div className="flex justify-center">

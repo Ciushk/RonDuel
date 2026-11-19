@@ -4,11 +4,14 @@
     "playToday": "Play today's round",
     "continueRound": "Continue today's round",
     "viewResult": "See today's result",
-    "roundBadge": "Round #{number}"
+    "roundBadge": "Round #{number}",
+    "goProChip": "Go Pro ⚡"
   },
   "nav": {
     "home": "Today",
     "leagues": "Leagues",
+    "profile": "Profile",
+    "pro": "Pro",
     "settings": "Settings"
   },
   "onboarding": {
@@ -43,6 +46,10 @@
     "copied": "Result copied to clipboard!",
     "reviewTitle": "Answer review",
     "openLeague": "Open league leaderboard",
+    "challengeFriend": "Challenge a friend (1v1 Duel)",
+    "remindTomorrow": "Remind me tomorrow",
+    "installTitle": "Add RonDuel to your Home Screen",
+    "installBody": "One tap each morning for your 60-second daily duel.",
     "playAgainTomorrow": "Next round unlocks at local midnight."
   },
   "league": {
@@ -55,7 +62,53 @@
     "scoresHidden": "Play today's round to unlock everyone's scores.",
     "invite": "Copy invite link",
     "inviteCopied": "Invite link copied!",
+    "feedTitle": "League activity",
+    "challengeBtn": "Duel 1v1",
     "empty": "No scores yet today. Be the first!"
+  },
+  "duel": {
+    "title": "1v1 Split Court Duel",
+    "subtitle": "5 quick questions · 24h on the clock",
+    "yourTurn": "Play your 5 items",
+    "waitingOpponent": "Waiting for opponent to play (24h window)",
+    "copyChallengeLink": "Copy duel link",
+    "linkCopied": "Duel link copied!",
+    "winnerBanner": "{name} wins the duel!",
+    "walkoverNote": "Won by walkover (24h expired)",
+    "headToHead": "Head-to-head record",
+    "breakdownTitle": "Side-by-side breakdown"
+  },
+  "profile": {
+    "title": "Profile & Streak",
+    "bestStreak": "Best streak: {days} days",
+    "upgradeTitle": "Save your streak across devices",
+    "upgradeBody": "Link an email or Google account. Your uid, streak, and leagues stay intact.",
+    "emailPlaceholder": "you@example.com",
+    "linkEmailBtn": "Link with Email Magic Link",
+    "linkGoogleBtn": "Link with Google",
+    "linkedBadge": "Linked: {email}",
+    "notifTitle": "Daily reminder (18:00 local)",
+    "pushLabel": "Web Push notifications",
+    "emailLabel": "Email reminders",
+    "iosSafariNotice": "On iOS Safari, add RonDuel to your Home Screen for Web Push, or use email reminders below.",
+    "proStatsTitle": "Pro Accuracy by Topic",
+    "proStatsLocked": "Unlock topic accuracy & head-to-head trends with RonDuel Pro."
+  },
+  "pro": {
+    "title": "RonDuel Pro",
+    "subtitle": "Bigger leagues, unlimited 1v1 duels, weekly streak shield, and Pro court themes.",
+    "monthly": "$4.99 / month",
+    "yearly": "$39.99 / year (Save 33%)",
+    "taxNote": "Prices include applicable EU VAT. Cancel anytime in Stripe Customer Portal.",
+    "benefitLeagues": "Leagues up to 200 members & private join approval",
+    "benefitDuels": "Unlimited active 1v1 duels",
+    "benefitShield": "1 automatic weekly streak shield",
+    "benefitThemes": "3 exclusive Split Court themes (Midnight, Clay, Neon)",
+    "benefitStats": "Advanced topic accuracy & past rounds archive",
+    "euConsent": "[EU WITHDRAWAL PLACEHOLDER] I request immediate access to RonDuel Pro digital content and acknowledge that my 14-day EU right of withdrawal lapses upon activation.",
+    "upgradeFirst": "Link your email on your Profile first so your Pro subscription is tied to a permanent account.",
+    "subscribeCta": "Start RonDuel Pro",
+    "activeBadge": "RonDuel Pro is active ({plan})"
   },
   "settings": {
     "title": "Settings",

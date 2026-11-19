@@ -66,6 +66,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
 
             <div className="flex items-center gap-1.5">
+              <Link
+                href={`/${locale}/pro`}
+                className="border-border bg-volt inline-flex h-11 items-center justify-center rounded-[10px] border px-2.5 text-xs font-extrabold text-[#16131F]"
+              >
+                {t('nav.pro')}
+              </Link>
+
+              <Link
+                href={`/${locale}/me`}
+                className="border-border-subtle bg-surface-2 text-ink inline-flex h-11 items-center justify-center rounded-[10px] border px-2.5 text-xs font-bold"
+              >
+                {t('nav.profile')}
+              </Link>
+
               <label htmlFor="locale-select" className="sr-only">
                 {t('settings.language')}
               </label>

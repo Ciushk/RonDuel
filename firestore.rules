@@ -43,6 +43,15 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Duels: participants read only, functions write only; duelSecrets denied below
+    match /duels/{duelId} {
+      allow read: if isSignedIn() &&
+        (resource.data.challengerUid == request.auth.uid ||
+         resource.data.opponentUid == request.auth.uid ||
+         resource.data.opponentUid == null);
+      allow write: if false;
+    }
+
     // Invite codes: signed-in read for O(1) lookup
     match /inviteCodes/{code} {
       allow read: if isSignedIn();
@@ -93,7 +102,7 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Server-only secrets & internal docs: default deny
+    // Server-only secrets (roundSecrets, duelSecrets, stripeEvents, rateLimits): default deny
     match /{document=**} {
       allow read, write: if false;
     }

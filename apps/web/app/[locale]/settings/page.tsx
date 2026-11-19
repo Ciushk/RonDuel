@@ -59,6 +59,23 @@ export default function SettingsPage() {
       <h1 className="font-display text-3xl font-extrabold">{t('settings.title')}</h1>
 
       <Card className="space-y-4">
+        <label className="flex min-h-11 items-center justify-between gap-3 text-sm font-bold">
+          <span>{t('settings.theme')}</span>
+          <select
+            aria-label={t('settings.theme')}
+            value={session.theme}
+            onChange={(e) => update({ theme: e.target.value as LocalSession['theme'] })}
+            className="border-border-subtle bg-surface-2 text-ink min-h-11 rounded-[10px] border px-3 text-xs font-bold"
+          >
+            <option value="light">Light (Cream Paper)</option>
+            <option value="dark">Dark (Ink Night)</option>
+            <option value="high-contrast">High Contrast</option>
+            <option value="midnight-court">Pro: Midnight Court</option>
+            <option value="clay-court">Pro: Clay Court</option>
+            <option value="neon-arcade">Pro: Neon Arcade</option>
+          </select>
+        </label>
+
         <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-bold">
           <span>{t('settings.relaxedTimer')}</span>
           <input

@@ -4,11 +4,14 @@
     "playToday": "Joacă runda de azi",
     "continueRound": "Continuă runda de azi",
     "viewResult": "Vezi rezultatul de azi",
-    "roundBadge": "Runda #{number}"
+    "roundBadge": "Runda #{number}",
+    "goProChip": "Treci la Pro ⚡"
   },
   "nav": {
     "home": "Azi",
     "leagues": "Ligi",
+    "profile": "Profil",
+    "pro": "Pro",
     "settings": "Setări"
   },
   "onboarding": {
@@ -43,6 +46,10 @@
     "copied": "Rezultatul a fost copiat!",
     "reviewTitle": "Răspunsurile rundei",
     "openLeague": "Deschide clasamentul ligii",
+    "challengeFriend": "Provoacă un prieten (Duel 1v1)",
+    "remindTomorrow": "Amintește-mi mâine",
+    "installTitle": "Adaugă RonDuel pe ecranul principal",
+    "installBody": "O singură atingere în fiecare dimineață pentru duelul zilnic de 60 de secunde.",
     "playAgainTomorrow": "Următoarea rundă apare la miezul nopții."
   },
   "league": {
@@ -55,7 +62,53 @@
     "scoresHidden": "Joacă runda de azi ca să vezi scorurile colegilor.",
     "invite": "Copiază linkul de invitație",
     "inviteCopied": "Link copiat!",
+    "feedTitle": "Activitatea ligii",
+    "challengeBtn": "Duel 1v1",
     "empty": "Niciun scor azi încă. Fii primul!"
+  },
+  "duel": {
+    "title": "Duel 1v1 Split Court",
+    "subtitle": "5 întrebări rapide · 24h la dispoziție",
+    "yourTurn": "Joacă cele 5 întrebări",
+    "waitingOpponent": "Așteptăm adversarul să joace (fereastră de 24h)",
+    "copyChallengeLink": "Copiază linkul duelului",
+    "linkCopied": "Linkul duelului a fost copiat!",
+    "winnerBanner": "{name} a câștigat duelul!",
+    "walkoverNote": "Câștigat prin neprezentare (24h expirate)",
+    "headToHead": "Scor direct (W-L)",
+    "breakdownTitle": "Comparație pe întrebări"
+  },
+  "profile": {
+    "title": "Profil & Serie",
+    "bestStreak": "Cea mai bună serie: {days} zile",
+    "upgradeTitle": "Salvează-ți seria pe toate dispozitivele",
+    "upgradeBody": "Conectează un email sau contul Google. Istoricul, seria și ligile tale rămân neschimbate.",
+    "emailPlaceholder": "tu@exemplu.ro",
+    "linkEmailBtn": "Conectează prin Email Magic Link",
+    "linkGoogleBtn": "Conectează cu Google",
+    "linkedBadge": "Conectat: {email}",
+    "notifTitle": "Memento zilnic (18:00 ora locală)",
+    "pushLabel": "Notificări Web Push",
+    "emailLabel": "Memento pe email",
+    "iosSafariNotice": "Pe iOS Safari, adaugă RonDuel pe ecranul principal pentru Web Push sau folosește mementoul pe email.",
+    "proStatsTitle": "Acuratețe pe teme (Pro)",
+    "proStatsLocked": "Deblochează statisticile pe teme și istoricul duelurilor cu RonDuel Pro."
+  },
+  "pro": {
+    "title": "RonDuel Pro",
+    "subtitle": "Ligi mari, dueluri 1v1 nelimitate, scut săptămânal pentru serie și teme vizuale Pro.",
+    "monthly": "$4.99 / lună",
+    "yearly": "$39.99 / an (Economisești 33%)",
+    "taxNote": "Prețurile includ TVA-ul aplicabil în UE. Poți anula oricând din portalul Stripe.",
+    "benefitLeagues": "Ligi de până la 200 de membri & aprobare privată",
+    "benefitDuels": "Dueluri 1v1 active nelimitate",
+    "benefitShield": "1 scut automat pe săptămână pentru serie",
+    "benefitThemes": "3 teme exclusive Split Court (Midnight, Clay, Neon)",
+    "benefitStats": "Statistici avansate pe teme & arhiva rundelor trecute",
+    "euConsent": "[PLACEHOLDER RETRAGERE UE] Solicit acces imediat la conținutul digital RonDuel Pro și confirm că dreptul legal de retragere de 14 zile încetează la activare.",
+    "upgradeFirst": "Conectează-ți întâi adresa de email în Profil pentru a atașa abonamentul Pro unui cont permanent.",
+    "subscribeCta": "Activează RonDuel Pro",
+    "activeBadge": "RonDuel Pro este activ ({plan})"
   },
   "settings": {
     "title": "Setări",

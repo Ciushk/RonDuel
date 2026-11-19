@@ -4,11 +4,14 @@
     "playToday": "Jogar a rodada de hoje",
     "continueRound": "Continuar a rodada de hoje",
     "viewResult": "Ver resultado de hoje",
-    "roundBadge": "Rodada #{number}"
+    "roundBadge": "Rodada #{number}",
+    "goProChip": "Seja Pro ⚡"
   },
   "nav": {
     "home": "Hoje",
     "leagues": "Ligas",
+    "profile": "Perfil",
+    "pro": "Pro",
     "settings": "Ajustes"
   },
   "onboarding": {
@@ -43,6 +46,10 @@
     "copied": "Resultado copiado!",
     "reviewTitle": "Revisão das respostas",
     "openLeague": "Abrir ranking da liga",
+    "challengeFriend": "Desafiar um amigo (Duelo 1v1)",
+    "remindTomorrow": "Lembrar-me amanhã",
+    "installTitle": "Adicione o RonDuel à tela inicial",
+    "installBody": "Um toque toda manhã para o seu duelo diário de 60 segundos.",
     "playAgainTomorrow": "A próxima rodada abre à meia-noite."
   },
   "league": {
@@ -55,7 +62,53 @@
     "scoresHidden": "Jogue hoje para liberar as pontuações do grupo.",
     "invite": "Copiar link de convite",
     "inviteCopied": "Link copiado!",
+    "feedTitle": "Atividade da liga",
+    "challengeBtn": "Duelo 1v1",
     "empty": "Nenhuma pontuação hoje ainda. Seja o primeiro!"
+  },
+  "duel": {
+    "title": "Duelo 1v1 Split Court",
+    "subtitle": "5 perguntas rápidas · 24h no relógio",
+    "yourTurn": "Jogar suas 5 perguntas",
+    "waitingOpponent": "Aguardando oponente jogar (janela de 24h)",
+    "copyChallengeLink": "Copiar link do duelo",
+    "linkCopied": "Link do duelo copiado!",
+    "winnerBanner": "{name} venceu o duelo!",
+    "walkoverNote": "Vencido por W.O. (24h expiradas)",
+    "headToHead": "Histórico direto (V-D)",
+    "breakdownTitle": "Comparação pergunta a pergunta"
+  },
+  "profile": {
+    "title": "Perfil e Sequência",
+    "bestStreak": "Melhor sequência: {days} dias",
+    "upgradeTitle": "Salve sua sequência em todos os dispositivos",
+    "upgradeBody": "Vincule seu email ou conta Google. Seu uid, sequência e ligas permanecem intactos.",
+    "emailPlaceholder": "voce@exemplo.com",
+    "linkEmailBtn": "Vincular com Email Magic Link",
+    "linkGoogleBtn": "Vincular com Google",
+    "linkedBadge": "Vinculado: {email}",
+    "notifTitle": "Lembrete diário (18:00 horário local)",
+    "pushLabel": "Notificações Web Push",
+    "emailLabel": "Lembretes por email",
+    "iosSafariNotice": "No iOS Safari, adicione o RonDuel à Tela de Início para Web Push ou use lembretes por email.",
+    "proStatsTitle": "Precisão por tema (Pro)",
+    "proStatsLocked": "Desbloqueie precisão por tema e histórico com o RonDuel Pro."
+  },
+  "pro": {
+    "title": "RonDuel Pro",
+    "subtitle": "Ligas maiores, duelos 1v1 ilimitados, escudo semanal de sequência e temas Pro.",
+    "monthly": "$4.99 / mês",
+    "yearly": "$39.99 / ano (Economize 33%)",
+    "taxNote": "Preços incluem impostos aplicáveis na UE. Cancele quando quiser no portal Stripe.",
+    "benefitLeagues": "Ligas com até 200 membros e aprovação privada",
+    "benefitDuels": "Duelos 1v1 ativos ilimitados",
+    "benefitShield": "1 escudo automático de sequência por semana",
+    "benefitThemes": "3 temas exclusivos Split Court (Midnight, Clay, Neon)",
+    "benefitStats": "Estatísticas avançadas por tema e arquivo de rodadas",
+    "euConsent": "[PLACEHOLDER ARREPENDIMENTO UE] Solicito acesso imediato ao conteúdo digital RonDuel Pro e reconheço que o direito de arrependimento de 14 dias na UE expira na ativação.",
+    "upgradeFirst": "Vincule primeiro seu email no Perfil para associar o RonDuel Pro a uma conta permanente.",
+    "subscribeCta": "Assinar RonDuel Pro",
+    "activeBadge": "RonDuel Pro está ativo ({plan})"
   },
   "settings": {
     "title": "Ajustes",

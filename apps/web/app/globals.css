@@ -73,6 +73,78 @@
   --rd-seam: linear-gradient(135deg, #b00000 0 50%, #0033cc 50% 100%);
 }
 
+[data-theme='midnight-court'] {
+  --rd-bg: #070913;
+  --rd-surface: #11162b;
+  --rd-surface-2: #1b2240;
+  --rd-text: #f3f6ff;
+  --rd-text-muted: #9aa7c7;
+  --rd-red: #ff6b60;
+  --rd-red-strong: #ff6b60;
+  --rd-blue: #5ea1ff;
+  --rd-blue-strong: #5ea1ff;
+  --rd-volt: #c6ff3d;
+  --rd-gold: #ffd166;
+  --rd-correct-fill: #3ddc97;
+  --rd-correct-text: #3ddc97;
+  --rd-wrong: #ff6b60;
+  --rd-on-blue: #070913;
+  --rd-on-wrong: #070913;
+  --rd-border: #2b355c;
+  --rd-border-subtle: #2b355c;
+  --rd-shadow-sticker: 0 0 0 1px #2b355c;
+  --rd-shadow-sheet: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --rd-seam: linear-gradient(135deg, #ff6b60 0 50%, #5ea1ff 50% 100%);
+}
+
+[data-theme='clay-court'] {
+  --rd-bg: #fbf2e4;
+  --rd-surface: #fffaf2;
+  --rd-surface-2: #efe1cc;
+  --rd-text: #23160f;
+  --rd-text-muted: #695346;
+  --rd-red: #e0533c;
+  --rd-red-strong: #b8321c;
+  --rd-blue: #2b6cb0;
+  --rd-blue-strong: #1e4e8c;
+  --rd-volt: #c6ff3d;
+  --rd-gold: #f6ad3c;
+  --rd-correct-fill: #19b37a;
+  --rd-correct-text: #0f7a52;
+  --rd-wrong: #b8321c;
+  --rd-on-blue: #ffffff;
+  --rd-on-wrong: #ffffff;
+  --rd-border: #23160f;
+  --rd-border-subtle: rgba(35, 22, 15, 0.16);
+  --rd-shadow-sticker: 0 4px 0 #23160f;
+  --rd-shadow-sheet: 0 8px 24px rgba(35, 22, 15, 0.1);
+  --rd-seam: linear-gradient(135deg, #e0533c 0 50%, #2b6cb0 50% 100%);
+}
+
+[data-theme='neon-arcade'] {
+  --rd-bg: #090614;
+  --rd-surface: #151029;
+  --rd-surface-2: #221a3d;
+  --rd-text: #f7f4ff;
+  --rd-text-muted: #b4a7d6;
+  --rd-red: #ff4d79;
+  --rd-red-strong: #ff4d79;
+  --rd-blue: #38bdf8;
+  --rd-blue-strong: #38bdf8;
+  --rd-volt: #c6ff3d;
+  --rd-gold: #facc15;
+  --rd-correct-fill: #3ddc97;
+  --rd-correct-text: #3ddc97;
+  --rd-wrong: #ff4d79;
+  --rd-on-blue: #090614;
+  --rd-on-wrong: #090614;
+  --rd-border: #382b63;
+  --rd-border-subtle: #382b63;
+  --rd-shadow-sticker: 0 0 0 1px #382b63;
+  --rd-shadow-sheet: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --rd-seam: linear-gradient(135deg, #ff4d79 0 50%, #38bdf8 50% 100%);
+}
+
 @theme inline {
   --color-bg: var(--rd-bg);
   --color-surface: var(--rd-surface);
