@@ -12,6 +12,8 @@
       ".next",
       "**/.next/**",
       ".git",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
       "playwright-report",
       "test-results",
       "firebase-debug.log",
