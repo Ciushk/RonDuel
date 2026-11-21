@@ -6,6 +6,9 @@ import { runRonBotChat } from '@/lib/gemini-assistant';
 const ChatSchema = z.object({
   message: z.string().min(1).max(1000),
   locale: z.string().optional(),
+  uid: z.string().optional(),
+  tz: z.string().optional(),
+  nickname: z.string().optional(),
   isAdmin: z.boolean().optional(),
   previousInteractionId: z.string().optional(),
 });

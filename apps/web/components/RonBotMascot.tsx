@@ -1,16 +1,22 @@
 'use client';
 
 import { PaperPlaneRight, Sparkle, X } from '@phosphor-icons/react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Chip } from '@/components/ui';
+import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   badge?: string;
+  actionLink?: {
+    label: string;
+    href: string;
+  };
 }
 
 export function RonBotMascot() {
@@ -32,7 +38,7 @@ export function RonBotMascot() {
     {
       id: 'welcome',
       role: 'assistant',
-      text: 'Salut! Sunt RonBot ⚡! Mă uit după fiecare mișcare din arenă. Întreabă-mă orice despre joc, reguli, calculul scorului, ligi sau dueluri 1v1!',
+      text: 'Salut! Sunt RonBot ⚡! Mă uit după fiecare mișcare din arenă. Întreabă-mă orice: „Cum se joacă?”, „Cum se calculează scorul?”, „Ce înseamnă ⚡🟩🟥?”, „Care e statusul meu azi?” sau „Creează un duel”!',
     },
   ]);
 
@@ -119,6 +125,8 @@ export function RonBotMascot() {
     setSending(true);
 
     try {
+      const session = getLocalSession();
+      const tz = getBrowserTimeZone();
       const localeSeg = window.location.pathname.split('/')[1] || 'ro';
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -126,6 +134,9 @@ export function RonBotMascot() {
         body: JSON.stringify({
           message: msg,
           locale: localeSeg,
+          uid: session.uid,
+          nickname: session.nickname || undefined,
+          tz,
           isAdmin: isOnAdminPage,
           previousInteractionId: interactionId,
         }),
@@ -140,6 +151,7 @@ export function RonBotMascot() {
           id: `a_${Date.now()}`,
           role: 'assistant',
           text: data.reply ?? data.error ?? 'Hmm, ceva nu a mers. Încearcă din nou!',
+          actionLink: data.actionLink,
           badge:
             data.mode === 'gemini-3.8-flash'
               ? 'Gemini 3.8 Flash'
@@ -169,9 +181,12 @@ export function RonBotMascot() {
         'Programează o rundă pentru 2026-12-18',
       ]
     : [
+        'Cum se joacă?',
+        'Statusul meu de azi',
         'Cum se calculează scorul?',
-        'Cum creez o ligă cu prietenii?',
-        'Cum funcționează duelul 1v1?',
+        'Ce înseamnă ⚡🟩🟥?',
+        'Cum creez o ligă?',
+        'Creează un duel',
         'Ce oferă RonDuel Pro?',
       ];
 
@@ -181,9 +196,9 @@ export function RonBotMascot() {
         <section
           role="dialog"
           aria-label="RonBot AI Chat"
-          className="border-border bg-surface text-ink mb-1 flex h-[460px] w-[350px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-[24px] border-2 shadow-[var(--rd-shadow-sheet)] sm:w-[375px]"
+          className="border-border bg-surface text-ink mb-1 flex h-[475px] w-[355px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-[24px] border-2 shadow-[var(--rd-shadow-sheet)] sm:w-[385px]"
         >
-          {/* Clean Header — no API key or Admin toggle exposed to public players */}
+          {/* Header */}
           <header className="border-border bg-surface-2 flex items-center justify-between gap-2 border-b-2 px-4 py-3">
             <div className="flex items-center gap-2.5">
               <span className="border-border bg-volt font-display inline-flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-extrabold text-[#16131F]">
@@ -201,7 +216,7 @@ export function RonBotMascot() {
                 <p className="text-muted text-[11px]">
                   {isOnAdminPage
                     ? 'Creează întrebări & programează runde'
-                    : 'Asistentul tău pentru joc & reguli'}
+                    : 'Ghidul tău complet pentru joc & reguli'}
                 </p>
               </div>
             </div>
@@ -231,13 +246,22 @@ export function RonBotMascot() {
                 )}
                 <div
                   className={[
-                    'max-w-[85%] whitespace-pre-line rounded-[16px] px-3.5 py-2.5 text-xs leading-relaxed',
+                    'max-w-[88%] whitespace-pre-line rounded-[16px] px-3.5 py-2.5 text-xs leading-relaxed',
                     m.role === 'user'
                       ? 'border-border bg-ron border-2 font-bold text-[#16131F]'
                       : 'border-border-subtle bg-surface-2 text-ink border',
                   ].join(' ')}
                 >
-                  {m.text}
+                  <div>{m.text}</div>
+                  {m.actionLink && (
+                    <Link
+                      href={m.actionLink.href}
+                      onClick={() => setOpen(false)}
+                      className="rd-sticker rd-sticker-pressable bg-volt mt-2.5 inline-flex min-h-9 w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-xs font-extrabold text-[#16131F]"
+                    >
+                      {m.actionLink.label}
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
@@ -274,7 +298,7 @@ export function RonBotMascot() {
               placeholder={
                 isOnAdminPage
                   ? 'Ex: Creează 2 întrebări despre Istorie...'
-                  : 'Întreabă-l pe RonBot despre joc...'
+                  : 'Ex: Cum se joacă? / Creează un duel...'
               }
               aria-label="Mesaj pentru RonBot"
               className="border-border bg-surface text-ink min-h-11 flex-1 rounded-[12px] border-2 px-3 text-xs font-medium"

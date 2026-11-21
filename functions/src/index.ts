@@ -68,6 +68,9 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
       const chatRes = await runRonBotChat({
         message: String(body.message ?? ''),
         locale: body.locale ? String(body.locale) : 'ro',
+        uid: body.uid ? String(body.uid) : undefined,
+        tz: body.tz ? String(body.tz) : undefined,
+        nickname: body.nickname ? String(body.nickname) : undefined,
         isAdmin: Boolean(body.isAdmin),
         previousInteractionId: body.previousInteractionId
           ? String(body.previousInteractionId)
