@@ -191,7 +191,10 @@ interface StoreState {
   duels: Record<string, DuelRecord>;
   pairRecords: Record<string, Record<string, number>>; // pairKey -> { [uid]: wins }
   stripeEvents: Record<string, string>;
-  subscriptions: Record<string, { plan: 'monthly' | 'yearly'; status: string; currentPeriodEnd: string }>;
+  subscriptions: Record<
+    string,
+    { plan: 'monthly' | 'yearly'; status: string; currentPeriodEnd: string }
+  >;
   scheduledRounds: Record<string, AdminRoundSchedule>;
   reports: Record<string, ModerationReport>;
 }
@@ -248,7 +251,12 @@ export function getRoundMeta(date: string) {
   return { date, roundNumber, topicOfTheDay, itemCount: 6 };
 }
 
-function resolveQuestionToItem(q: StoredQuestion, index: number, seedPrefix: string, locale: Locale): ResolvedRoundItem {
+function resolveQuestionToItem(
+  q: StoredQuestion,
+  index: number,
+  seedPrefix: string,
+  locale: Locale,
+): ResolvedRoundItem {
   const localized = q.content[locale];
   const isEnFallback = !localized;
   const content = localized ?? q.content.en!;
@@ -392,7 +400,9 @@ export function getTodayStatus(uid: string, tz: string) {
       id: d.id,
       status: d.status,
       challengerNickname: d.sides[d.challengerUid]?.nickname ?? 'Challenger',
-      opponentNickname: d.opponentUid ? (d.sides[d.opponentUid]?.nickname ?? 'Opponent') : 'Open invite',
+      opponentNickname: d.opponentUid
+        ? (d.sides[d.opponentUid]?.nickname ?? 'Opponent')
+        : 'Open invite',
       myTurn: !d.sides[uid]?.finishedAt,
     }));
 
@@ -861,8 +871,7 @@ export function createDuel(params: {
 
   const activeCount = Object.values(store.duels).filter(
     (d) =>
-      d.challengerUid === params.challengerUid &&
-      (d.status === 'pending' || d.status === 'active'),
+      d.challengerUid === params.challengerUid && (d.status === 'pending' || d.status === 'active'),
   ).length;
   const maxDuels = user.pro.active ? PRO_LIMITS.maxActiveDuels : FREE_LIMITS.maxActiveDuels;
   if (activeCount >= maxDuels) {
@@ -1255,8 +1264,7 @@ export function processStripeWebhook(params: {
 
   const user = getOrCreateUser({ uid: params.uid });
   const plan = params.plan ?? 'monthly';
-  const until =
-    params.currentPeriodEnd ?? new Date(Date.now() + 30 * 86_400_000).toISOString();
+  const until = params.currentPeriodEnd ?? new Date(Date.now() + 30 * 86_400_000).toISOString();
 
   if (
     params.type === 'checkout.session.completed' ||
@@ -1424,10 +1432,7 @@ export function scheduleAdminRound(params: {
   return { schedule, warnings: validation.warnings };
 }
 
-export function publishAdminRound(params: {
-  date: string;
-  explicitFallbackLocales: Locale[];
-}) {
+export function publishAdminRound(params: { date: string; explicitFallbackLocales: Locale[] }) {
   const store = getStore();
   const schedule = store.scheduledRounds[params.date];
   if (!schedule) throw new Error('Round not scheduled');

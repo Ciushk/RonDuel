@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Bricolage_Grotesque, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { RonBotMascot } from '@/components/RonBotMascot';
+
 import './globals.css';
 
 const bricolage = Bricolage_Grotesque({
@@ -37,7 +39,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       data-theme="light"
       className={`${bricolage.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-bg text-ink min-h-dvh antialiased">{children}</body>
+      <body className="bg-bg text-ink min-h-dvh antialiased">
+        {children}
+        <RonBotMascot />
+      </body>
     </html>
   );
 }

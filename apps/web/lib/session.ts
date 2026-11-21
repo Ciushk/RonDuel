@@ -5,13 +5,7 @@ export interface LocalSession {
   nickname: string;
   ageConfirmed16: boolean;
   relaxedTimer: boolean;
-  theme:
-    | 'light'
-    | 'dark'
-    | 'high-contrast'
-    | 'midnight-court'
-    | 'clay-court'
-    | 'neon-arcade';
+  theme: 'light' | 'dark' | 'high-contrast' | 'midnight-court' | 'clay-court' | 'neon-arcade';
   analyticsConsent: 'unset' | 'accepted' | 'rejected';
 }
 

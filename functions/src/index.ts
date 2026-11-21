@@ -45,6 +45,7 @@ import {
   updateNotificationPrefs,
   upgradeAccount,
 } from '../../apps/web/lib/server-store.js';
+import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
 setGlobalOptions({ region: 'europe-west1' });
@@ -56,12 +57,30 @@ export const health = onRequest((_req, res) => {
 /**
  * Unified HTTP API handler for Firebase Hosting rewrites ("/api/**" -> api function in europe-west1).
  */
-export const api = onRequest({ cors: true, memory: '256MiB' }, (req, res) => {
+export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
     const pathname = url.pathname.replace(/^\/api/, '') || '/';
     const method = req.method.toUpperCase();
     const body = (req.body ?? {}) as Record<string, unknown>;
+
+    if (method === 'POST' && pathname === '/chat') {
+      const apiKeyOverride =
+        typeof req.headers['x-gemini-api-key'] === 'string'
+          ? req.headers['x-gemini-api-key']
+          : undefined;
+      const chatRes = await runRonBotChat({
+        message: String(body.message ?? ''),
+        locale: body.locale ? String(body.locale) : 'ro',
+        isAdmin: Boolean(body.isAdmin),
+        previousInteractionId: body.previousInteractionId
+          ? String(body.previousInteractionId)
+          : undefined,
+        apiKeyOverride,
+      });
+      res.status(200).json(chatRes);
+      return;
+    }
 
     if (method === 'GET' && pathname === '/game/status') {
       const uid = url.searchParams.get('uid') ?? 'anon';
@@ -320,11 +339,11 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, (req, res) => {
         res.status(200).json({
           round: publishAdminRound({
             date: String(body.date),
-            explicitFallbackLocales: ((body.explicitFallbackLocales as Locale[]) ?? [
+            explicitFallbackLocales: (body.explicitFallbackLocales as Locale[]) ?? [
               'es',
               'pt',
               'ro',
-            ]),
+            ],
           }),
         });
         return;

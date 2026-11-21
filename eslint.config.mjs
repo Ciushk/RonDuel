@@ -10,6 +10,7 @@ export default tseslint.config(
       '**/.next/**',
       '**/dist/**',
       '**/lib/**',
+      '**/hosting-dist/**',
       '**/coverage/**',
       '**/playwright-report/**',
       '**/test-results/**',

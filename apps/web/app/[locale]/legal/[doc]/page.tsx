@@ -44,7 +44,7 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
   return (
     <main className="mx-auto max-w-[480px] space-y-4 px-4 py-6">
       <h1 className="font-display text-3xl font-extrabold">{entry.title}</h1>
-      <Card variant="subtle" className="space-y-3 text-sm text-ink">
+      <Card variant="subtle" className="text-ink space-y-3 text-sm">
         {entry.body.map((p) => (
           <p key={p}>{p}</p>
         ))}

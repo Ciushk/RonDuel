@@ -49,6 +49,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@google/genai':
+        specifier: ^3.6.1
+        version: 3.6.1
       '@phosphor-icons/react':
         specifier: ^2.1.7
         version: 2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -95,6 +98,9 @@ importers:
 
   functions:
     dependencies:
+      '@google/genai':
+        specifier: ^3.6.1
+        version: 3.6.1
       firebase-admin:
         specifier: ^13.2.0
         version: 13.10.0
@@ -594,6 +600,18 @@ packages:
         integrity: sha512-W98gTQOAntEeEQ7/pZxSQXxfUO5CiQcXJRsxBpUa6UU25n8YN/VtogPBi0H+MAmUrn/6bY/sBhFansoWEsr2/g==,
       }
     engines: { node: '>=18' }
+
+  '@google/genai@3.6.1':
+    resolution:
+      {
+        integrity: sha512-DQIkZkl+VoZc+RUSaJ41vRuywjQDpP0t/oUf5/ddQhNW6JsPjVULW2EgHmuJ1mrr6ACtrmUdPlqtNXF1yfKySg==,
+      }
+    engines: { node: '>=22.0.0' }
+    peerDependencies:
+      '@modelcontextprotocol/sdk': ^1.25.2
+    peerDependenciesMeta:
+      '@modelcontextprotocol/sdk':
+        optional: true
 
   '@grpc/grpc-js@1.14.7':
     resolution:
@@ -1818,6 +1836,12 @@ packages:
     resolution:
       {
         integrity: sha512-FGJ6udDNUCjd19pp0Q3iTiDkwhYup7J8hpMW9c4k53NrccQFFWKRho6hvtPPEhnXWKvukfwAlB6DbDz4yhH5Gg==,
+      }
+
+  '@types/retry@0.12.0':
+    resolution:
+      {
+        integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==,
       }
 
   '@types/send@0.17.6':
@@ -3635,6 +3659,13 @@ packages:
       }
     engines: { node: '>=10' }
 
+  p-retry@4.6.2:
+    resolution:
+      {
+        integrity: sha512-312Id396EbJdvRONlngUx0NydfrIQ5lsYu0znKVUzVvArzEIt08V1qhtyESbGVd1FGX7UKtiFp5uwKZdM8wIuQ==,
+      }
+    engines: { node: '>=8' }
+
   parent-module@1.0.1:
     resolution:
       {
@@ -4499,6 +4530,21 @@ packages:
         integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==,
       }
 
+  ws@8.23.0:
+    resolution:
+      {
+        integrity: sha512-wCkmX8QMOrKjgO8HW2WyDbTSGeqkocxgDzS9iR79rEAexty6/2qzilx3Ag8Tqf9ykop3irLKle0MtVn5qjVnoQ==,
+      }
+    engines: { node: '>=10.0.0' }
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xml-naming@0.3.0:
     resolution:
       {
@@ -4818,6 +4864,17 @@ snapshots:
       - encoding
       - supports-color
     optional: true
+
+  '@google/genai@3.6.1':
+    dependencies:
+      google-auth-library: 10.9.1
+      p-retry: 4.6.2
+      protobufjs: 7.6.6
+      ws: 8.23.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
 
   '@grpc/grpc-js@1.14.7':
     dependencies:
@@ -5399,6 +5456,8 @@ snapshots:
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.6
     optional: true
+
+  '@types/retry@0.12.0': {}
 
   '@types/send@0.17.6':
     dependencies:
@@ -6615,6 +6674,11 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
+  p-retry@4.6.2:
+    dependencies:
+      '@types/retry': 0.12.0
+      retry: 0.13.1
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -6734,8 +6798,7 @@ snapshots:
       - supports-color
     optional: true
 
-  retry@0.13.1:
-    optional: true
+  retry@0.13.1: {}
 
   rollup@4.68.7:
     dependencies:
@@ -7151,6 +7214,8 @@ snapshots:
 
   wrappy@1.0.2:
     optional: true
+
+  ws@8.23.0: {}
 
   xml-naming@0.3.0:
     optional: true
