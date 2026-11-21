@@ -36,7 +36,7 @@ export default function ResultPage() {
   const locale = useLocale();
   const router = useRouter();
   const params = useParams<{ playId: string }>();
-  const playId = decodeURIComponent(params.playId);
+  const rawPlayId = decodeURIComponent(params.playId);
 
   const [data, setData] = useState<ResultData | null>(null);
   const [toast, setToast] = useState<string>('');
@@ -47,7 +47,11 @@ export default function ResultPage() {
   } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/game/result/${encodeURIComponent(playId)}`)
+    const resolvedPlayId =
+      rawPlayId === '_shell' && typeof window !== 'undefined'
+        ? decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() ?? rawPlayId)
+        : rawPlayId;
+    fetch(`/api/game/result/${encodeURIComponent(resolvedPlayId)}`)
       .then((r) => r.json())
       .then((res: ResultData) => {
         setData(res);
@@ -60,7 +64,7 @@ export default function ResultPage() {
         }
       })
       .catch(() => {});
-  }, [playId]);
+  }, [rawPlayId]);
 
   const handleShare = async () => {
     if (!data) return;

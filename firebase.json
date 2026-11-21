@@ -3,22 +3,42 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "apphosting": {
-    "backendId": "ronduel-web",
-    "rootDir": "apps/web",
-    "ignore": [
-      "node_modules",
-      "**/node_modules/**",
-      ".next",
-      "**/.next/**",
-      ".git",
-      "pnpm-lock.yaml",
-      "pnpm-workspace.yaml",
-      "playwright-report",
-      "test-results",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "functions"
+  "hosting": {
+    "public": "hosting-dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "/ro",
+        "type": 302
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": {
+          "functionId": "api",
+          "region": "europe-west1"
+        }
+      },
+      { "source": "/ro/result/**", "destination": "/ro/result/_shell.html" },
+      { "source": "/ro/l/**", "destination": "/ro/l/_shell.html" },
+      { "source": "/ro/league/**", "destination": "/ro/league/_shell.html" },
+      { "source": "/ro/duel/**", "destination": "/ro/duel/_shell.html" },
+      { "source": "/en/result/**", "destination": "/en/result/_shell.html" },
+      { "source": "/en/l/**", "destination": "/en/l/_shell.html" },
+      { "source": "/en/league/**", "destination": "/en/league/_shell.html" },
+      { "source": "/en/duel/**", "destination": "/en/duel/_shell.html" },
+      { "source": "/es/result/**", "destination": "/es/result/_shell.html" },
+      { "source": "/es/l/**", "destination": "/es/l/_shell.html" },
+      { "source": "/es/league/**", "destination": "/es/league/_shell.html" },
+      { "source": "/es/duel/**", "destination": "/es/duel/_shell.html" },
+      { "source": "/pt/result/**", "destination": "/pt/result/_shell.html" },
+      { "source": "/pt/l/**", "destination": "/pt/l/_shell.html" },
+      { "source": "/pt/league/**", "destination": "/pt/league/_shell.html" },
+      { "source": "/pt/duel/**", "destination": "/pt/duel/_shell.html" }
     ]
   },
   "functions": [
@@ -50,6 +70,9 @@
     },
     "firestore": {
       "port": 8080
+    },
+    "hosting": {
+      "port": 5000
     },
     "ui": {
       "enabled": true,

@@ -56,7 +56,11 @@ export default function DuelPage() {
   const t = useTranslations();
   const locale = useLocale();
   const params = useParams<{ id: string }>();
-  const duelId = decodeURIComponent(params.id);
+  const rawDuelId = decodeURIComponent(params.id);
+  const duelId =
+    rawDuelId === '_shell' && typeof window !== 'undefined'
+      ? decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() ?? rawDuelId)
+      : rawDuelId;
 
   const [duel, setDuel] = useState<DuelView | null>(null);
   const [myUid, setMyUid] = useState('');

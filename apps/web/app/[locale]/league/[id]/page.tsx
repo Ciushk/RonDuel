@@ -42,7 +42,11 @@ export default function LeaguePage() {
 
   useEffect(() => {
     const s = getLocalSession();
-    fetch(`/api/leagues/${encodeURIComponent(params.id)}?uid=${encodeURIComponent(s.uid)}`)
+    const resolvedId =
+      params.id === '_shell' && typeof window !== 'undefined'
+        ? decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() ?? params.id)
+        : params.id;
+    fetch(`/api/leagues/${encodeURIComponent(resolvedId)}?uid=${encodeURIComponent(s.uid)}`)
       .then((r) => r.json())
       .then((d: LeagueView) => setLeague(d))
       .catch(() => {});

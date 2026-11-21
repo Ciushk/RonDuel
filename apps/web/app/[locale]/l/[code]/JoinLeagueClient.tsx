@@ -41,7 +41,12 @@ export function JoinLeagueClient({
     const session = getLocalSession();
     saveLocalSession({ ...session, nickname: check.value, ageConfirmed16: true });
 
-    const res = await fetch(`/api/leagues/${encodeURIComponent(code)}/join`, {
+    const resolvedCode =
+      code === '_shell' && typeof window !== 'undefined'
+        ? (window.location.pathname.split('/').filter(Boolean).pop() ?? code)
+        : code;
+
+    const res = await fetch(`/api/leagues/${encodeURIComponent(resolvedCode)}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -21,8 +21,6 @@ import {
   type Question,
   type QuestionType,
 } from '@ronduel/shared';
-import fs from 'node:fs';
-import path from 'node:path';
 
 export interface UserRecord {
   uid: string;
@@ -200,17 +198,10 @@ interface StoreState {
 
 const globalForStore = globalThis as unknown as { __ronduelStore?: StoreState };
 
+import seedQuestionsData from '../content/seed/questions.en.json';
+
 function loadSeedQuestions(): StoredQuestion[] {
-  const candidates = [
-    path.resolve(process.cwd(), 'content/seed/questions.en.json'),
-    path.resolve(process.cwd(), '../../content/seed/questions.en.json'),
-  ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, 'utf-8')) as StoredQuestion[];
-    }
-  }
-  return [];
+  return structuredClone(seedQuestionsData) as unknown as StoredQuestion[];
 }
 
 function getStore(): StoreState {
