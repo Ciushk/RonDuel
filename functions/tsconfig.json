@@ -2,9 +2,12 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./lib",
-    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@ronduel/shared": ["../packages/shared/src/index.ts"]
+    },
     "sourceMap": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts"]
+  "include": ["src/**/*.ts", "../packages/shared/src/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
 }

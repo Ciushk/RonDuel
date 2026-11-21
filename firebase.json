@@ -12,8 +12,20 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
-      "predeploy": ["pnpm --filter @ronduel/shared build", "pnpm --filter @ronduel/functions build"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local",
+        "src",
+        "tsconfig.json",
+        "scripts-build.mjs"
+      ],
+      "predeploy": [
+        "pnpm --filter @ronduel/shared build",
+        "pnpm --filter @ronduel/functions bundle"
+      ]
     }
   ],
   "emulators": {

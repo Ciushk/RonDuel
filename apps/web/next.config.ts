@@ -5,7 +5,6 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@ronduel/shared'],
 };
 
 export default withNextIntl(nextConfig);
