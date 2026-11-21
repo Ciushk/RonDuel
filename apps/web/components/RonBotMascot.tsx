@@ -13,8 +13,6 @@ interface ChatMessage {
   badge?: string;
 }
 
-export const GEMINI_KEY_STORAGE = 'ronduel_gemini_api_key_v1';
-
 export function RonBotMascot() {
   const pathname = usePathname();
   const isOnAdminPage = pathname?.startsWith('/admin') ?? false;
@@ -121,15 +119,10 @@ export function RonBotMascot() {
     setSending(true);
 
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const adminSavedKey = window.localStorage.getItem(GEMINI_KEY_STORAGE)?.trim();
-      if (adminSavedKey) {
-        headers['x-gemini-api-key'] = adminSavedKey;
-      }
       const localeSeg = window.location.pathname.split('/')[1] || 'ro';
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
           locale: localeSeg,

@@ -13,11 +13,7 @@ const ChatSchema = z.object({
 export async function POST(req: Request) {
   try {
     const body = ChatSchema.parse(await req.json());
-    const apiKeyOverride = req.headers.get('x-gemini-api-key') ?? undefined;
-    const result = await runRonBotChat({
-      ...body,
-      apiKeyOverride,
-    });
+    const result = await runRonBotChat(body);
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json(

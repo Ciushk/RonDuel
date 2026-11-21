@@ -65,10 +65,6 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     const body = (req.body ?? {}) as Record<string, unknown>;
 
     if (method === 'POST' && pathname === '/chat') {
-      const apiKeyOverride =
-        typeof req.headers['x-gemini-api-key'] === 'string'
-          ? req.headers['x-gemini-api-key']
-          : undefined;
       const chatRes = await runRonBotChat({
         message: String(body.message ?? ''),
         locale: body.locale ? String(body.locale) : 'ro',
@@ -76,7 +72,6 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
         previousInteractionId: body.previousInteractionId
           ? String(body.previousInteractionId)
           : undefined,
-        apiKeyOverride,
       });
       res.status(200).json(chatRes);
       return;
