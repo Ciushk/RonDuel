@@ -220,5 +220,17 @@
       "s1Title": "Informações legais e contato",
       "s1Body": "RonDuel — Aplicativo web progressivo (PWA) de trivia e lógica diária. Para suporte, solicitações de RGPD ou denúncias de conteúdo em ligas, entre em contato: contact@ronduel.eu."
     }
+  },
+  "rules": {
+    "metaTitle": "Regulamento do jogo | RonDuel",
+    "metaDescription": "Como funciona o RonDuel: a rodada diária, cálculo de pontos, empates, ligas, duelos, sequências, jogo limpo e o que o Pro inclui. Sem prêmios, sem jogos de azar.",
+    "draftBanner": "RASCUNHO – o texto jurídico não é final",
+    "tocLabel": "Sumário",
+    "heroLink": "Regulamento do jogo",
+    "footerLink": "Regulamento do jogo",
+    "resultLink": "Como os pontos são calculados?",
+    "leagueLink": "Regulamento",
+    "duelLink": "Regras do duelo",
+    "proLink": "O que o Pro inclui e o que não inclui"
   }
 }

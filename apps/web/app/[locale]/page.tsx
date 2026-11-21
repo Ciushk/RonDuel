@@ -111,6 +111,16 @@ export default function LocaleHomePage() {
               ? t('brand.continueRound')
               : t('brand.playToday')}
         </Button>
+
+        <div className="mt-2.5 flex justify-center">
+          <Link
+            href={`/${locale}/regulament`}
+            data-testid="hero-rules-link"
+            className="text-muted hover:text-duel-strong inline-flex min-h-11 items-center justify-center px-3 text-sm font-bold underline underline-offset-4"
+          >
+            {t('rules.heroLink')}
+          </Link>
+        </div>
       </Card>
 
       {status && status.leagues.length > 0 && (

@@ -220,5 +220,17 @@
       "s1Title": "Legal Information & Contact",
       "s1Body": "RonDuel — Daily trivia and logic Progressive Web App (PWA). For support, GDPR inquiries, or reporting league content, contact us at: contact@ronduel.eu."
     }
+  },
+  "rules": {
+    "metaTitle": "Game Rules | RonDuel",
+    "metaDescription": "How RonDuel works: the daily round, point scoring, tie-breakers, leagues, duels, streaks, fair play, and what Pro includes. No prizes, no gambling.",
+    "draftBanner": "DRAFT – legal text is not final",
+    "tocLabel": "Contents",
+    "heroLink": "Game rules",
+    "footerLink": "Game rules",
+    "resultLink": "How are points calculated?",
+    "leagueLink": "Rules",
+    "duelLink": "Duel rules",
+    "proLink": "What Pro includes and what it does not"
   }
 }

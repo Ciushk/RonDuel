@@ -220,5 +220,17 @@
       "s1Title": "Informații legale și contact",
       "s1Body": "RonDuel — Aplicație web progresivă (PWA) de trivia și logică. Pentru suport, solicitări GDPR sau raportarea conținutului din ligi, ne poți contacta la: contact@ronduel.eu."
     }
+  },
+  "rules": {
+    "metaTitle": "Regulamentul jocului | RonDuel",
+    "metaDescription": "Cum funcționează RonDuel: runda zilnică, calculul punctelor, egalități, ligi, dueluri, serii, trișat și ce include Pro. Fără premii, fără jocuri de noroc.",
+    "draftBanner": "DRAFT – textul juridic nu este final",
+    "tocLabel": "Cuprins",
+    "heroLink": "Regulamentul jocului",
+    "footerLink": "Regulamentul jocului",
+    "resultLink": "Cum se calculează punctele?",
+    "leagueLink": "Regulament",
+    "duelLink": "Regulile duelului",
+    "proLink": "Ce include Pro și ce nu"
   }
 }
