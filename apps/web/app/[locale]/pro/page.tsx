@@ -89,6 +89,16 @@ export default function ProPaywallPage() {
           </li>
         </ul>
 
+        <div>
+          <Link
+            href={`/${locale}/regulament#pro`}
+            data-testid="pro-rules-link"
+            className="text-duel-strong inline-flex min-h-11 items-center text-xs font-bold underline underline-offset-2"
+          >
+            {t('rules.proLink')}
+          </Link>
+        </div>
+
         <div className="grid grid-cols-2 gap-2 pt-2" role="group" aria-label="Billing interval">
           <Button
             size="sm"

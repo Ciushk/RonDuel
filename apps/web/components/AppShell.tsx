@@ -134,6 +134,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href={`/${locale}/legal/terms`} className="underline">
             {t('legal.footerTerms')}
           </Link>
+          <Link href={`/${locale}/regulament`} className="underline">
+            {t('rules.footerLink')}
+          </Link>
           <Link href={`/${locale}/legal/privacy`} className="underline">
             {t('legal.footerPrivacy')}
           </Link>

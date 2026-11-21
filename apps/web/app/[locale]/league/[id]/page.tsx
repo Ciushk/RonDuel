@@ -2,6 +2,7 @@
 
 import { Copy, Lock, Trophy } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -80,6 +81,15 @@ export default function LeaguePage() {
           <Copy size={16} weight="bold" aria-hidden="true" />
           {t('league.invite')} ({league.inviteCode})
         </Button>
+        <div className="flex justify-end">
+          <Link
+            href={`/${locale}/regulament#ligi`}
+            data-testid="league-rules-link"
+            className="text-muted hover:text-duel-strong inline-flex min-h-11 items-center px-2 text-xs font-bold underline underline-offset-2"
+          >
+            {t('rules.leagueLink')}
+          </Link>
+        </div>
       </Card>
 
       {toast && (

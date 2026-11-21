@@ -10,6 +10,7 @@ import {
   XCircle,
 } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -295,7 +296,19 @@ export default function DuelPage() {
           <Sword size={14} weight="fill" aria-hidden="true" />
           {t('duel.title')}
         </Chip>
-        <p className="text-muted text-xs">{t('duel.subtitle')}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+          <p className="text-muted">{t('duel.subtitle')}</p>
+          <span className="text-muted" aria-hidden="true">
+            ·
+          </span>
+          <Link
+            href={`/${locale}/regulament#dueluri`}
+            data-testid="duel-rules-link"
+            className="text-duel-strong inline-flex min-h-11 items-center font-bold underline underline-offset-2"
+          >
+            {t('rules.duelLink')}
+          </Link>
+        </div>
 
         {/* Split Court Versus Arena */}
         <div className="grid grid-cols-2 gap-3 pt-2">

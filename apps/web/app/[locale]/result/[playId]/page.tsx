@@ -198,9 +198,18 @@ export default function ResultPage() {
       )}
 
       <section className="space-y-3" aria-labelledby="review-heading">
-        <h2 id="review-heading" className="font-display text-xl font-extrabold">
-          {t('result.reviewTitle')}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="review-heading" className="font-display text-xl font-extrabold">
+            {t('result.reviewTitle')}
+          </h2>
+          <Link
+            href={`/${locale}/regulament#punctaj`}
+            data-testid="result-rules-link"
+            className="text-duel-strong inline-flex min-h-11 items-center text-xs font-bold underline underline-offset-2"
+          >
+            {t('rules.resultLink')}
+          </Link>
+        </div>
         {data.review.map((item) => (
           <Card key={item.index} variant="subtle" className="space-y-1.5">
             <div className="flex items-center justify-between gap-2">
