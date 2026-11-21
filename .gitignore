@@ -3,7 +3,7 @@ node_modules/
 .next/
 out/
 dist/
-lib/
+/functions/lib/
 build/
 coverage/
 playwright-report/
