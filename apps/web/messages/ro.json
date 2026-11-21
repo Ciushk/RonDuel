@@ -105,7 +105,7 @@
     "benefitShield": "1 scut automat pe săptămână pentru serie",
     "benefitThemes": "3 teme exclusive Split Court (Midnight, Clay, Neon)",
     "benefitStats": "Statistici avansate pe teme & arhiva rundelor trecute",
-    "euConsent": "[PLACEHOLDER RETRAGERE UE] Solicit acces imediat la conținutul digital RonDuel Pro și confirm că dreptul legal de retragere de 14 zile încetează la activare.",
+    "euConsent": "Solicit acces imediat la conținutul digital RonDuel Pro și confirm că dreptul legal de retragere de 14 zile în UE încetează la activare.",
     "upgradeFirst": "Conectează-ți întâi adresa de email în Profil pentru a atașa abonamentul Pro unui cont permanent.",
     "subscribeCta": "Activează RonDuel Pro",
     "activeBadge": "RonDuel Pro este activ ({plan})"
@@ -128,5 +128,97 @@
   "offline": {
     "title": "Ești offline",
     "body": "Runda de azi necesită conexiune pentru scoruri corecte."
+  },
+  "splash": {
+    "tagline": "Duelul zilnic pentru grupul tău",
+    "comeBackTomorrow": "Revino mâine pentru runda #{nextRound}",
+    "streakOne": "🔥 Serie de 1 zi",
+    "streakMany": "🔥 Serie de {days} zile",
+    "roundChip": "Runda #{number} · {emoji} {theme}",
+    "themes": {
+      "World & Science": "Lumea & Știința",
+      "History & Logic": "Istorie & Logică",
+      "Numbers & Nature": "Cifre & Natură",
+      "Culture & Mind": "Cultură & Minte",
+      "Speed & Space": "Viteză & Spațiu"
+    }
+  },
+  "seo": {
+    "title": "RonDuel — Trivia zilnic pentru grupul tău de prieteni",
+    "description": "6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare."
+  },
+  "explainer": {
+    "title": "Cum merge",
+    "step1Title": "6 întrebări, un minut",
+    "step1Body": "Grilă, ordonare, intrusul și logică. Răspunzi repede, iei bonus de viteză.",
+    "step2Title": "O singură încercare pe zi",
+    "step2Body": "Toată lumea primește aceeași rundă. Se resetează la miezul nopții.",
+    "step3Title": "Bate-ți prietenii",
+    "step3Body": "Trimite rezultatul pe grup și liga voastră se face singură. Scorurile lor apar abia după ce joci.",
+    "demoCard": "RonDuel #12 · 🟩🟩🟥🟩🟩🟩 · 987/1200 · 🔥 5",
+    "demoCaption": "Așa arată rezultatul tău pe WhatsApp.",
+    "featuresTitle": "Ligi și dueluri",
+    "featureLeagues": "Ligi private prin link, doar cu poreclă — fără cont",
+    "featureDuels": "Duel 1v1 când vrei, 24h să răspundă",
+    "faqTitle": "Întrebări frecvente",
+    "faq1Q": "E gratuit?",
+    "faq1A": "Da. Runda zilnică, ligile și duelurile sunt gratuite. Pro adaugă ligi mari, dueluri nelimitate și scut pentru serie.",
+    "faq2Q": "Trebuie cont?",
+    "faq2A": "Nu. Joci direct cu o poreclă. Îți poți salva progresul cu email oricând.",
+    "faq3Q": "Când apare runda nouă?",
+    "faq3A": "La miezul nopții, ora ta locală.",
+    "faq4Q": "Pot instala aplicația?",
+    "faq4A": "Da, din browser: Adaugă pe ecranul principal.",
+    "prevSlide": "Pasul anterior",
+    "nextSlide": "Pasul următor",
+    "goToSlide": "Mergi la pasul {step}",
+    "stepBadge": "Pasul {current}/{total}"
+  },
+  "legal": {
+    "footerTerms": "Termeni și condiții",
+    "footerPrivacy": "Confidențialitate",
+    "footerCookies": "Cookie-uri",
+    "footerImprint": "Contact & Imprint",
+    "lastUpdated": "Ultima actualizare: 21 noiembrie 2026",
+    "terms": {
+      "title": "Termeni și condiții de utilizare",
+      "s1Title": "1. Acceptarea termenilor și eligibilitate (16+)",
+      "s1Body": "Prin accesarea și utilizarea RonDuel (https://ronduel.web.app), accepți acești Termeni și condiții. RonDuel este un joc zilnic gratuit de cultură generală, trivia și logică, destinat exclusiv persoanelor cu vârsta de cel puțin 16 ani. Platforma nu oferă și nu implică jocuri de noroc, pariuri sau premii în bani ori bunuri.",
+      "s2Title": "2. Acces fără cont, porecle și salvarea progresului",
+      "s2Body": "Poți juca runda zilnică și participa în ligi private sau dueluri 1v1 folosind doar o poreclă (2–20 caractere), fără înregistrare obligatorie. Opțional, îți poți conecta oricând adresa de email sau contul Google din pagina Profil pentru a-ți păstra seria (streak-ul), istoricul și ligile pe mai multe dispozitive.",
+      "s3Title": "3. Regulile rundei zilnice, scorul și anti-cheat",
+      "s3Body": "În fiecare zi este disponibilă o singură rundă comună pentru toți jucătorii, formată din 6 întrebări (grilă, ordonare, intrusul și logică), cu o singură încercare pe zi care se resetează la miezul nopții (ora ta locală). Scorul maxim este de 1200 de puncte (până la 200 de puncte pe întrebare, în funcție de corectitudine și viteza de răspuns). Este strict interzisă folosirea boților, a scripturilor automate sau manipularea cronometrului.",
+      "s4Title": "4. Ligi private, dueluri 1v1 și reguli de conduită",
+      "s4Body": "Ligile se creează și se accesează prin link de invitație, iar scorurile colegilor din runda zilei devin vizibile abia după ce îți termini propria rundă. Duelurile 1v1 constau în 5 întrebări rapide, cu o fereastră de 24 de ore pentru răspunsul adversarului. Poreclele și numele ligilor nu trebuie să conțină limbaj vulgar, defăimător, discriminatoriu sau ilegal; administratorii pot modera sau redenumi conținutul raportat.",
+      "s5Title": "5. Abonamentul RonDuel Pro, plăți și dreptul de retragere în UE",
+      "s5Body": "Runda zilnică, ligile de până la 25 de membri și duelurile 1v1 sunt gratuite. RonDuel Pro este un abonament opțional ($4.99/lună sau $39.99/an, TVA inclus în UE, procesat securizat prin Stripe) care deblochează ligi de până la 200 de membri, dueluri 1v1 active nelimitate, 1 scut automat pe săptămână pentru serie, statistici avansate pe teme și teme vizuale Pro (Midnight, Clay, Neon). Poți anula abonamentul oricând din portalul Stripe. Conform Directivei UE 2011/83/UE privind conținutul digital furnizat imediat, prin bifarea acordului expres la activarea RonDuel Pro soliciți livrarea imediată și confirmi că dreptul legal de retragere de 14 zile încetează la activare.",
+      "s6Title": "6. Proprietate intelectuală și instalarea aplicației (PWA)",
+      "s6Body": "Toate întrebările, explicațiile, designul Split Court, sigla RonDuel, mascota RonBot și codul sursă sunt proprietatea exclusivă RonDuel și sunt protejate de legislația privind drepturile de autor. Aplicația poate fi instalată gratuit pe telefon sau desktop direct din browser („Adaugă pe ecranul principal”).",
+      "s7Title": "7. Limitarea răspunderii, modificări și legea aplicabilă",
+      "s7Body": "Serviciul RonDuel este furnizat „ca atare” (as-is), fără garanții privind funcționarea neîntreruptă. Ne rezervăm dreptul de a actualiza acești termeni sau funcționalitățile jocului, afișând data ultimei actualizări în partea de sus a paginii. Acești termeni sunt guvernați de legislația aplicabilă în Uniunea Europeană și România. Pentru orice întrebări, ne poți scrie la contact@ronduel.eu."
+    },
+    "privacy": {
+      "title": "Politică de confidențialitate (GDPR)",
+      "s1Title": "1. Operatorul de date și rezidența în UE",
+      "s1Body": "Datele tale sunt prelucrate în Uniunea Europeană (Google Cloud / Firebase în regiunile eur3 și europe-west1) în conformitate cu Regulamentul General privind Protecția Datelor (GDPR).",
+      "s2Title": "2. Ce date colectăm",
+      "s2Body": "Colectăm un identificator anonim de sesiune (UID), porecla aleasă, fusul orar, scorurile rundelor zilnice, participarea în ligi și dueluri, precum și adresa de email (doar dacă alegi să îți salvezi contul sau să primești mementouri pe email).",
+      "s3Title": "3. Sub-împuterniciți și analitice",
+      "s3Body": "Folosim Firebase (bază de date și autentificare în UE), Stripe (procesare securizată a plăților pentru RonDuel Pro) și PostHog Cloud EU (analitice anonime, activate exclusiv cu consimțământul tău explicit).",
+      "s4Title": "4. Drepturile tale (Export și Ștergere)",
+      "s4Body": "Conform GDPR, ai dreptul de acces, rectificare, portabilitate și ștergere („dreptul de a fi uitat”). Îți poți exporta toate datele în format JSON sau îți poți șterge complet și ireversibil contul direct din pagina Setări."
+    },
+    "cookies": {
+      "title": "Politică de cookie-uri și stocare locală",
+      "s1Title": "1. Stocare locală esențială",
+      "s1Body": "RonDuel folosește localStorage și sessionStorage strict necesare pentru a păstra sesiunea ta anonimă, tema vizuală (luminoasă/întunecată), opțiunea de cronometru relaxat și starea ecranului de pornire (splash).",
+      "s2Title": "2. Analitice opționale (Opt-in)",
+      "s2Body": "Nu folosim cookie-uri de publicitate sau urmărire între site-uri. Analiticele de produs (PostHog EU) sunt dezactivate implicit și pornesc doar dacă apeși „Acceptă” în bannerul de consimțământ sau le activezi din Setări."
+    },
+    "imprint": {
+      "title": "Imprint & Contact",
+      "s1Title": "Informații legale și contact",
+      "s1Body": "RonDuel — Aplicație web progresivă (PWA) de trivia și logică. Pentru suport, solicitări GDPR sau raportarea conținutului din ligi, ne poți contacta la: contact@ronduel.eu."
+    }
   }
 }

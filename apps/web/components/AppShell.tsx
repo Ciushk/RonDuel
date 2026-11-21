@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { SplashScreen } from '@/components/SplashScreen';
 import { Button, Wordmark } from '@/components/ui';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
@@ -54,6 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <SplashScreen />
       {!isPlayFocusMode && (
         <header className="border-border-subtle bg-surface/80 border-b backdrop-blur">
           <div className="mx-auto flex max-w-[480px] items-center justify-between px-4 py-3">
@@ -124,18 +126,22 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex-1">{children}</div>
 
       {!isPlayFocusMode && (
-        <footer className="text-muted mx-auto flex w-full max-w-[480px] flex-wrap items-center justify-center gap-4 px-4 py-6 text-xs">
+        <footer
+          className={`text-muted mx-auto flex w-full max-w-[480px] flex-wrap items-center justify-center gap-4 px-4 pt-6 text-xs ${
+            session?.analyticsConsent === 'unset' ? 'pb-32' : 'pb-6'
+          }`}
+        >
           <Link href={`/${locale}/legal/terms`} className="underline">
-            Terms
+            {t('legal.footerTerms')}
           </Link>
           <Link href={`/${locale}/legal/privacy`} className="underline">
-            Privacy
+            {t('legal.footerPrivacy')}
           </Link>
           <Link href={`/${locale}/legal/cookies`} className="underline">
-            Cookies
+            {t('legal.footerCookies')}
           </Link>
           <Link href={`/${locale}/legal/imprint`} className="underline">
-            Imprint
+            {t('legal.footerImprint')}
           </Link>
         </footer>
       )}

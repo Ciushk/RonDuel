@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { Button, Card, Chip, Sheet, Wordmark } from '@/components/ui';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
 
@@ -140,6 +141,8 @@ export default function LocaleHomePage() {
         </section>
       )}
 
+      <HowItWorksSection played={Boolean(status?.played)} onPrimaryCta={handlePrimaryCta} />
+
       <Sheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
@@ -172,7 +175,25 @@ export default function LocaleHomePage() {
             <span>{t('onboarding.ageConfirm')}</span>
           </label>
 
-          <p className="text-muted text-xs">{t('onboarding.termsNotice')}</p>
+          <div className="text-muted space-y-1 text-xs">
+            <p>{t('onboarding.termsNotice')}</p>
+            <p className="flex flex-wrap gap-3 font-bold">
+              <Link
+                href={`/${locale}/legal/terms`}
+                className="text-duel-strong underline"
+                onClick={() => setSheetOpen(false)}
+              >
+                {t('legal.footerTerms')}
+              </Link>
+              <Link
+                href={`/${locale}/legal/privacy`}
+                className="text-duel-strong underline"
+                onClick={() => setSheetOpen(false)}
+              >
+                {t('legal.footerPrivacy')}
+              </Link>
+            </p>
+          </div>
 
           <Button fullWidth size="lg" disabled={!ageOk} onClick={handleConfirmNickname}>
             {t('onboarding.startPlaying')}

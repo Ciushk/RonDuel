@@ -217,6 +217,33 @@
   font-variant-numeric: tabular-nums;
 }
 
+@keyframes rd-splash-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+.rd-splash-logo {
+  animation: rd-splash-pulse 1.4s ease-in-out infinite;
+}
+
+.rd-splash-overlay {
+  transition: opacity 220ms ease-out;
+}
+
+.rd-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.rd-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -225,5 +252,14 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .rd-splash-logo {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rd-splash-overlay {
+    transition: opacity 150ms linear !important;
   }
 }

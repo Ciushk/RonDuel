@@ -37,6 +37,7 @@ function copyPreRendered(srcDir, relDir = '') {
       fs.copyFileSync(srcPath, destPath);
     } else if (entry.name === 'manifest.webmanifest.body') {
       fs.copyFileSync(srcPath, path.join(outDir, 'manifest.webmanifest'));
+      fs.copyFileSync(srcPath, path.join(outDir, 'manifest.json'));
     }
   }
 }

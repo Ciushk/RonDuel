@@ -1,15 +1,160 @@
 import type { MetadataRoute } from 'next';
 
-export default function manifest(): MetadataRoute.Manifest {
+export interface ExtendedManifest extends MetadataRoute.Manifest {
+  apple_touch_startup_image?: Array<{
+    url: string;
+    media: string;
+  }>;
+}
+
+export const APPLE_STARTUP_IMAGES = [
+  {
+    url: '/brand/splash/iphone-se-light.png',
+    media:
+      '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-se-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-12-mini-light.png',
+    media:
+      '(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-12-mini-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-11-light.png',
+    media:
+      '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-11-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-x-light.png',
+    media:
+      '(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-x-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-14-light.png',
+    media:
+      '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-14-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-15-light.png',
+    media:
+      '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-15-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-16-pro-light.png',
+    media:
+      '(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-16-pro-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-11-pro-max-light.png',
+    media:
+      '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-11-pro-max-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-14-plus-light.png',
+    media:
+      '(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-14-plus-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-15-pro-max-light.png',
+    media:
+      '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-15-pro-max-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-16-pro-max-light.png',
+    media:
+      '(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+  {
+    url: '/brand/splash/iphone-16-pro-max-dark.png',
+    media:
+      '(prefers-color-scheme: dark) and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
+  },
+];
+
+export default function manifest(): ExtendedManifest {
   return {
     name: 'RonDuel',
     short_name: 'RonDuel',
-    description: 'The daily duel for your group chat.',
+    description:
+      '6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.',
     start_url: '/?source=pwa',
     display: 'standalone',
     background_color: '#FFF7EC',
     theme_color: '#FF5A4E',
     icons: [
+      {
+        src: '/brand/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/brand/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/brand/icon-maskable-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/brand/icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
       {
         src: '/brand/icon.svg',
         sizes: 'any',
@@ -23,16 +168,17 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
     ],
+    apple_touch_startup_image: APPLE_STARTUP_IMAGES,
     shortcuts: [
       {
-        name: 'Play today',
-        short_name: 'Play',
-        url: '/en/play',
+        name: 'Joacă runda de azi',
+        short_name: 'Joacă',
+        url: '/ro/play',
       },
       {
-        name: 'My leagues',
-        short_name: 'Leagues',
-        url: '/en',
+        name: 'Ligile mele',
+        short_name: 'Ligi',
+        url: '/ro',
       },
     ],
   };

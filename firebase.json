@@ -14,6 +14,11 @@
         "source": "/",
         "destination": "/ro",
         "type": 302
+      },
+      {
+        "source": "/legal/:doc",
+        "destination": "/ro/legal/:doc",
+        "type": 302
       }
     ],
     "rewrites": [

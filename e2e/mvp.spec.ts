@@ -17,7 +17,7 @@ test.describe('Phase 1 MVP core loop', () => {
     await expect(page.getByText('The daily duel for your group chat.')).toBeVisible();
 
     // Tap 1: Play today's round -> opens nickname sheet
-    await page.getByRole('button', { name: "Play today's round" }).click();
+    await page.getByRole('button', { name: "Play today's round" }).first().click();
     await expect(page.getByRole('dialog', { name: 'Pick your nickname' })).toBeVisible();
 
     // Tap 2: Confirm nickname & 16+ -> goes to /en/play
@@ -73,6 +73,6 @@ test.describe('Phase 1 MVP core loop', () => {
   test('Romanian locale renders with diacritics', async ({ page }) => {
     await page.goto('/ro');
     await expect(page.getByText('Duelul zilnic pentru grupul tău de prieteni.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Joacă runda de azi' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Joacă runda de azi' }).first()).toBeVisible();
   });
 });

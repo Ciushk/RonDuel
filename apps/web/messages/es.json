@@ -105,7 +105,7 @@
     "benefitShield": "1 escudo automático de racha por semana",
     "benefitThemes": "3 temas exclusivos Split Court (Midnight, Clay, Neon)",
     "benefitStats": "Estadísticas avanzadas por tema y archivo de rondas",
-    "euConsent": "[PLACEHOLDER DESISTIMIENTO UE] Solicito acceso inmediato al contenido digital de RonDuel Pro y acepto que mi derecho de desistimiento de 14 días expira al activarse.",
+    "euConsent": "Solicito acceso inmediato al contenido digital de RonDuel Pro y acepto que mi derecho de desistimiento de 14 días en la UE expira al activarse.",
     "upgradeFirst": "Vincula primero tu email en tu Perfil para asociar RonDuel Pro a una cuenta permanente.",
     "subscribeCta": "Activar RonDuel Pro",
     "activeBadge": "RonDuel Pro está activo ({plan})"
@@ -128,5 +128,97 @@
   "offline": {
     "title": "Sin conexión",
     "body": "La ronda de hoy necesita conexión para validar tu puntuación."
+  },
+  "splash": {
+    "tagline": "El duelo diario para tu grupo",
+    "comeBackTomorrow": "Vuelve mañana para la ronda #{nextRound}",
+    "streakOne": "🔥 Racha de 1 día",
+    "streakMany": "🔥 Racha de {days} días",
+    "roundChip": "Ronda #{number} · {emoji} {theme}",
+    "themes": {
+      "World & Science": "Mundo y Ciencia",
+      "History & Logic": "Historia y Lógica",
+      "Numbers & Nature": "Números y Naturaleza",
+      "Culture & Mind": "Cultura y Mente",
+      "Speed & Space": "Velocidad y Espacio"
+    }
+  },
+  "seo": {
+    "title": "RonDuel — Trivia diario para tu grupo de amigos",
+    "description": "6 preguntas al día, un minuto, un solo intento. Crea una liga con tus amigos y mira quién es el mejor."
+  },
+  "explainer": {
+    "title": "Cómo funciona",
+    "step1Title": "6 preguntas, un minuto",
+    "step1Body": "Opción múltiple, ordenar, el intruso y lógica. Responde rápido para ganar bono de velocidad.",
+    "step2Title": "Un solo intento al día",
+    "step2Body": "Todos reciben la misma ronda. Se reinicia a medianoche.",
+    "step3Title": "Supera a tus amigos",
+    "step3Body": "Envía tu resultado al grupo y vuestra liga se crea sola. Sus puntuaciones aparecen solo después de que juegues.",
+    "demoCard": "RonDuel #12 · 🟩🟩🟥🟩🟩🟩 · 987/1200 · 🔥 5",
+    "demoCaption": "Así se ve tu resultado en WhatsApp.",
+    "featuresTitle": "Ligas y duelos",
+    "featureLeagues": "Ligas privadas por enlace, solo con apodo — sin cuenta",
+    "featureDuels": "Duelo 1v1 cuando quieras, 24h para responder",
+    "faqTitle": "Preguntas frecuentes",
+    "faq1Q": "¿Es gratis?",
+    "faq1A": "Sí. La ronda diaria, las ligas y los duelos son gratis. Pro añade ligas grandes, duelos ilimitados y escudo de racha.",
+    "faq2Q": "¿Necesito una cuenta?",
+    "faq2A": "No. Juegas directamente con un apodo. Puedes guardar tu progreso con tu email cuando quieras.",
+    "faq3Q": "¿Cuándo sale la nueva ronda?",
+    "faq3A": "A medianoche, en tu hora local.",
+    "faq4Q": "¿Puedo instalar la aplicación?",
+    "faq4A": "Sí, desde el navegador: Añadir a la pantalla de inicio.",
+    "prevSlide": "Paso anterior",
+    "nextSlide": "Siguiente paso",
+    "goToSlide": "Ir al paso {step}",
+    "stepBadge": "Paso {current}/{total}"
+  },
+  "legal": {
+    "footerTerms": "Términos y condiciones",
+    "footerPrivacy": "Privacidad",
+    "footerCookies": "Cookies",
+    "footerImprint": "Aviso legal y Contacto",
+    "lastUpdated": "Última actualización: 21 de noviembre de 2026",
+    "terms": {
+      "title": "Términos y Condiciones de Uso",
+      "s1Title": "1. Aceptación de los términos y elegibilidad (16+)",
+      "s1Body": "Al acceder y utilizar RonDuel (https://ronduel.web.app), aceptas estos Términos y Condiciones. RonDuel es un juego diario gratuito de trivia y lógica destinado exclusivamente a personas mayores de 16 años. La plataforma no ofrece ni implica juegos de azar, apuestas ni premios en dinero.",
+      "s2Title": "2. Juego sin cuenta, apodos y guardado de progreso",
+      "s2Body": "Puedes jugar la ronda diaria y participar en ligas privadas o duelos 1v1 usando solo un apodo (2–20 caracteres), sin registro obligatorio. Opcionalmente, puedes vincular tu email o cuenta de Google en cualquier momento desde tu Perfil para conservar tu racha, historial y ligas en todos tus dispositivos.",
+      "s3Title": "3. Reglas de la ronda diaria, puntuación y anti-trampas",
+      "s3Body": "Cada día hay una única ronda compartida para todos los jugadores compuesta por 6 preguntas (opción múltiple, ordenar, el intruso y lógica), con un solo intento diario que se reinicia a medianoche (tu hora local). La puntuación máxima es de 1200 puntos (hasta 200 puntos por pregunta según acierto y bono de velocidad). Está estrictamente prohibido usar bots, scripts automatizados o manipular el temporizador.",
+      "s4Title": "4. Ligas privadas, duelos 1v1 y normas de conducta",
+      "s4Body": "Las ligas se crean y se unen mediante enlace de invitación, y las puntuaciones de tus amigos en la ronda de hoy solo se muestran después de que completes tu propio intento. Los duelos 1v1 constan de 5 preguntas rápidas con un plazo de 24 horas para que el rival responda. Los apodos y nombres de ligas no deben contener lenguaje ofensivo, difamatorio, discriminatorio o ilegal; los administradores pueden moderar o renombrar el contenido reportado.",
+      "s5Title": "5. Suscripción RonDuel Pro, pagos y derecho de desistimiento en la UE",
+      "s5Body": "La ronda diaria, las ligas de hasta 25 miembros y los duelos 1v1 son gratuitos. RonDuel Pro es una suscripción opcional ($4.99/mes o $39.99/año, IVA de la UE incluido, procesada de forma segura por Stripe) que desbloquea ligas de hasta 200 miembros, duelos 1v1 activos ilimitados, 1 escudo automático de racha por semana, estadísticas por tema y temas visuales Pro (Midnight, Clay, Neon). Puedes cancelar en cualquier momento desde el portal de Stripe. Según la Directiva UE 2011/83/UE sobre contenido digital suministrado de inmediato, al marcar el consentimiento expreso al activar RonDuel Pro solicitas el suministro inmediato y reconoces que el derecho legal de desistimiento de 14 días expira con la activación.",
+      "s6Title": "6. Propiedad intelectual e instalación de la aplicación (PWA)",
+      "s6Body": "Todas las preguntas, explicaciones, el diseño Split Court, la marca RonDuel, la mascota RonBot y el código fuente son propiedad exclusiva de RonDuel y están protegidos por las leyes de propiedad intelectual. La aplicación web progresiva puede instalarse gratis en móvil o escritorio desde el navegador («Añadir a la pantalla de inicio»).",
+      "s7Title": "7. Limitación de responsabilidad, cambios y ley aplicable",
+      "s7Body": "El servicio RonDuel se ofrece «tal cual», sin garantías de disponibilidad ininterrumpida. Nos reservamos el derecho de actualizar estos términos o las funciones del juego, indicando la fecha de última actualización en la parte superior. Estos términos se rigen por la legislación aplicable en la Unión Europea. Para cualquier consulta, escríbenos a contact@ronduel.eu."
+    },
+    "privacy": {
+      "title": "Política de Privacidad (RGPD)",
+      "s1Title": "1. Responsable del tratamiento y residencia en la UE",
+      "s1Body": "Tus datos se procesan y almacenan en la Unión Europea (Google Cloud / Firebase en las regiones eur3 y europe-west1) cumpliendo con el Reglamento General de Protección de Datos (RGPD).",
+      "s2Title": "2. Qué datos recopilamos",
+      "s2Body": "Recopilamos un identificador anónimo de sesión (UID), tu apodo, zona horaria, puntuaciones de las rondas diarias, participación en ligas y duelos, y tu dirección de email (solo si decides vincular tu cuenta o activar recordatorios por correo).",
+      "s3Title": "3. Encargados del tratamiento y analítica",
+      "s3Body": "Utilizamos Firebase (base de datos y autenticación en la UE), Stripe (pagos seguros para RonDuel Pro) y PostHog Cloud EU (analítica anónima activada únicamente tras tu consentimiento explícito).",
+      "s4Title": "4. Tus derechos (Exportación y Eliminación)",
+      "s4Body": "Bajo el RGPD, tienes derecho de acceso, rectificación, portabilidad y supresión («derecho al olvido»). Puedes exportar todos tus datos en formato JSON o eliminar tu cuenta de forma permanente desde Ajustes."
+    },
+    "cookies": {
+      "title": "Política de Cookies y Almacenamiento Local",
+      "s1Title": "1. Almacenamiento local esencial",
+      "s1Body": "RonDuel utiliza localStorage y sessionStorage estrictamente necesarios para conservar tu sesión anónima, el tema visual (claro/oscuro), la opción de temporizador relajado y el estado de la pantalla de inicio (splash).",
+      "s2Title": "2. Analítica opcional (Opt-in)",
+      "s2Body": "No utilizamos cookies publicitarias ni de rastreo entre sitios. La analítica de producto (PostHog EU) está desactivada por defecto y solo se activa si pulsas «Aceptar» en el aviso de consentimiento o la habilitas en Ajustes."
+    },
+    "imprint": {
+      "title": "Aviso Legal y Contacto",
+      "s1Title": "Información legal y contacto",
+      "s1Body": "RonDuel — Aplicación web progresiva (PWA) de trivia y lógica diaria. Para soporte, consultas de RGPD o reportar contenido en ligas, escríbenos a: contact@ronduel.eu."
+    }
   }
 }
