@@ -176,11 +176,27 @@ export default function AdminPage() {
 
       <section className="grid gap-6 md:grid-cols-2">
         <Card className="space-y-3">
-          <h2 className="font-display text-xl font-extrabold">AI-Assisted Drafting (Gemini)</h2>
+          <h2 className="font-display text-xl font-extrabold">AI-Assisted Drafting (Gemini 3.8)</h2>
           <p className="text-muted text-xs">
             Drafts are saved with <code>source: &apos;ai_draft&apos;</code> and{' '}
             <code>reviewStatus: &apos;draft&apos;</code>. Server blocks scheduling until approved.
           </p>
+          <input
+            type="password"
+            aria-label="Admin Gemini API Key"
+            placeholder="GEMINI_API_KEY (doar pt. Admin)"
+            defaultValue={
+              typeof window !== 'undefined'
+                ? (window.localStorage.getItem('ronduel_gemini_api_key_v1') ?? '')
+                : ''
+            }
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              if (v) window.localStorage.setItem('ronduel_gemini_api_key_v1', v);
+              else window.localStorage.removeItem('ronduel_gemini_api_key_v1');
+            }}
+            className="border-border-subtle bg-surface-2 min-h-10 w-full rounded-[12px] border px-3 text-xs font-medium"
+          />
           <input
             type="text"
             aria-label="Draft topic"
