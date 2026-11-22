@@ -68,13 +68,35 @@ import {
   deleteUserFromFirestore,
   findUserByEmail,
   flushDirtyUsersToFirestore,
+  getDb,
   getUserFromFirestore,
   purgeExpiredAnonymousUsers,
   syncUserToFirestore,
 } from './firestore-users.js';
+import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
 setGlobalOptions({ region: 'europe-west1' });
+
+/**
+ * The game store lives in memory and is mirrored to Firestore (see store-persistence.ts):
+ * saved data is loaded before the first request and changes are saved before each response.
+ */
+const storePersistence = createStorePersistence({
+  getDb: () => getDb() as unknown as FirestoreLike,
+  getStore: () => getStore() as unknown as Record<string, unknown>,
+});
+
+// One instance on purpose: each instance trusts its own memory for reads, so two instances would
+// show different leaderboards. cpu 1 and concurrency 40 let that single instance serve many players.
+const apiOptions = {
+  cors: true,
+  memory: '512MiB',
+  cpu: 1,
+  concurrency: 40,
+  minInstances: 1,
+  maxInstances: 1,
+} as const;
 
 export const health = onRequest((_req, res) => {
   res.status(200).json({ ok: true, service: 'ronduel-functions', region: 'europe-west1' });
@@ -99,7 +121,7 @@ function collectRequestUids(body: Record<string, unknown>, url: URL): string[] {
   return [...ids];
 }
 
-export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) => {
+export const api = onRequest(apiOptions, async (req, res) => {
   res.setHeader(
     'Cache-Control',
     'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
@@ -111,6 +133,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     const pathname = url.pathname.replace(/^\/api/, '') || '/';
     const method = req.method.toUpperCase();
     const body = (req.body ?? {}) as Record<string, unknown>;
+    await storePersistence.ensureHydrated();
     for (const uid of collectRequestUids(body, url)) {
       if (!getStore().users[uid]) {
         await getUserFromFirestore(uid);
@@ -121,7 +144,9 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     res.json = ((payload?: unknown) => {
       if (flushed) return originalJson(payload);
       flushed = true;
-      return flushDirtyUsersToFirestore().then(() => originalJson(payload));
+      return flushDirtyUsersToFirestore()
+        .then(() => storePersistence.flushNow())
+        .then(() => originalJson(payload));
     }) as typeof res.json;
 
     if (method === 'POST' && pathname === '/chat') {
@@ -717,7 +742,9 @@ export const dailyContentGuard = onSchedule('0 12 * * *', async () => {
 export const dailyRoundGenerator = onSchedule(
   { schedule: '0 3 * * *', timeZone: 'Europe/Bucharest' },
   async () => {
+    await storePersistence.ensureHydrated();
     await ensureUpcomingDailyRounds(7);
+    await storePersistence.flushNow();
   },
 );
 
@@ -729,7 +756,9 @@ export const dailyFallbackPromoter = onSchedule(
   async () => {
     const tomorrow = new Date(Date.now() + 86_400_000);
     const dateStr = getLocalDateString(tomorrow, 'Europe/Bucharest');
+    await storePersistence.ensureHydrated();
     promoteReserveRoundIfNeeded(dateStr);
+    await storePersistence.flushNow();
   },
 );
 
@@ -738,6 +767,8 @@ export const dailyFallbackPromoter = onSchedule(
  * Automatically purges anonymous users whose 7-day retention period has passed.
  */
 export const cleanupExpiredAnonymousUsers = onSchedule('every 24 hours', async () => {
+  await storePersistence.ensureHydrated();
   const result = await purgeExpiredAnonymousUsers();
+  await storePersistence.flushNow();
   console.log('[Firestore] Scheduled anonymous purge', result);
 });
