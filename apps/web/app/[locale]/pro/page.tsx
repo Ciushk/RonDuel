@@ -12,7 +12,9 @@ import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { Button, Card, Chip, Toast } from '@/components/ui';
+import { trackEvent } from '@/lib/analytics';
 import { getLocalSession } from '@/lib/session';
 
 export default function ProPaywallPage() {
@@ -23,6 +25,7 @@ export default function ProPaywallPage() {
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [euConsent, setEuConsent] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [linkOpen, setLinkOpen] = useState(false);
   const [proActive, setProActive] = useState<{ active: boolean; plan?: string }>({ active: false });
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -38,8 +41,19 @@ export default function ProPaywallPage() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    trackEvent('paywall_viewed');
+  }, []);
+
+  const handleLinked = () => {
+    // The guest profile is now a permanent account, so Pro can be tied to it.
+    setIsAnonymous(false);
+    setLinkOpen(false);
+  };
+
   const handleCheckout = async () => {
     setError('');
+    trackEvent('checkout_started', { plan });
     const s = getLocalSession();
     const res = await fetch('/api/billing/checkout', {
       method: 'POST',
@@ -56,6 +70,7 @@ export default function ProPaywallPage() {
       return;
     }
     if (data.pro?.active) {
+      trackEvent('subscription_started', { plan: data.pro.plan ?? plan });
       setProActive(data.pro);
       setToast(t('pro.activeBadge', { plan: data.pro.plan ?? plan }));
     }
@@ -132,9 +147,13 @@ export default function ProPaywallPage() {
             {isAnonymous && (
               <div className="bg-surface-2 text-ink rounded-[12px] p-3 text-xs font-bold">
                 <p className="mb-2">{t('pro.upgradeFirst')}</p>
-                <Link href={`/${locale}/me`} className="text-duel-strong underline">
-                  {t('nav.profile')} →
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => setLinkOpen(true)}
+                  className="text-duel-strong cursor-pointer underline"
+                >
+                  {t('account.createAccountBtn')} {'\u2192'}
+                </button>
               </div>
             )}
 
@@ -153,14 +172,28 @@ export default function ProPaywallPage() {
             <Button
               fullWidth
               size="lg"
-              disabled={!euConsent || isAnonymous}
-              onClick={() => void handleCheckout()}
+              disabled={!euConsent}
+              onClick={() => {
+                if (isAnonymous) {
+                  setLinkOpen(true);
+                  return;
+                }
+                void handleCheckout();
+              }}
             >
               {t('pro.subscribeCta')}
             </Button>
           </>
         )}
       </Card>
+
+      <AccountLinkingSheet
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        score={0}
+        streak={0}
+        onLinked={handleLinked}
+      />
 
       {toast && (
         <div className="flex justify-center">
