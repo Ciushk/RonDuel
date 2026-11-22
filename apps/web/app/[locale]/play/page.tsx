@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Card, Chip, TimerBar, Wordmark } from '@/components/ui';
+import { trackEvent } from '@/lib/analytics';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface ClientItem {
@@ -83,6 +84,7 @@ export default function PlayPage() {
     setRemainingMs(data.remainingMs);
     deadlineRef.current = Date.now() + data.remainingMs;
     setPhase('playing');
+    trackEvent('round_started', { play_id: data.playId });
   }, [locale, router]);
 
   useEffect(() => {
@@ -204,6 +206,12 @@ export default function PlayPage() {
               );
             } catch {}
           }
+
+          trackEvent('round_finished', {
+            play_id: playId,
+            score: totalScore,
+            round_number: todayInfo?.roundNumber,
+          });
 
           await fetch('/api/game/finish', {
             method: 'POST',
@@ -339,7 +347,20 @@ export default function PlayPage() {
         {liveAnnouncement}
       </div>
 
-      <div className="rd-seam h-1.5 w-full rounded-full" aria-hidden="true" />
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={totalItems}
+        aria-valuenow={Math.min(totalItems, item.index + (feedback ? 1 : 0))}
+        className="bg-surface-2 border-border-subtle h-2 w-full overflow-hidden rounded-full border"
+      >
+        <div
+          className="rd-seam h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${Math.min(100, ((item.index + (feedback ? 1 : 0)) / Math.max(1, totalItems)) * 100)}%`,
+          }}
+        />
+      </div>
 
       <div className="flex items-center justify-between gap-2">
         <Chip tone="neutral" className="rd-tabular">
