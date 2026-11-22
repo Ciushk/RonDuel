@@ -103,7 +103,9 @@ export default function ResultPage() {
     // Check personal best
     const bestKey = 'rd_best_score_record';
     const recordedBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
-    const personalBest = data.totalScore > 0 && data.totalScore >= recordedBest;
+    // A first-ever round has nothing to beat, so it is never a personal best.
+    const personalBest =
+      (data.finishedPlaysCount ?? 1) > 1 && data.totalScore > 0 && data.totalScore >= recordedBest;
     if (data.totalScore > recordedBest) {
       localStorage.setItem(bestKey, String(data.totalScore));
     }
@@ -476,7 +478,7 @@ export default function ResultPage() {
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
       {/* Warning banner for unlinked anonymous users */}
-      {!isAccountLinked && (
+      {!isAccountLinked && !showSlimBanner && (
         <Card variant="sticker" className="border-2 border-ron-strong bg-ron/10 p-3.5 shadow-sm text-left space-y-1">
           <div className="flex items-start gap-2.5">
             <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
