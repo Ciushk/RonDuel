@@ -6,13 +6,8 @@ import { useState } from 'react';
 
 import { Button, Sheet } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
-import {
-  loginWithEmail,
-  loginWithGoogle,
-  registerWithEmail,
-  requestPasswordReset,
-} from '@/lib/firebase';
-import { getLocalSession, saveLocalSession } from '@/lib/session';
+import { requestPasswordReset } from '@/lib/firebase';
+import { linkSessionWithGoogle, linkSessionWithPassword } from '@/lib/link-account';
 
 export type AuthMode = 'login' | 'signup' | 'forgot';
 
@@ -64,25 +59,6 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
     setResetSent(false);
   };
 
-  const syncBackend = async (uid: string, userEmail: string, userNickname?: string, provider: 'google' | 'password' = 'password') => {
-    try {
-      const res = await fetch('/api/me/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid,
-          email: userEmail,
-          nickname: userNickname || undefined,
-          provider,
-          confirmMerge: true,
-        }),
-      });
-      return await res.json().catch(() => null);
-    } catch {
-      return null;
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -93,27 +69,13 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
 
     setLoading(true);
     try {
-      const user = await loginWithEmail(email, password);
-      const session = getLocalSession();
-      const updatedNick = user.displayName || session.nickname;
-
-      const upgraded = await syncBackend(session.uid, user.email || email.trim(), updatedNick, 'password');
-      const finalUid = upgraded?.uid || user.uid;
-      const finalEmail = upgraded?.email || user.email || email.trim();
-      const finalNick = upgraded?.nickname || updatedNick;
-
-      saveLocalSession({
-        ...session,
-        uid: finalUid,
-        email: finalEmail,
-        nickname: finalNick,
-        isAnonymous: false,
-        authProvider: 'password',
+      const saved = await linkSessionWithPassword({
+        email,
+        password,
+        mode: 'login',
       });
-
       trackEvent('login_completed', { method: 'email_password' });
-
-      onSuccess?.({ uid: finalUid, email: finalEmail, nickname: finalNick });
+      onSuccess?.({ uid: saved.uid, email: saved.email, nickname: saved.nickname });
       onClose();
     } catch (err) {
       setError(getFriendlyErrorMessage(err));
@@ -150,26 +112,14 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
 
     setLoading(true);
     try {
-      const user = await registerWithEmail(email, password, cleanUsername);
-      const session = getLocalSession();
-
-      const upgraded = await syncBackend(session.uid, user.email || email.trim(), cleanUsername, 'password');
-      const finalUid = upgraded?.uid || user.uid;
-      const finalEmail = upgraded?.email || user.email || email.trim();
-      const finalNick = upgraded?.nickname || cleanUsername;
-
-      saveLocalSession({
-        ...session,
-        uid: finalUid,
-        email: finalEmail,
-        nickname: finalNick,
-        isAnonymous: false,
-        authProvider: 'password',
+      const saved = await linkSessionWithPassword({
+        email,
+        password,
+        nickname: cleanUsername,
+        mode: 'signup',
       });
-
       trackEvent('signup_completed', { method: 'email_password' });
-
-      onSuccess?.({ uid: finalUid, email: finalEmail, nickname: finalNick });
+      onSuccess?.({ uid: saved.uid, email: saved.email, nickname: saved.nickname });
       onClose();
     } catch (err) {
       setError(getFriendlyErrorMessage(err));
@@ -182,34 +132,19 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
     setError('');
     setLoading(true);
     try {
-      const user = await loginWithGoogle();
-      if (!user.email) {
+      const saved = await linkSessionWithGoogle();
+      trackEvent('login_completed', { method: 'google' });
+      onSuccess?.({ uid: saved.uid, email: saved.email, nickname: saved.nickname });
+      onClose();
+    } catch (err) {
+      if (
+        (err as { code?: string }).code === 'auth/no-email' ||
+        (err as Error).message === 'google-no-email'
+      ) {
         setError(t('errors.googleNoEmail'));
         setLoading(false);
         return;
       }
-      const session = getLocalSession();
-      const userNick = user.displayName || session.nickname;
-
-      const upgraded = await syncBackend(session.uid, user.email, userNick, 'google');
-      const finalUid = upgraded?.uid || upgraded?.existingUid || user.uid;
-      const finalEmail = upgraded?.email || user.email;
-      const finalNick = upgraded?.nickname || userNick;
-
-      saveLocalSession({
-        ...session,
-        uid: finalUid,
-        email: finalEmail,
-        nickname: finalNick,
-        isAnonymous: false,
-        authProvider: 'google',
-      });
-
-      trackEvent('login_completed', { method: 'google' });
-
-      onSuccess?.({ uid: finalUid, email: finalEmail, nickname: finalNick });
-      onClose();
-    } catch (err) {
       setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
@@ -247,7 +182,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
       <div className="space-y-4">
         {/* Error message */}
         {error && (
-          <div className="rounded-xl border-2 border-wrong bg-wrong/10 p-3 text-xs font-bold text-wrong leading-snug">
+          <div className="border-wrong bg-wrong/10 text-wrong rounded-xl border-2 p-3 text-xs font-bold leading-snug">
             {error}
           </div>
         )}
@@ -256,14 +191,14 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
         {mode === 'login' && (
           <form onSubmit={handleLogin} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-black uppercase text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-black uppercase">
                 {t('emailLabel')}
               </label>
               <div className="relative">
                 <EnvelopeSimple
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="email"
@@ -272,20 +207,20 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-12 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-black uppercase text-muted">
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-muted text-xs font-black uppercase">
                   {t('passwordLabel')}
                 </label>
                 <button
                   type="button"
                   onClick={() => handleOpenChange('forgot')}
-                  className="text-xs font-bold text-blue hover:underline cursor-pointer"
+                  className="text-blue cursor-pointer text-xs font-bold hover:underline"
                 >
                   {t('forgotPasswordLink')}
                 </button>
@@ -294,7 +229,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                 <Lock
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="password"
@@ -303,7 +238,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-12 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
@@ -322,9 +257,9 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
             {/* OR separator */}
             <div className="relative my-3 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t-2 border-border/40" />
+                <div className="border-border/40 w-full border-t-2" />
               </div>
-              <span className="relative bg-surface px-3 text-xs font-bold uppercase tracking-wider text-muted">
+              <span className="bg-surface text-muted relative px-3 text-xs font-bold uppercase tracking-wider">
                 {t('orDivider')}
               </span>
             </div>
@@ -337,19 +272,19 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
               size="lg"
               disabled={loading}
               onClick={() => void handleGoogleAuth()}
-              className="font-bold flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 font-bold"
             >
               <GoogleLogo size={20} weight="bold" />
               <span>{t('continueWithGoogle')}</span>
             </Button>
 
             {/* Footer link to Sign Up */}
-            <div className="pt-2 text-center text-xs font-medium text-muted">
+            <div className="text-muted pt-2 text-center text-xs font-medium">
               {t('noAccountYet')}{' '}
               <button
                 type="button"
                 onClick={() => handleOpenChange('signup')}
-                className="font-black text-ink underline hover:text-ron-strong cursor-pointer"
+                className="text-ink hover:text-ron-strong cursor-pointer font-black underline"
               >
                 {t('createOne')}
               </button>
@@ -361,14 +296,14 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
         {mode === 'signup' && (
           <form onSubmit={handleSignUp} className="space-y-3">
             <div>
-              <label className="block text-xs font-black uppercase text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-black uppercase">
                 {t('usernameLabel')}
               </label>
               <div className="relative">
                 <User
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="text"
@@ -377,20 +312,20 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('usernamePlaceholder')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full h-11 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-11 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-black uppercase">
                 {t('emailLabel')}
               </label>
               <div className="relative">
                 <EnvelopeSimple
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="email"
@@ -399,20 +334,20 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-11 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-11 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-black uppercase">
                 {t('passwordLabel')}
               </label>
               <div className="relative">
                 <Lock
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="password"
@@ -421,20 +356,20 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-11 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-black uppercase">
                 {t('confirmPasswordLabel')}
               </label>
               <div className="relative">
                 <Key
                   size={18}
                   weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                  className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="password"
@@ -443,7 +378,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   placeholder={t('confirmPasswordPlaceholder')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full h-11 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                  className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-11 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                 />
               </div>
             </div>
@@ -462,9 +397,9 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
             {/* OR separator */}
             <div className="relative my-2 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t-2 border-border/40" />
+                <div className="border-border/40 w-full border-t-2" />
               </div>
-              <span className="relative bg-surface px-3 text-xs font-bold uppercase tracking-wider text-muted">
+              <span className="bg-surface text-muted relative px-3 text-xs font-bold uppercase tracking-wider">
                 {t('orDivider')}
               </span>
             </div>
@@ -477,19 +412,19 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
               size="lg"
               disabled={loading}
               onClick={() => void handleGoogleAuth()}
-              className="font-bold flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 font-bold"
             >
               <GoogleLogo size={20} weight="bold" />
               <span>{t('continueWithGoogle')}</span>
             </Button>
 
             {/* Footer link to Login */}
-            <div className="pt-1 text-center text-xs font-medium text-muted">
+            <div className="text-muted pt-1 text-center text-xs font-medium">
               {t('haveAccount')}{' '}
               <button
                 type="button"
                 onClick={() => handleOpenChange('login')}
-                className="font-black text-ink underline hover:text-ron-strong cursor-pointer"
+                className="text-ink hover:text-ron-strong cursor-pointer font-black underline"
               >
                 {t('loginButton')}
               </button>
@@ -501,12 +436,12 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
         {mode === 'forgot' && (
           <div className="space-y-4">
             {resetSent ? (
-              <div className="space-y-3 text-center py-2">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-volt border-2 border-border text-2xl shadow-sm">
+              <div className="space-y-3 py-2 text-center">
+                <div className="bg-volt border-border mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm">
                   ✉️
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-display font-extrabold text-base text-ink">
+                  <h3 className="font-display text-ink text-base font-extrabold">
                     {t('resetSentMessage')}
                   </h3>
                 </div>
@@ -515,26 +450,24 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   fullWidth
                   size="md"
                   onClick={() => handleOpenChange('login')}
-                  className="font-bold mt-2"
+                  className="mt-2 font-bold"
                 >
                   {t('backToLogin')}
                 </Button>
               </div>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-3.5">
-                <p className="text-muted text-xs leading-relaxed">
-                  {t('resetIntro')}
-                </p>
+                <p className="text-muted text-xs leading-relaxed">{t('resetIntro')}</p>
 
                 <div>
-                  <label className="block text-xs font-black uppercase text-muted mb-1">
+                  <label className="text-muted mb-1 block text-xs font-black uppercase">
                     {t('emailLabel')}
                   </label>
                   <div className="relative">
                     <EnvelopeSimple
                       size={18}
                       weight="bold"
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+                      className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
                     />
                     <input
                       type="email"
@@ -543,7 +476,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                       placeholder={t('emailPlaceholder')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-12 rounded-[14px] border-2 border-border bg-surface-2 pl-10 pr-4 text-sm font-bold text-ink placeholder:text-muted/60 focus:border-border-subtle focus:outline-none"
+                      className="border-border bg-surface-2 text-ink placeholder:text-muted/60 focus:border-border-subtle h-12 w-full rounded-[14px] border-2 pl-10 pr-4 text-sm font-bold focus:outline-none"
                     />
                   </div>
                 </div>
@@ -559,11 +492,11 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
                   {loading ? t('sendingReset') : t('resetButton')}
                 </Button>
 
-                <div className="text-center pt-2">
+                <div className="pt-2 text-center">
                   <button
                     type="button"
                     onClick={() => handleOpenChange('login')}
-                    className="text-xs font-bold text-muted hover:text-ink cursor-pointer"
+                    className="text-muted hover:text-ink cursor-pointer text-xs font-bold"
                   >
                     ← {t('backToLogin')}
                   </button>

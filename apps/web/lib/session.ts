@@ -1,5 +1,7 @@
 'use client';
 
+import { anonExpiresAtIso } from './anon-retention';
+
 export interface LocalSession {
   uid: string;
   nickname: string;
@@ -9,7 +11,8 @@ export interface LocalSession {
   analyticsConsent: 'unset' | 'accepted' | 'rejected';
   email?: string;
   isAnonymous?: boolean;
-  authProvider?: 'anonymous' | 'google' | 'email_link' | 'password' | 'email_password';
+  authProvider?:
+    'anonymous' | 'google' | 'google.com' | 'email_link' | 'password' | 'email_password';
   createdAt?: string;
   expiresAt?: string;
   lastActiveAt?: string;
@@ -19,7 +22,6 @@ export interface LocalSession {
 }
 
 const STORAGE_KEY = 'ronduel_session_v1';
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 function randomUid(): string {
   const bytes = new Uint8Array(6);
@@ -53,7 +55,8 @@ export function getLocalSession(): LocalSession {
           parsed.email &&
           parsed.uid &&
           (parsed.email.toLowerCase() === `${parsed.uid.toLowerCase()}@gmail.com` ||
-            (parsed.email.toLowerCase().startsWith('u_') && parsed.email.toLowerCase().endsWith('@gmail.com')))
+            (parsed.email.toLowerCase().startsWith('u_') &&
+              parsed.email.toLowerCase().endsWith('@gmail.com')))
         ) {
           parsed.email = undefined;
           parsed.isAnonymous = true;
@@ -74,9 +77,7 @@ export function getLocalSession(): LocalSession {
         }
 
         const createdAt = parsed.createdAt || new Date(now).toISOString();
-        const expiresAt = isAnon
-          ? (parsed.expiresAt || new Date(now + SEVEN_DAYS_MS).toISOString())
-          : undefined;
+        const expiresAt = isAnon ? parsed.expiresAt || anonExpiresAtIso(createdAt) : undefined;
 
         const session: LocalSession = {
           uid: parsed.uid,
@@ -117,7 +118,7 @@ function createFreshSession(): LocalSession {
     isAnonymous: true,
     authProvider: 'anonymous',
     createdAt: new Date(now).toISOString(),
-    expiresAt: new Date(now + SEVEN_DAYS_MS).toISOString(),
+    expiresAt: anonExpiresAtIso(new Date(now).toISOString()),
     lastActiveAt: new Date(now).toISOString(),
     leagueIds: [],
     playedDuelIds: [],

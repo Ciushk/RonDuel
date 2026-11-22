@@ -1,134 +1,219 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore, Timestamp, type Query } from 'firebase-admin/firestore';
+
 import {
-  deleteUserData,
-  getOrCreateUser,
+  parseExpiresAt,
+  runAnonymousPurge,
+  type PurgeCandidate,
+} from '../../apps/web/lib/anon-retention.js';
+import { formatUserDoc as buildUserDoc } from '../../apps/web/lib/user-doc.js';
+import {
+  adoptAnonymousUid,
+  consumeDirtyUsers,
   getStore,
+  markUserDirty,
+  purgeAnonymousFromStore,
   type UserRecord,
 } from '../../apps/web/lib/server-store.js';
+
+export { ANON_RETENTION_DAYS } from '../../apps/web/lib/anon-retention.js';
+
+const PURGE_BATCH = 400;
 
 export function getDb() {
   return getFirestore();
 }
 
+function toTimestamp(value: Date | null): Timestamp | null {
+  return value ? Timestamp.fromDate(value) : null;
+}
+
 /**
- * Converts a UserRecord into a Firestore document format.
+ * Firestore shape of a user. Anonymous expiresAt is a Timestamp
+ * (createdAt + 7 days, never extended). Registered users store null.
  */
-export function formatUserDoc(user: UserRecord): Record<string, any> {
-  const isAnon = user.isAnonymous ?? true;
-  const hasEmail = Boolean(user.email);
-
-  // If user has email or is registered, expiresAt is null (permanent).
-  // If user is anonymous without email, expiresAt is 7 days from now (or preserves existing expiresAt).
-  let expiresAt: string | null = null;
-  if (isAnon && !hasEmail) {
-    if (user.expiresAt && new Date(user.expiresAt).getTime() > Date.now()) {
-      expiresAt = user.expiresAt;
-    } else {
-      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    }
-  }
-
+export function formatUserDoc(user: UserRecord, now = Date.now()): Record<string, unknown> {
+  const plain = buildUserDoc(user, now);
   return {
-    uid: user.uid,
-    nickname: user.nickname,
-    locale: user.locale || 'en',
-    tz: user.tz || 'UTC',
-    isAnonymous: isAnon && !hasEmail,
-    email: user.email || null,
-    authProvider: user.authProvider || 'anonymous',
-    isAdmin: Boolean(user.isAdmin),
-    pro: user.pro || { active: false },
-    notif: user.notif || {
+    ...plain,
+    expiresAt: toTimestamp(plain.expiresAt),
+  };
+}
+
+function timestampLikeToIso(value: unknown): string | null {
+  const date = parseExpiresAt(value);
+  return date ? date.toISOString() : null;
+}
+
+function mapFirestoreUser(uid: string, data: Record<string, unknown>): UserRecord {
+  const email = typeof data.email === 'string' && data.email ? data.email : undefined;
+  const isAnon = Boolean(data.isAnonymous) && !email;
+  return {
+    uid: typeof data.uid === 'string' ? data.uid : uid,
+    nickname:
+      typeof data.nickname === 'string' && data.nickname
+        ? data.nickname
+        : `Player_${uid.slice(-4)}`,
+    locale: typeof data.locale === 'string' ? data.locale : 'en',
+    tz: typeof data.tz === 'string' ? data.tz : 'UTC',
+    country: typeof data.country === 'string' ? data.country : undefined,
+    ageConfirmed16: data.ageConfirmed16 !== false,
+    relaxedTimer: Boolean(data.relaxedTimer),
+    isAnonymous: isAnon,
+    email,
+    authProvider:
+      (data.authProvider as UserRecord['authProvider']) || (email ? 'password' : 'anonymous'),
+    isAdmin: Boolean(data.isAdmin),
+    pro: (data.pro as UserRecord['pro']) || { active: false },
+    notif: (data.notif as UserRecord['notif']) || {
       pushEnabled: false,
       emailEnabled: false,
       reminderLocalTime: '18:00',
       sentTodayCount: 0,
     },
-    streakCurrent: user.streakCurrent ?? 0,
-    streakBest: user.streakBest ?? 0,
-    lastPlayedDate: user.lastPlayedDate || null,
-    leagueIds: user.leagueIds || ['lg_world'],
-    freezes: user.freezes ?? 0,
-    duelStats: user.duelStats || null,
-    createdAt: user.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    expiresAt,
+    streakCurrent: typeof data.streakCurrent === 'number' ? data.streakCurrent : 0,
+    streakBest: typeof data.streakBest === 'number' ? data.streakBest : 0,
+    lastPlayedDate: typeof data.lastPlayedDate === 'string' ? data.lastPlayedDate : undefined,
+    streakShieldUsedWeek:
+      typeof data.streakShieldUsedWeek === 'string' ? data.streakShieldUsedWeek : undefined,
+    leagueIds: Array.isArray(data.leagueIds) ? (data.leagueIds as string[]) : ['lg_world'],
+    lastNicknameChangeAt:
+      typeof data.lastNicknameChangeAt === 'string' ? data.lastNicknameChangeAt : undefined,
+    freezes: typeof data.freezes === 'number' ? data.freezes : 0,
+    freezeLedger: Array.isArray(data.freezeLedger)
+      ? (data.freezeLedger as UserRecord['freezeLedger'])
+      : undefined,
+    duelStats: (data.duelStats as UserRecord['duelStats']) || undefined,
+    rivals: (data.rivals as UserRecord['rivals']) || {},
+    createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date().toISOString(),
+    expiresAt: timestampLikeToIso(data.expiresAt),
+    upgradedAt: typeof data.upgradedAt === 'string' ? data.upgradedAt : null,
   };
 }
 
-/**
- * Saves or updates a user in Firestore.
- */
 export async function syncUserToFirestore(user: UserRecord): Promise<void> {
   try {
     const db = getDb();
     const docData = formatUserDoc(user);
-    user.expiresAt = docData.expiresAt;
+    const expiry = docData.expiresAt;
+    user.expiresAt = expiry instanceof Timestamp ? expiry.toDate().toISOString() : null;
     await db.collection('users').doc(user.uid).set(docData, { merge: true });
   } catch (err) {
     console.error(`[Firestore] Failed to sync user ${user.uid}:`, err);
   }
 }
 
-/**
- * Retrieves a user from Firestore, verifying 7-day expiration for anonymous users.
- */
+export async function flushDirtyUsersToFirestore(): Promise<void> {
+  const users = consumeDirtyUsers();
+  for (const user of users) {
+    await syncUserToFirestore(user);
+  }
+}
+
+async function deleteQuery(query: Query): Promise<number> {
+  let total = 0;
+  for (;;) {
+    const snap = await query.limit(PURGE_BATCH).get();
+    if (snap.empty) break;
+    const batch = getDb().batch();
+    snap.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    total += snap.size;
+    if (snap.size < PURGE_BATCH) break;
+  }
+  return total;
+}
+
+async function deleteRelatedFirestoreData(uid: string, leagueIds: string[]): Promise<number> {
+  const db = getDb();
+  let removed = 0;
+  const queries = [
+    db.collection('plays').where('uid', '==', uid),
+    db.collection('duels').where('challengerUid', '==', uid),
+    db.collection('duels').where('opponentUid', '==', uid),
+    db.collection('reports').where('reporterUid', '==', uid),
+    db.collection('shareCards').where('uid', '==', uid),
+  ];
+  for (const query of queries) {
+    try {
+      removed += await deleteQuery(query);
+    } catch (err) {
+      console.error(`[Firestore] Related delete failed for ${uid}:`, err);
+    }
+  }
+  for (const leagueId of leagueIds) {
+    try {
+      await db.collection('leagues').doc(leagueId).collection('members').doc(uid).delete();
+      removed += 1;
+    } catch (err) {
+      console.error(`[Firestore] Member delete failed ${leagueId}/${uid}:`, err);
+    }
+  }
+  try {
+    const tokens = await db
+      .collection('users')
+      .doc(uid)
+      .collection('pushTokens')
+      .limit(PURGE_BATCH)
+      .get();
+    if (!tokens.empty) {
+      const batch = db.batch();
+      tokens.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      removed += tokens.size;
+    }
+  } catch (err) {
+    console.error(`[Firestore] Push token delete failed for ${uid}:`, err);
+  }
+  return removed;
+}
+
+export async function deleteAnonymousEverywhere(
+  uid: string,
+  data?: Record<string, unknown>,
+): Promise<void> {
+  if (data?.email) return;
+  const leagueIds = Array.isArray(data?.leagueIds) ? (data.leagueIds as string[]) : [];
+  purgeAnonymousFromStore(uid);
+  await deleteRelatedFirestoreData(uid, leagueIds);
+  try {
+    await getAuth().deleteUser(uid);
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (code !== 'auth/user-not-found') {
+      console.error(`[Firestore] Auth delete failed for ${uid}:`, err);
+    }
+  }
+  try {
+    await getDb().collection('users').doc(uid).delete();
+  } catch (err) {
+    console.error(`[Firestore] User doc delete failed for ${uid}:`, err);
+  }
+}
+
 export async function getUserFromFirestore(uid: string): Promise<UserRecord | null> {
   try {
     const db = getDb();
     const docRef = db.collection('users').doc(uid);
     const snap = await docRef.get();
+    if (!snap.exists) return null;
 
-    if (!snap.exists) {
-      return null;
-    }
-
-    const data = snap.data()!;
-    const isAnon = data.isAnonymous ?? true;
+    const data = snap.data() ?? {};
+    const isAnon = Boolean(data.isAnonymous);
     const hasEmail = Boolean(data.email);
-
-    // 7-day expiry check: if anonymous without email and expiresAt has passed, delete everything!
     if (isAnon && !hasEmail && data.expiresAt) {
-      const expiryTime = new Date(data.expiresAt).getTime();
-      if (expiryTime <= Date.now()) {
-        console.log(`[Firestore] User ${uid} expired after 7 days without account. Deleting...`);
-        await docRef.delete();
-        deleteUserData(uid);
+      const expiry = parseExpiresAt(data.expiresAt);
+      if (expiry && expiry.getTime() <= Date.now()) {
+        console.log(
+          `[Firestore] User ${uid} expired after ${7} days without an account. Deleting.`,
+        );
+        await deleteAnonymousEverywhere(uid, data);
         return null;
       }
     }
 
-    // Sync into in-memory store
-    const store = getStore();
-    const userRecord: UserRecord = {
-      uid: data.uid || uid,
-      nickname: data.nickname || `Player_${uid.slice(-4)}`,
-      locale: data.locale || 'en',
-      tz: data.tz || 'UTC',
-      ageConfirmed16: true,
-      relaxedTimer: false,
-      isAnonymous: isAnon && !hasEmail,
-      email: data.email || undefined,
-      authProvider: data.authProvider || 'anonymous',
-      isAdmin: Boolean(data.isAdmin),
-      pro: data.pro || { active: false },
-      notif: data.notif || {
-        pushEnabled: false,
-        emailEnabled: false,
-        reminderLocalTime: '18:00',
-        sentTodayCount: 0,
-      },
-      streakCurrent: data.streakCurrent ?? 0,
-      streakBest: data.streakBest ?? 0,
-      lastPlayedDate: data.lastPlayedDate || undefined,
-      leagueIds: Array.isArray(data.leagueIds) ? data.leagueIds : ['lg_world'],
-      freezes: data.freezes ?? 0,
-      duelStats: data.duelStats || undefined,
-      createdAt: data.createdAt || new Date().toISOString(),
-      expiresAt: data.expiresAt || null,
-    };
-
-    store.users[uid] = userRecord;
+    const userRecord = mapFirestoreUser(uid, data);
+    getStore().users[uid] = userRecord;
     return userRecord;
   } catch (err) {
     console.error(`[Firestore] Failed to get user ${uid}:`, err);
@@ -136,53 +221,102 @@ export async function getUserFromFirestore(uid: string): Promise<UserRecord | nu
   }
 }
 
-/**
- * Deletes a user document from Firestore.
- */
+export async function findUserByEmail(email: string): Promise<UserRecord | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  try {
+    const snap = await getDb().collection('users').where('email', '==', normalized).limit(1).get();
+    const doc = snap.docs[0];
+    if (!doc) return null;
+    const user = mapFirestoreUser(doc.id, doc.data());
+    getStore().users[user.uid] = user;
+    return user;
+  } catch (err) {
+    console.error(`[Firestore] Email lookup failed for ${normalized}:`, err);
+    return null;
+  }
+}
+
 export async function deleteUserFromFirestore(uid: string): Promise<void> {
   try {
-    const db = getDb();
-    await db.collection('users').doc(uid).delete();
+    await getDb().collection('users').doc(uid).delete();
   } catch (err) {
     console.error(`[Firestore] Failed to delete user doc ${uid}:`, err);
   }
 }
 
-/**
- * Purges all anonymous users whose 7-day retention period has expired.
- */
-export async function purgeExpiredAnonymousUsers(): Promise<{ deletedCount: number }> {
-  try {
-    const db = getDb();
-    const nowIso = new Date().toISOString();
-
-    const snapshot = await db
+async function loadExpiredCandidates(now: Date): Promise<PurgeCandidate[]> {
+  const db = getDb();
+  const found = new Map<string, PurgeCandidate>();
+  const queries = [
+    db
       .collection('users')
       .where('isAnonymous', '==', true)
-      .where('expiresAt', '<=', nowIso)
-      .get();
-
-    let deletedCount = 0;
-    const batch = db.batch();
-
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      // Only delete if user is truly anonymous without email
-      if (data.isAnonymous && !data.email) {
-        deleteUserData(doc.id);
-        batch.delete(doc.ref);
-        deletedCount++;
+      .where('expiresAt', '<=', Timestamp.fromDate(now))
+      .limit(PURGE_BATCH),
+    db
+      .collection('users')
+      .where('isAnonymous', '==', true)
+      .where('expiresAt', '<=', now.toISOString())
+      .limit(PURGE_BATCH),
+  ];
+  for (const query of queries) {
+    try {
+      const snap = await query.get();
+      for (const doc of snap.docs) {
+        found.set(doc.id, { id: doc.id, data: doc.data() as PurgeCandidate['data'] });
       }
+    } catch (err) {
+      console.error('[Firestore] Expired-user query failed:', err);
     }
+  }
+  return [...found.values()];
+}
 
-    if (deletedCount > 0) {
-      await batch.commit();
-    }
-
-    console.log(`[Firestore] Purged ${deletedCount} expired anonymous user(s).`);
-    return { deletedCount };
+/**
+ * Deletes anonymous users whose expiresAt is in the past, in batches of 400.
+ * Users with an email are never deleted. Also removes plays, league membership,
+ * duels, share cards, reports, and the Auth user.
+ */
+export async function purgeExpiredAnonymousUsers(now = new Date()): Promise<{
+  deletedCount: number;
+  skippedWithEmail: number;
+}> {
+  try {
+    const result = await runAnonymousPurge({
+      now,
+      batchSize: PURGE_BATCH,
+      loadCandidates: loadExpiredCandidates,
+      deleteUser: async (uid, data) => {
+        await deleteAnonymousEverywhere(uid, data);
+      },
+    });
+    console.log(
+      `[Firestore] Purged ${result.deletedCount} expired anonymous user(s); skipped ${result.skippedWithEmail} with email.`,
+    );
+    return result;
   } catch (err) {
     console.error('[Firestore] Error purging expired anonymous users:', err);
-    return { deletedCount: 0 };
+    return { deletedCount: 0, skippedWithEmail: 0 };
   }
+}
+
+export async function adoptAuthUid(
+  fromUid: string,
+  toUid: string,
+): Promise<{ uid: string; moved: boolean }> {
+  if (!fromUid || !toUid || fromUid === toUid) return { uid: toUid || fromUid, moved: false };
+  if (!getStore().users[fromUid]) {
+    await getUserFromFirestore(fromUid);
+  }
+  const result = adoptAnonymousUid(fromUid, toUid);
+  if (result.moved) {
+    await deleteUserFromFirestore(fromUid);
+    const user = getStore().users[toUid];
+    if (user) {
+      markUserDirty(toUid);
+      await syncUserToFirestore(user);
+    }
+  }
+  return result;
 }

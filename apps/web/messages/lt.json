@@ -464,7 +464,9 @@
       "s3Title": "3. Duomenų tvarkytojai ir analitika",
       "s3Body": "Naudojame „Firebase“ (duomenų bazė ir autentifikavimas ES), „Stripe“ (saugus „RonDuel Pro“ mokėjimų apdorojimas) ir „PostHog Cloud EU“ (privatumą gerbianti analitika, įjungiama tik gavus jūsų aiškų sutikimą).",
       "s4Title": "4. Jūsų teisės (Eksportavimas ir ištrynimas)",
-      "s4Body": "Pagal BDAR turite teisę susipažinti su savo asmens duomenimis, reikalauti juos ištaisyti, perkelti ir ištrinti („teisė būti pamirštam“). Galite eksportuoti visus savo duomenis JSON formatu arba visam laikui ištrinti paskyrą Nustatymų puslapyje."
+      "s4Body": "Pagal BDAR turite teisę susipažinti su savo asmens duomenimis, reikalauti juos ištaisyti, perkelti ir ištrinti („teisė būti pamirštam“). Galite eksportuoti visus savo duomenis JSON formatu arba visam laikui ištrinti paskyrą Nustatymų puslapyje.",
+      "s5Title": "5. Svečio paskyros",
+      "s5Body": "Jei žaidi nesikurdamas paskyros, RonDuel saugo svečio profilį ir susijusius duomenis (slapyvardį, rezultatus, serijas, lygas ir dvikovas) 7 dienas nuo sukūrimo. Jei per tas 7 dienas neišsaugai profilio el. paštu arba Google, svečio paskyra ir visi jos duomenys ištrinami. Išsaugojimas palieka tą patį profilį ir padaro jį nuolatiniu. Išsaugota paskyra lieka, kol pats ją ištrini."
     },
     "cookies": {
       "title": "Slapukų ir vietinės saugyklos politika",
@@ -639,7 +641,32 @@
     "placeholder": "pvz., Kaip žaisti? / Sukurti dvikovą…",
     "inputLabel": "Žinutė RonBotui",
     "send": "Siųsti žinutę",
-    "open": "Atidaryti RonBot AI asistentą"
+    "open": "Atidaryti RonBot AI asistentą",
+    "guestName": "drauge",
+    "seePro": "Žiūrėk RonDuel Pro",
+    "playTodayCta": "▶️ Žaisk šiandienos raundą",
+    "replyWhatIs": "RonDuel yra kasdienė viktorina su draugais. Visi kartą per dieną gauna tuos pačius 6 klausimus, o greitas teisingas atsakymas duoda daugiau taškų. Rezultatus lyginate lygose ir 1 prieš 1 dvikovose.",
+    "replyReset": "Dienos raundas atsistato vietos vidurnaktį (00:00 tavo juostoje). Tada atsiveria naujas raundas ir tą dieną turi vieną bandymą.",
+    "replyScore": "Teisingas atsakymas vertas **100** taškų plius greičio premijos iki **100**.\n\n- Daugiausia už klausimą: 200\n- Daugiausia per dieną: 1 200\n- Neteisingai arba laikas baigėsi: 0\n\nLygiosiomis laimi trumpesnis bendras laikas.",
+    "replyHowTo": "Bakstelėk žaisti, pasirink slapyvardį ir atsakyk į 6 klausimus maždaug per minutę. Turi vieną bandymą per dieną, tada dalijiesi kortele be spoilerių.",
+    "replyHowToDetail": "1. Bakstelėk žaisti ir pasirink slapyvardį (be paskyros).\n2. Po skaičiavimo yra 6 klausimai: 2 pasirinkimo (10s), 1 eilė (15s), 1 svetimas (10s) ir 2 logika (15s).\n3. Vienas bandymas per dieną. Teisingai yra 100 taškų plius iki 100 už greitį (maks. 1 200).\n4. Kortelė rodo ⚡ teisingai ir greitai, 🟩 teisingai, 🟥 neteisingai, be klausimų teksto.",
+    "replyPro": "RonDuel Pro neprivalomas. Jis kelia lygas iki 200 narių, atrakina neribotas 1 prieš 1 dvikovas, prideda savaitės serijos skydą, temų statistiką ir tris išvaizdas. Dienos žaidimas lieka nemokamas.",
+    "replyEmoji": "Kortelėje ⚡ reiškia teisingą atsakymą su daug likusio laiko, 🟩 teisingai, o 🟥 neteisingai arba per lėtai. Kortelė niekada nerodo klausimų.",
+    "replyLeague": "Lyga yra tavo grupės lentelė. Šiandienos taškai paslėpti, kol nepabaigi. Savaitės trofėjus atitenka geriausiai sekmadienio sumai. Nemokama lyga skirta 5 žmonėms, Pro — 200.",
+    "replyDuel": "1 prieš 1 dvikovoje yra 5 atskiri klausimai, ne šiandienos raundas. Kiekvienas turi 24 valandas. Laimi didesnis rezultatas, o kas nežaidžia, pralaimi. Nemokama paskyra turi 4 dvikovas per mėnesį.",
+    "replyStreak": "Serija auga 1 kiekvieną vietos dieną, kai užbaigi raundą. Praleidus dieną ji tampa 0. Naujas raundas atsiveria vietos vidurnaktį. Pro gali apsaugoti vieną praleistą dieną per savaitę.",
+    "replyAccount": "Gali žaisti kaip svečias. Svečio duomenys ištrinami praėjus 7 dienoms po profilio sukūrimo, nebent išsaugai jį el. paštu arba Google ir palieki tą patį profilį. Eksportas ir trynimas yra nustatymuose.",
+    "replyStatusPlayed": "Šiandien ({date}), raundas #{round} — {topic}. Turi {score} taškų ({emoji}). Serija: {streak} dienos (rekordas {best}). Lygos: {leagues}.",
+    "replyStatusPending": "Šiandien ({date}) yra raundas #{round} — {topic}. Dar nežaidei. Serija: {streak} dienos (rekordas {best}).",
+    "replyFallback": "Sveikas, {name}! Klausk apie šiandienos raundą, taškus, lygas, dvikovas ar Pro ir atsakysiu trumpai.",
+    "replyDuelCreated": "Paleidau tau 1 prieš 1 dvikovą: 5 klausimai ir 24 valandos žaisti. Atidaryk ją ir nusiųsk nuorodą draugui.",
+    "replyLeagueCreated": "Sukūriau lygą „{name}”. Pakvietimo kodas: {code}. Pasidalyk nuoroda, kad draugai prisijungtų.",
+    "replyActionFailed": "Nepavyko: {error}.",
+    "replyAdminScheduled": "Suplanavau 6 klausimų raundą datai {date}.",
+    "replyAdminScheduleFailed": "Nepavyko suplanuoti raundo datai {date}: {error}.",
+    "replyAdminDrafts": "Sukūriau {count} naujų {type} tipo klausimų apie „{topic}” ({ids}).",
+    "replyAdminPanel": "Juos gali peržiūrėti admin skydelyje.",
+    "openAdmin": "Atidaryti admin"
   },
   "home": {
     "heroTitle": "RonDuel – Kasdienė viktorina su draugais",
@@ -668,7 +695,9 @@
     "anonWarning": "Tavo paskyra susieta tik su šia naršykle. Prijunk „Google“ arba el. paštą, kad neprarastum pažangos ir patektum į pasaulinį 100-tuką.",
     "anonExpiry": "Tavo statistika ir pažanga bus automatiškai ištrinti po 1 savaitės, jei nesusikursi nemokamos paskyros!",
     "createAccountBtn": "Sukurti paskyrą",
-    "later": "Vėliau"
+    "later": "Vėliau",
+    "guestExpiryBanner": "Tavo svečio paskyra ištrinama {date}, jei neišsaugai jos el. paštu arba Google.",
+    "saveAccount": "Išsaugoti paskyrą"
   },
   "leagues": {
     "myCount": "{count, plural, one {# lyga} few {# lygos} many {# lygų} other {# lygų}}",

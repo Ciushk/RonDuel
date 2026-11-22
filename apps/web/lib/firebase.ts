@@ -1,10 +1,15 @@
-import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseError, type FirebaseApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
+  EmailAuthProvider,
   signInWithPopup,
+  signInWithCredential,
   signInWithEmailAndPassword,
+  signInAnonymously,
   createUserWithEmailAndPassword,
+  linkWithPopup,
+  linkWithCredential,
   sendPasswordResetEmail,
   signOut,
   updateProfile,
@@ -78,10 +83,105 @@ export async function requestPasswordReset(email: string): Promise<void> {
   await sendPasswordResetEmail(auth, email.trim());
 }
 
+export interface LinkedAuthResult {
+  user: User;
+  merged: boolean;
+  previousUid: string;
+}
+
+function authErrorCode(err: unknown): string {
+  return err && typeof err === 'object' && 'code' in err
+    ? String((err as { code?: string }).code ?? '')
+    : '';
+}
+
+export async function ensureAnonymousAuth(): Promise<string | null> {
+  const auth = getFirebaseAuth();
+  if (!auth) return null;
+  try {
+    if (typeof auth.authStateReady === 'function') {
+      await auth.authStateReady();
+    }
+    let user = auth.currentUser;
+    if (!user) {
+      const cred = await signInAnonymously(auth);
+      user = cred.user;
+    }
+    return user.uid;
+  } catch {
+    return null;
+  }
+}
+
+export async function linkAnonymousWithGoogle(): Promise<LinkedAuthResult> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase Auth is not initialized');
+  const current = auth.currentUser;
+  if (current?.isAnonymous) {
+    try {
+      const result = await linkWithPopup(current, googleProvider);
+      return { user: result.user, merged: false, previousUid: current.uid };
+    } catch (err) {
+      const code = authErrorCode(err);
+      if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
+        const credential =
+          err instanceof FirebaseError ? GoogleAuthProvider.credentialFromError(err) : null;
+        if (!credential) throw err;
+        const previousUid = current.uid;
+        const signed = await signInWithCredential(auth, credential);
+        return { user: signed.user, merged: true, previousUid };
+      }
+      throw err;
+    }
+  }
+  const result = await signInWithPopup(auth, googleProvider);
+  const previousUid = current?.uid ?? '';
+  return {
+    user: result.user,
+    merged: Boolean(previousUid && previousUid !== result.user.uid),
+    previousUid,
+  };
+}
+
+export async function linkAnonymousWithEmail(
+  email: string,
+  password: string,
+): Promise<LinkedAuthResult> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase Auth is not initialized');
+  const current = auth.currentUser;
+  const trimmed = email.trim();
+  if (current?.isAnonymous) {
+    const credential = EmailAuthProvider.credential(trimmed, password);
+    try {
+      const result = await linkWithCredential(current, credential);
+      return { user: result.user, merged: false, previousUid: current.uid };
+    } catch (err) {
+      const code = authErrorCode(err);
+      if (
+        code === 'auth/credential-already-in-use' ||
+        code === 'auth/email-already-in-use' ||
+        code === 'auth/provider-already-linked'
+      ) {
+        const previousUid = current.uid;
+        const signed = await signInWithEmailAndPassword(auth, trimmed, password);
+        return { user: signed.user, merged: true, previousUid };
+      }
+      throw err;
+    }
+  }
+  const signed = await signInWithEmailAndPassword(auth, trimmed, password);
+  return {
+    user: signed.user,
+    merged: Boolean(current?.uid && current.uid !== signed.user.uid),
+    previousUid: current?.uid ?? '',
+  };
+}
+
 export async function logoutUser(): Promise<void> {
   const auth = getFirebaseAuth();
   if (!auth) return;
   await signOut(auth);
 }
 
-export { onAuthStateChanged, type User };
+export { onAuthStateChanged, updateProfile, type User };

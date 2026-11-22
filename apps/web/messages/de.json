@@ -464,7 +464,9 @@
       "s3Title": "3. Auftragsverarbeiter & Analysen",
       "s3Body": "Wir nutzen Firebase (EU-Datenbank und Authentifizierung), Stripe (sichere Zahlungsabwicklung für RonDuel Pro) und PostHog Cloud EU (datenschutzfreundliche Analysen, nur nach deiner ausdrücklichen Einwilligung aktiviert).",
       "s4Title": "4. Deine Rechte (Export & Löschung)",
-      "s4Body": "Gemäss DSGVO hast du das Recht auf Auskunft, Berichtigung, Datenübertragbarkeit und Löschung deiner personenbezogenen Daten ('Recht auf Vergessenwerden'). Du kannst jederzeit in den Einstellungen deine gesamten Daten als JSON exportieren oder dein Konto endgültig löschen."
+      "s4Body": "Gemäss DSGVO hast du das Recht auf Auskunft, Berichtigung, Datenübertragbarkeit und Löschung deiner personenbezogenen Daten ('Recht auf Vergessenwerden'). Du kannst jederzeit in den Einstellungen deine gesamten Daten als JSON exportieren oder dein Konto endgültig löschen.",
+      "s5Title": "5. Gastkonten",
+      "s5Body": "Wenn du ohne Konto spielst, speichert RonDuel ein Gastprofil und die zugehörigen Daten (Name, Punkte, Serien, Ligen und Duelle) 7 Tage ab der Erstellung. Sichere das Profil in diesen 7 Tagen nicht mit E-Mail oder Google, werden das Gastkonto und alle seine Daten gelöscht. Das Sichern behält dasselbe Profil und macht es dauerhaft. Ein gesichertes Konto bleibt, bis du es löschst."
     },
     "cookies": {
       "title": "Cookie- & Speicherrichtlinie",
@@ -639,7 +641,32 @@
     "placeholder": "z. B. Wie spiele ich? / Erstelle ein Duell…",
     "inputLabel": "Nachricht an RonBot",
     "send": "Nachricht senden",
-    "open": "RonBot KI-Assistenten öffnen"
+    "open": "RonBot KI-Assistenten öffnen",
+    "guestName": "Freund",
+    "seePro": "RonDuel Pro ansehen",
+    "playTodayCta": "▶️ Heutige Runde spielen",
+    "replyWhatIs": "RonDuel ist ein tägliches Quiz, das du mit Freunden spielst. Alle bekommen einmal am Tag dieselben 6 Fragen, und eine schnelle richtige Antwort gibt mehr Punkte. Ihr vergleicht die Ergebnisse in Ligen und 1:1-Duellen.",
+    "replyReset": "Die Tagesrunde setzt sich um Mitternacht Ortszeit zurück (00:00 in deiner Zeitzone). Dann startet die neue Runde und du hast an diesem Tag einen Versuch.",
+    "replyScore": "Eine richtige Antwort gibt **100** Punkte plus einen Tempobonus bis **100**.\n\n- Maximum pro Frage: 200\n- Maximum pro Tag: 1.200\n- Falsch oder Zeit abgelaufen: 0\n\nBei Gleichstand gewinnt die kürzere Gesamtzeit.",
+    "replyHowTo": "Tippe auf Spielen, wähle einen Namen und beantworte 6 Fragen in etwa einer Minute. Du hast einen Versuch pro Tag und teilst danach die Karte ohne Spoiler.",
+    "replyHowToDetail": "1. Tippe auf Spielen und wähle einen Namen (kein Konto nötig).\n2. Nach dem Countdown kommen 6 Fragen: 2 Multiple Choice (10s), 1 Reihenfolge (15s), 1 Außenseiter (10s) und 2 Logik (15s).\n3. Ein Versuch pro Tag. Richtig gibt 100 Punkte plus bis zu 100 für Tempo (max. 1.200).\n4. Die Karte zeigt ⚡ richtig und schnell, 🟩 richtig, 🟥 falsch, ohne den Fragetext.",
+    "replyPro": "RonDuel Pro ist optional. Es hebt Ligen auf 200 Mitglieder, schaltet unbegrenzte 1:1-Duelle frei, gibt ein wöchentliches Serien-Schild, Themenstatistiken und drei Optiken. Das Tagesspiel bleibt kostenlos.",
+    "replyEmoji": "Auf der Karte bedeutet ⚡ richtig mit viel Restzeit, 🟩 richtig und 🟥 falsch oder zu langsam. Die Karte zeigt nie die Fragen.",
+    "replyLeague": "Eine Liga ist die Rangliste deiner Gruppe. Die Punkte von heute bleiben verborgen, bis du fertig bist. Die Wochentrophäe geht an die beste Sonntagssumme. Gratis-Ligen haben 5 Leute, Pro hat 200.",
+    "replyDuel": "Ein 1:1-Duell hat 5 eigene Fragen, nicht die heutige Runde. Jeder hat 24 Stunden. Die höhere Punktzahl gewinnt, wer nicht spielt verliert. Gratis gibt es 4 Duelle im Monat.",
+    "replyStreak": "Deine Serie steigt um 1 an jedem lokalen Tag, an dem du die Runde beendest. Fehlt ein Tag, steht sie auf 0. Die neue Runde öffnet um Mitternacht Ortszeit. Pro kann einen verpassten Tag pro Woche schützen.",
+    "replyAccount": "Du kannst als Gast spielen. Gastdaten werden 7 Tage nach dem Anlegen gelöscht, außer du sicherst das Profil mit E-Mail oder Google und behältst dasselbe Profil. Export oder Löschung geht in den Einstellungen.",
+    "replyStatusPlayed": "Heute ({date}), Runde #{round} — {topic}. Du hast {score} Punkte ({emoji}). Serie: {streak} Tage (Bestwert {best}). Ligen: {leagues}.",
+    "replyStatusPending": "Heute ({date}) ist Runde #{round} — {topic}. Du hast noch nicht gespielt. Serie: {streak} Tage (Bestwert {best}).",
+    "replyFallback": "Hallo {name}! Frag mich nach der heutigen Runde, Punkten, Ligen, Duellen oder Pro, ich antworte kurz.",
+    "replyDuelCreated": "Ich habe ein 1:1-Duell für dich gestartet: 5 Fragen und 24 Stunden Zeit. Öffne es und schick den Link einem Freund.",
+    "replyLeagueCreated": "Ich habe die Liga „{name}“ erstellt. Einladungscode: {code}. Teile den Link, damit Freunde beitreten.",
+    "replyActionFailed": "Das ging nicht: {error}.",
+    "replyAdminScheduled": "Eine Runde mit 6 Fragen für {date} geplant.",
+    "replyAdminScheduleFailed": "Die Runde für {date} konnte nicht geplant werden: {error}.",
+    "replyAdminDrafts": "{count} neue Fragen vom Typ {type} zum Thema „{topic}“ erstellt ({ids}).",
+    "replyAdminPanel": "Du kannst sie im Admin-Bereich prüfen.",
+    "openAdmin": "Admin öffnen"
   },
   "home": {
     "heroTitle": "RonDuel – Tägliche Trivia mit deinen Freunden",
@@ -668,7 +695,9 @@
     "anonWarning": "Dein Konto ist nur an diesen Browser gebunden. Verbinde Google oder E-Mail, damit du deinen Fortschritt nicht verlierst und in den weltweiten Top 100 erscheinen kannst.",
     "anonExpiry": "Deine Statistiken und dein Fortschritt werden nach 1 Woche automatisch gelöscht, wenn du kein kostenloses Konto erstellst!",
     "createAccountBtn": "Konto erstellen",
-    "later": "Später"
+    "later": "Später",
+    "guestExpiryBanner": "Dein Gastkonto wird am {date} gelöscht, wenn du es nicht mit E-Mail oder Google sicherst.",
+    "saveAccount": "Konto sichern"
   },
   "leagues": {
     "myCount": "{count, plural, one {# Liga} other {# Ligen}}",

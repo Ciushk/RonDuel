@@ -148,12 +148,14 @@ export default function LeaguesPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-ink">{t('nav.leagues')}</h1>
+          <h1 className="font-display text-ink text-2xl font-extrabold">{t('nav.leagues')}</h1>
           <p className="text-muted text-xs font-bold">
             {tab === 'my'
               ? t('leagues.myCount', { count: privateLeagues.length + 1 })
               : leaderboardSubTab === 'global'
-                ? t('leagues.worldPlayersCount', { count: globalPlayers?.totalPlayers ?? filteredGlobalList.length })
+                ? t('leagues.worldPlayersCount', {
+                    count: globalPlayers?.totalPlayers ?? filteredGlobalList.length,
+                  })
                 : t('leagues.registeredCount', { count: leaguesLeaderboard.length })}
           </p>
         </div>
@@ -179,17 +181,17 @@ export default function LeaguesPage() {
       </div>
 
       {/* Main Segmented Tab Switcher: My leagues vs Leaderboards */}
-      <div className="grid grid-cols-2 gap-1 rounded-xl border-2 border-border bg-surface-2 p-1">
+      <div className="border-border bg-surface-2 grid grid-cols-2 gap-1 rounded-xl border-2 p-1">
         <button
           type="button"
           onClick={() => {
             setTab('my');
             setSearchQuery('');
           }}
-          className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-black transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-black transition-all ${
             tab === 'my'
-              ? 'border-2 border-border bg-surface text-ink shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
-              : 'border-2 border-transparent text-muted hover:text-ink'
+              ? 'border-border bg-surface text-ink border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+              : 'text-muted hover:text-ink border-2 border-transparent'
           }`}
         >
           <Users size={16} weight="bold" />
@@ -201,10 +203,10 @@ export default function LeaguesPage() {
             setTab('leaderboard');
             setSearchQuery('');
           }}
-          className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-black transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-black transition-all ${
             tab === 'leaderboard'
-              ? 'border-2 border-border bg-surface text-ink shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
-              : 'border-2 border-transparent text-muted hover:text-ink'
+              ? 'border-border bg-surface text-ink border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+              : 'text-muted hover:text-ink border-2 border-transparent'
           }`}
         >
           <Trophy size={16} weight="fill" className="text-volt-strong" />
@@ -215,17 +217,17 @@ export default function LeaguesPage() {
       {/* SUB-TABS when Leaderboards is active: Global Leaderboard vs Leagues Leaderboard */}
       {tab === 'leaderboard' && (
         <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-1.5 rounded-xl border-2 border-border bg-surface p-1">
+          <div className="border-border bg-surface grid grid-cols-2 gap-1.5 rounded-xl border-2 p-1">
             <button
               type="button"
               onClick={() => {
                 setLeaderboardSubTab('global');
                 setSearchQuery('');
               }}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black transition-all cursor-pointer ${
+              className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black transition-all ${
                 leaderboardSubTab === 'global'
-                  ? 'border-2 border-border bg-volt text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
-                  : 'border-2 border-transparent text-muted hover:text-ink'
+                  ? 'border-border bg-volt border-2 text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+                  : 'text-muted hover:text-ink border-2 border-transparent'
               }`}
             >
               <GlobeHemisphereWest size={15} weight="bold" />
@@ -237,10 +239,10 @@ export default function LeaguesPage() {
                 setLeaderboardSubTab('leagues');
                 setSearchQuery('');
               }}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black transition-all cursor-pointer ${
+              className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-black transition-all ${
                 leaderboardSubTab === 'leagues'
-                  ? 'border-2 border-border bg-volt text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
-                  : 'border-2 border-transparent text-muted hover:text-ink'
+                  ? 'border-border bg-volt border-2 text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+                  : 'text-muted hover:text-ink border-2 border-transparent'
               }`}
             >
               <Trophy size={15} weight="bold" />
@@ -253,7 +255,7 @@ export default function LeaguesPage() {
             <MagnifyingGlass
               size={18}
               weight="bold"
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+              className="text-muted absolute left-3.5 top-1/2 -translate-y-1/2"
             />
             <input
               type="text"
@@ -264,13 +266,13 @@ export default function LeaguesPage() {
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border-2 border-border bg-surface pl-10 pr-4 py-2.5 text-xs font-bold text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-volt-strong shadow-sm"
+              className="border-border bg-surface text-ink placeholder:text-muted focus:ring-volt-strong w-full rounded-xl border-2 py-2.5 pl-10 pr-4 text-xs font-bold shadow-sm focus:outline-none focus:ring-2"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink font-bold text-xs"
+                className="text-muted hover:text-ink absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold"
               >
                 ✕
               </button>
@@ -288,15 +290,15 @@ export default function LeaguesPage() {
           {status?.hasFullFreeLeague && (
             <Card
               variant="sticker"
-              className="bg-volt text-ink border-2 border-border p-4 shadow-sm space-y-2"
+              className="bg-volt text-ink border-border space-y-2 border-2 p-4 shadow-sm"
             >
               <div className="flex items-start gap-2.5">
-                <Crown size={22} weight="fill" className="text-ron-strong shrink-0 mt-0.5" />
+                <Crown size={22} weight="fill" className="text-ron-strong mt-0.5 shrink-0" />
                 <div className="space-y-1">
-                  <p className="font-extrabold text-sm leading-snug">
+                  <p className="text-sm font-extrabold leading-snug">
                     {t('leagues.leagueFullCount', { count: 5, max: 5 })}
                   </p>
-                  <p className="text-xs font-medium text-ink/80">
+                  <p className="text-ink/80 text-xs font-medium">
                     {t('common.leagueFullBannerBody')}
                   </p>
                 </div>
@@ -311,16 +313,16 @@ export default function LeaguesPage() {
 
           {/* 1. PUBLIC LEAGUE (RonDuel World) */}
           <section className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+            <h2 className="text-muted text-xs font-bold uppercase tracking-wider">
               {t('leagues.publicLeague')}
             </h2>
             <Link
               href={`/${locale}/league/lg_world`}
-              className="border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex flex-col gap-3 rounded-2xl p-4 shadow-[var(--rd-shadow-key)] transition-all select-none"
+              className="border-border bg-surface text-ink hover:border-border-subtle flex min-w-0 select-none flex-col gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="bg-volt/40 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-border text-2xl font-black">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="bg-volt/40 border-border flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 text-2xl font-black">
                     <GlobeHemisphereWest
                       size={26}
                       weight="duotone"
@@ -329,14 +331,14 @@ export default function LeaguesPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-display font-black text-base truncate">
+                      <span className="font-display line-clamp-2 break-words text-base font-black [overflow-wrap:anywhere]">
                         RonDuel World
                       </span>
-                      <Chip tone="blue" className="text-[10px] py-0 px-1.5 font-black">
+                      <Chip tone="blue" className="px-1.5 py-0 text-[10px] font-black">
                         {t('leagues.globalBadge')}
                       </Chip>
                     </div>
-                    <p className="text-muted text-xs font-medium">
+                    <p className="text-muted break-words text-xs font-medium [overflow-wrap:anywhere]">
                       {t('league.membersCount', { count: worldLeague?.memberCount ?? 1 })}{' '}
                       {t('leagues.publicNoLimitSuffix')}
                     </p>
@@ -345,7 +347,7 @@ export default function LeaguesPage() {
 
                 <div className="shrink-0 text-right">
                   {worldLeague?.myRankToday ? (
-                    <Chip tone="volt" className="font-black text-xs">
+                    <Chip tone="volt" className="text-xs font-black">
                       #{worldLeague.myRankToday} {t('league.tabToday').toLowerCase()}
                     </Chip>
                   ) : (
@@ -355,21 +357,21 @@ export default function LeaguesPage() {
               </div>
 
               {/* User position banner inside the World League card */}
-              <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2.5 bg-surface-2/60 -mx-4 -mb-4 px-4 py-2.5 rounded-b-2xl">
-                <div className="flex items-center gap-2 min-w-0">
+              <div className="border-border-subtle bg-surface-2/60 -mx-4 -mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-b-2xl border-t px-4 py-2.5 pt-2.5">
+                <div className="flex min-w-0 items-center gap-2">
                   <Avatar nickname={worldLeague?.myNickname || myNickname} size="sm" />
-                  <span className="font-extrabold text-xs truncate">
+                  <span className="truncate text-xs font-extrabold">
                     {worldLeague?.myNickname || myNickname}
                   </span>
                 </div>
-                <div className="text-right shrink-0">
-                  <span className="text-xs font-black text-ink">
+                <div className="shrink-0 text-right">
+                  <span className="text-ink text-xs font-black">
                     {worldLeague?.myRankToday
                       ? t('leagues.worldRank', { rank: worldLeague.myRankToday })
                       : t('leagues.leaderboardAvailable')}
                   </span>
                   {worldLeague?.myScore != null && (
-                    <span className="text-muted text-[11px] font-bold block">
+                    <span className="text-muted block text-[11px] font-bold">
                       {t('common.points', { points: worldLeague.myScore.toLocaleString() })}
                     </span>
                   )}
@@ -381,10 +383,10 @@ export default function LeaguesPage() {
           {/* 2. LIGILE MELE (Private Leagues) */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+              <h2 className="text-muted text-xs font-bold uppercase tracking-wider">
                 {t('leagues.tabMine')}
               </h2>
-              <span className="text-xs text-muted font-bold">
+              <span className="text-muted text-xs font-bold">
                 {t('leagues.privateCountMax', {
                   count: privateLeagues.length,
                   max: status?.isPro ? '∞' : '10',
@@ -393,19 +395,19 @@ export default function LeaguesPage() {
             </div>
 
             {privateLeagues.length === 0 ? (
-              <Card className="p-6 text-center space-y-3 border-2 border-dashed border-border bg-surface-2/60">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-surface border-2 border-border text-2xl shadow-sm">
+              <Card className="border-border bg-surface-2/60 space-y-3 border-2 border-dashed p-6 text-center">
+                <div className="bg-surface border-border mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm">
                   <Users size={24} weight="bold" className="text-ron-strong" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-display font-black text-base text-ink">
+                  <h3 className="font-display text-ink text-base font-black">
                     {t('leagues.emptyTitle')}
                   </h3>
-                  <p className="text-muted text-xs max-w-[280px] mx-auto">
+                  <p className="text-muted mx-auto max-w-[280px] text-xs">
                     {t('leagues.emptyBodyJoinLimit', { max: 10 })}
                   </p>
                 </div>
-                <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+                <div className="flex flex-col justify-center gap-2 pt-2 sm:flex-row">
                   <Button size="sm" variant="primary" onClick={() => setCreateOpen(true)}>
                     {t('leagues.createFirst')}
                   </Button>
@@ -420,21 +422,18 @@ export default function LeaguesPage() {
                   <Link
                     key={league.id}
                     href={`/${locale}/league/${league.id}`}
-                    className="border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex flex-col gap-3 rounded-2xl p-4 shadow-[var(--rd-shadow-key)] transition-all select-none"
+                    className="border-border bg-surface text-ink hover:border-border-subtle flex min-w-0 select-none flex-col gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
                         {/* Initials avatars */}
-                        <div className="flex -space-x-2 shrink-0">
-                          {(league.initials && league.initials.length > 0
-                            ? league.initials
-                            : ['L']
-                          )
+                        <div className="flex shrink-0 -space-x-2">
+                          {(league.initials && league.initials.length > 0 ? league.initials : ['L'])
                             .slice(0, 3)
                             .map((init, i) => (
                               <div
                                 key={i}
-                                className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-border bg-surface-2 text-xs font-black shadow-sm"
+                                className="border-border bg-surface-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 text-xs font-black shadow-sm"
                               >
                                 {init}
                               </div>
@@ -443,17 +442,18 @@ export default function LeaguesPage() {
 
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-display font-extrabold text-sm truncate">
+                            <span className="font-display line-clamp-2 break-words text-sm font-extrabold [overflow-wrap:anywhere]">
                               {league.name}
                             </span>
                             {league.isOwner && (
-                              <Chip tone="neutral" className="text-[10px] py-0 px-1 font-bold">
+                              <Chip tone="neutral" className="px-1 py-0 text-[10px] font-bold">
                                 {t('leagues.adminBadge')}
                               </Chip>
                             )}
                           </div>
-                          <p className="text-muted text-xs">
-                            {t('league.membersCount', { count: league.memberCount })} / {league.maxMembers ?? 5} ·{' '}
+                          <p className="text-muted break-words text-xs [overflow-wrap:anywhere]">
+                            {t('league.membersCount', { count: league.memberCount })} /{' '}
+                            {league.maxMembers ?? 5} ·{' '}
                             {t('common.playedTodayCount', { count: league.playedTodayCount })}
                           </p>
                         </div>
@@ -461,7 +461,7 @@ export default function LeaguesPage() {
 
                       <div className="shrink-0 text-right">
                         {league.intlRank ? (
-                          <Chip tone="volt" className="font-black text-xs">
+                          <Chip tone="volt" className="text-xs font-black">
                             🏆 {t('leagues.worldRank', { rank: league.intlRank })}
                           </Chip>
                         ) : (
@@ -471,21 +471,21 @@ export default function LeaguesPage() {
                     </div>
 
                     {/* International rank of the league & user ranking in this league */}
-                    <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2.5 bg-surface-2/60 -mx-4 -mb-4 px-4 py-2.5 rounded-b-2xl text-xs">
-                      <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="border-border-subtle bg-surface-2/60 -mx-4 -mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-b-2xl border-t px-4 py-2.5 pt-2.5 text-xs">
+                      <div className="flex min-w-0 items-center gap-1.5">
                         <Avatar nickname={league.myNickname || myNickname} size="sm" />
-                        <span className="font-extrabold truncate">
+                        <span className="truncate font-extrabold">
                           {league.myNickname || myNickname}
                         </span>
                       </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-black text-ink">
+                      <div className="shrink-0 text-right">
+                        <span className="text-ink font-black">
                           {league.myRankToday
                             ? t('leagues.rankInLeague', { rank: league.myRankToday })
                             : t('leagues.notPlayedToday')}
                         </span>
                         {league.myScore != null && (
-                          <span className="text-muted text-[11px] font-bold block">
+                          <span className="text-muted block text-[11px] font-bold">
                             {t('common.points', { points: league.myScore.toLocaleString() })}
                           </span>
                         )}
@@ -510,20 +510,22 @@ export default function LeaguesPage() {
               {/* Scope Switcher: Azi vs All-Time */}
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="font-display text-lg font-black text-ink">{t('leagues.worldPlayersTitle')}</h2>
+                  <h2 className="font-display text-ink text-lg font-black">
+                    {t('leagues.worldPlayersTitle')}
+                  </h2>
                   <p className="text-muted text-xs font-medium">
                     {globalScope === 'today'
                       ? t('leagues.todayRoundLeaderboard')
                       : t('leagues.allTimeLeaderboard')}
                   </p>
                 </div>
-                <div className="flex items-center rounded-lg border-2 border-border bg-surface-2 p-0.5 text-xs font-black">
+                <div className="border-border bg-surface-2 flex items-center rounded-lg border-2 p-0.5 text-xs font-black">
                   <button
                     type="button"
                     onClick={() => setGlobalScope('today')}
-                    className={`rounded-md px-2.5 py-1 cursor-pointer transition-all ${
+                    className={`cursor-pointer rounded-md px-2.5 py-1 transition-all ${
                       globalScope === 'today'
-                        ? 'border border-border bg-surface text-ink shadow-sm'
+                        ? 'border-border bg-surface text-ink border shadow-sm'
                         : 'text-muted hover:text-ink'
                     }`}
                   >
@@ -532,9 +534,9 @@ export default function LeaguesPage() {
                   <button
                     type="button"
                     onClick={() => setGlobalScope('alltime')}
-                    className={`rounded-md px-2.5 py-1 cursor-pointer transition-all ${
+                    className={`cursor-pointer rounded-md px-2.5 py-1 transition-all ${
                       globalScope === 'alltime'
-                        ? 'border border-border bg-surface text-ink shadow-sm'
+                        ? 'border-border bg-surface text-ink border shadow-sm'
                         : 'text-muted hover:text-ink'
                     }`}
                   >
@@ -544,13 +546,11 @@ export default function LeaguesPage() {
               </div>
 
               {filteredGlobalList.length === 0 ? (
-                <Card className="p-6 text-center space-y-2 border-2 border-dashed border-border bg-surface-2/60">
+                <Card className="border-border bg-surface-2/60 space-y-2 border-2 border-dashed p-6 text-center">
                   <Trophy size={32} weight="fill" className="text-muted mx-auto" />
-                  <p className="text-ink font-bold text-sm">{t('leagues.noPlayersFound')}</p>
+                  <p className="text-ink text-sm font-bold">{t('leagues.noPlayersFound')}</p>
                   <p className="text-muted text-xs">
-                    {searchQuery
-                      ? t('leagues.tryAnotherSearch')
-                      : t('leagues.playToTop')}
+                    {searchQuery ? t('leagues.tryAnotherSearch') : t('leagues.playToTop')}
                   </p>
                 </Card>
               ) : (
@@ -561,18 +561,18 @@ export default function LeaguesPage() {
                       <div
                         id={`rank-row-${player.uid}`}
                         key={player.uid}
-                        className={`flex items-center justify-between gap-3 rounded-2xl p-3.5 transition-all select-none ${podium.cardStyle}`}
+                        className={`flex select-none items-center justify-between gap-3 rounded-2xl p-3.5 transition-all ${podium.cardStyle}`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex min-w-0 items-center gap-3">
                           <RankBadge rank={player.rank} />
                           <Avatar nickname={player.nickname} size="md" />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-display font-black text-sm truncate">
+                              <span className="font-display truncate text-sm font-black">
                                 {player.nickname}
                               </span>
                               {player.isCurrentUser && (
-                                <Chip tone="volt" className="text-[10px] py-0 px-1.5 font-black">
+                                <Chip tone="volt" className="px-1.5 py-0 text-[10px] font-black">
                                   {t('common.you')}
                                 </Chip>
                               )}
@@ -585,13 +585,14 @@ export default function LeaguesPage() {
                           </div>
                         </div>
 
-                        <div className="text-right shrink-0">
-                          <span className="rd-tabular font-display font-black text-base text-ink block">
+                        <div className="shrink-0 text-right">
+                          <span className="rd-tabular font-display text-ink block text-base font-black">
                             {t('common.points', {
-                              points: (globalScope === 'today'
-                                ? player.score
-                                : player.allTimeScore
-                              )?.toLocaleString() ?? '—',
+                              points:
+                                (globalScope === 'today'
+                                  ? player.score
+                                  : player.allTimeScore
+                                )?.toLocaleString() ?? '—',
                             })}
                           </span>
                           <span className="text-muted text-[10px] font-bold">
@@ -619,16 +620,18 @@ export default function LeaguesPage() {
           {leaderboardSubTab === 'leagues' && (
             <div className="space-y-3">
               <div>
-                <h2 className="font-display text-lg font-black text-ink">{t('leagues.rankingTitle')}</h2>
+                <h2 className="font-display text-ink text-lg font-black">
+                  {t('leagues.rankingTitle')}
+                </h2>
                 <p className="text-muted text-xs font-medium">
                   {t('leagues.rankingSubtitleTotal')}
                 </p>
               </div>
 
               {filteredLeaguesList.length === 0 ? (
-                <Card className="p-6 text-center space-y-2 border-2 border-dashed border-border bg-surface-2/60">
+                <Card className="border-border bg-surface-2/60 space-y-2 border-2 border-dashed p-6 text-center">
                   <Trophy size={32} weight="fill" className="text-muted mx-auto" />
-                  <p className="text-ink font-bold text-sm">{t('leagues.noLeaguesFound')}</p>
+                  <p className="text-ink text-sm font-bold">{t('leagues.noLeaguesFound')}</p>
                   <p className="text-muted text-xs">{t('leagues.rankingEmptyCta')}</p>
                   <div className="pt-2">
                     <Button size="sm" variant="volt" onClick={() => setCreateOpen(true)}>
@@ -645,30 +648,31 @@ export default function LeaguesPage() {
                       <Link
                         key={item.id}
                         href={`/${locale}/league/${item.id}`}
-                        className={`flex items-center justify-between gap-3 rounded-2xl p-3.5 transition-all select-none ${podium.cardStyle}`}
+                        className={`flex select-none items-center justify-between gap-3 rounded-2xl p-3.5 transition-all ${podium.cardStyle}`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex min-w-0 items-center gap-3">
                           <RankBadge rank={rankNum} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-lg shrink-0">{item.themeEmoji || '🏆'}</span>
-                              <span className="font-display font-black text-sm truncate">
+                              <span className="shrink-0 text-lg">{item.themeEmoji || '🏆'}</span>
+                              <span className="font-display truncate text-sm font-black">
                                 {item.name}
                               </span>
                               {item.isMember && (
-                                <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
+                                <Chip tone="volt" className="px-1 py-0 text-[10px] font-black">
                                   {t('leagues.yourLeagueBadge')}
                                 </Chip>
                               )}
                             </div>
                             <p className="text-muted text-xs font-medium">
-                              {t('league.membersCount', { count: item.memberCount })} · {t('leagues.rankingAverage', { avg: item.avgScore })}
+                              {t('league.membersCount', { count: item.memberCount })} ·{' '}
+                              {t('leagues.rankingAverage', { avg: item.avgScore })}
                             </p>
                           </div>
                         </div>
 
-                        <div className="text-right shrink-0">
-                          <span className="rd-tabular font-display font-black text-sm text-ink block">
+                        <div className="shrink-0 text-right">
+                          <span className="rd-tabular font-display text-ink block text-sm font-black">
                             {t('common.points', { points: item.allTimePoints.toLocaleString() })}
                           </span>
                           <span className="text-muted text-[10px] font-bold">
@@ -707,4 +711,3 @@ export default function LeaguesPage() {
     </main>
   );
 }
-

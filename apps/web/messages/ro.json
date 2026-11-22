@@ -464,7 +464,9 @@
       "s3Title": "3. Sub-împuterniciți și analitice",
       "s3Body": "Folosim Firebase (bază de date și autentificare în UE), Stripe (procesare securizată a plăților pentru RonDuel Pro) și PostHog Cloud EU (analitice anonime, activate exclusiv cu consimțământul tău explicit).",
       "s4Title": "4. Drepturile tale (Export și Ștergere)",
-      "s4Body": "Conform GDPR, ai dreptul de acces, rectificare, portabilitate și ștergere („dreptul de a fi uitat”). Îți poți exporta toate datele în format JSON sau îți poți șterge complet și ireversibil contul direct din pagina Setări."
+      "s4Body": "Conform GDPR, ai dreptul de acces, rectificare, portabilitate și ștergere („dreptul de a fi uitat”). Îți poți exporta toate datele în format JSON sau îți poți șterge complet și ireversibil contul direct din pagina Setări.",
+      "s5Title": "5. Conturi de invitat",
+      "s5Body": "Dacă joci fără să îți creezi un cont, RonDuel păstrează un profil de invitat și datele legate de el (poreclă, scoruri, serii, ligi și dueluri) timp de 7 zile de la creare. Dacă nu salvezi profilul cu email sau Google în aceste 7 zile, contul de invitat și toate datele lui sunt șterse. Salvarea contului păstrează același profil și îl face permanent. Un cont salvat rămâne până când îl ștergi tu."
     },
     "cookies": {
       "title": "Politică de cookie-uri și stocare locală",
@@ -639,7 +641,32 @@
     "placeholder": "Ex.: Cum se joacă? / Creează un duel…",
     "inputLabel": "Mesaj pentru RonBot",
     "send": "Trimite mesajul",
-    "open": "Deschide asistentul RonBot AI"
+    "open": "Deschide asistentul RonBot AI",
+    "guestName": "prietene",
+    "seePro": "Vezi RonDuel Pro",
+    "playTodayCta": "▶️ Joacă runda de azi",
+    "replyWhatIs": "RonDuel este un joc zilnic de cultură generală pe care îl joci cu prietenii. Toți primesc aceleași 6 întrebări o dată pe zi, iar un răspuns corect și rapid aduce mai multe puncte. Vă comparați rezultatele în ligi și în dueluri 1 la 1.",
+    "replyReset": "Runda zilnică se resetează la miezul nopții (ora 00:00 în fusul tău orar). Atunci se deblochează runda nouă și ai o singură încercare în ziua respectivă.",
+    "replyScore": "Un răspuns corect valorează **100** de puncte plus un bonus de viteză de până la **100**.\n\n- Maxim pe întrebare: 200\n- Maxim pe zi: 1.200\n- Greșit sau timp expirat: 0\n\nLa egalitate câștigă timpul total mai mic.",
+    "replyHowTo": "Apasă joacă, alege o poreclă și răspunde la 6 întrebări în aproximativ un minut. Ai o singură încercare pe zi, apoi trimiți prietenilor cardul fără spoilere.",
+    "replyHowToDetail": "1. Apasă joacă și alege o poreclă (nu ai nevoie de cont).\n2. După numărătoare primești 6 întrebări: 2 grilă (10s), 1 ordonare (15s), 1 intrus (10s) și 2 logică (15s).\n3. O singură încercare pe zi. Răspunsul corect aduce 100 de puncte plus până la 100 pentru viteză (maxim 1.200).\n4. Cardul de share arată ⚡ corect și rapid, 🟩 corect, 🟥 greșit, fără textul întrebărilor.",
+    "replyPro": "RonDuel Pro este opțional. Mărește ligile la 200 de membri, deblochează dueluri 1v1 nelimitate, adaugă un scut de serie pe săptămână, statistici pe teme și trei teme vizuale. Jocul zilnic rămâne gratuit.",
+    "replyEmoji": "Pe cardul de share, ⚡ înseamnă răspuns corect cu mult timp rămas, 🟩 înseamnă corect, iar 🟥 înseamnă greșit sau prea lent. Cardul nu arată niciodată întrebările.",
+    "replyLeague": "O ligă este clasamentul grupului tău. Scorurile de azi rămân ascunse până termini și tu. Trofeul săptămânii îl ia totalul cel mai bun de duminică. Liga gratuită are 5 oameni; Pro are 200.",
+    "replyDuel": "Un duel 1v1 are 5 întrebări separate, nu runda de azi. Fiecare are 24 de ore. Scorul mai mare câștigă, iar cine nu joacă pierde. Contul gratuit are 4 dueluri pe lună.",
+    "replyStreak": "Seria crește cu 1 în fiecare zi locală în care termini runda. Dacă sari o zi, revine la 0. Runda nouă se deblochează la miezul nopții locale. Pro poate proteja o zi ratată pe săptămână.",
+    "replyAccount": "Poți juca ca invitat. Datele de invitat se șterg la 7 zile după crearea profilului, dacă nu îl salvezi cu email sau Google și păstrezi același profil. Poți exporta sau șterge datele din Setări.",
+    "replyStatusPlayed": "Azi ({date}), runda #{round} — {topic}. Ai {score} puncte ({emoji}). Serie: {streak} zile (record {best}). Ligi: {leagues}.",
+    "replyStatusPending": "Azi ({date}) este runda #{round} — {topic}. Nu ai jucat încă. Serie: {streak} zile (record {best}).",
+    "replyFallback": "Salut, {name}! Întreabă-mă despre runda de azi, scor, ligi, dueluri sau Pro și îți răspund pe scurt.",
+    "replyDuelCreated": "Ți-am pornit un duel 1v1: 5 întrebări și 24 de ore să joci. Deschide-l și trimite linkul unui prieten.",
+    "replyLeagueCreated": "Am creat liga „{name}”. Cod de invitație: {code}. Trimite linkul ca să intre prietenii.",
+    "replyActionFailed": "Nu am putut face asta: {error}.",
+    "replyAdminScheduled": "Am programat o rundă de 6 întrebări pentru {date}.",
+    "replyAdminScheduleFailed": "Nu am putut programa runda pentru {date}: {error}.",
+    "replyAdminDrafts": "Am creat {count} întrebări noi de tip {type} despre „{topic}” ({ids}).",
+    "replyAdminPanel": "Le poți verifica în panoul de admin.",
+    "openAdmin": "Deschide admin"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia zilnic cu prietenii tăi",
@@ -668,7 +695,9 @@
     "anonWarning": "Contul tău e legat doar de acest browser. Conectează Google sau emailul ca să nu pierzi progresul și să apari în top 100 global.",
     "anonExpiry": "Statisticile și progresul tău se șterg automat după o săptămână dacă nu ai un cont gratuit!",
     "createAccountBtn": "Creează cont",
-    "later": "Mai târziu"
+    "later": "Mai târziu",
+    "guestExpiryBanner": "Contul tău de invitat se șterge pe {date} dacă nu îl salvezi cu email sau Google.",
+    "saveAccount": "Salvează contul"
   },
   "leagues": {
     "myCount": "{count, plural, one {# ligă} few {# ligi} other {# de ligi}}",

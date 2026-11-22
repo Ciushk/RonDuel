@@ -8,8 +8,9 @@ import { AuthModal, type AuthMode } from '@/components/AuthModal';
 import { Button, Sheet } from '@/components/ui';
 import { apiErrorMessage } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
-import { loginWithGoogle } from '@/lib/firebase';
+import { linkSessionWithGoogle } from '@/lib/link-account';
 import { getLocalSession, saveLocalSession } from '@/lib/session';
+import { GuestAccountNotice } from '@/components/GuestAccountNotice';
 
 interface AccountLinkingSheetProps {
   open: boolean;
@@ -42,49 +43,17 @@ export function AccountLinkingSheet({
     setLoading(true);
     setError('');
     try {
-      const user = await loginWithGoogle();
-      if (!user.email) {
-        setError(t('auth.errors.googleNoEmail'));
-        setLoading(false);
-        return;
-      }
-      const session = getLocalSession();
-      const userNick = user.displayName || session.nickname;
-
-      const res = await fetch('/api/me/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: session.uid,
-          email: user.email,
-          nickname: userNick,
-          provider: 'google',
-          confirmMerge: true,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(apiErrorMessage(t, data, 'account.saveError'));
-        return;
-      }
-
-      const finalUid = data.uid || data.existingUid || session.uid;
-      saveLocalSession({
-        ...session,
-        uid: finalUid,
-        email: data.email || user.email,
-        isAnonymous: false,
-        authProvider: 'google',
-        nickname: data.nickname || userNick,
-      });
-
+      const saved = await linkSessionWithGoogle();
       trackEvent('account_link_completed', { method: 'google' });
-      trackEvent('account_linked', { provider: 'google', uid: finalUid });
+      trackEvent('account_linked', { provider: 'google.com', uid: saved.uid });
       setAccountExistsConfirm(null);
       onLinked();
       onClose();
     } catch (err: unknown) {
+      if ((err as { message?: string }).message === 'google-no-email') {
+        setError(t('auth.errors.googleNoEmail'));
+        return;
+      }
       const authErr = err as { code?: string; message?: string };
       if (authErr?.code === 'auth/popup-closed-by-user') {
         setError(t('auth.errors.googleClosed'));
@@ -166,19 +135,11 @@ export function AccountLinkingSheet({
   };
 
   return (
-    <Sheet
-      open={open}
-      onClose={handleDismiss}
-      title={t('account.saveTitle')}
-    >
+    <Sheet open={open} onClose={handleDismiss} title={t('account.saveTitle')}>
       {accountExistsConfirm ? (
         <div className="space-y-4">
-          <p className="text-sm font-bold text-ink">
-            {t('account.mergeQuestion')}
-          </p>
-          <p className="text-muted text-xs font-medium">
-            {t('account.mergeNote')}
-          </p>
+          <p className="text-ink text-sm font-bold">{t('account.mergeQuestion')}</p>
+          <p className="text-muted text-xs font-medium">{t('account.mergeNote')}</p>
           {error && <p className="text-wrong text-xs font-bold">{error}</p>}
           <div className="flex flex-col gap-2 pt-2">
             <Button
@@ -187,11 +148,7 @@ export function AccountLinkingSheet({
               size="lg"
               disabled={loading}
               onClick={() =>
-                void handleLink(
-                  accountExistsConfirm.provider,
-                  accountExistsConfirm.email,
-                  true,
-                )
+                void handleLink(accountExistsConfirm.provider, accountExistsConfirm.email, true)
               }
             >
               {loading ? t('auth.loggingIn') : t('account.mergeConfirm')}
@@ -213,12 +170,12 @@ export function AccountLinkingSheet({
             {t('account.anonWarning')}
           </p>
 
-          <div className="rounded-xl border-2 border-ron-strong bg-ron/10 p-3 flex items-start gap-2.5">
-            <span className="text-base shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
-            <p className="text-xs font-bold text-ink leading-snug">
-              {t('account.anonExpiry')}
-            </p>
-          </div>
+          <GuestAccountNotice
+            onSave={() => {
+              setAuthModalMode('signup');
+              setAuthModalOpen(true);
+            }}
+          />
 
           {error && <p className="text-wrong text-xs font-bold">{error}</p>}
 
@@ -232,7 +189,7 @@ export function AccountLinkingSheet({
                   setAuthModalMode('login');
                   setAuthModalOpen(true);
                 }}
-                className="font-black text-xs h-11 shadow-sm"
+                className="h-11 text-xs font-black shadow-sm"
               >
                 {t('auth.loginButton')}
               </Button>
@@ -244,7 +201,7 @@ export function AccountLinkingSheet({
                   setAuthModalMode('signup');
                   setAuthModalOpen(true);
                 }}
-                className="font-black text-xs h-11 shadow-sm"
+                className="h-11 text-xs font-black shadow-sm"
               >
                 {t('account.createAccountBtn')}
               </Button>
@@ -256,7 +213,7 @@ export function AccountLinkingSheet({
               size="md"
               disabled={loading}
               onClick={() => void handleGoogleLink()}
-              className="font-bold text-xs h-11 flex items-center justify-center gap-2"
+              className="flex h-11 items-center justify-center gap-2 text-xs font-bold"
             >
               <GoogleLogo size={20} weight="bold" aria-hidden="true" />
               <span>{t('auth.continueWithGoogle')}</span>
@@ -269,14 +226,14 @@ export function AccountLinkingSheet({
                   setAuthModalMode('forgot');
                   setAuthModalOpen(true);
                 }}
-                className="text-xs font-bold text-muted hover:text-ink cursor-pointer hover:underline"
+                className="text-muted hover:text-ink cursor-pointer text-xs font-bold hover:underline"
               >
                 {t('auth.forgotPasswordLink')}
               </button>
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="text-muted hover:text-ink text-xs font-bold underline underline-offset-4 cursor-pointer"
+                className="text-muted hover:text-ink cursor-pointer text-xs font-bold underline underline-offset-4"
               >
                 {t('account.later')}
               </button>

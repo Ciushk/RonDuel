@@ -19,10 +19,19 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/leagues/$(leagueId)/members/$(request.auth.uid));
     }
 
-    // Users: read own, update only safe client fields (never pro, streaks, isAnonymous)
+    // Users: a player can read and update only their own document.
+    // expiresAt, isAnonymous, isAdmin, and pro are server-only.
     match /users/{uid} {
+      function serverFieldsUnchanged() {
+        return request.resource.data.expiresAt == resource.data.expiresAt
+          && request.resource.data.isAnonymous == resource.data.isAnonymous
+          && request.resource.data.isAdmin == resource.data.isAdmin
+          && request.resource.data.pro == resource.data.pro;
+      }
+
       allow read: if isOwner(uid) || isAdmin();
       allow update: if isOwner(uid) &&
+        serverFieldsUnchanged() &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locale', 'notif', 'consent']);
       allow create, delete: if false;
 

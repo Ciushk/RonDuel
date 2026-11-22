@@ -18,9 +18,14 @@ import { useEffect, useState } from 'react';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
-import { loginWithGoogle } from '@/lib/firebase';
+import { linkSessionWithGoogle } from '@/lib/link-account';
 import { formatYearlyPrice } from '@/lib/pricing';
-import { getBrowserTimeZone, getLocalSession, recordLeagueId, saveLocalSession } from '@/lib/session';
+import {
+  getBrowserTimeZone,
+  getLocalSession,
+  recordLeagueId,
+  saveLocalSession,
+} from '@/lib/session';
 
 interface CreateLeagueWizardProps {
   open: boolean;
@@ -78,7 +83,9 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
     setCreatedLeague(null);
 
     const tz = getBrowserTimeZone();
-    fetch(`/api/today?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&locale=${locale}`)
+    fetch(
+      `/api/today?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&locale=${locale}`,
+    )
       .then((r) => r.json())
       .then((data) => {
         if (data.ownedLeaguesCount !== undefined) setOwnedCount(data.ownedLeaguesCount);
@@ -88,7 +95,14 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       .catch(() => {});
 
     // Step 1: if user is not anonymous (already signed in), skip to Step 2
-    if (!s.isAnonymous || s.email || s.authProvider === 'google' || s.authProvider === 'email_link') {
+    if (
+      !s.isAnonymous ||
+      s.email ||
+      s.authProvider === 'google' ||
+      s.authProvider === 'google.com' ||
+      s.authProvider === 'password' ||
+      s.authProvider === 'email_link'
+    ) {
       setStep(2);
       trackEvent('league_name_step_viewed');
     } else {
@@ -111,16 +125,15 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
 
     if (provider === 'google') {
       try {
-        const user = await loginWithGoogle();
-        if (!user.email) {
-          setError(tRoot('auth.errors.googleNoEmail'));
-          setLoading(false);
-          return;
-        }
-        targetEmail = user.email;
-        if (user.displayName) {
-          targetNickname = user.displayName;
-        }
+        const saved = await linkSessionWithGoogle();
+        targetEmail = saved.email;
+        targetNickname = saved.nickname || targetNickname;
+        setSessionUser(getLocalSession());
+        trackEvent('signin_for_league_completed', { method: provider });
+        setStep(2);
+        trackEvent('league_name_step_viewed');
+        setLoading(false);
+        return;
       } catch (err: unknown) {
         const authErr = err as { code?: string; message?: string };
         if (authErr?.code === 'auth/popup-closed-by-user') {
@@ -148,7 +161,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
           uid: s.uid,
           email: targetEmail,
           nickname: targetNickname,
-          provider: provider === 'google' ? 'google' : 'email_link',
+          provider: 'email_link',
           confirmMerge: true,
         }),
       });
@@ -165,7 +178,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
         isAnonymous: false,
         email: data.email || targetEmail,
         nickname: data.nickname || targetNickname,
-        authProvider: provider === 'google' ? 'google' : 'email_link',
+        authProvider: 'email_link',
       });
       setSessionUser(getLocalSession());
       trackEvent('signin_for_league_completed', { method: provider });
@@ -285,7 +298,8 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
   // Step 4 Share Handlers
   const getInviteUrl = () => {
     if (!createdLeague) return '';
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
     return `${origin}/${locale}/l/${createdLeague.inviteCode}?r=${sessionUser.uid}`;
   };
 
@@ -423,7 +437,10 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <label htmlFor="league-name-input" className="text-muted mb-1 block text-xs font-bold">
+              <label
+                htmlFor="league-name-input"
+                className="text-muted mb-1 block text-xs font-bold"
+              >
                 {t('nameLabel')}
               </label>
               <div className="flex gap-2">
@@ -507,7 +524,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
                     onClick={() => setSelectedEmoji(emoji)}
                     className={`flex h-12 items-center justify-center rounded-xl border-2 text-2xl transition-transform active:scale-95 ${
                       selectedEmoji === emoji
-                        ? 'border-[var(--rd-blue-strong)] bg-surface-2 ring-2 ring-[var(--rd-blue-strong)]'
+                        ? 'bg-surface-2 border-[var(--rd-blue-strong)] ring-2 ring-[var(--rd-blue-strong)]'
                         : 'border-border bg-surface'
                     }`}
                   >
@@ -585,44 +602,24 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
             </Card>
 
             <div className="grid gap-2">
-              <Button
-                variant="volt"
-                fullWidth
-                size="md"
-                onClick={handleShareWhatsApp}
-              >
+              <Button variant="volt" fullWidth size="md" onClick={handleShareWhatsApp}>
                 <WhatsappLogo size={20} weight="fill" aria-hidden="true" />
                 {t('shareWhatsApp')}
               </Button>
 
-              <Button
-                variant="blue"
-                fullWidth
-                size="md"
-                onClick={() => void handleShareNative()}
-              >
+              <Button variant="blue" fullWidth size="md" onClick={() => void handleShareNative()}>
                 <ShareNetwork size={20} weight="bold" aria-hidden="true" />
                 {t('shareNative')}
               </Button>
 
-              <Button
-                variant="secondary"
-                fullWidth
-                size="md"
-                onClick={() => void handleCopyLink()}
-              >
+              <Button variant="secondary" fullWidth size="md" onClick={() => void handleCopyLink()}>
                 <Copy size={18} weight="bold" aria-hidden="true" />
                 {t('copyLink')}
               </Button>
             </div>
 
             <div className="pt-2">
-              <Button
-                variant="primary"
-                fullWidth
-                size="lg"
-                onClick={handleFinish}
-              >
+              <Button variant="primary" fullWidth size="lg" onClick={handleFinish}>
                 <Check size={20} weight="bold" aria-hidden="true" />
                 {hasPlayedToday ? t('viewLeaderboard') : t('playTodayRound')}
               </Button>

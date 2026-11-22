@@ -464,7 +464,9 @@
       "s3Title": "3. Subverwerkers & Analyse",
       "s3Body": "We gebruiken Firebase (EU-database en authenticatie), Stripe (veilige betalingsverwerking voor RonDuel Pro) en PostHog Cloud EU (privacyvriendelijke analyse, alleen ingeschakeld na jouw uitdrukkelijke toestemming).",
       "s4Title": "4. Jouw rechten (Export & Verwijdering)",
-      "s4Body": "Onder de AVG heb je het recht op inzage, rectificatie, overdraagbaarheid en verwijdering van je persoonsgegevens ('recht om vergeten te worden'). Je kunt al je gegevens op elk moment als JSON exporteren of je account definitief verwijderen via Instellingen."
+      "s4Body": "Onder de AVG heb je het recht op inzage, rectificatie, overdraagbaarheid en verwijdering van je persoonsgegevens ('recht om vergeten te worden'). Je kunt al je gegevens op elk moment als JSON exporteren of je account definitief verwijderen via Instellingen.",
+      "s5Title": "5. Gastaccounts",
+      "s5Body": "Als je speelt zonder account, bewaart RonDuel een gastprofiel en de bijbehorende gegevens (naam, scores, reeksen, leagues en duels) 7 dagen vanaf het aanmaken. Sla je dat profiel binnen die 7 dagen niet op met e-mail of Google, dan worden het gastaccount en al zijn gegevens verwijderd. Opslaan houdt hetzelfde profiel en maakt het blijvend. Een opgeslagen account blijft staan tot jij het wist."
     },
     "cookies": {
       "title": "Cookie- & Opslagbeleid",
@@ -639,7 +641,32 @@
     "placeholder": "bijv. Hoe speel ik? / Maak een duel…",
     "inputLabel": "Bericht voor RonBot",
     "send": "Bericht versturen",
-    "open": "Open de RonBot AI-assistent"
+    "open": "Open de RonBot AI-assistent",
+    "guestName": "vriend",
+    "seePro": "Bekijk RonDuel Pro",
+    "playTodayCta": "▶️ Speel de ronde van vandaag",
+    "replyWhatIs": "RonDuel is een dagelijkse quiz die je met vrienden speelt. Iedereen krijgt één keer per dag dezelfde 6 vragen, en een snel goed antwoord levert meer punten op. Jullie vergelijken de resultaten in leagues en 1-tegen-1-duels.",
+    "replyReset": "De dagronde reset om lokale middernacht (00:00 in jouw tijdzone). Dan opent de nieuwe ronde en heb je die dag één poging.",
+    "replyScore": "Een goed antwoord is **100** punten plus een snelheidsbonus tot **100**.\n\n- Maximum per vraag: 200\n- Maximum per dag: 1.200\n- Fout of tijd om: 0\n\nBij gelijkspel wint de kortere totale tijd.",
+    "replyHowTo": "Tik op spelen, kies een naam en beantwoord 6 vragen in ongeveer een minuut. Je hebt één poging per dag en deelt daarna de kaart zonder spoilers.",
+    "replyHowToDetail": "1. Tik op spelen en kies een naam (geen account nodig).\n2. Na het aftellen krijg je 6 vragen: 2 meerkeuze (10s), 1 volgorde (15s), 1 buitenbeentje (10s) en 2 logica (15s).\n3. Eén poging per dag. Goed is 100 punten plus tot 100 voor snelheid (max 1.200).\n4. De kaart toont ⚡ goed en snel, 🟩 goed, 🟥 fout, zonder de vraagtekst.",
+    "replyPro": "RonDuel Pro is optioneel. Het vergroot leagues tot 200 leden, ontgrendelt onbeperkte 1-tegen-1-duels, geeft één wekelijks streakschild, themastatistieken en drie visuele thema’s. Het dagspel blijft gratis.",
+    "replyEmoji": "Op de kaart betekent ⚡ goed met veel tijd over, 🟩 goed en 🟥 fout of te langzaam. De kaart toont nooit de vragen.",
+    "replyLeague": "Een league is het klassement van je groep. De scores van vandaag blijven verborgen tot jij klaar bent. De weektrofee gaat naar het beste zondagstotaal. Gratis leagues hebben 5 mensen; Pro heeft 200.",
+    "replyDuel": "Een 1-tegen-1-duel heeft 5 aparte vragen, niet de ronde van vandaag. Ieder heeft 24 uur. De hoogste score wint en wie niet speelt verliest. Gratis accounts hebben 4 duels per maand.",
+    "replyStreak": "Je reeks stijgt met 1 op elke lokale dag dat je de ronde afmaakt. Sla je een dag over, dan staat hij op 0. De nieuwe ronde opent om lokale middernacht. Pro kan één gemiste dag per week beschermen.",
+    "replyAccount": "Je kunt als gast spelen. Gastgegevens worden 7 dagen na het aanmaken gewist, tenzij je het profiel met e-mail of Google bewaart en hetzelfde profiel houdt. Exporteren of wissen doe je in Instellingen.",
+    "replyStatusPlayed": "Vandaag ({date}), ronde #{round} — {topic}. Je hebt {score} punten ({emoji}). Reeks: {streak} dagen (record {best}). Leagues: {leagues}.",
+    "replyStatusPending": "Vandaag ({date}) is ronde #{round} — {topic}. Je hebt nog niet gespeeld. Reeks: {streak} dagen (record {best}).",
+    "replyFallback": "Hoi {name}! Vraag me naar de ronde van vandaag, de score, leagues, duels of Pro en ik houd het kort.",
+    "replyDuelCreated": "Ik heb een 1-tegen-1-duel voor je gestart: 5 vragen en 24 uur om te spelen. Open het en stuur de link naar een vriend.",
+    "replyLeagueCreated": "Ik heb de league „{name}” gemaakt. Uitnodigingscode: {code}. Deel de link zodat vrienden kunnen meedoen.",
+    "replyActionFailed": "Dat lukte niet: {error}.",
+    "replyAdminScheduled": "Een ronde van 6 vragen gepland voor {date}.",
+    "replyAdminScheduleFailed": "De ronde voor {date} kon niet worden gepland: {error}.",
+    "replyAdminDrafts": "{count} nieuwe vragen van type {type} over „{topic}” gemaakt ({ids}).",
+    "replyAdminPanel": "Je kunt ze nakijken in het adminpaneel.",
+    "openAdmin": "Admin openen"
   },
   "home": {
     "heroTitle": "RonDuel – Dagelijkse trivia met je vrienden",
@@ -668,7 +695,9 @@
     "anonWarning": "Je account is alleen aan deze browser gekoppeld. Koppel Google of e-mail zodat je je voortgang niet verliest en in de wereldwijde top 100 kunt verschijnen.",
     "anonExpiry": "Je statistieken en voortgang worden na 1 week automatisch verwijderd tenzij je een gratis account aanmaakt!",
     "createAccountBtn": "Account aanmaken",
-    "later": "Niet nu"
+    "later": "Niet nu",
+    "guestExpiryBanner": "Je gastaccount wordt op {date} verwijderd als je het niet bewaart met e-mail of Google.",
+    "saveAccount": "Account bewaren"
   },
   "leagues": {
     "myCount": "{count, plural, one {# competitie} other {# competities}}",

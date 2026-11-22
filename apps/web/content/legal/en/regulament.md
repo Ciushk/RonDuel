@@ -224,6 +224,10 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 
 Questions about the rules: contact@pixel-webapp.ro.
 
+## 15. Guest accounts
+
+15.1. A guest profile that is not saved with email or Google is deleted, together with its scores, streaks, leagues, and duels, 7 days after it was created. Linking an email address or a Google account keeps the same profile and stops that deletion. A saved account stays until the player deletes it.
+
 ---
 
 _Last updated: [DATA] (proposal: December 1, 2026)_

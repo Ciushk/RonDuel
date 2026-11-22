@@ -23,6 +23,7 @@ const DOC_SECTIONS: Record<
     { titleKey: 'legal.privacy.s2Title', bodyKey: 'legal.privacy.s2Body' },
     { titleKey: 'legal.privacy.s3Title', bodyKey: 'legal.privacy.s3Body' },
     { titleKey: 'legal.privacy.s4Title', bodyKey: 'legal.privacy.s4Body' },
+    { titleKey: 'legal.privacy.s5Title', bodyKey: 'legal.privacy.s5Body' },
   ],
   cookies: [
     { titleKey: 'legal.cookies.s1Title', bodyKey: 'legal.cookies.s1Body' },

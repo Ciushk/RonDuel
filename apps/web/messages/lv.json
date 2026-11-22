@@ -464,7 +464,9 @@
       "s3Title": "3. Apakšapstrādātāji un analītika",
       "s3Body": "Mēs izmantojam Firebase (datubāze un autentifikācija ES), Stripe (droša maksājumu apstrāde RonDuel Pro) un PostHog Cloud EU (privātumam draudzīga analītika, kas tiek iespējota tikai ar tavu skaidru piekrišanu).",
       "s4Title": "4. Tavas tiesības (Eksports un dzēšana)",
-      "s4Body": "Saskaņā ar VDAR tev ir tiesības piekļūt saviem personas datiem, tos labot, pārnest un dzēst ('tiesības tikt aizmirstam'). Vari eksportēt visus savus datus JSON formātā vai neatgriezeniski dzēst savu kontu jebkurā laikā Iestatījumos."
+      "s4Body": "Saskaņā ar VDAR tev ir tiesības piekļūt saviem personas datiem, tos labot, pārnest un dzēst ('tiesības tikt aizmirstam'). Vari eksportēt visus savus datus JSON formātā vai neatgriezeniski dzēst savu kontu jebkurā laikā Iestatījumos.",
+      "s5Title": "5. Viesa konti",
+      "s5Body": "Ja spēlē, neveidojot kontu, RonDuel glabā viesa profilu un saistītos datus (segvārdu, rezultātus, sērijas, līgas un dueļus) 7 dienas no izveides. Ja šajās 7 dienās nesaglabā profilu ar e-pastu vai Google, viesa konts un visi tā dati tiek dzēsti. Saglabāšana patur to pašu profilu un padara to pastāvīgu. Saglabāts konts paliek, līdz tu to izdzēs."
     },
     "cookies": {
       "title": "Sīkfailu un vietējās krātuves politika",
@@ -639,7 +641,32 @@
     "placeholder": "piem., Kā spēlēt? / Izveidot divcīņu…",
     "inputLabel": "Ziņojums RonBotam",
     "send": "Sūtīt ziņojumu",
-    "open": "Atvērt RonBot AI asistentu"
+    "open": "Atvērt RonBot AI asistentu",
+    "guestName": "draugs",
+    "seePro": "Skatīt RonDuel Pro",
+    "playTodayCta": "▶️ Spēlē šodienas raundu",
+    "replyWhatIs": "RonDuel ir ikdienas viktorīna ar draugiem. Visi reizi dienā saņem tos pašus 6 jautājumus, un ātra pareiza atbilde dod vairāk punktu. Rezultātus salīdzināt līgās un 1 pret 1 dueļos.",
+    "replyReset": "Dienas raunds atiestatās vietējā pusnaktī (00:00 tavā joslā). Tad atveras jaunais raunds un tajā dienā tev ir viens mēģinājums.",
+    "replyScore": "Pareiza atbilde ir **100** punkti plus ātruma bonuss līdz **100**.\n\n- Maksimums jautājumam: 200\n- Maksimums dienā: 1 200\n- Nepareizi vai laiks beidzies: 0\n\nNeizšķirtā uzvar īsākais kopējais laiks.",
+    "replyHowTo": "Pieskaries spēlēt, izvēlies segvārdu un atbildi uz 6 jautājumiem apmēram minūtē. Tev ir viens mēģinājums dienā, pēc tam dalies ar karti bez spoileriem.",
+    "replyHowToDetail": "1. Pieskaries spēlēt un izvēlies segvārdu (bez konta).\n2. Pēc atskaites ir 6 jautājumi: 2 izvēles (10s), 1 secība (15s), 1 svešais (10s) un 2 loģika (15s).\n3. Viens mēģinājums dienā. Pareizi ir 100 punkti plus līdz 100 par ātrumu (maks. 1 200).\n4. Karte rāda ⚡ pareizi un ātri, 🟩 pareizi, 🟥 nepareizi, bez jautājumu teksta.",
+    "replyPro": "RonDuel Pro ir pēc izvēles. Tas ceļ līgas līdz 200 dalībniekiem, atbloķē neierobežotus 1 pret 1 dueļus, pievieno nedēļas sērijas vairogu, tēmu statistiku un trīs izskatus. Dienas spēle paliek bezmaksas.",
+    "replyEmoji": "Kartē ⚡ ir pareiza atbilde ar daudz atlikušu laiku, 🟩 ir pareizi un 🟥 ir nepareizi vai par lēnu. Karte nekad nerāda jautājumus.",
+    "replyLeague": "Līga ir tavas grupas rangs. Šodienas punkti ir slēpti, kamēr nepabeidz. Nedēļas trofeja ir labākajai svētdienas summai. Bezmaksas līgā ir 5 cilvēki, Pro — 200.",
+    "replyDuel": "1 pret 1 duelī ir 5 atsevišķi jautājumi, ne šodienas raunds. Katram ir 24 stundas. Uzvar lielāks rezultāts, un kas nespēlē, zaudē. Bezmaksas kontam ir 4 dueļi mēnesī.",
+    "replyStreak": "Sērija aug par 1 katrā vietējā dienā, kad pabeidz raundu. Ja izlaid dienu, tā kļūst 0. Jaunais raunds atveras vietējā pusnaktī. Pro var pasargāt vienu izlaistu dienu nedēļā.",
+    "replyAccount": "Vari spēlēt kā viesis. Viesa dati tiek dzēsti 7 dienas pēc profila izveides, ja nesaglabā to ar e-pastu vai Google un nepaturi to pašu profilu. Eksports un dzēšana ir iestatījumos.",
+    "replyStatusPlayed": "Šodien ({date}), raunds #{round} — {topic}. Tev ir {score} punkti ({emoji}). Sērija: {streak} dienas (rekords {best}). Līgas: {leagues}.",
+    "replyStatusPending": "Šodien ({date}) ir raunds #{round} — {topic}. Tu vēl neesi spēlējis. Sērija: {streak} dienas (rekords {best}).",
+    "replyFallback": "Sveiks, {name}! Pajautā par šodienas raundu, rezultātu, līgām, dueļiem vai Pro, un es atbildēšu īsi.",
+    "replyDuelCreated": "Es tev sāku 1 pret 1 dueli: 5 jautājumi un 24 stundas spēlēšanai. Atver to un nosūti saiti draugam.",
+    "replyLeagueCreated": "Es izveidoju līgu „{name}”. Ielūguma kods: {code}. Dalies ar saiti, lai draugi pievienojas.",
+    "replyActionFailed": "To neizdevās: {error}.",
+    "replyAdminScheduled": "Ieplānoju 6 jautājumu raundu datumam {date}.",
+    "replyAdminScheduleFailed": "Neizdevās ieplānot raundu datumam {date}: {error}.",
+    "replyAdminDrafts": "Izveidoju {count} jaunus {type} tipa jautājumus par „{topic}” ({ids}).",
+    "replyAdminPanel": "Vari tos pārskatīt admina panelī.",
+    "openAdmin": "Atvērt adminu"
   },
   "home": {
     "heroTitle": "RonDuel – Ikdienas erudīcija ar draugiem",
@@ -668,7 +695,9 @@
     "anonWarning": "Tavs konts ir piesaistīts tikai šai pārlūkprogrammai. Pievieno Google vai e-pastu, lai nepazaudētu progresu un parādītos pasaules top 100.",
     "anonExpiry": "Tava statistika un progress tiks automātiski dzēsti pēc 1 nedēļas, ja vien neizveidosi bezmaksas kontu!",
     "createAccountBtn": "Izveidot kontu",
-    "later": "Vēlāk"
+    "later": "Vēlāk",
+    "guestExpiryBanner": "Tavs viesa konts tiek dzēsts {date}, ja nesaglabā to ar e-pastu vai Google.",
+    "saveAccount": "Saglabāt kontu"
   },
   "leagues": {
     "myCount": "{count, plural, zero {# līgu} one {# līga} other {# līgas}}",

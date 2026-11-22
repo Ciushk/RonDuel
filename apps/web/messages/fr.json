@@ -464,7 +464,9 @@
       "s3Title": "3. Sous-traitants & Données analytiques",
       "s3Body": "Nous utilisons Firebase (base de données et authentification dans l'UE), Stripe (paiement sécurisé pour RonDuel Pro) et PostHog Cloud UE (statistiques anonymes respectueuses de la vie privée, activées uniquement après ton consentement explicite).",
       "s4Title": "4. Tes droits (Exportation & Suppression)",
-      "s4Body": "En vertu du RGPD, tu disposes d'un droit d'accès, de rectification, de portabilité et d'effacement de tes données personnelles ('droit à l'oubli'). Tu peux exporter l'ensemble de tes données au format JSON ou supprimer définitivement ton compte à tout moment depuis les Paramètres."
+      "s4Body": "En vertu du RGPD, tu disposes d'un droit d'accès, de rectification, de portabilité et d'effacement de tes données personnelles ('droit à l'oubli'). Tu peux exporter l'ensemble de tes données au format JSON ou supprimer définitivement ton compte à tout moment depuis les Paramètres.",
+      "s5Title": "5. Comptes invités",
+      "s5Body": "Si tu joues sans créer de compte, RonDuel conserve un profil invité et les données liées (pseudo, scores, séries, ligues et duels) pendant 7 jours après sa création. Si tu n’enregistres pas ce profil avec un e-mail ou Google dans ces 7 jours, le compte invité et toutes ses données sont supprimés. Enregistrer le compte garde le même profil et le rend permanent. Un compte enregistré reste jusqu’à ce que tu le supprimes."
     },
     "cookies": {
       "title": "Politique relative aux cookies & au stockage local",
@@ -639,7 +641,32 @@
     "placeholder": "ex. : Comment jouer ? / Créer un duel…",
     "inputLabel": "Message pour RonBot",
     "send": "Envoyer le message",
-    "open": "Ouvrir l'assistant IA RonBot"
+    "open": "Ouvrir l'assistant IA RonBot",
+    "guestName": "ami",
+    "seePro": "Voir RonDuel Pro",
+    "playTodayCta": "▶️ Jouer la manche du jour",
+    "replyWhatIs": "RonDuel est un quiz quotidien à jouer entre amis. Tout le monde reçoit les mêmes 6 questions une fois par jour, et une bonne réponse rapide rapporte plus de points. Vous comparez les résultats dans des ligues et des duels 1 contre 1.",
+    "replyReset": "La manche du jour se réinitialise à minuit local (00:00 dans ton fuseau). La nouvelle manche s’ouvre alors, avec une seule tentative ce jour-là.",
+    "replyScore": "Une bonne réponse vaut **100** points plus un bonus de vitesse jusqu’à **100**.\n\n- Maximum par question : 200\n- Maximum par jour : 1 200\n- Faux ou temps écoulé : 0\n\nEn cas d’égalité, le temps total le plus court gagne.",
+    "replyHowTo": "Appuie sur jouer, choisis un pseudo et réponds à 6 questions en une minute environ. Tu as un essai par jour, puis tu partages la carte sans spoiler.",
+    "replyHowToDetail": "1. Appuie sur jouer et choisis un pseudo (sans compte).\n2. Après le décompte, 6 questions : 2 QCM (10s), 1 classement (15s), 1 intrus (10s) et 2 logique (15s).\n3. Un essai par jour. Une bonne réponse vaut 100 points plus jusqu’à 100 pour la vitesse (max 1 200).\n4. La carte montre ⚡ juste et rapide, 🟩 juste, 🟥 faux, sans le texte des questions.",
+    "replyPro": "RonDuel Pro est optionnel. Il passe les ligues à 200 membres, débloque les duels 1v1 illimités, ajoute un bouclier de série par semaine, des stats par thème et trois thèmes visuels. La partie du jour reste gratuite.",
+    "replyEmoji": "Sur la carte, ⚡ veut dire juste avec beaucoup de temps restant, 🟩 juste, et 🟥 faux ou trop lent. La carte ne montre jamais les questions.",
+    "replyLeague": "Une ligue est le classement de ton groupe. Les scores du jour restent cachés jusqu’à ce que tu aies fini. Le trophée de la semaine va au meilleur total du dimanche. Une ligue gratuite a 5 personnes ; Pro en a 200.",
+    "replyDuel": "Un duel 1v1 a 5 questions à part, pas la manche du jour. Chacun a 24 heures. Le plus haut score gagne, et celui qui ne joue pas perd. Le compte gratuit a 4 duels par mois.",
+    "replyStreak": "Ta série augmente de 1 chaque jour local où tu termines la manche. Si tu manques un jour, elle revient à 0. La nouvelle manche s’ouvre à minuit local. Pro peut protéger un jour manqué par semaine.",
+    "replyAccount": "Tu peux jouer en invité. Les données invité sont supprimées 7 jours après la création du profil, sauf si tu l’enregistres avec un e-mail ou Google et gardes le même profil. Exporte ou supprime tes données dans Réglages.",
+    "replyStatusPlayed": "Aujourd’hui ({date}), manche #{round} — {topic}. Tu as {score} points ({emoji}). Série : {streak} jours (record {best}). Ligues : {leagues}.",
+    "replyStatusPending": "Aujourd’hui ({date}) c’est la manche #{round} — {topic}. Tu n’as pas encore joué. Série : {streak} jours (record {best}).",
+    "replyFallback": "Salut {name} ! Demande-moi la manche du jour, le score, les ligues, les duels ou Pro, je réponds court.",
+    "replyDuelCreated": "J’ai lancé un duel 1v1 pour toi : 5 questions et 24 heures pour jouer. Ouvre-le et envoie le lien à un ami.",
+    "replyLeagueCreated": "J’ai créé la ligue « {name} ». Code d’invitation : {code}. Partage le lien pour que tes amis rejoignent.",
+    "replyActionFailed": "Je n’ai pas pu le faire : {error}.",
+    "replyAdminScheduled": "Manche de 6 questions programmée pour le {date}.",
+    "replyAdminScheduleFailed": "Impossible de programmer la manche du {date} : {error}.",
+    "replyAdminDrafts": "{count} nouvelles questions {type} sur « {topic} » créées ({ids}).",
+    "replyAdminPanel": "Tu peux les vérifier dans le panneau admin.",
+    "openAdmin": "Ouvrir l’admin"
   },
   "home": {
     "heroTitle": "RonDuel – Le quiz quotidien avec tes amis",
@@ -668,7 +695,9 @@
     "anonWarning": "Ton compte est lié uniquement à ce navigateur. Connecte Google ou ton e-mail pour ne pas perdre ta progression et pouvoir figurer dans le top 100 mondial.",
     "anonExpiry": "Tes statistiques et ta progression seront automatiquement supprimées après 1 semaine si tu ne crées pas de compte gratuit !",
     "createAccountBtn": "Créer un compte",
-    "later": "Plus tard"
+    "later": "Plus tard",
+    "guestExpiryBanner": "Ton compte invité est supprimé le {date} si tu ne l’enregistres pas avec un e-mail ou Google.",
+    "saveAccount": "Enregistrer le compte"
   },
   "leagues": {
     "myCount": "{count, plural, one {# ligue} other {# ligues}}",

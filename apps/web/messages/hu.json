@@ -464,7 +464,9 @@
       "s3Title": "3. Adatfeldolgozók és analitika",
       "s3Body": "A Firebase-t (adatbázis és hitelesítés az EU-ban), a Stripe-ot (biztonságos fizetésfeldolgozás a RonDuel Pro számára) és a PostHog Cloud EU-t (adatvédelem-barát analitika, kizárólag kifejezett hozzájárulásod után engedélyezve) használjuk.",
       "s4Title": "4. Az Ön jogai (Exportálás és törlés)",
-      "s4Body": "A GDPR értelmében jogod van a személyes adataidhoz való hozzáféréshez, azok helyesbítéséhez, hordozhatóságához és törléséhez ('az elfeledtetéshez való jog'). Minden adatodat exportálhatod JSON formátumban, vagy bármikor véglegesen törölheted a fiókodat a Beállítások menüben."
+      "s4Body": "A GDPR értelmében jogod van a személyes adataidhoz való hozzáféréshez, azok helyesbítéséhez, hordozhatóságához és törléséhez ('az elfeledtetéshez való jog'). Minden adatodat exportálhatod JSON formátumban, vagy bármikor véglegesen törölheted a fiókodat a Beállítások menüben.",
+      "s5Title": "5. Vendégfiókok",
+      "s5Body": "Ha fiók nélkül játszol, a RonDuel vendégprofilt és a hozzá kötött adatokat (becenév, pontok, sorozatok, ligák és párbajok) a létrehozástól számított 7 napig tárolja. Ha ezeken a 7 napon belül nem mented a profilt e-maillel vagy Google-lel, a vendégfiók és minden adata törlődik. A mentés megtartja ugyanazt a profilt, és véglegessé teszi. A mentett fiók addig marad, amíg te nem törlöd."
     },
     "cookies": {
       "title": "Süti és helyi tárhely szabályzat",
@@ -639,7 +641,32 @@
     "placeholder": "pl. Hogyan kell játszani? / Hozz létre egy párbajt…",
     "inputLabel": "Üzenet RonBotnak",
     "send": "Üzenet küldése",
-    "open": "RonBot AI asszisztens megnyitása"
+    "open": "RonBot AI asszisztens megnyitása",
+    "guestName": "barátom",
+    "seePro": "RonDuel Pro megtekintése",
+    "playTodayCta": "▶️ Játszd a mai kört",
+    "replyWhatIs": "A RonDuel napi kvíz, amit a barátaiddal játszol. Mindenki naponta egyszer ugyanazt a 6 kérdést kapja, és a gyors helyes válasz több pontot ér. Az eredményeket ligákban és 1 az 1 elleni párbajokban hasonlítjátok össze.",
+    "replyReset": "A napi kör helyi éjfélkor nullázódik (00:00 a te időzónádban). Akkor nyílik az új kör, és aznap egy próbálkozásod van.",
+    "replyScore": "A helyes válasz **100** pont plusz akár **100** sebességbónusz.\n\n- Maximum kérdésenként: 200\n- Maximum naponta: 1 200\n- Hibás vagy lejárt idő: 0\n\nDöntetlennél a rövidebb összidő nyer.",
+    "replyHowTo": "Koppints a játékra, válassz becenevet, és válaszolj 6 kérdésre körülbelül egy perc alatt. Naponta egy próbád van, utána spoilermentes kártyát osztasz meg.",
+    "replyHowToDetail": "1. Koppints a játékra és válassz becenevet (fiók nélkül).\n2. A visszaszámlálás után 6 kérdés jön: 2 feleletválasztós (10s), 1 sorrend (15s), 1 kakukktojás (10s) és 2 logika (15s).\n3. Napi egy próba. A helyes válasz 100 pont plusz legfeljebb 100 a sebességért (max. 1 200).\n4. A kártya ⚡ helyes és gyors, 🟩 helyes, 🟥 hibás, a kérdések szövege nélkül.",
+    "replyPro": "A RonDuel Pro választható. 200 fős ligákat ad, korlátlan 1 az 1 elleni párbajt, heti sorozatpajzsot, témastatisztikát és három megjelenést. A napi játék ingyenes marad.",
+    "replyEmoji": "A kártyán a ⚡ helyes válasz sok maradék idővel, a 🟩 helyes, a 🟥 hibás vagy túl lassú. A kártya soha nem mutatja a kérdéseket.",
+    "replyLeague": "A liga a csoportod ranglistája. A mai pontok rejtve maradnak, amíg te is végzel. A heti trófea a legjobb vasárnapi összegé. Az ingyenes liga 5 fős, a Pro 200.",
+    "replyDuel": "Az 1 az 1 elleni párbaj 5 külön kérdés, nem a mai kör. Mindkettőtöknek 24 órája van. A magasabb pont nyer, aki nem játszik, veszít. Az ingyenes fiók havi 4 párbajt kap.",
+    "replyStreak": "A sorozat 1-gyel nő minden helyi napon, amikor befejezed a kört. Ha kihagysz egy napot, 0 lesz. Az új kör helyi éjfélkor nyílik. A Pro hetente egy kihagyott napot védhet.",
+    "replyAccount": "Játszhatsz vendégként. A vendégadatok a profil létrehozása után 7 nappal törlődnek, hacsak nem mented e-maillel vagy Google-lel, és meg nem tartod ugyanazt a profilt. Az export és a törlés a Beállításokban van.",
+    "replyStatusPlayed": "Ma ({date}), #{round}. kör — {topic}. {score} pontod van ({emoji}). Sorozat: {streak} nap (rekord {best}). Ligák: {leagues}.",
+    "replyStatusPending": "Ma ({date}) a #{round}. kör — {topic}. Még nem játszottál. Sorozat: {streak} nap (rekord {best}).",
+    "replyFallback": "Szia, {name}! Kérdezz a mai körről, a pontokról, a ligákról, a párbajokról vagy a Próról, röviden válaszolok.",
+    "replyDuelCreated": "Indítottam neked egy 1 az 1 elleni párbajt: 5 kérdés és 24 óra a játékra. Nyisd meg, és küldd el a linket egy barátodnak.",
+    "replyLeagueCreated": "Létrehoztam a(z) „{name}” ligát. Meghívókód: {code}. Oszd meg a linket, hogy a barátaid beléphessenek.",
+    "replyActionFailed": "Ezt nem sikerült: {error}.",
+    "replyAdminScheduled": "6 kérdéses kört ütemeztem erre: {date}.",
+    "replyAdminScheduleFailed": "A(z) {date} köre nem ütemezhető: {error}.",
+    "replyAdminDrafts": "{count} új {type} típusú kérdés készült erről: „{topic}” ({ids}).",
+    "replyAdminPanel": "Az adminfelületen ellenőrizheted őket.",
+    "openAdmin": "Admin megnyitása"
   },
   "home": {
     "heroTitle": "RonDuel – Napi kvíz a barátaiddal",
@@ -668,7 +695,9 @@
     "anonWarning": "A fiókod csak ehhez a böngészőhöz van társítva. Csatlakoztass Google-t vagy e-mailt, hogy megőrizd a fejlődésedet és felkerülj a globális top 100-as listára.",
     "anonExpiry": "A statisztikáid és eredményeid 1 hét után automatikusan törlődnek, hacsak nem hozol létre egy ingyenes fiókot!",
     "createAccountBtn": "Fiók létrehozása",
-    "later": "Később"
+    "later": "Később",
+    "guestExpiryBanner": "A vendégfiókod {date} napon törlődik, ha nem mented el e-maillel vagy Google-lel.",
+    "saveAccount": "Fiók mentése"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liga} other {# liga}}",

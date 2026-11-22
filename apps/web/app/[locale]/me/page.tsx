@@ -22,9 +22,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { AuthModal, type AuthMode } from '@/components/AuthModal';
 import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
+import { GuestAccountNotice } from '@/components/GuestAccountNotice';
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
-import { loginWithGoogle, logoutUser } from '@/lib/firebase';
+import { logoutUser } from '@/lib/firebase';
+import { linkSessionWithGoogle } from '@/lib/link-account';
 import { clearLocalSession, getLocalSession, saveLocalSession } from '@/lib/session';
 
 interface ProfileData {
@@ -44,6 +46,8 @@ interface ProfileData {
   streakBest: number;
   freezes: number;
   lastNicknameChangeAt?: string;
+  expiresAt?: string | null;
+  createdAt?: string;
   duelStats?: {
     played: number;
     wins: number;
@@ -68,7 +72,7 @@ interface ProfileData {
 function formatStreakText(
   days: number,
   locale: string,
-  t: (key: string, values?: Record<string, any>) => string
+  t: (key: string, values?: Record<string, any>) => string,
 ): string {
   if (locale === 'ro') {
     if (days === 1) return t('profile.streakOne');
@@ -182,21 +186,24 @@ export default function ProfilePage() {
     // Immediate fallback from local session so UI renders without delay
     const s = getLocalSession();
     if (s && s.uid) {
-      setProfile((prev) => prev ?? {
-        uid: s.uid,
-        nickname: s.nickname || t('profile.anonymous'),
-        email: s.email,
-        isAnonymous: s.isAnonymous ?? true,
-        authProvider: s.authProvider ?? 'anonymous',
-        isAdmin: false,
-        pro: { active: false },
-        notif: { pushEnabled: false, emailEnabled: false, reminderLocalTime: '20:00' },
-        streakCurrent: 0,
-        streakBest: 0,
-        freezes: 0,
-        playedDates: [],
-        topicAccuracy: [],
-      });
+      setProfile(
+        (prev) =>
+          prev ?? {
+            uid: s.uid,
+            nickname: s.nickname || t('profile.anonymous'),
+            email: s.email,
+            isAnonymous: s.isAnonymous ?? true,
+            authProvider: s.authProvider ?? 'anonymous',
+            isAdmin: false,
+            pro: { active: false },
+            notif: { pushEnabled: false, emailEnabled: false, reminderLocalTime: '20:00' },
+            streakCurrent: 0,
+            streakBest: 0,
+            freezes: 0,
+            playedDates: [],
+            topicAccuracy: [],
+          },
+      );
       if (s.email) setEmailInput(s.email);
     }
 
@@ -279,50 +286,17 @@ export default function ProfilePage() {
 
   const handleGoogleDirect = async () => {
     try {
-      const user = await loginWithGoogle();
-      if (!user.email) {
-        setToast(t('profile.googleAuthFailed'));
-        setTimeout(() => setToast(''), 3000);
-        return;
-      }
-      const s = getLocalSession();
-      const userNick = user.displayName || s.nickname;
-
-      const res = await fetch('/api/me/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: s.uid,
-          email: user.email,
-          nickname: userNick,
-          provider: 'google',
-          confirmMerge: true,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-
-      const finalUid = data.uid || data.existingUid || user.uid;
-      const finalEmail = data.email || user.email;
-      const finalNick = data.nickname || userNick;
-
-      saveLocalSession({
-        ...s,
-        uid: finalUid,
-        email: finalEmail,
-        nickname: finalNick,
-        isAnonymous: false,
-        authProvider: 'google',
-      });
-
+      const saved = await linkSessionWithGoogle();
       setProfile((prev) =>
         prev
           ? {
               ...prev,
-              uid: finalUid,
-              email: finalEmail,
-              nickname: finalNick,
+              uid: saved.uid,
+              email: saved.email,
+              nickname: saved.nickname,
               isAnonymous: false,
-              authProvider: 'google',
+              authProvider: 'google.com',
+              expiresAt: null,
             }
           : null,
       );
@@ -395,19 +369,19 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6 animate-pulse">
+      <main className="mx-auto flex max-w-[480px] animate-pulse flex-col gap-5 px-4 py-6">
         <div className="flex items-center justify-between">
-          <div className="h-8 w-32 rounded bg-surface-2" />
-          <div className="h-10 w-10 rounded-[10px] bg-surface-2 border-2 border-border" />
+          <div className="bg-surface-2 h-8 w-32 rounded" />
+          <div className="bg-surface-2 border-border h-10 w-10 rounded-[10px] border-2" />
         </div>
         <Card className="flex items-center gap-4 p-5">
-          <div className="h-16 w-16 rounded-full bg-surface-2 border-2 border-border" />
+          <div className="bg-surface-2 border-border h-16 w-16 rounded-full border-2" />
           <div className="flex-1 space-y-2">
-            <div className="h-6 w-36 rounded bg-surface-2" />
-            <div className="h-4 w-24 rounded bg-surface-2" />
+            <div className="bg-surface-2 h-6 w-36 rounded" />
+            <div className="bg-surface-2 h-4 w-24 rounded" />
           </div>
         </Card>
-        <Card className="h-40 bg-surface-2/50" />
+        <Card className="bg-surface-2/50 h-40" />
       </main>
     );
   }
@@ -416,12 +390,12 @@ export default function ProfilePage() {
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
       {/* Top contextual bar with Settings gear icon */}
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-extrabold text-ink">{t('nav.profile')}</h1>
+        <h1 className="font-display text-ink text-2xl font-extrabold">{t('nav.profile')}</h1>
         <Link
           href={`/${locale}/settings`}
           aria-label={t('settings.title')}
           onClick={() => trackEvent('settings_opened', { from: 'profile' })}
-          className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all select-none"
+          className="border-border bg-surface-2 text-ink hover:bg-surface inline-flex h-10 w-10 cursor-pointer select-none items-center justify-center rounded-[10px] border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
         >
           <GearSix size={20} weight="bold" />
         </Link>
@@ -429,23 +403,28 @@ export default function ProfilePage() {
 
       {/* Pro Card at top of Profil */}
       {profile.pro.active ? (
-        <Card variant="sticker" className="border-2 border-border bg-surface p-4 shadow-[var(--rd-shadow-key)]">
+        <Card
+          variant="sticker"
+          className="border-border bg-surface border-2 p-4 shadow-[var(--rd-shadow-key)]"
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-volt border-2 border-border text-[#16131F] shadow-sm">
+              <div className="bg-volt border-border flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 text-[#16131F] shadow-sm">
                 <Crown size={22} weight="fill" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-display font-black text-sm text-ink">
+                  <span className="font-display text-ink text-sm font-black">
                     {t('profile.proActiveForever')}
                   </span>
-                  <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
+                  <Chip tone="volt" className="px-1 py-0 text-[10px] font-black">
                     {t('profile.proBadge')}
                   </Chip>
                 </div>
                 <p className="text-muted text-xs">
-                  {profile.pro.plan === 'yearly' ? t('profile.subscriptionYearly') : t('profile.subscriptionMonthly')}
+                  {profile.pro.plan === 'yearly'
+                    ? t('profile.subscriptionYearly')
+                    : t('profile.subscriptionMonthly')}
                 </p>
               </div>
             </div>
@@ -457,19 +436,20 @@ export default function ProfilePage() {
           </div>
         </Card>
       ) : (
-        <Card variant="sticker" className="border-2 border-border bg-volt/30 p-4 shadow-[var(--rd-shadow-key)] space-y-2.5">
+        <Card
+          variant="sticker"
+          className="border-border bg-volt/30 space-y-2.5 border-2 p-4 shadow-[var(--rd-shadow-key)]"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-volt border-2 border-border text-[#16131F] shadow-sm mt-0.5">
+              <div className="bg-volt border-border mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 text-[#16131F] shadow-sm">
                 <Crown size={22} weight="fill" />
               </div>
               <div className="space-y-0.5">
-                <span className="font-display font-black text-sm text-ink block leading-snug">
+                <span className="font-display text-ink block text-sm font-black leading-snug">
                   {t('profile.proTrialCard')}
                 </span>
-                <p className="text-muted text-xs">
-                  {t('profile.proPitch')}
-                </p>
+                <p className="text-muted text-xs">{t('profile.proPitch')}</p>
               </div>
             </div>
           </div>
@@ -497,7 +477,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleOpenNickModal}
                 aria-label={t('profile.changeNickname')}
-                className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-y-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg shadow-sm cursor-pointer select-none"
+                className="border-border bg-surface-2 text-ink hover:bg-surface inline-flex h-8 w-8 cursor-pointer select-none items-center justify-center rounded-lg border-2 shadow-sm active:translate-y-0.5"
               >
                 <PencilSimple size={14} weight="bold" />
               </button>
@@ -507,7 +487,7 @@ export default function ProfilePage() {
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           <Chip tone="volt" className="shrink-0 whitespace-nowrap">
             <Flame size={14} weight="fill" aria-hidden="true" />
             <span>{formatStreakText(profile.streakCurrent, locale, t)}</span>
@@ -515,7 +495,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setFreezeSheetOpen(true)}
-            className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-y-0.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black shadow-[1px_1px_0px_0px_var(--border-color,#16131F)] transition-all cursor-pointer select-none"
+            className="border-border bg-surface-2 text-ink hover:bg-surface inline-flex cursor-pointer select-none items-center gap-1 rounded-full border-2 px-2.5 py-1 text-xs font-black shadow-[1px_1px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-y-0.5"
           >
             <span>🧊 {profile.freezes ?? 0}</span>
           </button>
@@ -528,7 +508,7 @@ export default function ProfilePage() {
           fullWidth
           size="md"
           variant="volt"
-          className="h-12 font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] text-[#16131F]"
+          className="flex h-12 items-center justify-center gap-2 font-black text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
         >
           <Trophy size={20} weight="fill" className="text-[#16131F]" />
           <span className="text-sm font-black">{t('common.leaderboards')}</span>
@@ -542,12 +522,14 @@ export default function ProfilePage() {
       )}
 
       {/* Account Authentication & Linking */}
-      <Card className="space-y-3.5 border-2 border-border p-4 shadow-[var(--rd-shadow-key)]">
+      <Card className="border-border space-y-3.5 border-2 p-4 shadow-[var(--rd-shadow-key)]">
         <div>
-          <h2 className="font-display text-xl font-extrabold text-ink">
-            {!profile.isAnonymous && profile.email ? t('profile.accountTitleLinked') : t('profile.accountTitleAnon')}
+          <h2 className="font-display text-ink text-xl font-extrabold">
+            {!profile.isAnonymous && profile.email
+              ? t('profile.accountTitleLinked')
+              : t('profile.accountTitleAnon')}
           </h2>
-          <p className="text-muted text-xs font-medium leading-relaxed mt-0.5">
+          <p className="text-muted mt-0.5 text-xs font-medium leading-relaxed">
             {!profile.isAnonymous && profile.email
               ? t('profile.accountLinkedBody')
               : t('profile.accountAnonBody')}
@@ -556,15 +538,17 @@ export default function ProfilePage() {
 
         {!profile.isAnonymous && profile.email ? (
           <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between rounded-xl border-2 border-correct/40 bg-correct/10 p-3">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="border-correct/40 bg-correct/10 flex items-center justify-between rounded-xl border-2 p-3">
+              <div className="flex min-w-0 items-center gap-2.5">
                 <CheckCircle size={22} weight="fill" className="text-correct shrink-0" />
                 <div className="min-w-0">
-                  <span className="font-extrabold text-xs text-ink truncate block">
+                  <span className="text-ink block truncate text-xs font-extrabold">
                     {profile.email}
                   </span>
-                  <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
-                    {profile.authProvider === 'google' ? t('profile.signedInGoogle') : t('profile.signedInEmail')}
+                  <span className="text-muted text-[10px] font-bold uppercase tracking-wider">
+                    {profile.authProvider === 'google' || profile.authProvider === 'google.com'
+                      ? t('profile.signedInGoogle')
+                      : t('profile.signedInEmail')}
                   </span>
                 </div>
               </div>
@@ -582,12 +566,13 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="space-y-2.5 pt-1">
+            <GuestAccountNotice onSave={() => handleOpenAuth('signup')} />
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="volt"
                 size="md"
                 onClick={() => handleOpenAuth('login')}
-                className="font-black text-xs h-11 shadow-sm"
+                className="h-11 text-xs font-black shadow-sm"
               >
                 {t('auth.loginButton')}
               </Button>
@@ -595,7 +580,7 @@ export default function ProfilePage() {
                 variant="primary"
                 size="md"
                 onClick={() => handleOpenAuth('signup')}
-                className="font-black text-xs h-11 shadow-sm"
+                className="h-11 text-xs font-black shadow-sm"
               >
                 {t('account.createAccountBtn')}
               </Button>
@@ -606,17 +591,17 @@ export default function ProfilePage() {
               size="md"
               fullWidth
               onClick={() => void handleGoogleDirect()}
-              className="font-bold text-xs h-11 flex items-center justify-center gap-2"
+              className="flex h-11 items-center justify-center gap-2 text-xs font-bold"
             >
               <GoogleLogo size={18} weight="bold" />
               <span>{t('auth.continueWithGoogle')}</span>
             </Button>
 
-            <div className="text-center pt-1">
+            <div className="pt-1 text-center">
               <button
                 type="button"
                 onClick={() => handleOpenAuth('forgot')}
-                className="text-xs font-bold text-muted hover:text-ink cursor-pointer hover:underline"
+                className="text-muted hover:text-ink cursor-pointer text-xs font-bold hover:underline"
               >
                 {t('auth.forgotPasswordLink')}
               </button>
@@ -711,11 +696,13 @@ export default function ProfilePage() {
       </Card>
 
       {/* Dueluri 1v1 Card */}
-      <Card className="space-y-3.5 border-2 border-border p-4 shadow-[var(--rd-shadow-key)]">
+      <Card className="border-border space-y-3.5 border-2 p-4 shadow-[var(--rd-shadow-key)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sword size={22} weight="bold" className="text-volt-strong shrink-0" />
-            <h2 className="font-display text-xl font-extrabold text-ink">{t('profile.duelRecordTitle')}</h2>
+            <h2 className="font-display text-ink text-xl font-extrabold">
+              {t('profile.duelRecordTitle')}
+            </h2>
           </div>
           <Link href={`/${locale}/duels`}>
             <Button size="sm" variant="secondary" className="h-8 px-2.5 text-xs font-bold">
@@ -726,36 +713,49 @@ export default function ProfilePage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.duelsPlayed')}</span>
-            <span className="rd-tabular font-display text-lg font-extrabold text-ink">
+          <div className="border-border bg-surface-2 rounded-xl border p-2.5">
+            <span className="text-muted block text-[10px] font-bold uppercase">
+              {t('profile.duelsPlayed')}
+            </span>
+            <span className="rd-tabular font-display text-ink text-lg font-extrabold">
               {profile.duelStats?.played ?? 0}
             </span>
           </div>
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-correct block">{t('profile.duelsWon')}</span>
-            <span className="rd-tabular font-display text-lg font-extrabold text-ink">
+          <div className="border-border bg-surface-2 rounded-xl border p-2.5">
+            <span className="text-correct block text-[10px] font-bold uppercase">
+              {t('profile.duelsWon')}
+            </span>
+            <span className="rd-tabular font-display text-ink text-lg font-extrabold">
               {profile.duelStats?.wins ?? 0}
             </span>
           </div>
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-wrong block">{t('profile.duelsLost')}</span>
-            <span className="rd-tabular font-display text-lg font-extrabold text-ink">
+          <div className="border-border bg-surface-2 rounded-xl border p-2.5">
+            <span className="text-wrong block text-[10px] font-bold uppercase">
+              {t('profile.duelsLost')}
+            </span>
+            <span className="rd-tabular font-display text-ink text-lg font-extrabold">
               {profile.duelStats?.losses ?? 0}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-center pt-0.5">
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.winRate')}</span>
-            <span className="rd-tabular font-display text-base font-extrabold text-ink">
-              {Math.round(((profile.duelStats?.wins ?? 0) / (profile.duelStats?.played || 1)) * 100)}%
+        <div className="grid grid-cols-2 gap-2 pt-0.5 text-center">
+          <div className="border-border bg-surface-2 rounded-xl border p-2.5">
+            <span className="text-muted block text-[10px] font-bold uppercase">
+              {t('profile.winRate')}
+            </span>
+            <span className="rd-tabular font-display text-ink text-base font-extrabold">
+              {Math.round(
+                ((profile.duelStats?.wins ?? 0) / (profile.duelStats?.played || 1)) * 100,
+              )}
+              %
             </span>
           </div>
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.bestWinStreak')}</span>
-            <span className="rd-tabular font-display text-base font-extrabold text-ink flex items-center justify-center gap-1">
+          <div className="border-border bg-surface-2 rounded-xl border p-2.5">
+            <span className="text-muted block text-[10px] font-bold uppercase">
+              {t('profile.bestWinStreak')}
+            </span>
+            <span className="rd-tabular font-display text-ink flex items-center justify-center gap-1 text-base font-extrabold">
               🔥 {profile.duelStats?.bestWinStreak ?? 0}
             </span>
           </div>
@@ -763,26 +763,28 @@ export default function ProfilePage() {
 
         {/* Top 3 Rivali */}
         {profile.topRivals && profile.topRivals.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-border-subtle">
-            <h3 className="text-xs font-black uppercase tracking-wider text-muted">
+          <div className="border-border-subtle space-y-2 border-t pt-2">
+            <h3 className="text-muted text-xs font-black uppercase tracking-wider">
               {t('profile.topRivals')}
             </h3>
             <div className="space-y-1.5">
               {profile.topRivals.map((rival) => (
                 <div
                   key={rival.opponentUid}
-                  className="flex items-center justify-between rounded-xl border border-border bg-surface p-2.5 text-xs font-bold"
+                  className="border-border bg-surface flex items-center justify-between rounded-xl border p-2.5 text-xs font-bold"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
                     <Avatar nickname={rival.opponentNickname} size="sm" />
-                    <span className="truncate text-ink">{rival.opponentNickname}</span>
+                    <span className="text-ink truncate">{rival.opponentNickname}</span>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="text-muted rd-tabular">
-                      {rival.wins}{t('profile.duelsWon').slice(0, 1).toUpperCase()} – {rival.losses}{t('profile.duelsLost').slice(0, 1).toUpperCase()}
+                      {rival.wins}
+                      {t('profile.duelsWon').slice(0, 1).toUpperCase()} – {rival.losses}
+                      {t('profile.duelsLost').slice(0, 1).toUpperCase()}
                     </span>
                     {rival.currentWinStreak >= 3 && (
-                      <span className="text-ron-strong font-black text-[11px]">
+                      <span className="text-ron-strong text-[11px] font-black">
                         🔥 {rival.currentWinStreak}
                       </span>
                     )}
@@ -798,14 +800,16 @@ export default function ProfilePage() {
       <Link
         href={`/${locale}/settings`}
         onClick={() => trackEvent('settings_opened', { from: 'profile' })}
-        className="border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-between gap-3 rounded-2xl p-4 shadow-[var(--rd-shadow-key)] transition-all select-none"
+        className="border-border bg-surface text-ink hover:border-border-subtle flex select-none items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-surface-2 text-ink shadow-sm">
+          <div className="border-border bg-surface-2 text-ink flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 shadow-sm">
             <GearSix size={22} weight="bold" />
           </div>
           <div>
-            <span className="font-display font-extrabold text-sm text-ink block">{t('profile.settingsRow')}</span>
+            <span className="font-display text-ink block text-sm font-extrabold">
+              {t('profile.settingsRow')}
+            </span>
             <p className="text-muted text-xs">{t('profile.settingsHint')}</p>
           </div>
         </div>
@@ -819,49 +823,51 @@ export default function ProfilePage() {
         title={t('profile.shieldsTitle')}
       >
         <div className="space-y-4">
-          <div className="space-y-2 text-xs font-medium text-ink/90 leading-relaxed">
-            <p>
-              {t('profile.shieldsIntro')}
-            </p>
-            <p>
-              {t.rich('profile.shieldsHow', { b: (chunks) => <strong>{chunks}</strong> })}
-            </p>
+          <div className="text-ink/90 space-y-2 text-xs font-medium leading-relaxed">
+            <p>{t('profile.shieldsIntro')}</p>
+            <p>{t.rich('profile.shieldsHow', { b: (chunks) => <strong>{chunks}</strong> })}</p>
             <p className="text-muted">
-              {t.rich('profile.shieldsInventory', { max: 5, count: `${profile.freezes ?? 0}/5`, b: (chunks) => <strong>{chunks}</strong> })}
+              {t.rich('profile.shieldsInventory', {
+                max: 5,
+                count: `${profile.freezes ?? 0}/5`,
+                b: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
           </div>
 
           <div className="space-y-2.5 pt-2">
-            <div className="flex items-center justify-between p-3 rounded-xl border-2 border-border bg-surface-2">
+            <div className="border-border bg-surface-2 flex items-center justify-between rounded-xl border-2 p-3">
               <div>
-                <p className="font-extrabold text-sm text-ink">{t('profile.shieldOneTitle')}</p>
-                <p className="text-[11px] text-muted font-bold">{t('profile.shieldOneBody')}</p>
+                <p className="text-ink text-sm font-extrabold">{t('profile.shieldOneTitle')}</p>
+                <p className="text-muted text-[11px] font-bold">{t('profile.shieldOneBody')}</p>
               </div>
               <Button
                 size="sm"
                 variant="volt"
                 disabled={buyingFreeze || (profile.freezes ?? 0) >= 5}
                 onClick={() => void handleBuyFreeze('freeze_1')}
-                className="font-black text-xs h-9 px-3"
+                className="h-9 px-3 text-xs font-black"
               >
                 0,99 €
               </Button>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl border-2 border-volt bg-volt/20 relative">
-              <span className="absolute -top-2.5 right-3 bg-ron-strong text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-border">
+            <div className="border-volt bg-volt/20 relative flex items-center justify-between rounded-xl border-2 p-3">
+              <span className="bg-ron-strong border-border absolute -top-2.5 right-3 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase text-white">
                 {t('profile.bestPrice')}
               </span>
               <div>
-                <p className="font-extrabold text-sm text-ink">{t('profile.shieldThreeTitle')}</p>
-                <p className="text-[11px] text-muted font-bold">{t('profile.savePercent', { percent: 33 })}</p>
+                <p className="text-ink text-sm font-extrabold">{t('profile.shieldThreeTitle')}</p>
+                <p className="text-muted text-[11px] font-bold">
+                  {t('profile.savePercent', { percent: 33 })}
+                </p>
               </div>
               <Button
                 size="sm"
                 variant="volt"
                 disabled={buyingFreeze || (profile.freezes ?? 0) >= 5}
                 onClick={() => void handleBuyFreeze('freeze_3')}
-                className="font-black text-xs h-9 px-3"
+                className="h-9 px-3 text-xs font-black"
               >
                 1,99 €
               </Button>
@@ -869,15 +875,16 @@ export default function ProfilePage() {
           </div>
 
           {!profile.pro.active && (
-            <div className="p-3 rounded-xl border border-border bg-surface text-center space-y-1.5 pt-2">
-              <p className="text-xs font-bold text-ink">
-                {t('profile.shieldsProQuestion')}
-              </p>
-              <p className="text-[11px] text-muted">
-                {t('profile.shieldsProBody')}
-              </p>
+            <div className="border-border bg-surface space-y-1.5 rounded-xl border p-3 pt-2 text-center">
+              <p className="text-ink text-xs font-bold">{t('profile.shieldsProQuestion')}</p>
+              <p className="text-muted text-[11px]">{t('profile.shieldsProBody')}</p>
               <Link href={`/${locale}/pro`} onClick={() => setFreezeSheetOpen(false)}>
-                <Button size="sm" variant="primary" fullWidth className="mt-1 h-9 text-xs font-black">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  fullWidth
+                  className="mt-1 h-9 text-xs font-black"
+                >
                   {t('common.goPro')}
                 </Button>
               </Link>
@@ -905,12 +912,14 @@ export default function ProfilePage() {
       >
         <form onSubmit={handleSaveNickname} className="space-y-4 pt-1">
           {getNicknameCooldownDays() > 0 ? (
-            <div className="rounded-xl border-2 border-ron-strong bg-ron/10 p-3 space-y-1">
-              <p className="text-xs font-black text-ron-strong">
+            <div className="border-ron-strong bg-ron/10 space-y-1 rounded-xl border-2 p-3">
+              <p className="text-ron-strong text-xs font-black">
                 {t('profile.nicknameCooldownTitle')}
               </p>
-              <p className="text-[11px] font-bold text-ink/80 leading-snug">
-                {t('profile.nicknameCooldownBody', { days: t('common.daysCount', { count: getNicknameCooldownDays() }) })}
+              <p className="text-ink/80 text-[11px] font-bold leading-snug">
+                {t('profile.nicknameCooldownBody', {
+                  days: t('common.daysCount', { count: getNicknameCooldownDays() }),
+                })}
               </p>
             </div>
           ) : (
@@ -920,7 +929,7 @@ export default function ProfilePage() {
           )}
 
           <div>
-            <label className="text-muted text-xs font-bold block mb-1">
+            <label className="text-muted mb-1 block text-xs font-bold">
               {t('profile.nicknameNewLabel')}
             </label>
             <input
@@ -938,13 +947,13 @@ export default function ProfilePage() {
             />
           </div>
 
-          {nickError && (
-            <p className="text-wrong text-xs font-bold leading-snug">{nickError}</p>
-          )}
+          {nickError && <p className="text-wrong text-xs font-bold leading-snug">{nickError}</p>}
 
           {nickSuggestions.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[11px] font-bold text-muted">{t('profile.nicknameSuggestions')}</span>
+              <span className="text-muted text-[11px] font-bold">
+                {t('profile.nicknameSuggestions')}
+              </span>
               {nickSuggestions.map((sug) => (
                 <button
                   key={sug}
@@ -954,7 +963,7 @@ export default function ProfilePage() {
                     setNickSuggestions([]);
                     setNickError('');
                   }}
-                  className="rounded-lg border-2 border-border bg-surface px-2.5 py-1 text-xs font-bold text-ink hover:bg-volt active:translate-y-0.5 cursor-pointer shadow-sm"
+                  className="border-border bg-surface text-ink hover:bg-volt cursor-pointer rounded-lg border-2 px-2.5 py-1 text-xs font-bold shadow-sm active:translate-y-0.5"
                 >
                   {sug}
                 </button>

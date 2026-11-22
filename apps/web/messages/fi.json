@@ -464,7 +464,9 @@
       "s3Title": "3. Alikäsittelijät ja analytiikka",
       "s3Body": "Käytämme Firebasea (tietokanta ja todennus EU:ssa), Stripeä (turvallinen maksujenkäsittely RonDuel Prolle) ja PostHog Cloud EU:ta (yksityisyyttä kunnioittava analytiikka, käytössä vain nimenomaisen suostumuksesi jälkeen).",
       "s4Title": "4. Oikeutesi (Vienti ja poistaminen)",
-      "s4Body": "GDPR:n mukaisesti sinulla on oikeus saada pääsy tietoihisi, oikaista niitä, siirtää tietosi ja tulla unohdetuksi (poistaa tiedot). Voit viedä kaikki tietosi JSON-muodossa tai poistaa tilisi pysyvästi milloin tahansa Asetuksista."
+      "s4Body": "GDPR:n mukaisesti sinulla on oikeus saada pääsy tietoihisi, oikaista niitä, siirtää tietosi ja tulla unohdetuksi (poistaa tiedot). Voit viedä kaikki tietosi JSON-muodossa tai poistaa tilisi pysyvästi milloin tahansa Asetuksista.",
+      "s5Title": "5. Vierastilit",
+      "s5Body": "Jos pelaat luomatta tiliä, RonDuel säilyttää vierasprofiilin ja siihen liittyvät tiedot (nimimerkin, pisteet, putket, liigat ja kaksintaistelut) 7 päivää luomisesta. Jos et tallenna profiilia sähköpostilla tai Googlella noiden 7 päivän aikana, vierastili ja kaikki sen tiedot poistetaan. Tallennus säilyttää saman profiilin ja tekee siitä pysyvän. Tallennettu tili säilyy, kunnes poistat sen itse."
     },
     "cookies": {
       "title": "Eväste- ja paikallisen tallennuksen käytäntö",
@@ -639,7 +641,32 @@
     "placeholder": "esim. Miten pelataan? / Luo kaksintaistelu…",
     "inputLabel": "Viesti RonBotille",
     "send": "Lähetä viesti",
-    "open": "Avaa RonBot AI -avustaja"
+    "open": "Avaa RonBot AI -avustaja",
+    "guestName": "ystävä",
+    "seePro": "Katso RonDuel Pro",
+    "playTodayCta": "▶️ Pelaa tämän päivän kierros",
+    "replyWhatIs": "RonDuel on päivittäinen tietovisa ystävien kanssa. Kaikki saavat samat 6 kysymystä kerran päivässä, ja nopea oikea vastaus tuo enemmän pisteitä. Vertailette tuloksia liigoissa ja 1 vastaan 1 -kaksintaisteluissa.",
+    "replyReset": "Päivän kierros nollautuu paikallisessa keskiyössä (00:00 aikavyöhykkeelläsi). Silloin uusi kierros aukeaa ja sinulla on yksi yritys sinä päivänä.",
+    "replyScore": "Oikea vastaus on **100** pistettä plus nopeusbonus enintään **100**.\n\n- Enintään kysymystä kohti: 200\n- Enintään päivässä: 1 200\n- Väärin tai aika loppui: 0\n\nTasapelissä voittaa lyhyempi kokonaisaika.",
+    "replyHowTo": "Napauta pelaa, valitse nimimerkki ja vastaa 6 kysymykseen noin minuutissa. Sinulla on yksi yritys päivässä, ja sitten jaat spoilerittoman kortin.",
+    "replyHowToDetail": "1. Napauta pelaa ja valitse nimimerkki (ilman tiliä).\n2. Lähtölaskennan jälkeen tulee 6 kysymystä: 2 monivalintaa (10s), 1 järjestys (15s), 1 tunkeilija (10s) ja 2 logiikkaa (15s).\n3. Yksi yritys päivässä. Oikein on 100 pistettä plus enintään 100 nopeudesta (max 1 200).\n4. Kortti näyttää ⚡ oikein ja nopeasti, 🟩 oikein, 🟥 väärin, ilman kysymysten tekstiä.",
+    "replyPro": "RonDuel Pro on valinnainen. Se nostaa liigat 200 jäseneen, avaa rajattomat 1 vastaan 1 -kaksintaistelut, lisää viikoittaisen putkisuojaimen, aihetiedot ja kolme ulkoasua. Päivän peli pysyy ilmaisena.",
+    "replyEmoji": "Kortissa ⚡ on oikea vastaus, kun aikaa on paljon jäljellä, 🟩 on oikein ja 🟥 on väärin tai liian hidas. Kortti ei näytä kysymyksiä.",
+    "replyLeague": "Liiga on ryhmäsi tulostaulu. Tämän päivän pisteet pysyvät piilossa, kunnes olet valmis. Viikon pokaali menee parhaalle sunnuntain summalle. Ilmainen liiga on 5 hengelle, Pro 200:lle.",
+    "replyDuel": "1 vastaan 1 -kaksintaistelussa on 5 erillistä kysymystä, ei tämän päivän kierrosta. Kummallakin on 24 tuntia. Suurempi pistemäärä voittaa, ja pelaamatta jättäminen häviää. Ilmaisella tilillä on 4 kaksintaistelua kuussa.",
+    "replyStreak": "Putki kasvaa yhdellä jokaisena paikallisena päivänä, jona viimeistelet kierroksen. Jos päivä jää väliin, putki on 0. Uusi kierros aukeaa paikallisessa keskiyössä. Pro voi suojata yhden väliin jääneen päivän viikossa.",
+    "replyAccount": "Voit pelata vieraana. Vieraan tiedot poistetaan 7 päivää profiilin luomisen jälkeen, ellet tallenna sitä sähköpostilla tai Googlella ja pidä samaa profiilia. Vienti ja poisto ovat Asetuksissa.",
+    "replyStatusPlayed": "Tänään ({date}), kierros #{round} — {topic}. Sinulla on {score} pistettä ({emoji}). Putki: {streak} päivää (ennätys {best}). Liigat: {leagues}.",
+    "replyStatusPending": "Tänään ({date}) on kierros #{round} — {topic}. Et ole vielä pelannut. Putki: {streak} päivää (ennätys {best}).",
+    "replyFallback": "Hei {name}! Kysy tämän päivän kierroksesta, pisteistä, liigoista, kaksintaisteluista tai Prosta, vastaan lyhyesti.",
+    "replyDuelCreated": "Avasin sinulle 1 vastaan 1 -kaksintaistelun: 5 kysymystä ja 24 tuntia pelata. Avaa se ja lähetä linkki kaverille.",
+    "replyLeagueCreated": "Loin liigan „{name}”. Kutsukoodi: {code}. Jaa linkki, jotta kaverit pääsevät mukaan.",
+    "replyActionFailed": "En onnistunut: {error}.",
+    "replyAdminScheduled": "Ajastin 6 kysymyksen kierroksen päivälle {date}.",
+    "replyAdminScheduleFailed": "Kierrosta päivälle {date} ei voitu ajastaa: {error}.",
+    "replyAdminDrafts": "Loin {count} uutta {type}-kysymystä aiheesta „{topic}” ({ids}).",
+    "replyAdminPanel": "Voit tarkistaa ne ylläpitopaneelissa.",
+    "openAdmin": "Avaa ylläpito"
   },
   "home": {
     "heroTitle": "RonDuel – Päivittäinen tietovisa ystäviesi kanssa",
@@ -668,7 +695,9 @@
     "anonWarning": "Tilisi on sidottu vain tähän selaimeen. Yhdistä Google tai sähköposti, jotta et menetä edistymistäsi ja näyt maailmanlaajuisessa top 100 -listassa.",
     "anonExpiry": "Tilastosi ja edistymisesi poistetaan automaattisesti 1 viikon kuluttua, ellet luo ilmaista tiliä!",
     "createAccountBtn": "Luo tili",
-    "later": "Myöhemmin"
+    "later": "Myöhemmin",
+    "guestExpiryBanner": "Vierastilisi poistetaan {date}, ellet tallenna sitä sähköpostilla tai Googlella.",
+    "saveAccount": "Tallenna tili"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liiga} other {# liigaa}}",

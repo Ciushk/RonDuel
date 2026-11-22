@@ -4,13 +4,14 @@ import { ArrowLeft, Moon, Sun } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { BottomNav } from '@/components/BottomNav';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { SplashScreen } from '@/components/SplashScreen';
 import { Button, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { useBottomStack } from '@/lib/bottom-stack';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -19,6 +20,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<LocalSession | null>(null);
+  const consentRef = useRef<HTMLElement>(null);
+  const showConsent = session?.analyticsConsent === 'unset' && !pathname.endsWith('/play');
+  useBottomStack('consent-banner', consentRef, Boolean(showConsent));
 
   useEffect(() => {
     const s = getLocalSession();
@@ -33,7 +37,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const isPlayFocusMode = pathname.endsWith('/play');
   const isLeaguePreview = pathname.includes('/l/');
-  const isAdmin = pathname.startsWith('/admin') || (pathname.includes('/league/') && pathname.endsWith('/admin'));
+  const isAdmin =
+    pathname.startsWith('/admin') || (pathname.includes('/league/') && pathname.endsWith('/admin'));
   const isCheckoutReturn = pathname.includes('/billing/return');
 
   const hideBottomNav = isPlayFocusMode || isLeaguePreview || isAdmin || isCheckoutReturn;
@@ -75,12 +80,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+    <div className="bg-bg text-ink flex min-h-dvh flex-col">
       <SplashScreen />
 
       {/* A. Clean Header */}
       {!isPlayFocusMode && (
-        <header className="sticky top-0 z-30 border-b-2 border-border bg-surface/95 backdrop-blur-md pt-[env(safe-area-inset-top)]">
+        <header className="border-border bg-surface/95 sticky top-0 z-30 border-b-2 pt-[env(safe-area-inset-top)] backdrop-blur-md">
           <div className="flex h-14 w-full items-center justify-between px-4">
             {/* Left: Back button (if sub-page) + Logo mark (28px) & Wordmark */}
             <div className="flex items-center gap-2">
@@ -89,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   type="button"
                   onClick={handleBack}
                   aria-label={t('a11y.previousPage')}
-                  className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all select-none"
+                  className="border-border bg-surface-2 text-ink hover:bg-surface inline-flex h-10 w-10 shrink-0 cursor-pointer select-none items-center justify-center rounded-[10px] border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                 >
                   <ArrowLeft size={18} weight="bold" />
                 </button>
@@ -97,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 href={`/${locale}`}
                 aria-label={t('a11y.homeLink')}
-                className="inline-flex items-center select-none"
+                className="inline-flex select-none items-center"
               >
                 <Wordmark size="sm" iconSize={28} />
               </Link>
@@ -111,7 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={toggleTheme}
                 aria-label={t('a11y.toggleTheme')}
-                className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all select-none"
+                className="border-border bg-surface-2 text-ink hover:bg-surface inline-flex h-10 w-10 cursor-pointer select-none items-center justify-center rounded-[10px] border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               >
                 {session?.theme === 'dark' ? (
                   <Sun size={18} weight="bold" aria-hidden="true" />
@@ -170,8 +175,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Cookie / Analytics Consent Banner */}
       {session?.analyticsConsent === 'unset' && !isPlayFocusMode && (
         <aside
+          ref={consentRef}
           aria-label={t('consent.ariaLabel')}
-          className="border-border bg-surface fixed inset-x-0 bottom-16 lg:bottom-0 z-40 max-h-[80px] border-t-2 px-4 py-2.5 shadow-[var(--rd-shadow-sheet)]"
+          className="border-border bg-surface fixed inset-x-0 bottom-16 z-40 max-h-[80px] border-t-2 px-4 py-2.5 shadow-[var(--rd-shadow-sheet)] lg:bottom-0"
         >
           <div className="mx-auto flex max-w-[480px] items-center justify-between gap-3">
             <p className="text-ink line-clamp-2 flex-1 text-xs leading-snug">

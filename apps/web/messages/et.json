@@ -464,7 +464,9 @@
       "s3Title": "3. Volitatud töötlejad ja analüütika",
       "s3Body": "Kasutame Firebase'i (andmebaas ja autentimine EL-is), Stripe'i (turvaline maksete töötlemine RonDuel Pro jaoks) ja PostHog Cloud EU-d (privaatsussõbralik analüütika, lubatud ainult pärast sinu selgesõnalist nõusolekut).",
       "s4Title": "4. Sinu õigused (Eksport ja kustutamine)",
-      "s4Body": "Vastavalt GDPR-ile on sul õigus oma andmetele juurde pääseda, neid parandada, üle kanda ja kustutada ('õigus olla unustatud'). Saad kõik oma andmed JSON-vormingus eksportida või oma konto igal ajal seadetest jäädavalt kustutada."
+      "s4Body": "Vastavalt GDPR-ile on sul õigus oma andmetele juurde pääseda, neid parandada, üle kanda ja kustutada ('õigus olla unustatud'). Saad kõik oma andmed JSON-vormingus eksportida või oma konto igal ajal seadetest jäädavalt kustutada.",
+      "s5Title": "5. Külaliskontod",
+      "s5Body": "Kui mängid kontot loomata, hoiab RonDuel külalisprofiili ja sellega seotud andmeid (hüüdnimi, skoorid, seeriad, liigad ja duellid) 7 päeva loomisest. Kui sa ei salvesta profiili nende 7 päeva jooksul e-posti või Google’iga, kustutatakse külaliskonto ja kõik selle andmed. Salvestamine jätab sama profiili ja teeb selle püsivaks. Salvestatud konto jääb alles, kuni sa selle ise kustutad."
     },
     "cookies": {
       "title": "Küpsiste ja kohaliku salvestuse eeskiri",
@@ -639,7 +641,32 @@
     "placeholder": "nt Kuidas mängida? / Loo duell…",
     "inputLabel": "Sõnum RonBotile",
     "send": "Saada sõnum",
-    "open": "Ava RonBot AI-assistent"
+    "open": "Ava RonBot AI-assistent",
+    "guestName": "sõber",
+    "seePro": "Vaata RonDuel Prod",
+    "playTodayCta": "▶️ Mängi tänast vooru",
+    "replyWhatIs": "RonDuel on igapäevane viktoriin sõpradega. Kõik saavad korra päevas samad 6 küsimust ja kiire õige vastus annab rohkem punkte. Tulemusi võrdlete liigades ja 1:1 duellides.",
+    "replyReset": "Päevane voor lähtestub kohalikul keskööl (00:00 sinu ajavööndis). Siis avaneb uus voor ja sul on sel päeval üks katse.",
+    "replyScore": "Õige vastus on **100** punkti pluss kiirusboonus kuni **100**.\n\n- Maksimum küsimuse kohta: 200\n- Maksimum päevas: 1 200\n- Vale või aeg otsas: 0\n\nViigi korral võidab lühem koguaeg.",
+    "replyHowTo": "Vajuta mängi, vali hüüdnimi ja vasta 6 küsimusele umbes minutiga. Sul on üks katse päevas, siis jagad spoilerivaba kaarti.",
+    "replyHowToDetail": "1. Vajuta mängi ja vali hüüdnimi (kontot pole vaja).\n2. Pärast loendust on 6 küsimust: 2 valikvastust (10s), 1 järjestus (15s), 1 võõras (10s) ja 2 loogikat (15s).\n3. Üks katse päevas. Õige on 100 punkti pluss kuni 100 kiiruse eest (max 1 200).\n4. Kaart näitab ⚡ õige ja kiire, 🟩 õige, 🟥 vale, ilma küsimuste tekstita.",
+    "replyPro": "RonDuel Pro on valikuline. See tõstab liigad 200 liikmeni, avab piiramatud 1:1 duellid, lisab nädala seeriakilbi, teemastatistika ja kolm kujundust. Päevamäng jääb tasuta.",
+    "replyEmoji": "Kaardil tähendab ⚡ õiget vastust suure ajavaruga, 🟩 õiget ja 🟥 valet või liiga aeglast. Kaart ei näita kunagi küsimusi.",
+    "replyLeague": "Liiga on su grupi edetabel. Tänased punktid on peidetud, kuni lõpetad. Nädala karikas läheb parimale pühapäevasele summale. Tasuta liigas on 5 inimest, Pro-s 200.",
+    "replyDuel": "1:1 duellil on 5 eraldi küsimust, mitte tänane voor. Kummalgi on 24 tundi. Suurem skoor võidab ja kes ei mängi, kaotab. Tasuta kontol on 4 duelli kuus.",
+    "replyStreak": "Seeria kasvab 1 võrra igal kohalikul päeval, mil vooru lõpetad. Kui päev vahele jääb, on see 0. Uus voor avaneb kohalikul keskööl. Pro saab kaitsta üht vahele jäänud päeva nädalas.",
+    "replyAccount": "Võid mängida külalisena. Külalise andmed kustutatakse 7 päeva pärast profiili loomist, kui sa ei salvesta seda e-posti või Google’iga ja ei hoia sama profiili. Eksport ja kustutamine on seadetes.",
+    "replyStatusPlayed": "Täna ({date}), voor #{round} — {topic}. Sul on {score} punkti ({emoji}). Seeria: {streak} päeva (rekord {best}). Liigad: {leagues}.",
+    "replyStatusPending": "Täna ({date}) on voor #{round} — {topic}. Sa pole veel mänginud. Seeria: {streak} päeva (rekord {best}).",
+    "replyFallback": "Tere, {name}! Küsi tänase vooru, skoori, liigade, duellide või Pro kohta ja vastan lühidalt.",
+    "replyDuelCreated": "Tegin sulle 1:1 duelli: 5 küsimust ja 24 tundi mängimiseks. Ava see ja saada link sõbrale.",
+    "replyLeagueCreated": "Lõin liiga „{name}”. Kutsekood: {code}. Jaga linki, et sõbrad saaksid liituda.",
+    "replyActionFailed": "See ei õnnestunud: {error}.",
+    "replyAdminScheduled": "Ajastasin 6 küsimusega vooru kuupäevaks {date}.",
+    "replyAdminScheduleFailed": "Vooru kuupäevaks {date} ei saanud ajastada: {error}.",
+    "replyAdminDrafts": "Lõin {count} uut tüüpi {type} küsimust teemal „{topic}” ({ids}).",
+    "replyAdminPanel": "Saad neid adminipaneelis üle vaadata.",
+    "openAdmin": "Ava admin"
   },
   "home": {
     "heroTitle": "RonDuel – Igapäevane viktoriin sõpradega",
@@ -668,7 +695,9 @@
     "anonWarning": "Sinu konto on seotud ainult selle brauseriga. Ühenda Google või e-post, et mitte kaotada oma tulemusi ja ilmuda ülemaailmsesse top 100 edetabelisse.",
     "anonExpiry": "Sinu statistika ja tulemused kustutatakse automaatselt 1 nädala pärast, kui sa ei loo tasuta kontot!",
     "createAccountBtn": "Loo konto",
-    "later": "Hiljem"
+    "later": "Hiljem",
+    "guestExpiryBanner": "Sinu külaliskonto kustutatakse {date}, kui sa ei salvesta seda e-posti või Google’iga.",
+    "saveAccount": "Salvesta konto"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liiga} other {# liigat}}",

@@ -37,6 +37,7 @@ import {
   getDuelView,
   getLeagueByCodeOrId,
   getOrCreateUser,
+  getStore,
   getPlayResult,
   getRoundMeta,
   getTodayStatus,
@@ -63,7 +64,10 @@ import {
 import { generateLiveGeminiTemplates } from '../../apps/web/lib/ai-question-bank.js';
 import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
 import {
+  adoptAuthUid,
   deleteUserFromFirestore,
+  findUserByEmail,
+  flushDirtyUsersToFirestore,
   getUserFromFirestore,
   purgeExpiredAnonymousUsers,
   syncUserToFirestore,
@@ -79,8 +83,27 @@ export const health = onRequest((_req, res) => {
 /**
  * Unified HTTP API handler for Firebase Hosting rewrites ("/api/**" -> api function in europe-west1).
  */
+function collectRequestUids(body: Record<string, unknown>, url: URL): string[] {
+  const ids = new Set<string>();
+  const add = (value: unknown) => {
+    if (typeof value === 'string' && value && value !== 'anon' && value !== 'u_ssr') ids.add(value);
+  };
+  add(body.uid);
+  add(body.actorUid);
+  add(body.challengerUid);
+  add(body.opponentUid);
+  add(body.targetUid);
+  add(body.fromUid);
+  add(body.toUid);
+  add(url.searchParams.get('uid'));
+  return [...ids];
+}
+
 export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  );
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   try {
@@ -88,6 +111,18 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     const pathname = url.pathname.replace(/^\/api/, '') || '/';
     const method = req.method.toUpperCase();
     const body = (req.body ?? {}) as Record<string, unknown>;
+    for (const uid of collectRequestUids(body, url)) {
+      if (!getStore().users[uid]) {
+        await getUserFromFirestore(uid);
+      }
+    }
+    const originalJson = res.json.bind(res);
+    let flushed = false;
+    res.json = ((payload?: unknown) => {
+      if (flushed) return originalJson(payload);
+      flushed = true;
+      return flushDirtyUsersToFirestore().then(() => originalJson(payload));
+    }) as typeof res.json;
 
     if (method === 'POST' && pathname === '/chat') {
       const chatRes = await runRonBotChat({
@@ -324,25 +359,55 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
         await syncUserToFirestore(user);
         res.status(200).json(updated);
       } catch (err: any) {
-        res.status(400).json({ error: err?.message || 'Nickname change failed', code: err?.code || 'BAD_REQUEST' });
+        res
+          .status(400)
+          .json({
+            error: err?.message || 'Nickname change failed',
+            code: err?.code || 'BAD_REQUEST',
+          });
       }
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/me/adopt-auth') {
+      const fromUid = String(body.fromUid ?? '');
+      const toUid = String(body.toUid ?? '');
+      const result = await adoptAuthUid(fromUid, toUid);
+      res.status(200).json(result);
       return;
     }
 
     if (method === 'POST' && pathname === '/me/upgrade') {
       const oldUid = String(body.uid);
+      const email = String(body.email ?? '');
+      const provider = String(body.provider ?? 'password');
+      if (body.targetUid) {
+        const targetUid = String(body.targetUid);
+        if (!getStore().users[targetUid]) await getUserFromFirestore(targetUid);
+      }
+      if (email) await findUserByEmail(email);
       const result = upgradeAccount({
         uid: oldUid,
-        email: String(body.email),
-        provider: (body.provider as 'email_link' | 'google' | 'password' | 'email_password') ?? 'email_link',
+        email,
+        provider: provider as
+          'email_link' | 'google' | 'google.com' | 'password' | 'email_password',
         nickname: body.nickname ? String(body.nickname) : undefined,
-        confirmMerge: body.confirmMerge !== undefined ? Boolean(body.confirmMerge) : (body.provider === 'google'),
+        confirmMerge:
+          body.confirmMerge !== undefined
+            ? Boolean(body.confirmMerge)
+            : provider === 'google' || provider === 'google.com',
+        targetUid: body.targetUid ? String(body.targetUid) : undefined,
       });
       if (result.uid && result.uid !== oldUid) {
         await deleteUserFromFirestore(oldUid);
+        try {
+          await getAuth().deleteUser(oldUid);
+        } catch {
+          // Local guest ids are not always Auth users.
+        }
       }
       const finalUid = result.uid || oldUid;
-      const targetUser = getOrCreateUser({ uid: finalUid });
+      const targetUser = getStore().users[finalUid] ?? getOrCreateUser({ uid: finalUid });
       await syncUserToFirestore(targetUser);
       res.status(200).json(result);
       return;
@@ -672,11 +737,7 @@ export const dailyFallbackPromoter = onSchedule(
  * Scheduled Cloud Function (Cloud Scheduler, daily 04:00 Europe/Bucharest)
  * Automatically purges anonymous users whose 7-day retention period has passed.
  */
-export const cleanupExpiredAnonymousUsers = onSchedule(
-  { schedule: '0 4 * * *', timeZone: 'Europe/Bucharest' },
-  async () => {
-    await purgeExpiredAnonymousUsers();
-  },
-);
-
-
+export const cleanupExpiredAnonymousUsers = onSchedule('every 24 hours', async () => {
+  const result = await purgeExpiredAnonymousUsers();
+  console.log('[Firestore] Scheduled anonymous purge', result);
+});

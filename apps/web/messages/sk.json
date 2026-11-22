@@ -464,7 +464,9 @@
       "s3Title": "3. Sprostredkovatelia a analytika",
       "s3Body": "Využívame Firebase (databáza a autentifikácia v EÚ), Stripe (bezpečné spracovanie platieb pre RonDuel Pro) a PostHog Cloud EU (analytika rešpektujúca súkromie, povolená iba po vašom výslovnom súhlase).",
       "s4Title": "4. Vaše práva (export a vymazanie)",
-      "s4Body": "Podľa GDPR máte právo na prístup, opravu, export a vymazanie svojich osobných údajov ('právo na zabudnutie'). Všetky svoje údaje môžete kedykoľvek exportovať vo formáte JSON alebo natrvalo zmazať svoj účet v Nastaveniach."
+      "s4Body": "Podľa GDPR máte právo na prístup, opravu, export a vymazanie svojich osobných údajov ('právo na zabudnutie'). Všetky svoje údaje môžete kedykoľvek exportovať vo formáte JSON alebo natrvalo zmazať svoj účet v Nastaveniach.",
+      "s5Title": "5. Účty hostí",
+      "s5Body": "Ak hráš bez účtu, RonDuel uchováva profil hosťa a naviazané dáta (prezývku, skóre, série, ligy a duely) 7 dní od vytvorenia. Ak profil do 7 dní neuložíš e-mailom alebo Googlom, účet hosťa a všetky jeho dáta sa zmažú. Uloženie zachová ten istý profil a spraví ho trvalým. Uložený účet ostane, kým ho sám nezmažeš."
     },
     "cookies": {
       "title": "Zásady cookies a miestneho úložiska",
@@ -639,7 +641,32 @@
     "placeholder": "napr. Ako hrať? / Vytvoriť duel…",
     "inputLabel": "Správa pre RonBota",
     "send": "Odoslať správu",
-    "open": "Otvoriť AI asistenta RonBot"
+    "open": "Otvoriť AI asistenta RonBot",
+    "guestName": "priateľ",
+    "seePro": "Zobraziť RonDuel Pro",
+    "playTodayCta": "▶️ Hraj dnešné kolo",
+    "replyWhatIs": "RonDuel je denný kvíz s priateľmi. Všetci dostanú raz denne rovnakých 6 otázok a rýchla správna odpoveď dáva viac bodov. Výsledky porovnávate v ligách a dueloch 1 na 1.",
+    "replyReset": "Denné kolo sa resetuje o miestnej polnoci (00:00 v tvojom pásme). Vtedy sa otvorí nové kolo a máš v ten deň jeden pokus.",
+    "replyScore": "Správna odpoveď je **100** bodov plus bonus za rýchlosť až **100**.\n\n- Maximum za otázku: 200\n- Maximum za deň: 1 200\n- Zle alebo čas: 0\n\nPri zhode vyhráva kratší celkový čas.",
+    "replyHowTo": "Ťukni na hrať, vyber prezývku a odpovedz na 6 otázok asi za minútu. Máš jeden pokus denne a potom zdieľaš kartu bez spoilerov.",
+    "replyHowToDetail": "1. Ťukni na hrať a vyber prezývku (bez účtu).\n2. Po odpočte je 6 otázok: 2 výber (10s), 1 radenie (15s), 1 votrelec (10s) a 2 logika (15s).\n3. Jeden pokus denne. Správne je 100 bodov plus až 100 za rýchlosť (max. 1 200).\n4. Karta ukazuje ⚡ správne a rýchlo, 🟩 správne, 🟥 zle, bez textu otázok.",
+    "replyPro": "RonDuel Pro je voliteľný. Zdvihne ligy na 200 členov, odomkne neobmedzené duely 1 na 1, pridá jeden týždenný štít série, štatistiky tém a tri vzhľady. Denná hra ostáva zadarmo.",
+    "replyEmoji": "Na karte ⚡ znamená správne s veľkou rezervou času, 🟩 správne a 🟥 zle alebo neskoro. Karta nikdy neukazuje otázky.",
+    "replyLeague": "Liga je rebríček tvojej skupiny. Dnešné skóre je skryté, kým nedohráš. Týždennú trofej berie najlepší nedeľný súčet. Zadarmo je liga pre 5 ľudí, Pro pre 200.",
+    "replyDuel": "Duel 1 na 1 má 5 samostatných otázok, nie dnešné kolo. Každý má 24 hodín. Vyhráva vyššie skóre a kto nehrá, prehráva. Účet zadarmo má 4 duely mesačne.",
+    "replyStreak": "Séria rastie o 1 za každý miestny deň, keď kolo dokončíš. Keď deň vynecháš, spadne na 0. Nové kolo sa otvára o miestnej polnoci. Pro vie ochrániť jeden vynechaný deň týždenne.",
+    "replyAccount": "Môžeš hrať ako hosť. Dáta hosťa sa zmažú 7 dní po vytvorení profilu, ak ho neuložíš e-mailom alebo Googlom a nezachováš ten istý profil. Export a zmazanie sú v Nastaveniach.",
+    "replyStatusPlayed": "Dnes ({date}), kolo #{round} — {topic}. Máš {score} bodov ({emoji}). Séria: {streak} dní (rekord {best}). Ligy: {leagues}.",
+    "replyStatusPending": "Dnes ({date}) je kolo #{round} — {topic}. Ešte si nehral. Séria: {streak} dní (rekord {best}).",
+    "replyFallback": "Ahoj, {name}! Pýtaj sa na dnešné kolo, skóre, ligy, duely alebo Pro a odpoviem krátko.",
+    "replyDuelCreated": "Spustil som ti duel 1 na 1: 5 otázok a 24 hodín na hru. Otvor ho a pošli odkaz kamarátovi.",
+    "replyLeagueCreated": "Vytvoril som ligu „{name}“. Kód pozvánky: {code}. Zdieľaj odkaz, nech sa pridajú priatelia.",
+    "replyActionFailed": "To nešlo: {error}.",
+    "replyAdminScheduled": "Naplánované kolo 6 otázok na {date}.",
+    "replyAdminScheduleFailed": "Kolo na {date} sa nepodarilo naplánovať: {error}.",
+    "replyAdminDrafts": "Vytvorených {count} nových otázok typu {type} o „{topic}“ ({ids}).",
+    "replyAdminPanel": "Môžeš ich skontrolovať v admin paneli.",
+    "openAdmin": "Otvoriť admin"
   },
   "home": {
     "heroTitle": "RonDuel – Denný kvíz s priateľmi",
@@ -668,7 +695,9 @@
     "anonWarning": "Tvoj účet je viazaný iba na tento prehliadač. Pripoj Google alebo e-mail, aby si neprišiel o postup a mohol sa objaviť v globálnej top 100.",
     "anonExpiry": "Tvoje štatistiky a postup budú automaticky zmazané po 1 týždni, ak si nevytvoríš bezplatný účet!",
     "createAccountBtn": "Vytvoriť účet",
-    "later": "Neskôr"
+    "later": "Neskôr",
+    "guestExpiryBanner": "Tvoj účet hosťa sa zmaže {date}, ak ho neuložíš e-mailom alebo Googlom.",
+    "saveAccount": "Uložiť účet"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liga} few {# ligy} many {# líg} other {# ligy}}",

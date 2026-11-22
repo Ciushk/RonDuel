@@ -464,7 +464,9 @@
       "s3Title": "3. Fo-phróiseálaithe & Anailísíocht",
       "s3Body": "Úsáidimid Firebase (bunachar sonraí agus fíordheimhniú AE), Stripe (próiseáil shlán íocaíochta do RonDuel Pro), agus PostHog Cloud EU (anailísíocht a thacaíonn le príobháideachas, nach gcumasaítear ach tar éis do thoiliú roghnaithe follasach).",
       "s4Title": "4. Do Chearta (Easpórtáil & Scriosadh)",
-      "s4Body": "Faoi GDPR, tá an ceart agat rochtain a fháil ar do shonraí pearsanta, iad a cheartú, a easpórtáil agus a léirscriosadh ('ceart go ndéanfaí dearmad ort'). Is féidir leat do chuid sonraí go léir a easpórtáil mar JSON nó do chuntas a scriosadh go buan am ar bith ó Socruithe."
+      "s4Body": "Faoi GDPR, tá an ceart agat rochtain a fháil ar do shonraí pearsanta, iad a cheartú, a easpórtáil agus a léirscriosadh ('ceart go ndéanfaí dearmad ort'). Is féidir leat do chuid sonraí go léir a easpórtáil mar JSON nó do chuntas a scriosadh go buan am ar bith ó Socruithe.",
+      "s5Title": "5. Cuntais aoi",
+      "s5Body": "Má imríonn tú gan cuntas a chruthú, coinníonn RonDuel próifíl aoi agus na sonraí a ghabhann léi (leasainm, scóir, sraitheanna, sraitheanna cluiche agus duail) ar feadh 7 lá ón uair a chruthaítear í. Mura sábhálann tú an phróifíl sin le ríomhphost nó le Google laistigh de na 7 lá sin, scriostar an cuntas aoi agus a chuid sonraí go léir. Coinníonn sábháil an chuntais an phróifíl chéanna agus déanann sí buan í. Fanann cuntas sábháilte go dtí go scriosann tú féin é."
     },
     "cookies": {
       "title": "Polasaí Fianán & Stórála Áitiúla",
@@ -639,7 +641,32 @@
     "placeholder": "m.sh. Conas a imrím? / Cruthaigh comhrac…",
     "inputLabel": "Teachtaireacht do RonBot",
     "send": "Seol teachtaireacht",
-    "open": "Oscail an cúntóir RonBot AI"
+    "open": "Oscail an cúntóir RonBot AI",
+    "guestName": "a chara",
+    "seePro": "Féach ar RonDuel Pro",
+    "playTodayCta": "▶️ Imir babhta an lae inniu",
+    "replyWhatIs": "Is tráth na gceist laethúil é RonDuel le himirt le cairde. Faigheann gach duine na 6 cheist chéanna uair amháin sa lá, agus tugann freagra ceart tapa níos mó pointí. Déanann sibh torthaí a chur i gcomparáid i sraitheanna agus i nduail 1 ar 1.",
+    "replyReset": "Athshocraítear babhta an lae ag meán oíche áitiúil (00:00 i do chrios). Osclaítear an babhta nua ansin agus bíonn iarracht amháin agat an lá sin.",
+    "replyScore": "Is fiú **100** pointe freagra ceart móide bónas luais suas le **100**.\n\n- Uasmhéid in aghaidh na ceiste: 200\n- Uasmhéid sa lá: 1,200\n- Mícheart nó am istigh: 0\n\nI gcás comhscór, buann an t-am iomlán is giorra.",
+    "replyHowTo": "Tapáil imir, roghnaigh leasainm agus freagair 6 cheist i thart ar nóiméad. Bíonn iarracht amháin sa lá agat, ansin roinneann tú an cárta gan spoilers.",
+    "replyHowToDetail": "1. Tapáil imir agus roghnaigh leasainm (gan chuntas).\n2. Tar éis an chomhairimh bíonn 6 cheist ann: 2 ilrogha (10s), 1 ord (15s), 1 corr (10s) agus 2 loighic (15s).\n3. Iarracht amháin sa lá. Is 100 pointe an freagra ceart móide suas le 100 don luas (uasmhéid 1,200).\n4. Taispeánann an cárta ⚡ ceart agus tapa, 🟩 ceart, 🟥 mícheart, gan téacs na gceisteanna.",
+    "replyPro": "Tá RonDuel Pro roghnach. Ardaíonn sé sraitheanna go 200 ball, díghlasálann sé duail 1 ar 1 gan teorainn, cuireann sé sciath sraithe seachtainiúil leis, staitisticí ábhair agus trí chuma. Fanann cluiche an lae saor in aisce.",
+    "replyEmoji": "Ar an gcárta, ciallaíonn ⚡ freagra ceart le go leor ama fágtha, ciallaíonn 🟩 ceart, agus ciallaíonn 🟥 mícheart nó ró-mhall. Ní thaispeánann an cárta na ceisteanna riamh.",
+    "replyLeague": "Is clár ceannais do ghrúpa í an tsraith. Fanann scóir an lae inniu i bhfolach go dtí go gcríochnaíonn tú. Téann trófaí na seachtaine chuig an tsuim is fearr Dé Domhnaigh. Tá 5 dhuine i sraith saor in aisce; tá 200 ag Pro.",
+    "replyDuel": "Tá 5 cheist ar leith i nduell 1 ar 1, ní babhta an lae inniu. Tá 24 uair an chloig ag gach duine. Buann an scór is airde, agus cailleann an té nach n-imríonn. Faigheann cuntas saor in aisce 4 dhuel sa mhí.",
+    "replyStreak": "Éiríonn do shraith 1 gach lá áitiúil a gcríochnaíonn tú an babhta. Má chailleann tú lá, filleann sí ar 0. Osclaítear an babhta nua ag meán oíche áitiúil. Is féidir le Pro lá caillte amháin sa tseachtain a chosaint.",
+    "replyAccount": "Is féidir leat imirt mar aoi. Scriostar sonraí an aoi 7 lá tar éis an phróifíl a chruthú, mura sábhálann tú í le ríomhphost nó le Google agus mura gcoinníonn tú an phróifíl chéanna. Tá easpórtáil agus scriosadh i Socruithe.",
+    "replyStatusPlayed": "Inniu ({date}), babhta #{round} — {topic}. Tá {score} pointe agat ({emoji}). Sraith: {streak} lá (an taifead {best}). Sraitheanna: {leagues}.",
+    "replyStatusPending": "Inniu ({date}) is é babhta #{round} — {topic}. Níor imir tú fós. Sraith: {streak} lá (an taifead {best}).",
+    "replyFallback": "Dia duit, {name}! Fiafraigh díom faoi bhabhta an lae inniu, an scór, sraitheanna, duail nó Pro agus freagróidh mé go gairid.",
+    "replyDuelCreated": "Thosaigh mé duell 1 ar 1 duit: 5 cheist agus 24 uair an chloig le himirt. Oscail é agus seol an nasc chuig cara.",
+    "replyLeagueCreated": "Chruthaigh mé an tsraith „{name}”. Cód cuiridh: {code}. Roinn an nasc ionas go rachaidh cairde isteach.",
+    "replyActionFailed": "Níorbh fhéidir liom é sin a dhéanamh: {error}.",
+    "replyAdminScheduled": "Sceidealaíodh babhta 6 cheist do {date}.",
+    "replyAdminScheduleFailed": "Níorbh fhéidir an babhta do {date} a sceidealú: {error}.",
+    "replyAdminDrafts": "Cruthaíodh {count} ceist nua den chineál {type} faoi „{topic}” ({ids}).",
+    "replyAdminPanel": "Is féidir leat iad a sheiceáil sa phainéal riaracháin.",
+    "openAdmin": "Oscail an riarachán"
   },
   "home": {
     "heroTitle": "RonDuel – Tráth na gceist laethúil le do chairde",
@@ -668,7 +695,9 @@
     "anonWarning": "Tá do chuntas nasctha leis an mbrabhsálaí seo amháin. Ceangail Google nó ríomhphost ionas nach gcaillfidh tú do dhul chun cinn agus go mbeidh tú in ann a bheith sa 100 is fearr ar domhan.",
     "anonExpiry": "Scriosfar do chuid staitisticí agus do dhul chun cinn go huathoibríoch tar éis seachtaine mura gcruthaíonn tú cuntas saor in aisce!",
     "createAccountBtn": "Cruthaigh cuntas",
-    "later": "Níos déanaí"
+    "later": "Níos déanaí",
+    "guestExpiryBanner": "Scriostar do chuntas aoi ar {date} mura sábhálann tú é le ríomhphost nó le Google.",
+    "saveAccount": "Sábháil an cuntas"
   },
   "leagues": {
     "myCount": "{count, plural, one {# shraith} two {# shraith} few {# shraith} many {# sraitheanna} other {# sraith}}",

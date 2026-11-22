@@ -464,7 +464,9 @@
       "s3Title": "3. Sub-proċessuri & Analitika",
       "s3Body": "Aħna nużaw Firebase (database u awtentikazzjoni fl-UE), Stripe (ipproċessar sigur tal-ħlasijiet għal RonDuel Pro), u PostHog Cloud EU (analitika favur il-privatezza, attivata biss wara l-kunsens espliċitu tiegħek).",
       "s4Title": "4. Id-Drittijiet Tiegħek (Esportazzjoni & Tħassir)",
-      "s4Body": "Taħt il-GDPR, għandek id-dritt li taċċessa, tikkoreġi, tesporta, u tħassar id-dejta personali tiegħek ('id-dritt li tintesa'). Tista' tesporta d-dejta kollha tiegħek bħala JSON jew tħassar il-kont tiegħek b'mod permanenti fi kwalunkwe ħin mis-Settings."
+      "s4Body": "Taħt il-GDPR, għandek id-dritt li taċċessa, tikkoreġi, tesporta, u tħassar id-dejta personali tiegħek ('id-dritt li tintesa'). Tista' tesporta d-dejta kollha tiegħek bħala JSON jew tħassar il-kont tiegħek b'mod permanenti fi kwalunkwe ħin mis-Settings.",
+      "s5Title": "5. Kontijiet tal-mistieden",
+      "s5Body": "Jekk tilgħab mingħajr ma toħloq kont, RonDuel iżomm profil ta’ mistieden u d-data marbuta miegħu (laqam, punti, sensieli, ligi u duelli) għal 7 ijiem mill-ħolqien. Jekk ma tissejvjax dak il-profil bl-email jew b’Google f’dawk is-7 ijiem, il-kont tal-mistieden u d-data kollha tiegħu jitħassru. Is-salvataġġ iżomm l-istess profil u jagħmlu permanenti. Kont issejvjat jibqa’ sakemm tħassru int."
     },
     "cookies": {
       "title": "Politika dwar il-Cookies & il-Ħażna Lokali",
@@ -639,7 +641,32 @@
     "placeholder": "eż. Kif nilgħab? / Oħloq dwell…",
     "inputLabel": "Messaġġ għal RonBot",
     "send": "Ibgħat il-messaġġ",
-    "open": "Iftaħ l-assistent AI RonBot"
+    "open": "Iftaħ l-assistent AI RonBot",
+    "guestName": "ħabib",
+    "seePro": "Ara RonDuel Pro",
+    "playTodayCta": "▶️ Ilgħab ir-rawnd tal-lum",
+    "replyWhatIs": "RonDuel huwa kwizz ta’ kuljum li tilgħab mal-ħbieb. Kulħadd jieħu l-istess 6 mistoqsijiet darba kuljum, u tweġiba tajba u mgħaġġla tagħti aktar punti. Tqabblu r-riżultati f’ligi u f’duelli 1 kontra 1.",
+    "replyReset": "Ir-rawnd ta’ kuljum jerġa’ jibda f’nofsillejl lokali (00:00 fiż-żona tiegħek). Imbagħad jinfetaħ ir-rawnd il-ġdid u jkollok tentattiv wieħed dakinhar.",
+    "replyScore": "Tweġiba tajba tiswa **100** punt flimkien ma’ bonus tal-veloċità sa **100**.\n\n- Massimu għal kull mistoqsija: 200\n- Massimu kuljum: 1,200\n- Ħażin jew il-ħin spiċċa: 0\n\nF’parità jirbaħ iż-żmien totali l-iqsar.",
+    "replyHowTo": "Agħfas ilgħab, agħżel laqam u wieġeb 6 mistoqsijiet f’madwar minuta. Għandek tentattiv wieħed kuljum, imbagħad taqsam il-karta mingħajr spoilers.",
+    "replyHowToDetail": "1. Agħfas ilgħab u agħżel laqam (mingħajr kont).\n2. Wara l-countdown ikollok 6 mistoqsijiet: 2 għażla (10s), 1 ordni (15s), 1 l-intruż (10s) u 2 loġika (15s).\n3. Tentattiv wieħed kuljum. It-tajjeb jiswa 100 punt flimkien sa 100 għall-veloċità (massimu 1,200).\n4. Il-karta turi ⚡ tajjeb u mgħaġġel, 🟩 tajjeb, 🟥 ħażin, mingħajr it-test tal-mistoqsijiet.",
+    "replyPro": "RonDuel Pro huwa fakultattiv. Jerfa’ l-ligi għal 200 membru, jiftaħ duelli 1 kontra 1 bla limitu, iżid tarka tas-sensiela fil-ġimgħa, statistika tat-temi u tliet dehriet. Il-logħba ta’ kuljum tibqa’ b’xejn.",
+    "replyEmoji": "Fuq il-karta, ⚡ tfisser tweġiba tajba b’ħafna ħin fadal, 🟩 tfisser tajba, u 🟥 tfisser ħażina jew bil-mod wisq. Il-karta qatt ma turi l-mistoqsijiet.",
+    "replyLeague": "Liga hija l-klassifika tal-grupp tiegħek. Il-punti tal-lum jibqgħu moħbija sakemm tispiċċa. It-trofew tal-ġimgħa jmur għall-aħjar total tal-Ħadd. Liga b’xejn għandha 5 nies; Pro għandha 200.",
+    "replyDuel": "Duell 1 kontra 1 għandu 5 mistoqsijiet separati, mhux ir-rawnd tal-lum. Kull wieħed għandu 24 siegħa. Ir-riżultat ogħla jirbaħ, u min ma jilgħabx jitlef. Kont b’xejn għandu 4 duelli fix-xahar.",
+    "replyStreak": "Is-sensiela tikber b’1 kull jum lokali li fih tispiċċa r-rawnd. Jekk taqbeż jum, terġa’ ssir 0. Ir-rawnd il-ġdid jinfetaħ f’nofsillejl lokali. Pro jista’ jipproteġi jum mitluf fil-ġimgħa.",
+    "replyAccount": "Tista’ tilgħab bħala mistieden. Id-data tal-mistieden titħassar 7 ijiem wara li jinħoloq il-profil, sakemm ma tissejvjahx bl-email jew b’Google u żżomm l-istess profil. L-esportazzjoni u t-tħassir huma fis-Settings.",
+    "replyStatusPlayed": "Illum ({date}), rawnd #{round} — {topic}. Għandek {score} punt ({emoji}). Sensiela: {streak} ijiem (rekord {best}). Ligi: {leagues}.",
+    "replyStatusPending": "Illum ({date}) huwa rawnd #{round} — {topic}. Għadek ma lġabtx. Sensiela: {streak} ijiem (rekord {best}).",
+    "replyFallback": "Bonġu, {name}! Staqsini dwar ir-rawnd tal-lum, il-punteġġ, il-ligi, id-duelli jew Pro u nwieġeb fil-qosor.",
+    "replyDuelCreated": "Bdejt duell 1 kontra 1 għalik: 5 mistoqsijiet u 24 siegħa biex tilgħab. Iftħu u ibgħat il-link lil ħabib.",
+    "replyLeagueCreated": "Ħloqt il-liga „{name}”. Kodiċi ta’ stedina: {code}. Aqsam il-link biex il-ħbieb jidħlu.",
+    "replyActionFailed": "Ma stajtx nagħmel dan: {error}.",
+    "replyAdminScheduled": "Skedajt rawnd ta’ 6 mistoqsijiet għal {date}.",
+    "replyAdminScheduleFailed": "Ma stajtx niskeda r-rawnd għal {date}: {error}.",
+    "replyAdminDrafts": "Ħloqt {count} mistoqsijiet ġodda tat-tip {type} dwar „{topic}” ({ids}).",
+    "replyAdminPanel": "Tista’ tiċċekkjahom fil-pannell tal-admin.",
+    "openAdmin": "Iftaħ l-admin"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia ta' kuljum ma' sħabek",
@@ -668,7 +695,9 @@
     "anonWarning": "Il-kont tiegħek huwa marbut ma' dan il-brawżer biss. Ikkonnettja l-Google jew l-email biex ma titlifx il-progress u tkun tista' tidher fl-aqwa 100 fid-dinja.",
     "anonExpiry": "L-istatistika u l-progress tiegħek se jitħassru awtomatikament wara ġimgħa sakemm ma toħloqx kont b'xejn!",
     "createAccountBtn": "Oħloq kont",
-    "later": "Iktar 'il quddiem"
+    "later": "Iktar 'il quddiem",
+    "guestExpiryBanner": "Il-kont tal-mistieden tiegħek jitħassar fid-{date} jekk ma tissejvjahx bl-email jew b’Google.",
+    "saveAccount": "Issejvja l-kont"
   },
   "leagues": {
     "myCount": "{count, plural, one {# kampjonat} two {żewġ kampjonati} few {# kampjonati} many {#-il kampjonat} other {# kampjonat}}",

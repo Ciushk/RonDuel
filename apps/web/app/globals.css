@@ -254,7 +254,8 @@ html[data-theme='dark'] {
 
 /* --- PLAY: Lock-in & Answer Moments --- */
 @keyframes rd-lock-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.35;
     transform: scale(0.99);
   }
@@ -313,7 +314,8 @@ html[data-theme='dark'] {
 }
 
 @keyframes rd-shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   20% {
@@ -442,7 +444,8 @@ html[data-theme='dark'] {
 }
 
 @keyframes rd-vs-clash {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -486,7 +489,8 @@ html[data-theme='dark'] {
 
 /* --- RESULT REVEAL MOMENT --- */
 @keyframes rd-land {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -529,7 +533,8 @@ html[data-theme='dark'] {
 }
 
 @keyframes rd-flame-bump {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) rotate(0deg);
   }
   50% {
@@ -573,5 +578,15 @@ html[data-theme='dark'] {
 
   .rd-splash-overlay {
     transition: opacity 150ms linear !important;
+  }
+}
+
+.ronbot-anchor {
+  bottom: calc(var(--bottom-stack, 80px) + 12px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 640px) {
+  .ronbot-anchor {
+    bottom: calc(var(--bottom-stack, 12px) + 12px + env(safe-area-inset-bottom, 0px));
   }
 }

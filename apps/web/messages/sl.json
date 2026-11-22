@@ -464,7 +464,9 @@
       "s3Title": "3. Obdelovalci in analitika",
       "s3Body": "Uporabljamo Firebase (baza podatkov in avtentikacija v EU), Stripe (varno obdelovanje plačil za RonDuel Pro) in PostHog Cloud EU (analitika, prijazna do zasebnosti, omogočena le po vaši izrecni privolitvi).",
       "s4Title": "4. Vaše pravice (izvoz in izbris)",
-      "s4Body": "V skladu z GDPR imate pravico do dostopa, popravka, izvoza in izbrisa svojih osebnih podatkov ('pravica do pozabe'). Vse svoje podatke lahko kadar koli izvozite kot datoteko JSON ali trajno izbrišete svoj račun v Nastavitvah."
+      "s4Body": "V skladu z GDPR imate pravico do dostopa, popravka, izvoza in izbrisa svojih osebnih podatkov ('pravica do pozabe'). Vse svoje podatke lahko kadar koli izvozite kot datoteko JSON ali trajno izbrišete svoj račun v Nastavitvah.",
+      "s5Title": "5. Gostujoči računi",
+      "s5Body": "Če igraš brez ustvarjanja računa, RonDuel hrani gostujoči profil in povezane podatke (vzdevek, rezultate, nize, lige in dvoboje) 7 dni od nastanka. Če v teh 7 dneh profila ne shraniš z e-pošto ali Googlom, se gostujoči račun in vsi njegovi podatki izbrišejo. Shranjevanje obdrži isti profil in ga naredi trajnega. Shranjen račun ostane, dokler ga sam ne izbrišeš."
     },
     "cookies": {
       "title": "Politika piškotkov in lokalne shrambe",
@@ -639,7 +641,32 @@
     "placeholder": "npr. Kako igrati? / Ustvari dvoboj…",
     "inputLabel": "Sporočilo za RonBota",
     "send": "Pošlji sporočilo",
-    "open": "Odpri AI pomočnika RonBot"
+    "open": "Odpri AI pomočnika RonBot",
+    "guestName": "prijatelj",
+    "seePro": "Poglej RonDuel Pro",
+    "playTodayCta": "▶️ Igraj današnji krog",
+    "replyWhatIs": "RonDuel je dnevni kviz s prijatelji. Vsi enkrat na dan dobijo istih 6 vprašanj, hiter pravilen odgovor pa prinese več točk. Rezultate primerjate v ligah in dvobojih 1 na 1.",
+    "replyReset": "Dnevni krog se ponastavi ob lokalni polnoči (00:00 v tvojem pasu). Takrat se odpre nov krog in tisti dan imaš en poskus.",
+    "replyScore": "Pravilen odgovor je vreden **100** točk plus bonus hitrosti do **100**.\n\n- Največ na vprašanje: 200\n- Največ na dan: 1.200\n- Napačno ali čas: 0\n\nOb izenačenju zmaga krajši skupni čas.",
+    "replyHowTo": "Tapni igraj, izberi vzdevek in odgovori na 6 vprašanj v približno minuti. Imaš en poskus na dan, nato deliš kartico brez spojlerjev.",
+    "replyHowToDetail": "1. Tapni igraj in izberi vzdevek (brez računa).\n2. Po odštevanju je 6 vprašanj: 2 izbira (10s), 1 vrstni red (15s), 1 vsiljivec (10s) in 2 logika (15s).\n3. En poskus na dan. Pravilno je 100 točk plus do 100 za hitrost (največ 1.200).\n4. Kartica pokaže ⚡ pravilno in hitro, 🟩 pravilno, 🟥 napačno, brez besedila vprašanj.",
+    "replyPro": "RonDuel Pro je neobvezen. Dvigne lige na 200 članov, odklene neomejene dvoboje 1 na 1, doda tedenski ščit niza, statistiko tem in tri videze. Dnevna igra ostane brezplačna.",
+    "replyEmoji": "Na kartici ⚡ pomeni pravilen odgovor z veliko preostalega časa, 🟩 pravilno in 🟥 napačno ali prepočasi. Kartica nikoli ne pokaže vprašanj.",
+    "replyLeague": "Liga je lestvica tvoje skupine. Današnje točke so skrite, dokler ne končaš. Tedenski pokal gre najboljšemu nedeljskemu seštevku. Brezplačna liga ima 5 ljudi, Pro ima 200.",
+    "replyDuel": "Dvoboj 1 na 1 ima 5 ločenih vprašanj, ne današnjega kroga. Vsak ima 24 ur. Zmaga višji rezultat, kdor ne igra, izgubi. Brezplačen račun ima 4 dvoboje na mesec.",
+    "replyStreak": "Niz zraste za 1 vsak lokalni dan, ko končaš krog. Če dan izpustiš, pade na 0. Nov krog se odpre ob lokalni polnoči. Pro lahko zaščiti en izpuščen dan na teden.",
+    "replyAccount": "Lahko igraš kot gost. Podatki gosta se izbrišejo 7 dni po nastanku profila, razen če ga shraniš z e-pošto ali Googlom in obdržiš isti profil. Izvoz in brisanje sta v nastavitvah.",
+    "replyStatusPlayed": "Danes ({date}), krog #{round} — {topic}. Imaš {score} točk ({emoji}). Niz: {streak} dni (rekord {best}). Lige: {leagues}.",
+    "replyStatusPending": "Danes ({date}) je krog #{round} — {topic}. Še nisi igral. Niz: {streak} dni (rekord {best}).",
+    "replyFallback": "Živjo, {name}! Vprašaj me o današnjem krogu, točkah, ligah, dvobojih ali Pro in odgovoril bom na kratko.",
+    "replyDuelCreated": "Zagnal sem ti dvoboj 1 na 1: 5 vprašanj in 24 ur za igro. Odpri ga in pošlji povezavo prijatelju.",
+    "replyLeagueCreated": "Ustvaril sem ligo „{name}”. Koda povabila: {code}. Deli povezavo, da se prijatelji pridružijo.",
+    "replyActionFailed": "Ni šlo: {error}.",
+    "replyAdminScheduled": "Načrtoval sem krog 6 vprašanj za {date}.",
+    "replyAdminScheduleFailed": "Kroga za {date} nisem mogel načrtovati: {error}.",
+    "replyAdminDrafts": "Ustvaril sem {count} novih vprašanj tipa {type} o „{topic}” ({ids}).",
+    "replyAdminPanel": "Pregledaš jih lahko v skrbniški plošči.",
+    "openAdmin": "Odpri skrbnika"
   },
   "home": {
     "heroTitle": "RonDuel – Dnevni kviz s prijatelji",
@@ -668,7 +695,9 @@
     "anonWarning": "Tvoj račun je vezan le na ta brskalnik. Poveži Google ali e-pošto, da ne izgubiš napredka in se lahko uvrstiš med globalnih top 100.",
     "anonExpiry": "Tvoja statistika in napredek bosta po 1 tednu samodejno izbrisana, razen če si ustvariš brezplačen račun!",
     "createAccountBtn": "Ustvari račun",
-    "later": "Kasneje"
+    "later": "Kasneje",
+    "guestExpiryBanner": "Tvoj gostujoči račun se izbriše {date}, če ga ne shraniš z e-pošto ali Googlom.",
+    "saveAccount": "Shrani račun"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liga} few {# lige} many {# lig} other {# lig}}",

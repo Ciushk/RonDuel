@@ -230,6 +230,10 @@ O rundă marcată contează în continuare până la verificare.
 
 Întrebări despre reguli: contact@pixel-webapp.ro.
 
+## 15. Conturi de invitat
+
+15.1. Un profil de invitat care nu este salvat cu email sau Google se șterge, împreună cu scorurile, seriile, ligile și duelurile lui, la 7 zile după ce a fost creat. Legarea unui email sau a unui cont Google păstrează același profil și oprește ștergerea. Un cont salvat rămâne până când jucătorul îl șterge.
+
 ---
 
 _Ultima actualizare: [DATA] (propunere: 1 decembrie 2026)_

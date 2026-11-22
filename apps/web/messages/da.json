@@ -464,7 +464,9 @@
       "s3Title": "3. Databehandlere og analyse",
       "s3Body": "Vi anvender Firebase (database og godkendelse i EU), Stripe (sikker betalingsbehandling til RonDuel Pro) og PostHog Cloud EU (privatlivsvenlig analyse, kun aktiveret efter dit udtrykkelige opt-in-samtykke).",
       "s4Title": "4. Dine rettigheder (Eksport og sletning)",
-      "s4Body": "I henhold til GDPR har du ret til indsigt, berigtigelse, dataportabilitet og sletning af dine personoplysninger ('retten til at blive glemt'). Du kan eksportere alle dine data som JSON eller slette din konto permanent til enhver tid fra Indstillinger."
+      "s4Body": "I henhold til GDPR har du ret til indsigt, berigtigelse, dataportabilitet og sletning af dine personoplysninger ('retten til at blive glemt'). Du kan eksportere alle dine data som JSON eller slette din konto permanent til enhver tid fra Indstillinger.",
+      "s5Title": "5. Gæstekonti",
+      "s5Body": "Hvis du spiller uden at oprette en konto, gemmer RonDuel en gæsteprofil og de tilknyttede data (kaldenavn, point, streaks, ligaer og dueller) i 7 dage fra oprettelsen. Hvis du ikke gemmer profilen med e-mail eller Google inden for de 7 dage, slettes gæstekontoen og alle dens data. At gemme kontoen beholder samme profil og gør den permanent. En gemt konto bliver, indtil du selv sletter den."
     },
     "cookies": {
       "title": "Cookie- og lokal lagringspolitik",
@@ -639,7 +641,32 @@
     "placeholder": "f.eks. Hvordan spiller jeg? / Start en duel…",
     "inputLabel": "Besked til RonBot",
     "send": "Send besked",
-    "open": "Åbn RonBot AI-assistenten"
+    "open": "Åbn RonBot AI-assistenten",
+    "guestName": "ven",
+    "seePro": "Se RonDuel Pro",
+    "playTodayCta": "▶️ Spil dagens runde",
+    "replyWhatIs": "RonDuel er en daglig quiz med venner. Alle får de samme 6 spørgsmål én gang om dagen, og et hurtigt rigtigt svar giver flere point. I sammenligner resultater i ligaer og 1 mod 1-dueller.",
+    "replyReset": "Dagens runde nulstilles ved lokalt midnat (00:00 i din tidszone). Så åbner den nye runde, og du har ét forsøg den dag.",
+    "replyScore": "Et rigtigt svar er **100** point plus en fartbonus på op til **100**.\n\n- Maks. pr. spørgsmål: 200\n- Maks. pr. dag: 1.200\n- Forkert eller tid ude: 0\n\nVed lige vinder den kortere samlede tid.",
+    "replyHowTo": "Tryk på spil, vælg et kaldenavn og svar på 6 spørgsmål på cirka et minut. Du har ét forsøg om dagen og deler derefter kortet uden spoilere.",
+    "replyHowToDetail": "1. Tryk på spil og vælg et kaldenavn (ingen konto).\n2. Efter nedtællingen kommer 6 spørgsmål: 2 multiple choice (10s), 1 rækkefølge (15s), 1 den skæve (10s) og 2 logik (15s).\n3. Ét forsøg om dagen. Rigtigt giver 100 point plus op til 100 for fart (maks. 1.200).\n4. Kortet viser ⚡ rigtigt og hurtigt, 🟩 rigtigt, 🟥 forkert, uden spørgsmålsteksten.",
+    "replyPro": "RonDuel Pro er valgfrit. Det løfter ligaer til 200 medlemmer, låser ubegrænsede 1 mod 1-dueller op, giver et ugentligt streak-skjold, emnestatistik og tre udseender. Dagsspillet forbliver gratis.",
+    "replyEmoji": "På kortet betyder ⚡ rigtigt med masser af tid tilbage, 🟩 rigtigt og 🟥 forkert eller for langsomt. Kortet viser aldrig spørgsmålene.",
+    "replyLeague": "En liga er gruppens rangliste. Dagens point er skjult, til du er færdig. Ugetrofæet går til den bedste søndagssum. En gratis liga har 5 personer, Pro har 200.",
+    "replyDuel": "En 1 mod 1-duel har 5 separate spørgsmål, ikke dagens runde. I har 24 timer hver. Højest score vinder, og den der ikke spiller taber. En gratis konto har 4 dueller om måneden.",
+    "replyStreak": "Din streak stiger med 1 hver lokal dag, du afslutter runden. Springer du en dag over, bliver den 0. Den nye runde åbner ved lokalt midnat. Pro kan beskytte én sprunget dag om ugen.",
+    "replyAccount": "Du kan spille som gæst. Gæstedata slettes 7 dage efter profilen er oprettet, medmindre du gemmer den med e-mail eller Google og beholder samme profil. Eksport og sletning ligger i Indstillinger.",
+    "replyStatusPlayed": "I dag ({date}), runde #{round} — {topic}. Du har {score} point ({emoji}). Streak: {streak} dage (rekord {best}). Ligaer: {leagues}.",
+    "replyStatusPending": "I dag ({date}) er runde #{round} — {topic}. Du har ikke spillet endnu. Streak: {streak} dage (rekord {best}).",
+    "replyFallback": "Hej {name}! Spørg om dagens runde, point, ligaer, dueller eller Pro, så svarer jeg kort.",
+    "replyDuelCreated": "Jeg startede en 1 mod 1-duel til dig: 5 spørgsmål og 24 timer til at spille. Åbn den og send linket til en ven.",
+    "replyLeagueCreated": "Jeg oprettede ligaen „{name}”. Invitationskode: {code}. Del linket, så venner kan deltage.",
+    "replyActionFailed": "Det kunne jeg ikke: {error}.",
+    "replyAdminScheduled": "Planlagde en runde med 6 spørgsmål til {date}.",
+    "replyAdminScheduleFailed": "Kunne ikke planlægge runden til {date}: {error}.",
+    "replyAdminDrafts": "Oprettede {count} nye spørgsmål af typen {type} om „{topic}” ({ids}).",
+    "replyAdminPanel": "Du kan gennemgå dem i adminpanelet.",
+    "openAdmin": "Åbn admin"
   },
   "home": {
     "heroTitle": "RonDuel – Daglig trivia med dine venner",
@@ -668,7 +695,9 @@
     "anonWarning": "Din konto er kun knyttet til denne browser. Tilknyt Google eller e-mail, så du ikke mister dine fremskridt og kan optræde på den globale top 100.",
     "anonExpiry": "Dine statistikker og fremskridt slettes automatisk efter 1 uge, medmindre du opretter en gratis konto!",
     "createAccountBtn": "Opret konto",
-    "later": "Senere"
+    "later": "Senere",
+    "guestExpiryBanner": "Din gæstekonto slettes den {date}, hvis du ikke gemmer den med e-mail eller Google.",
+    "saveAccount": "Gem konto"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liga} other {# ligaer}}",

@@ -464,7 +464,9 @@
       "s3Title": "3. Sub-processors & Analytics",
       "s3Body": "We use Firebase (EU database and authentication), Stripe (secure payment processing for RonDuel Pro), and PostHog Cloud EU (privacy-friendly analytics, enabled only after your explicit opt-in consent).",
       "s4Title": "4. Your Rights (Export & Deletion)",
-      "s4Body": "Under GDPR, you have the right to access, rectify, export, and erase your personal data ('right to be forgotten'). You can export all your data as JSON or permanently delete your account at any time from Settings."
+      "s4Body": "Under GDPR, you have the right to access, rectify, export, and erase your personal data ('right to be forgotten'). You can export all your data as JSON or permanently delete your account at any time from Settings.",
+      "s5Title": "5. Guest accounts",
+      "s5Body": "If you play without creating an account, RonDuel stores a guest profile and the data tied to it (nickname, scores, streaks, leagues, and duels) for 7 days from the moment it is created. If you do not save that profile with email or Google within those 7 days, the guest account and all of its data are deleted. Saving the account keeps the same profile and makes it permanent. A saved account is kept until you delete it."
     },
     "cookies": {
       "title": "Cookie & Local Storage Policy",
@@ -639,7 +641,32 @@
     "placeholder": "e.g. How do I play? / Create a duel…",
     "inputLabel": "Message for RonBot",
     "send": "Send message",
-    "open": "Open the RonBot AI assistant"
+    "open": "Open the RonBot AI assistant",
+    "guestName": "friend",
+    "seePro": "See RonDuel Pro",
+    "playTodayCta": "▶️ Play today's round",
+    "replyWhatIs": "RonDuel is a daily trivia game you play with friends. Everyone gets the same 6 questions once a day, and a fast correct answer scores more points. You compare results in leagues and 1v1 duels.",
+    "replyReset": "The daily round resets at local midnight (00:00 in your time zone). A new round unlocks then, and you get one attempt that day.",
+    "replyScore": "A correct answer is worth **100** points plus a speed bonus up to **100**.\n\n- Max per question: 200\n- Max per day: 1,200\n- Wrong or timeout: 0\n\nTies go to the faster total time.",
+    "replyHowTo": "Tap play, pick a nickname, and answer 6 questions in about a minute. You get one attempt each day, then share the spoiler-free card with friends.",
+    "replyHowToDetail": "1. Tap play and choose a nickname (no account needed).\n2. After the countdown you get 6 questions: 2 multiple choice (10s), 1 ordering (15s), 1 odd-one-out (10s), and 2 logic (15s).\n3. One attempt per day. A correct answer is 100 points plus up to 100 for speed (max 1,200).\n4. Share the card (⚡ correct and fast, 🟩 correct, 🟥 wrong) without spoiling the questions.",
+    "replyPro": "RonDuel Pro is optional. It raises leagues to 200 members, unlocks unlimited 1v1 duels, adds one weekly streak shield, topic stats, and three visual themes. The daily game stays free.",
+    "replyEmoji": "On the share card, ⚡ means a correct answer with lots of time left, 🟩 means correct, and 🟥 means wrong or too slow. The card never shows the questions.",
+    "replyLeague": "A league is your group's leaderboard. Today's scores stay hidden until you finish. The weekly trophy goes to the best Sunday total. Free leagues hold 5 people; Pro holds 200.",
+    "replyDuel": "A 1v1 duel is 5 separate questions, not today's round. You each have 24 hours. The higher score wins, and a no-show loses. Free accounts get 4 duels a month.",
+    "replyStreak": "Your streak grows by 1 each local day you finish the round. Miss a day and it returns to 0. The new round unlocks at local midnight. Pro can protect one missed day each week.",
+    "replyAccount": "You can play as a guest. Guest data is deleted 7 days after the profile is created, unless you save it with email or Google and keep the same profile. Export or delete your data in Settings.",
+    "replyStatusPlayed": "Today ({date}), round #{round} — {topic}. You scored {score} ({emoji}). Streak: {streak} days (best {best}). Leagues: {leagues}.",
+    "replyStatusPending": "Today ({date}) is round #{round} — {topic}. You have not played yet. Streak: {streak} days (best {best}).",
+    "replyFallback": "Hi {name}! Ask me about today's round, scoring, leagues, duels, or Pro and I will keep the answer short.",
+    "replyDuelCreated": "I started a 1v1 duel for you: 5 questions and 24 hours to play. Open it and send the link to a friend.",
+    "replyLeagueCreated": "I created the league “{name}”. Invite code: {code}. Share the link so friends can join.",
+    "replyActionFailed": "I couldn't do that: {error}.",
+    "replyAdminScheduled": "Scheduled a 6-question round for {date}.",
+    "replyAdminScheduleFailed": "Could not schedule the round for {date}: {error}.",
+    "replyAdminDrafts": "Created {count} new {type} questions about “{topic}” ({ids}).",
+    "replyAdminPanel": "You can review them in the admin panel.",
+    "openAdmin": "Open admin"
   },
   "home": {
     "heroTitle": "RonDuel – Daily trivia with your friends",
@@ -668,7 +695,9 @@
     "anonWarning": "Your account is tied to this browser only. Connect Google or email so you don't lose your progress and can appear in the global top 100.",
     "anonExpiry": "Your stats and progress will be deleted automatically after 1 week unless you create a free account!",
     "createAccountBtn": "Create account",
-    "later": "Later"
+    "later": "Later",
+    "guestExpiryBanner": "Your guest account is deleted on {date} if you don't save it with email or Google.",
+    "saveAccount": "Save account"
   },
   "leagues": {
     "myCount": "{count, plural, one {# league} other {# leagues}}",

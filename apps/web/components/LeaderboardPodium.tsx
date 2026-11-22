@@ -3,9 +3,10 @@
 import { Trophy } from '@phosphor-icons/react';
 import { sanitizeDisplayName } from '@ronduel/shared';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Avatar, Button, Chip } from '@/components/ui';
+import { useBottomStack } from '@/lib/bottom-stack';
 
 export interface PodiumStyle {
   isPodium: boolean;
@@ -19,7 +20,8 @@ export function getPodiumStyle(rank: number, isCurrentUser = false): PodiumStyle
     return {
       isPodium: true,
       cupColor: 'text-amber-500',
-      badgeBg: 'bg-gradient-to-r from-amber-400 to-yellow-300 text-black border-2 border-amber-500 shadow-sm',
+      badgeBg:
+        'bg-gradient-to-r from-amber-400 to-yellow-300 text-black border-2 border-amber-500 shadow-sm',
       cardStyle:
         'border-2 border-amber-400 bg-gradient-to-r from-amber-500/[0.12] via-yellow-400/[0.08] to-amber-500/[0.12] shadow-[2px_2px_0px_0px_rgba(245,158,11,0.85)] dark:border-amber-400 dark:bg-amber-950/25',
     };
@@ -28,7 +30,8 @@ export function getPodiumStyle(rank: number, isCurrentUser = false): PodiumStyle
     return {
       isPodium: true,
       cupColor: 'text-slate-400',
-      badgeBg: 'bg-gradient-to-r from-slate-200 to-slate-300 text-slate-800 border-2 border-slate-400 shadow-sm',
+      badgeBg:
+        'bg-gradient-to-r from-slate-200 to-slate-300 text-slate-800 border-2 border-slate-400 shadow-sm',
       cardStyle:
         'border-2 border-slate-300 bg-gradient-to-r from-slate-300/[0.12] via-slate-200/[0.08] to-slate-300/[0.12] shadow-[2px_2px_0px_0px_rgba(148,163,184,0.75)] dark:border-slate-400 dark:bg-slate-900/30',
     };
@@ -37,7 +40,8 @@ export function getPodiumStyle(rank: number, isCurrentUser = false): PodiumStyle
     return {
       isPodium: true,
       cupColor: 'text-amber-700',
-      badgeBg: 'bg-gradient-to-r from-amber-700 to-amber-600 text-amber-50 border-2 border-amber-700 shadow-sm',
+      badgeBg:
+        'bg-gradient-to-r from-amber-700 to-amber-600 text-amber-50 border-2 border-amber-700 shadow-sm',
       cardStyle:
         'border-2 border-amber-700/60 bg-gradient-to-r from-amber-700/[0.12] via-amber-600/[0.08] to-amber-700/[0.12] shadow-[2px_2px_0px_0px_rgba(180,83,9,0.75)] dark:border-amber-700 dark:bg-amber-950/20',
     };
@@ -64,27 +68,33 @@ export function RankBadge({ rank }: { rank: number }) {
   const podium = getPodiumStyle(rank);
   if (rank === 1) {
     return (
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}
+      >
         <Trophy size={20} weight="fill" className="text-amber-600 drop-shadow-sm" />
       </div>
     );
   }
   if (rank === 2) {
     return (
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}
+      >
         <Trophy size={19} weight="fill" className="text-slate-600 drop-shadow-sm" />
       </div>
     );
   }
   if (rank === 3) {
     return (
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}
+      >
         <Trophy size={18} weight="fill" className="text-amber-900 drop-shadow-sm" />
       </div>
     );
   }
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-surface-2 text-xs font-black shadow-sm text-ink">
+    <div className="border-border bg-surface-2 text-ink flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 text-xs font-black shadow-sm">
       #{rank}
     </div>
   );
@@ -98,16 +108,13 @@ interface StickyUserRankProps {
   label?: string;
 }
 
-export function StickyUserRank({
-  myRank,
-  myScore,
-  myNickname,
-  myUid,
-  label,
-}: StickyUserRankProps) {
+export function StickyUserRank({ myRank, myScore, myNickname, myUid, label }: StickyUserRankProps) {
   const t = useTranslations();
   const rankLabel = label ?? t('common.yourRank');
   const [isInViewport, setIsInViewport] = useState(false);
+  const barRef = useRef<HTMLElement>(null);
+  const visible = Boolean(myRank || myScore != null);
+  useBottomStack('sticky-user-rank', barRef, visible);
 
   useEffect(() => {
     if (!myUid || typeof window === 'undefined') return;
@@ -126,7 +133,7 @@ export function StickyUserRank({
     return () => observer.disconnect();
   }, [myUid]);
 
-  if (!myRank && myScore == null) return null;
+  if (!visible) return null;
 
   const handleScrollToMe = () => {
     if (!myUid || typeof window === 'undefined') return;
@@ -144,10 +151,11 @@ export function StickyUserRank({
 
   return (
     <aside
+      ref={barRef}
       aria-label={t('a11y.yourPosition')}
-      className="fixed bottom-20 left-0 right-0 z-30 px-4 pointer-events-none sm:bottom-6"
+      className="pointer-events-none fixed bottom-20 left-0 right-0 z-30 px-4 sm:bottom-6"
     >
-      <div className="mx-auto max-w-[480px] pointer-events-auto">
+      <div className="pointer-events-auto mx-auto max-w-[480px]">
         <div
           role="button"
           tabIndex={0}
@@ -158,28 +166,28 @@ export function StickyUserRank({
               handleScrollToMe();
             }
           }}
-          className={`cursor-pointer rounded-2xl border-2 border-border bg-surface text-ink p-3 shadow-[0_6px_20px_rgba(0,0,0,0.18),var(--rd-shadow-key)] flex items-center justify-between gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] select-none ${
+          className={`border-border bg-surface text-ink flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl border-2 p-3 shadow-[0_6px_20px_rgba(0,0,0,0.18),var(--rd-shadow-key)] transition-all hover:scale-[1.01] active:scale-[0.99] ${
             isInViewport
-              ? 'bg-gradient-to-r from-surface via-surface-2 to-surface border-border'
-              : 'bg-gradient-to-r from-volt/25 via-surface to-surface border-volt-strong ring-2 ring-volt-strong/50'
+              ? 'from-surface via-surface-2 to-surface border-border bg-gradient-to-r'
+              : 'from-volt/25 via-surface to-surface border-volt-strong ring-volt-strong/50 bg-gradient-to-r ring-2'
           }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-volt font-black text-sm text-[#16131F] shadow-sm">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="border-border bg-volt flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 text-sm font-black text-[#16131F] shadow-sm">
               #{myRank ?? '—'}
             </div>
             <Avatar nickname={displayName} size="sm" />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm truncate">{displayName}</span>
-                <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
+                <span className="truncate text-sm font-extrabold">{displayName}</span>
+                <Chip tone="volt" className="px-1 py-0 text-[10px] font-black">
                   {t('common.you')}
                 </Chip>
               </div>
-              <p className="text-muted text-xs font-bold truncate">
+              <p className="text-muted truncate text-xs font-bold">
                 {rankLabel} <span className="text-ink">#{myRank ?? '—'}</span>
                 {myScore != null && (
-                  <span className="rd-tabular font-extrabold text-ron-strong ml-1.5">
+                  <span className="rd-tabular text-ron-strong ml-1.5 font-extrabold">
                     · {t('common.points', { points: myScore.toLocaleString() })}
                   </span>
                 )}
@@ -190,7 +198,7 @@ export function StickyUserRank({
           <Button
             size="sm"
             variant={isInViewport ? 'secondary' : 'volt'}
-            className="shrink-0 text-xs font-black h-8 px-2.5 shadow-sm"
+            className="h-8 shrink-0 px-2.5 text-xs font-black shadow-sm"
           >
             {isInViewport ? t('common.youAreHere') : t('common.jumpToMyRank')}
           </Button>

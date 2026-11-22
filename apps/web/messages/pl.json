@@ -464,7 +464,9 @@
       "s3Title": "3. Podmioty przetwarzające i analityka",
       "s3Body": "Korzystamy z Firebase (baza danych i uwierzytelnianie w UE), Stripe (bezpieczne przetwarzanie płatności dla RonDuel Pro) oraz PostHog Cloud EU (analityka chroniąca prywatność, włączana wyłącznie po Twojej wyraźnej zgodzie).",
       "s4Title": "4. Twoje prawa (eksport i usunięcie danych)",
-      "s4Body": "Zgodnie z RODO masz prawo dostępu do swoich danych, ich sprostowania, eksportu oraz usunięcia ('prawo do bycia zapomnianym'). Możesz w każdej chwili wyeksportować wszystkie swoje dane jako plik JSON lub trwale usunąć konto w Ustawieniach."
+      "s4Body": "Zgodnie z RODO masz prawo dostępu do swoich danych, ich sprostowania, eksportu oraz usunięcia ('prawo do bycia zapomnianym'). Możesz w każdej chwili wyeksportować wszystkie swoje dane jako plik JSON lub trwale usunąć konto w Ustawieniach.",
+      "s5Title": "5. Konta gości",
+      "s5Body": "Jeśli grasz bez zakładania konta, RonDuel przechowuje profil gościa i powiązane dane (nick, wyniki, serie, ligi i pojedynki) przez 7 dni od utworzenia. Jeśli w tych 7 dniach nie zapiszesz profilu e-mailem lub Google, konto gościa i wszystkie jego dane są usuwane. Zapisanie konta zachowuje ten sam profil i czyni go trwałym. Zapisane konto zostaje, aż sam je usuniesz."
     },
     "cookies": {
       "title": "Polityka plików cookie i pamięci lokalnej",
@@ -639,7 +641,32 @@
     "placeholder": "np. Jak grać? / Stwórz pojedynek…",
     "inputLabel": "Wiadomość do RonBota",
     "send": "Wyślij wiadomość",
-    "open": "Otwórz asystenta AI RonBot"
+    "open": "Otwórz asystenta AI RonBot",
+    "guestName": "przyjacielu",
+    "seePro": "Zobacz RonDuel Pro",
+    "playTodayCta": "▶️ Zagraj dzisiejszą rundę",
+    "replyWhatIs": "RonDuel to codzienna gra quizowa z przyjaciółmi. Wszyscy dostają te same 6 pytań raz dziennie, a szybka poprawna odpowiedź daje więcej punktów. Wyniki porównujecie w ligach i pojedynkach 1 na 1.",
+    "replyReset": "Codzienna runda resetuje się o lokalnej północy (00:00 w twojej strefie). Wtedy otwiera się nowa runda i masz jedną próbę tego dnia.",
+    "replyScore": "Poprawna odpowiedź to **100** punktów plus premia za szybkość do **100**.\n\n- Maksimum za pytanie: 200\n- Maksimum dziennie: 1 200\n- Błąd albo koniec czasu: 0\n\nPrzy remisie wygrywa krótszy czas łączny.",
+    "replyHowTo": "Stuknij graj, wybierz nick i odpowiedz na 6 pytań w około minutę. Masz jedną próbę dziennie, a potem udostępniasz kartę bez spoilerów.",
+    "replyHowToDetail": "1. Stuknij graj i wybierz nick (bez konta).\n2. Po odliczaniu jest 6 pytań: 2 wielokrotnego wyboru (10s), 1 kolejność (15s), 1 intruz (10s) i 2 logiczne (15s).\n3. Jedna próba dziennie. Dobra odpowiedź to 100 punktów plus do 100 za szybkość (maks. 1 200).\n4. Karta pokazuje ⚡ dobrze i szybko, 🟩 dobrze, 🟥 źle, bez treści pytań.",
+    "replyPro": "RonDuel Pro jest opcjonalny. Zwiększa ligi do 200 osób, odblokowuje nielimitowane pojedynki 1 na 1, dodaje jedną tarczę serii na tydzień, statystyki tematów i trzy motywy. Codzienna gra zostaje darmowa.",
+    "replyEmoji": "Na karcie ⚡ to dobra odpowiedź z dużym zapasem czasu, 🟩 to dobrze, a 🟥 to błąd albo za wolno. Karta nigdy nie pokazuje pytań.",
+    "replyLeague": "Liga to ranking twojej grupy. Dzisiejsze wyniki są ukryte, dopóki nie skończysz. Trofeum tygodnia dostaje najlepsza suma z niedzieli. Darmowa liga ma 5 osób, Pro ma 200.",
+    "replyDuel": "Pojedynek 1 na 1 to 5 osobnych pytań, nie dzisiejsza runda. Każdy ma 24 godziny. Wygrywa wyższy wynik, a kto nie zagra, przegrywa. Darmowe konto ma 4 pojedynki miesięcznie.",
+    "replyStreak": "Seria rośnie o 1 w każdy lokalny dzień, w którym kończysz rundę. Opuszczenie dnia zeruje ją. Nowa runda otwiera się o lokalnej północy. Pro może ochronić jeden opuszczony dzień w tygodniu.",
+    "replyAccount": "Możesz grać jako gość. Dane gościa są usuwane 7 dni po utworzeniu profilu, chyba że zapiszesz go e-mailem lub Google i zachowasz ten sam profil. Eksport i usuwanie są w Ustawieniach.",
+    "replyStatusPlayed": "Dziś ({date}), runda #{round} — {topic}. Masz {score} punktów ({emoji}). Seria: {streak} dni (rekord {best}). Ligi: {leagues}.",
+    "replyStatusPending": "Dziś ({date}) jest runda #{round} — {topic}. Jeszcze nie grałeś. Seria: {streak} dni (rekord {best}).",
+    "replyFallback": "Cześć, {name}! Pytaj o dzisiejszą rundę, punkty, ligi, pojedynki albo Pro, odpowiem krótko.",
+    "replyDuelCreated": "Uruchomiłem dla ciebie pojedynek 1 na 1: 5 pytań i 24 godziny na grę. Otwórz go i wyślij link znajomemu.",
+    "replyLeagueCreated": "Utworzyłem ligę „{name}”. Kod zaproszenia: {code}. Udostępnij link, żeby dołączyli znajomi.",
+    "replyActionFailed": "Nie udało się: {error}.",
+    "replyAdminScheduled": "Zaplanowano rundę 6 pytań na {date}.",
+    "replyAdminScheduleFailed": "Nie udało się zaplanować rundy na {date}: {error}.",
+    "replyAdminDrafts": "Utworzono {count} nowych pytań typu {type} o „{topic}” ({ids}).",
+    "replyAdminPanel": "Możesz je sprawdzić w panelu admina.",
+    "openAdmin": "Otwórz admin"
   },
   "home": {
     "heroTitle": "RonDuel – Codzienny quiz ze znajomymi",
@@ -668,7 +695,9 @@
     "anonWarning": "Twoje konto jest powiązane tylko z tą przeglądarką. Połącz konto Google lub e-mail, aby nie stracić postępów i móc pojawić się w globalnym top 100.",
     "anonExpiry": "Twoje statystyki i postępy zostaną automatycznie usunięte po 1 tygodniu, chyba że utworzysz darmowe konto!",
     "createAccountBtn": "Utwórz konto",
-    "later": "Później"
+    "later": "Później",
+    "guestExpiryBanner": "Twoje konto gościa zostanie usunięte {date}, jeśli nie zapiszesz go e-mailem albo kontem Google.",
+    "saveAccount": "Zapisz konto"
   },
   "leagues": {
     "myCount": "{count, plural, one {# liga} few {# ligi} many {# lig} other {# ligi}}",

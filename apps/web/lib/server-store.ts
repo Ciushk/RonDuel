@@ -26,6 +26,8 @@ import {
 } from '@ronduel/shared';
 
 import { pickCuratedTemplates, type GeneratedDraftTemplate } from './ai-question-bank';
+import { planAccountMerge, normalizeAuthProvider, type MergeUser } from './account-merge';
+import { anonExpiresAtIso } from './anon-retention';
 import {
   type DailyRoundRecord,
   type GeneratedQuestionItem,
@@ -43,7 +45,8 @@ export interface UserRecord {
   relaxedTimer: boolean;
   isAnonymous: boolean;
   email?: string;
-  authProvider?: 'anonymous' | 'email_link' | 'google' | 'password' | 'email_password';
+  authProvider?:
+    'anonymous' | 'email_link' | 'google' | 'google.com' | 'password' | 'email_password';
   isAdmin?: boolean;
   pro: {
     active: boolean;
@@ -89,6 +92,7 @@ export interface UserRecord {
   >;
   createdAt: string;
   expiresAt?: string | null;
+  upgradedAt?: string | null;
 }
 
 export interface ResolvedRoundItem {
@@ -262,7 +266,10 @@ interface StoreState {
   >;
   scheduledRounds: Record<string, AdminRoundSchedule>;
   dailyRounds: Record<string, DailyRoundRecord>;
-  questionReports: Record<string, { count: number; reasons: Record<string, number>; flagged: boolean }>;
+  questionReports: Record<
+    string,
+    { count: number; reasons: Record<string, number>; flagged: boolean }
+  >;
   reports: Record<string, ModerationReport>;
   auditLogs: AuditLogEntry[];
 }
@@ -608,6 +615,23 @@ export function resolveRoundItems(date: string, locale: Locale | string): Resolv
   return picked.map((q, index) => resolveQuestionToItem(q, index, date, locale));
 }
 
+const dirtyUserIds = new Set<string>();
+
+export function markUserDirty(uid: string) {
+  if (uid) dirtyUserIds.add(uid);
+}
+
+export function consumeDirtyUsers(): UserRecord[] {
+  const store = getStore();
+  const users: UserRecord[] = [];
+  for (const uid of dirtyUserIds) {
+    const user = store.users[uid];
+    if (user) users.push(user);
+  }
+  dirtyUserIds.clear();
+  return users;
+}
+
 export function getOrCreateUser(params: {
   uid: string;
   nickname?: string;
@@ -649,14 +673,19 @@ export function getOrCreateUser(params: {
       },
       rivals: {},
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
+    user.expiresAt = anonExpiresAtIso(user.createdAt);
     store.users[params.uid] = user;
+    markUserDirty(user.uid);
   } else {
+    const before = `${user.nickname}|${user.locale}|${user.tz}|${user.relaxedTimer}`;
     if (params.nickname) user.nickname = params.nickname;
     if (params.locale) user.locale = params.locale;
     if (params.tz) user.tz = params.tz;
     if (typeof params.relaxedTimer === 'boolean') user.relaxedTimer = params.relaxedTimer;
+    if (before !== `${user.nickname}|${user.locale}|${user.tz}|${user.relaxedTimer}`) {
+      markUserDirty(user.uid);
+    }
     if (!user.pro) user.pro = { active: false };
     if (!user.notif) {
       user.notif = {
@@ -703,7 +732,15 @@ export function getOrCreateUser(params: {
     else if (tz.includes('Madrid')) user.country = 'ES';
     else if (tz.includes('Lisbon')) user.country = 'PT';
     else if (tz.includes('London')) user.country = 'GB';
-    else user.country = user.locale === 'ro' ? 'RO' : user.locale === 'es' ? 'ES' : user.locale === 'pt' ? 'PT' : 'US';
+    else
+      user.country =
+        user.locale === 'ro'
+          ? 'RO'
+          : user.locale === 'es'
+            ? 'ES'
+            : user.locale === 'pt'
+              ? 'PT'
+              : 'US';
   }
 
   if (user.email && PRO_BOOTSTRAP_EMAILS.includes(user.email.toLowerCase())) {
@@ -717,7 +754,10 @@ export function getOrCreateUser(params: {
   return user;
 }
 
-export function checkNicknameAvailable(nickname: string, excludeUid?: string): { available: boolean; suggestions: string[] } {
+export function checkNicknameAvailable(
+  nickname: string,
+  excludeUid?: string,
+): { available: boolean; suggestions: string[] } {
   const store = getStore();
   const trimmed = nickname.trim().toLowerCase();
   if (!trimmed) return { available: false, suggestions: [] };
@@ -739,15 +779,20 @@ export function checkNicknameAvailable(nickname: string, excludeUid?: string): {
     `Super${base}`,
   ];
 
-  const suggestions = candidates.filter((c) => {
-    const cLow = c.toLowerCase();
-    return !Object.values(store.users).some((u) => u.nickname.trim().toLowerCase() === cLow);
-  }).slice(0, 3);
+  const suggestions = candidates
+    .filter((c) => {
+      const cLow = c.toLowerCase();
+      return !Object.values(store.users).some((u) => u.nickname.trim().toLowerCase() === cLow);
+    })
+    .slice(0, 3);
 
   return { available: false, suggestions };
 }
 
-export function checkLeagueNameAvailable(name: string, excludeLeagueId?: string): { available: boolean; suggestions: string[] } {
+export function checkLeagueNameAvailable(
+  name: string,
+  excludeLeagueId?: string,
+): { available: boolean; suggestions: string[] } {
   const store = getStore();
   const trimmed = name.trim().toLowerCase();
   if (!trimmed) return { available: false, suggestions: [] };
@@ -769,10 +814,12 @@ export function checkLeagueNameAvailable(name: string, excludeLeagueId?: string)
     `${base} ${Math.floor(10 + Math.random() * 90)}`,
   ];
 
-  const suggestions = candidates.filter((c) => {
-    const cLow = c.toLowerCase();
-    return !Object.values(store.leagues).some((l) => l.name.trim().toLowerCase() === cLow);
-  }).slice(0, 3);
+  const suggestions = candidates
+    .filter((c) => {
+      const cLow = c.toLowerCase();
+      return !Object.values(store.leagues).some((l) => l.name.trim().toLowerCase() === cLow);
+    })
+    .slice(0, 3);
 
   return { available: false, suggestions };
 }
@@ -803,6 +850,7 @@ export function changeUserNickname(params: { uid: string; newNickname: string })
 
   user.nickname = validNick;
   user.lastNicknameChangeAt = new Date().toISOString();
+  markUserDirty(user.uid);
 
   // Cascade to leagues where user is a member
   for (const leagueId of user.leagueIds) {
@@ -938,6 +986,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     for (const lid of clientLeagueIds) {
       if (store.leagues[lid] && !user.leagueIds.includes(lid)) {
         user.leagueIds.push(lid);
+        markUserDirty(user.uid);
         if (!store.leagues[lid].members[uid]) {
           store.leagues[lid].members[uid] = {
             uid,
@@ -973,9 +1022,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
         id: d.id,
         status: d.status,
         challengerNickname: d.sides[d.challengerUid]?.nickname ?? '',
-        opponentNickname: d.opponentUid
-          ? (d.sides[d.opponentUid]?.nickname ?? '')
-          : '',
+        opponentNickname: d.opponentUid ? (d.sides[d.opponentUid]?.nickname ?? '') : '',
         myTurn: !d.sides[uid]?.finishedAt,
         timeLeftMs,
       };
@@ -987,9 +1034,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
   const maxOwnedLeagues = user.pro.active
     ? PRO_LIMITS.maxOwnedLeagues
     : FREE_LIMITS.maxOwnedLeagues;
-  const maxActiveDuels = user.pro.active
-    ? PRO_LIMITS.maxActiveDuels
-    : FREE_LIMITS.maxActiveDuels;
+  const maxActiveDuels = user.pro.active ? PRO_LIMITS.maxActiveDuels : FREE_LIMITS.maxActiveDuels;
 
   const currentMonth = date.slice(0, 7);
   const monthlyDuelsCount = Object.values(store.duels).filter((d) => {
@@ -1038,6 +1083,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
   for (const l of allUserLeagues) {
     if (!user.leagueIds.includes(l.id)) {
       user.leagueIds.push(l.id);
+      markUserDirty(user.uid);
     }
   }
 
@@ -1054,9 +1100,9 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
       );
     const myRankIdx = todayEntries.findIndex((e) => e.uid === uid);
     const memberList = Object.values(l.members);
-    const initials = memberList.slice(0, 4).map((m) =>
-      (m.nickname || 'P').slice(0, 2).toUpperCase(),
-    );
+    const initials = memberList
+      .slice(0, 4)
+      .map((m) => (m.nickname || 'P').slice(0, 2).toUpperCase());
     const intlRankIdx = leaguesLeaderboard.findIndex((lb) => lb.id === l.id);
     const intlRank = intlRankIdx >= 0 ? intlRankIdx + 1 : null;
     const intlTotalPoints = intlRankIdx >= 0 ? leaguesLeaderboard[intlRankIdx]!.allTimePoints : 0;
@@ -1130,7 +1176,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     leaguesLeaderboard,
     globalPlayersLeaderboard: getGlobalPlayersLeaderboard(date, uid),
     // Keep backward-compatible leagues array
-    leagues: privateLeagues.length > 0 ? privateLeagues : (worldLeague ? [worldLeague] : []),
+    leagues: privateLeagues.length > 0 ? privateLeagues : worldLeague ? [worldLeague] : [],
   };
 }
 
@@ -1213,7 +1259,12 @@ export function startRound(params: {
 
         const nextIndex = curr.index + 1;
         if (nextIndex < resolved.length) {
-          activePlay.items.push({ index: nextIndex, servedAt: curr.answeredAt, points: 0, timedOut: false });
+          activePlay.items.push({
+            index: nextIndex,
+            servedAt: curr.answeredAt,
+            points: 0,
+            timedOut: false,
+          });
           curr = activePlay.items.find((i) => i.answeredAt === undefined);
         } else {
           // All questions finished
@@ -1232,7 +1283,8 @@ export function startRound(params: {
   }
 
   const currentItemState =
-    activePlay.items.find((i) => i.answeredAt === undefined) ?? activePlay.items[activePlay.items.length - 1]!;
+    activePlay.items.find((i) => i.answeredAt === undefined) ??
+    activePlay.items[activePlay.items.length - 1]!;
   const resolvedItem = resolved[currentItemState.index]!;
   const clientItem = toClientItem(resolvedItem, activePlay.relaxedTimer);
   const elapsedMs = Math.max(0, now - currentItemState.servedAt);
@@ -1351,7 +1403,8 @@ export function finishRound(
     let date = getLocalDateString(new Date(), 'UTC');
     if (parts.length >= 2) {
       if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0]!)) date = parts[0]!;
-      else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!)) date = parts[parts.length - 1]!;
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!))
+        date = parts[parts.length - 1]!;
     }
     const meta = getRoundMeta(date);
     const user = getOrCreateUser({ uid });
@@ -1398,11 +1451,19 @@ export function finishRound(
   // Invariant check: number of ⚡/🟩 must equal correct count and score >= 100 * correct
   const correctCount = play.items.filter((i) => i.correct || (i.points && i.points > 0)).length;
   const emojiCorrectCount = (play.emojiLine.match(/[⚡🟩]/gu) || []).length;
-  if (correctCount !== emojiCorrectCount || (correctCount > 0 && play.totalScore < 100 * correctCount)) {
+  if (
+    correctCount !== emojiCorrectCount ||
+    (correctCount > 0 && play.totalScore < 100 * correctCount)
+  ) {
     if (answeredItems.length > 0) {
       play.emojiLine = buildEmojiLine(
         answeredItems.map((i) => ({
-          emoji: (i.points && i.points > 100) ? '⚡' : (i.correct || (i.points && i.points > 0)) ? '🟩' : '🟥',
+          emoji:
+            i.points && i.points > 100
+              ? '⚡'
+              : i.correct || (i.points && i.points > 0)
+                ? '🟩'
+                : '🟥',
         })),
       );
     } else {
@@ -1427,6 +1488,7 @@ export function finishRound(
     user.streakBest = nextStreak.streakBest;
     user.lastPlayedDate = play.date;
     user.streakShieldUsedWeek = nextStreak.streakShieldUsedWeek;
+    markUserDirty(user.uid);
 
     // Only update leagues if the player actually played answered questions
     if (answeredItems.length > 0) {
@@ -1472,7 +1534,9 @@ export function finishRound(
     finishedPlaysCount,
     review: resolved.map((r, idx) => {
       const itemState = play.items.find((i) => i.index === idx);
-      const isCorrect = itemState ? Boolean(itemState.correct || (itemState.points && itemState.points > 0)) : false;
+      const isCorrect = itemState
+        ? Boolean(itemState.correct || (itemState.points && itemState.points > 0))
+        : false;
       const isTimedOut = itemState ? Boolean(itemState.timedOut) : false;
       let userAnswer: string | null = null;
       if (itemState && itemState.choice !== undefined && itemState.choice !== null) {
@@ -1636,7 +1700,11 @@ export function createLeague(params: {
   const trimmedName = params.name?.trim();
   if (trimmedName !== undefined && trimmedName.length > 0) {
     if (trimmedName.length < 2 || trimmedName.length > 30) {
-      throw new ApiError('LEAGUE_NAME_INVALID', 'League name must be between 2 and 30 characters.', 400);
+      throw new ApiError(
+        'LEAGUE_NAME_INVALID',
+        'League name must be between 2 and 30 characters.',
+        400,
+      );
     }
   }
 
@@ -1652,11 +1720,8 @@ export function createLeague(params: {
     throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
 
-  const isProLeague =
-    params.plan === 'pro_trial' || (params.plan === 'pro' && user.pro.active);
-  const maxMembers = isProLeague
-    ? PRO_LIMITS.maxMembersPerLeague
-    : FREE_LIMITS.maxMembersPerLeague;
+  const isProLeague = params.plan === 'pro_trial' || (params.plan === 'pro' && user.pro.active);
+  const maxMembers = isProLeague ? PRO_LIMITS.maxMembersPerLeague : FREE_LIMITS.maxMembersPerLeague;
 
   const league: LeagueRecord = {
     id,
@@ -1715,6 +1780,7 @@ export function createLeague(params: {
   if (!user.leagueIds.includes(id)) {
     user.leagueIds.push(id);
   }
+  markUserDirty(user.uid);
 
   saveStoreToDisk(store);
   return league;
@@ -1753,7 +1819,9 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const viewerScoreToday =
     globalPlay?.status === 'finished'
       ? globalPlay.totalScore
-      : (viewerUid ? league.days[today]?.[viewerUid]?.score ?? null : null);
+      : viewerUid
+        ? (league.days[today]?.[viewerUid]?.score ?? null)
+        : null;
   const isWorld = league.id === 'lg_world';
 
   let rawToday = Object.values(league.days[today] ?? {})
@@ -1763,9 +1831,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
       if (correctCount > 0 && entry.score < 100 * correctCount) return false;
       return true;
     })
-    .sort((a, b) =>
-      b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs,
-    );
+    .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs));
 
   if (countryFilter) {
     rawToday = rawToday.filter((entry) => {
@@ -1823,9 +1889,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
     roundsPlayed: member.roundsPlayed,
     joinedAt: member.joinedAt,
     scoreToday:
-      viewerFinishedToday || !isWorld
-        ? (league.days[today]?.[member.uid]?.score ?? null)
-        : null,
+      viewerFinishedToday || !isWorld ? (league.days[today]?.[member.uid]?.score ?? null) : null,
     isCurrentUser: Boolean(viewerUid && member.uid === viewerUid),
   }));
 
@@ -1879,7 +1943,11 @@ export function renameLeague(params: {
   }
   const trimmed = params.name.trim();
   if (trimmed.length < 2 || trimmed.length > 30) {
-    throw new ApiError('LEAGUE_NAME_INVALID', 'League name must be between 2 and 30 characters', 400);
+    throw new ApiError(
+      'LEAGUE_NAME_INVALID',
+      'League name must be between 2 and 30 characters',
+      400,
+    );
   }
   const nameCheck = checkLeagueNameAvailable(trimmed, league.id);
   if (!nameCheck.available) {
@@ -1890,11 +1958,7 @@ export function renameLeague(params: {
   return league;
 }
 
-export function deleteLeague(params: {
-  codeOrId: string;
-  actorUid: string;
-  isAdmin?: boolean;
-}) {
+export function deleteLeague(params: { codeOrId: string; actorUid: string; isAdmin?: boolean }) {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
@@ -1907,6 +1971,7 @@ export function deleteLeague(params: {
     const u = store.users[memberUid];
     if (u) {
       u.leagueIds = u.leagueIds.filter((lid) => lid !== league.id);
+      markUserDirty(u.uid);
     }
   }
   delete store.leagues[id];
@@ -1934,6 +1999,7 @@ export function leaveOrRemoveLeagueMember(params: {
   const user = store.users[params.targetUid];
   if (user) {
     user.leagueIds = user.leagueIds.filter((lid) => lid !== league.id);
+    markUserDirty(user.uid);
   }
 
   const remainingMembers = Object.values(league.members);
@@ -1952,10 +2018,7 @@ export function leaveOrRemoveLeagueMember(params: {
   return { deletedLeague: false, leagueId: id };
 }
 
-export function regenerateLeagueInviteCode(params: {
-  codeOrId: string;
-  actorUid: string;
-}) {
+export function regenerateLeagueInviteCode(params: { codeOrId: string; actorUid: string }) {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
@@ -2015,7 +2078,11 @@ export function joinLeague(params: {
 
   const user = getOrCreateUser({ uid: params.uid, nickname: nickCheck.value, tz: params.tz });
   const privateCount = user.leagueIds.filter((lId) => lId !== 'lg_world').length;
-  if (!league.members[params.uid] && !user.pro.active && privateCount >= FREE_LIMITS.maxJoinedLeagues) {
+  if (
+    !league.members[params.uid] &&
+    !user.pro.active &&
+    privateCount >= FREE_LIMITS.maxJoinedLeagues
+  ) {
     throw new ApiError('LEAGUE_LIMIT_REACHED', 'Free league cap reached', 400);
   }
 
@@ -2066,6 +2133,7 @@ export function joinLeague(params: {
   if (!user.leagueIds.includes(id)) {
     user.leagueIds.push(id);
   }
+  markUserDirty(user.uid);
 
   return league;
 }
@@ -2539,15 +2607,15 @@ export function submitDuelAnswer(params: {
     const opponentUser = duel.opponentUid ? store.users[duel.opponentUid] : undefined;
     const isHostAuth = Boolean(
       challengerUser &&
-        !challengerUser.isAnonymous &&
-        challengerUser.authProvider &&
-        challengerUser.authProvider !== 'anonymous',
+      !challengerUser.isAnonymous &&
+      challengerUser.authProvider &&
+      challengerUser.authProvider !== 'anonymous',
     );
     const isOpponentAuth = Boolean(
       opponentUser &&
-        !opponentUser.isAnonymous &&
-        opponentUser.authProvider &&
-        opponentUser.authProvider !== 'anonymous',
+      !opponentUser.isAnonymous &&
+      opponentUser.authProvider &&
+      opponentUser.authProvider !== 'anonymous',
     );
     const isRated = isHostAuth && isOpponentAuth;
     duel.rated = isRated;
@@ -2605,6 +2673,8 @@ export function submitDuelAnswer(params: {
 
         challengerUser.duelStats.played += 1;
         opponentUser.duelStats.played += 1;
+        markUserDirty(challengerUser.uid);
+        markUserDirty(opponentUser.uid);
         challengerUser.rivals[oppUid].lastDuelAt = new Date().toISOString();
         opponentUser.rivals[chUid].lastDuelAt = new Date().toISOString();
 
@@ -2683,97 +2753,258 @@ export function submitDuelAnswer(params: {
   };
 }
 
+function toMergeUser(user: UserRecord): MergeUser {
+  return {
+    uid: user.uid,
+    nickname: user.nickname,
+    streakCurrent: user.streakCurrent,
+    streakBest: user.streakBest,
+    leagueIds: [...user.leagueIds],
+    freezes: user.freezes ?? 0,
+    email: user.email,
+    isAnonymous: user.isAnonymous,
+    authProvider: user.authProvider,
+    pro: user.pro,
+    duelStats: user.duelStats,
+    expiresAt: user.expiresAt ?? null,
+    upgradedAt: user.upgradedAt ?? null,
+  };
+}
+
+function reassignPlay(store: StoreState, play: PlayRecord, newUid: string) {
+  const keys = Object.entries(store.plays)
+    .filter(([, value]) => value === play)
+    .map(([key]) => key);
+  for (const key of keys) delete store.plays[key];
+  play.uid = newUid;
+  play.playId = `${play.date}_${newUid}`;
+  store.plays[play.playId] = play;
+  store.plays[`${newUid}_${play.date}`] = play;
+}
+
+function repointUidInStore(fromUid: string, toUid: string): boolean {
+  const store = getStore();
+  const source = store.users[fromUid];
+  if (!source) return false;
+  store.users[toUid] = { ...source, uid: toUid };
+  delete store.users[fromUid];
+  const plays = Object.values(store.plays).filter((play) => play.uid === fromUid);
+  for (const play of plays) reassignPlay(store, play, toUid);
+  for (const duel of Object.values(store.duels)) {
+    if (duel.challengerUid === fromUid) duel.challengerUid = toUid;
+    if (duel.opponentUid === fromUid) duel.opponentUid = toUid;
+    if (duel.sides[fromUid] && !duel.sides[toUid]) {
+      duel.sides[toUid] = { ...duel.sides[fromUid]!, uid: toUid };
+      delete duel.sides[fromUid];
+    }
+  }
+  for (const league of Object.values(store.leagues)) {
+    if (league.members[fromUid] && !league.members[toUid]) {
+      league.members[toUid] = { ...league.members[fromUid]!, uid: toUid };
+    }
+    delete league.members[fromUid];
+    for (const day of Object.values(league.days)) {
+      if (day[fromUid] && !day[toUid]) {
+        day[toUid] = { ...day[fromUid]!, uid: toUid };
+      }
+      delete day[fromUid];
+    }
+    if (league.ownerUid === fromUid) league.ownerUid = toUid;
+  }
+  markUserDirty(toUid);
+  return true;
+}
+
+export function adoptAnonymousUid(fromUid: string, toUid: string): { uid: string; moved: boolean } {
+  if (!fromUid || !toUid || fromUid === toUid) return { uid: toUid || fromUid, moved: false };
+  const store = getStore();
+  const source = store.users[fromUid];
+  if (!source || source.email || source.isAnonymous === false)
+    return { uid: fromUid, moved: false };
+  const target = store.users[toUid];
+  if (target?.email || target?.isAnonymous === false) return { uid: toUid, moved: false };
+  if (!target) {
+    return { uid: toUid, moved: repointUidInStore(fromUid, toUid) };
+  }
+  return { uid: fromUid, moved: false };
+}
+
+export function purgeAnonymousFromStore(uid: string) {
+  const store = getStore();
+  const user = store.users[uid];
+  if (user?.email) return;
+  delete store.users[uid];
+  for (const [id, play] of Object.entries(store.plays)) {
+    if (play.uid === uid) delete store.plays[id];
+  }
+  for (const [id, duel] of Object.entries(store.duels)) {
+    if (duel.challengerUid === uid || duel.opponentUid === uid) delete store.duels[id];
+  }
+  for (const league of [...Object.values(store.leagues)]) {
+    delete league.members[uid];
+    for (const day of Object.values(league.days)) delete day[uid];
+    if (league.ownerUid === uid && league.id !== 'lg_world') {
+      const remaining = Object.values(league.members);
+      if (remaining.length === 0) {
+        delete store.inviteCodes[league.inviteCode];
+        delete store.leagues[league.id];
+      } else {
+        const nextOwner = remaining[0]!;
+        league.ownerUid = nextOwner.uid;
+        nextOwner.role = 'owner';
+      }
+    }
+  }
+  for (const [id, report] of Object.entries(store.reports)) {
+    if (report.reporterUid === uid) delete store.reports[id];
+  }
+  delete store.subscriptions[uid];
+}
+
 export function upgradeAccount(params: {
   uid: string;
   email: string;
-  provider: 'email_link' | 'google' | 'password' | 'email_password';
+  provider: 'email_link' | 'google' | 'google.com' | 'password' | 'email_password';
   nickname?: string;
   confirmMerge?: boolean;
+  targetUid?: string;
 }) {
   const store = getStore();
   const user = getOrCreateUser({ uid: params.uid });
   const targetEmail = params.email.trim().toLowerCase();
+  const provider = normalizeAuthProvider(params.provider);
   if (params.nickname?.trim()) {
     user.nickname = params.nickname.trim();
   }
 
-  // Check if another account with this email exists
-  const existingUser = Object.values(store.users).find(
-    (u) => u.email === targetEmail && u.uid !== params.uid,
-  );
+  const namedTarget = params.targetUid ? store.users[params.targetUid] : undefined;
+  const existingUser =
+    namedTarget && namedTarget.uid !== params.uid
+      ? namedTarget
+      : Object.values(store.users).find(
+          (candidate) => candidate.email === targetEmail && candidate.uid !== params.uid,
+        );
 
   if (existingUser) {
-    const shouldMerge = Boolean(params.confirmMerge) || params.provider === 'google';
+    const shouldMerge = Boolean(params.confirmMerge) || provider === 'google.com';
     if (!shouldMerge) {
       return {
         accountExists: true as const,
         existingUid: existingUser.uid,
-        message: 'Contul exist\u0103 deja. Intr\u0103 \u00een el?',
+        message: 'Account already exists',
       };
     }
 
-    // Merge accounts
-    // Check if target account already played today
-    const today = getLocalDateString(new Date(), user.tz || 'Europe/Bucharest');
-    const userTodayPlay = store.plays[`${today}_${user.uid}`];
-    const existingTodayPlay = store.plays[`${today}_${existingUser.uid}`];
-
-    if (userTodayPlay && !existingTodayPlay) {
-      // Transfer today's play to existing user
-      userTodayPlay.uid = existingUser.uid;
-      delete store.plays[`${today}_${user.uid}`];
-      store.plays[`${today}_${existingUser.uid}`] = userTodayPlay;
-      userTodayPlay.playId = `${today}_${existingUser.uid}`;
-
-      // Update league day entries
-      for (const lg of Object.values(store.leagues)) {
-        if (lg.days[today]?.[user.uid]) {
-          const entry = lg.days[today]![user.uid]!;
-          entry.uid = existingUser.uid;
-          lg.days[today]![existingUser.uid] = entry;
-          delete lg.days[today]![user.uid];
+    if (!store.users[existingUser.uid]) {
+      store.users[existingUser.uid] = existingUser;
+    }
+    const plan = planAccountMerge({
+      source: toMergeUser(user),
+      target: toMergeUser(existingUser),
+      plays: Object.values(store.plays).map((play) => ({
+        playId: play.playId,
+        uid: play.uid,
+        date: play.date,
+      })),
+      duels: Object.values(store.duels).map((duel) => ({
+        id: duel.id,
+        challengerUid: duel.challengerUid,
+        opponentUid: duel.opponentUid,
+      })),
+      nowIso: new Date().toISOString(),
+      provider,
+    });
+    const movingDates = new Set(plan.playReassignments.map((play) => play.date));
+    for (const play of Object.values(store.plays)) {
+      if (play.uid === user.uid && movingDates.has(play.date)) {
+        reassignPlay(store, play, existingUser.uid);
+      }
+    }
+    for (const update of plan.duelRepoints) {
+      const duel = store.duels[update.id];
+      if (!duel) continue;
+      if (duel.sides[user.uid] && !duel.sides[existingUser.uid]) {
+        duel.sides[existingUser.uid] = { ...duel.sides[user.uid]!, uid: existingUser.uid };
+        delete duel.sides[user.uid];
+      }
+      duel.challengerUid = update.challengerUid;
+      duel.opponentUid = update.opponentUid;
+    }
+    for (const leagueId of user.leagueIds) {
+      const league = store.leagues[leagueId];
+      if (!league) continue;
+      if (league.members[user.uid] && !league.members[existingUser.uid]) {
+        league.members[existingUser.uid] = { ...league.members[user.uid]!, uid: existingUser.uid };
+      }
+      delete league.members[user.uid];
+      for (const day of Object.values(league.days)) {
+        if (day[user.uid] && !day[existingUser.uid]) {
+          day[existingUser.uid] = { ...day[user.uid]!, uid: existingUser.uid };
         }
+        delete day[user.uid];
       }
+      if (league.ownerUid === user.uid) league.ownerUid = existingUser.uid;
     }
-
-    // Merge league memberships
-    for (const lgId of user.leagueIds) {
-      if (!existingUser.leagueIds.includes(lgId)) {
-        existingUser.leagueIds.push(lgId);
-      }
-      const lg = store.leagues[lgId];
-      if (lg && lg.members[user.uid] && !lg.members[existingUser.uid]) {
-        lg.members[existingUser.uid] = lg.members[user.uid]!;
-        lg.members[existingUser.uid]!.uid = existingUser.uid;
-        delete lg.members[user.uid];
-      }
-    }
-
-    // Merge streaks
-    existingUser.streakCurrent = Math.max(existingUser.streakCurrent, user.streakCurrent);
-    existingUser.streakBest = Math.max(existingUser.streakBest, user.streakBest);
+    existingUser.nickname = plan.target.nickname;
+    existingUser.streakCurrent = plan.target.streakCurrent;
+    existingUser.streakBest = plan.target.streakBest;
+    existingUser.leagueIds = plan.target.leagueIds;
+    existingUser.freezes = plan.target.freezes;
+    existingUser.email = plan.target.email || targetEmail;
     existingUser.isAnonymous = false;
-    existingUser.authProvider = params.provider;
+    existingUser.authProvider = provider;
     existingUser.expiresAt = null;
-
+    existingUser.upgradedAt = plan.target.upgradedAt;
+    if (plan.target.pro) existingUser.pro = plan.target.pro;
+    if (plan.target.duelStats) existingUser.duelStats = plan.target.duelStats;
+    delete store.users[user.uid];
+    markUserDirty(existingUser.uid);
     return {
       uid: existingUser.uid,
       merged: true as const,
       nickname: existingUser.nickname,
       email: existingUser.email,
-      isAnonymous: existingUser.isAnonymous,
+      isAnonymous: false,
       authProvider: existingUser.authProvider,
       isAdmin: Boolean(existingUser.isAdmin),
       streakCurrent: existingUser.streakCurrent,
       streakBest: existingUser.streakBest,
       leagueIds: existingUser.leagueIds,
+      expiresAt: null,
+      upgradedAt: existingUser.upgradedAt,
+    };
+  }
+
+  if (params.targetUid && params.targetUid !== user.uid) {
+    repointUidInStore(user.uid, params.targetUid);
+    const moved = getOrCreateUser({ uid: params.targetUid, nickname: user.nickname });
+    moved.email = targetEmail;
+    moved.isAnonymous = false;
+    moved.authProvider = provider;
+    moved.expiresAt = null;
+    moved.upgradedAt = new Date().toISOString();
+    markUserDirty(moved.uid);
+    return {
+      uid: moved.uid,
+      merged: true as const,
+      nickname: moved.nickname,
+      email: moved.email,
+      isAnonymous: false,
+      authProvider: moved.authProvider,
+      isAdmin: Boolean(moved.isAdmin),
+      streakCurrent: moved.streakCurrent,
+      streakBest: moved.streakBest,
+      leagueIds: moved.leagueIds,
+      expiresAt: null,
+      upgradedAt: moved.upgradedAt,
     };
   }
 
   user.isAnonymous = false;
   user.email = targetEmail;
-  user.authProvider = params.provider;
+  user.authProvider = provider;
   user.expiresAt = null;
+  user.upgradedAt = new Date().toISOString();
   if (PRO_BOOTSTRAP_EMAILS.includes(user.email)) {
     user.pro = {
       active: true,
@@ -2784,10 +3015,11 @@ export function upgradeAccount(params: {
 
   const adminEmails = (process.env.ADMIN_BOOTSTRAP_EMAILS ?? 'admin@ronduel.eu')
     .split(',')
-    .map((e) => e.trim().toLowerCase());
+    .map((entry) => entry.trim().toLowerCase());
   if (adminEmails.includes(user.email)) {
     user.isAdmin = true;
   }
+  markUserDirty(user.uid);
 
   return {
     uid: user.uid,
@@ -2799,6 +3031,8 @@ export function upgradeAccount(params: {
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
     leagueIds: user.leagueIds,
+    expiresAt: null,
+    upgradedAt: user.upgradedAt,
   };
 }
 
@@ -2837,6 +3071,9 @@ export function getUserProfile(uid: string) {
     isAnonymous: user.isAnonymous,
     authProvider: user.authProvider ?? 'anonymous',
     isAdmin: Boolean(user.isAdmin),
+    expiresAt: user.expiresAt ?? null,
+    upgradedAt: user.upgradedAt ?? null,
+    createdAt: user.createdAt,
     pro: user.pro,
     notif: user.notif,
     streakCurrent: user.streakCurrent,
@@ -2880,6 +3117,7 @@ export function processStripeWebhook(params: {
   store.stripeEvents[params.eventId] = new Date().toISOString();
 
   const user = getOrCreateUser({ uid: params.uid });
+  markUserDirty(user.uid);
 
   // Handle Streak Freeze one-off purchases
   if (params.type === 'checkout.session.completed' && params.plan === 'freeze_1') {
@@ -2957,12 +3195,14 @@ export function updateNotificationPrefs(params: {
     emailEnabled: params.emailEnabled,
     reminderLocalTime: params.reminderLocalTime,
   };
+  markUserDirty(user.uid);
   return user.notif;
 }
 
 export function unsubscribeUserEmail(uid: string) {
   const user = getOrCreateUser({ uid });
   user.notif.emailEnabled = false;
+  markUserDirty(user.uid);
   return { ok: true, uid, emailEnabled: false };
 }
 
@@ -3486,7 +3726,7 @@ export function getAdminRounds(daysCount = 7) {
           const ansStr =
             q.type === 'order'
               ? (q.correctOrder ?? ro.options).join(' → ')
-              : ro.options[q.correctIndex ?? 0] ?? '';
+              : (ro.options[q.correctIndex ?? 0] ?? '');
           return {
             index: idx,
             id: q.id,
@@ -3515,7 +3755,7 @@ export function getAdminRounds(daysCount = 7) {
           const ansStr =
             r.type === 'order'
               ? (r.correctOrder ?? r.options).join(' → ')
-              : r.options[r.correctIndex ?? 0] ?? '';
+              : (r.options[r.correctIndex ?? 0] ?? '');
           return {
             index: idx,
             id: r.questionId,
@@ -3537,17 +3777,15 @@ export function getAdminRounds(daysCount = 7) {
   return result;
 }
 
-export async function replaceQuestionInDailyRound(params: {
-  date: string;
-  questionIndex: number;
-}) {
+export async function replaceQuestionInDailyRound(params: { date: string; questionIndex: number }) {
   const store = getStore();
   const daily = store.dailyRounds[params.date];
   if (!daily || !daily.questions[params.questionIndex]) {
     // If daily round wasn't generated yet, build it first
     const meta = getRoundMeta(params.date);
-    const existing = Object.values(store.dailyRounds)
-      .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+    const existing = Object.values(store.dailyRounds).flatMap((r) =>
+      r.questions.map((q) => q.content.en.prompt),
+    );
     const generated = await generateFullDailyRound({
       date: params.date,
       roundNumber: meta.roundNumber,
@@ -3563,8 +3801,9 @@ export async function replaceQuestionInDailyRound(params: {
   if (!round) throw new Error('Round not found');
   const target = round.questions[params.questionIndex]!;
 
-  const existingPrompts = Object.values(store.dailyRounds)
-    .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+  const existingPrompts = Object.values(store.dailyRounds).flatMap((r) =>
+    r.questions.map((q) => q.content.en.prompt),
+  );
 
   const newQuestion = await generateSingleQuestionWithGemini({
     type: target.type,
@@ -3587,8 +3826,9 @@ export async function ensureUpcomingDailyRounds(bufferDays = 7) {
   const now = new Date();
   const createdRounds: string[] = [];
 
-  const existingPrompts = Object.values(store.dailyRounds)
-    .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+  const existingPrompts = Object.values(store.dailyRounds).flatMap((r) =>
+    r.questions.map((q) => q.content.en.prompt),
+  );
 
   for (let i = 0; i < bufferDays; i += 1) {
     const d = new Date(now.getTime() + i * 86_400_000);
@@ -3632,7 +3872,10 @@ export async function ensureUpcomingDailyRounds(bufferDays = 7) {
     }
   }
 
-  return { createdRounds, totalReserve: Object.values(store.dailyRounds).filter((r) => r.status === 'reserve').length };
+  return {
+    createdRounds,
+    totalReserve: Object.values(store.dailyRounds).filter((r) => r.status === 'reserve').length,
+  };
 }
 
 export function promoteReserveRoundIfNeeded(targetDate: string) {
@@ -3660,4 +3903,3 @@ export function promoteReserveRoundIfNeeded(targetDate: string) {
 
   return { promoted: true, date: targetDate, round: reserve };
 }
-

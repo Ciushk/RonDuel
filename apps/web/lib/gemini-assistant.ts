@@ -1,5 +1,13 @@
 import { GoogleGenAI } from '@google/genai';
-import { type Locale, type QuestionType } from '@ronduel/shared';
+import { LOCALES, type Locale, type QuestionType } from '@ronduel/shared';
+
+import {
+  classifyRonbotIntent,
+  detectMessageLocale,
+  renderRonbotAnswer,
+  tRonbot,
+  wantsRonbotDetail,
+} from './ronbot-replies';
 
 import {
   approveAdminQuestion,
@@ -139,13 +147,13 @@ function detectAdminIntent(message: string, isAdmin: boolean) {
         return {
           type: 'round_scheduled' as const,
           date: targetDate,
-          summary: `Am programat runda de 6 întrebări aprobate pentru data ${targetDate}!`,
+          summary: 'ok',
         };
       } catch (err) {
         return {
           type: 'round_scheduled' as const,
           date: targetDate,
-          summary: `Nu am putut programa runda pentru ${targetDate}: ${err instanceof Error ? err.message : 'eroare'}`,
+          summary: `ERR:${err instanceof Error ? err.message : 'error'}`,
         };
       }
     }
@@ -168,7 +176,7 @@ function detectAdminIntent(message: string, isAdmin: boolean) {
     const topicMatch = message.match(
       /(?:despre|about|tema|topic)\s+([a-zA-ZăâîșțĂÂÎȘȚ0-9\s-]{2,30})/i,
     );
-    const topic = topicMatch?.[1]?.trim() || 'Cultură Generală';
+    const topic = topicMatch?.[1]?.trim() || 'General';
 
     const drafts = generateAiQuestionDrafts({
       topic,
@@ -186,19 +194,13 @@ function detectAdminIntent(message: string, isAdmin: boolean) {
     return {
       type: 'drafts_created' as const,
       count: drafts.length,
-      summary: `Am creat ${drafts.length} întrebări noi (${type.toUpperCase()}) pe tema „${topic}” în banca de întrebări din /admin (${drafts.map((d) => d.id).join(', ')}).`,
+      summary: `${type}|${topic}|${drafts.map((d) => d.id).join(', ')}`,
     };
   }
 
   return undefined;
 }
 
-/**
- * Rich, multi-intent RonDuel knowledge & live-action responder.
- * Handles any question about how to play, rules, question types, timers, scoring, emojis,
- * leagues, hidden scores, weekly trophies, 1v1 duels, streaks, reset times, Pro, PWA, GDPR,
- * plus live player status and instant duel/league creation!
- */
 function buildSmartRonDuelReply(params: {
   message: string;
   locale: string;
@@ -206,29 +208,39 @@ function buildSmartRonDuelReply(params: {
   tz?: string;
   nickname?: string;
   adminActionResult?: ChatResponsePayload['adminActionResult'];
-}): { reply: string; actionLink?: { label: string; href: string } } {
+}): { reply: string; actionLink?: { label: string; href: string }; generic: boolean } {
   const { message, locale, uid, tz = 'Europe/Bucharest', nickname, adminActionResult } = params;
+  const pageLocale = locale || 'ro';
+  const lang = detectMessageLocale(message, pageLocale);
+  const intent = classifyRonbotIntent(message);
 
   if (adminActionResult) {
+    const failed = adminActionResult.summary.startsWith('ERR:');
+    const [draftType, draftTopic, draftIds] = adminActionResult.summary.split('|');
+    const reply =
+      adminActionResult.type === 'drafts_created'
+        ? `${tRonbot(lang, 'replyAdminDrafts', {
+            count: adminActionResult.count ?? 0,
+            type: draftType,
+            topic: draftTopic,
+            ids: draftIds,
+          })}\n\n${tRonbot(lang, 'replyAdminPanel')}`
+        : `${tRonbot(lang, failed ? 'replyAdminScheduleFailed' : 'replyAdminScheduled', {
+            date: adminActionResult.date ?? '',
+            error: adminActionResult.summary.replace(/^ERR:/, ''),
+          })}\n\n${tRonbot(lang, 'replyAdminPanel')}`;
     return {
-      reply: `🤖 **RonBot Admin Co-Pilot:** ${adminActionResult.summary}\n\nPoți vedea și edita întrebările sau rundele direct în tabelul din **/admin**.`,
-      actionLink: { label: 'Reîncarcă panoul /admin', href: '/admin' },
+      reply,
+      actionLink: { label: tRonbot(lang, 'openAdmin'), href: '/admin' },
+      generic: false,
     };
   }
 
-  const norm = normalizeText(message);
-  const loc = ['en', 'es', 'pt', 'ro'].includes(locale) ? locale : 'ro';
   const todayStatus = uid ? getTodayStatus(uid, tz) : getTodayStatus('anon', tz);
+  const playRes =
+    todayStatus.played && todayStatus.playId ? getPlayResult(todayStatus.playId) : null;
 
-  // 1. Live Action: Player asks to create a 1v1 Duel right now from chat
-  if (
-    uid &&
-    (norm.includes('creeaza un duel') ||
-      norm.includes('incepe un duel') ||
-      norm.includes('provoaca') ||
-      norm.includes('start a duel') ||
-      norm.includes('create a duel'))
-  ) {
+  if (intent === 'createDuel' && uid) {
     try {
       const duel = createDuel({
         challengerUid: uid,
@@ -236,295 +248,72 @@ function buildSmartRonDuelReply(params: {
         tz,
       });
       return {
-        reply: `⚔️ **Am creat un Duel 1v1 nou pentru tine!**\nAre 5 întrebări rapide (diferite de runda zilnică) și 24h timp de joc.\n\nApasă butonul de mai jos ca să îți joci tura și să trimiți linkul unui prieten!`,
-        actionLink: {
-          label: '⚔️ Deschide Duelul 1v1',
-          href: `/${loc}/duel/${duel.id}`,
-        },
+        reply: tRonbot(lang, 'replyDuelCreated'),
+        actionLink: { label: tRonbot(lang, 'suggestCreateDuel'), href: `/${lang}/duel/${duel.id}` },
+        generic: false,
       };
     } catch (err) {
       return {
-        reply: `Nu am putut crea duelul: ${err instanceof Error ? err.message : 'eroare'}.`,
+        reply: tRonbot(lang, 'replyActionFailed', {
+          error: err instanceof Error ? err.message : 'error',
+        }),
+        generic: false,
       };
     }
   }
 
-  // 2. Live Action: Player asks to create a League right now from chat
-  if (
-    uid &&
-    (norm.includes('creeaza o liga') ||
-      norm.includes('fa o liga') ||
-      norm.includes('create a league'))
-  ) {
-    const lg = createLeague({
-      uid,
-      tz,
-      locale: (loc as Locale) || 'ro',
-    });
-    return {
-      reply: `🏆 **Am creat liga „${lg.name}”** (cod de invitație: **${lg.inviteCode}**).\nTrimite linkul prietenilor tăi pe WhatsApp sau Telegram și concurați zilnic!`,
-      actionLink: {
-        label: `🏆 Deschide liga ${lg.name}`,
-        href: `/${loc}/league/${lg.id}`,
-      },
-    };
-  }
-
-  // 3. Player asks about their own status / today's round / my score / my streak
-  if (
-    norm.includes('scorul meu') ||
-    norm.includes('seria mea') ||
-    norm.includes('runda de azi') ||
-    norm.includes('ce runda e') ||
-    norm.includes('am jucat azi') ||
-    norm.includes('statusul meu') ||
-    norm.includes('my score') ||
-    norm.includes('today round')
-  ) {
-    const playRes =
-      todayStatus.played && todayStatus.playId ? getPlayResult(todayStatus.playId) : null;
-    if (playRes) {
+  if (intent === 'createLeague' && uid) {
+    try {
+      const lg = createLeague({
+        uid,
+        tz,
+        locale: (LOCALES.includes(lang as Locale) ? lang : 'en') as Locale,
+      });
       return {
-        reply: `📊 **Statusul tău pe azi (${todayStatus.date}):**\n- **Runda #${todayStatus.roundNumber}** (${todayStatus.topicOfTheDay})\n- **Ai jucat deja azi:** **${playRes.totalScore} puncte** (${playRes.emojiLine})\n- **Seria ta actuală:** 🔥 **${todayStatus.streakCurrent} zile** (record: ${todayStatus.streakBest} zile)\n- **Ligi în care ești:** ${todayStatus.leagues.length}`,
-        actionLink: {
-          label: 'Vezi rezultatul tău de azi',
-          href: `/${loc}/result/${encodeURIComponent(playRes.playId)}`,
-        },
+        reply: tRonbot(lang, 'replyLeagueCreated', { name: lg.name, code: lg.inviteCode }),
+        actionLink: { label: lg.name, href: `/${lang}/league/${lg.id}` },
+        generic: false,
+      };
+    } catch (err) {
+      return {
+        reply: tRonbot(lang, 'replyActionFailed', {
+          error: err instanceof Error ? err.message : 'error',
+        }),
+        generic: false,
       };
     }
-    return {
-      reply: `📅 **Runda de azi (${todayStatus.date}):**\n- **Runda #${todayStatus.roundNumber}** — Tema zilei: **${todayStatus.topicOfTheDay}**\n- **Status:** Nu ai jucat încă runda de azi!\n- **Seria ta:** 🔥 **${todayStatus.streakCurrent} zile** (record: ${todayStatus.streakBest} zile)\n\nEști gata pentru cele 6 întrebări în ~60 de secunde?`,
-      actionLink: {
-        label: '▶️ Joacă runda de azi',
-        href: `/${loc}/play`,
-      },
+  }
+
+  const rendered = renderRonbotAnswer(intent, lang, {
+    nickname: nickname || undefined,
+    date: todayStatus.date,
+    roundNumber: todayStatus.roundNumber,
+    topic: todayStatus.topicOfTheDay,
+    played: todayStatus.played,
+    score: playRes?.totalScore,
+    emojiLine: playRes?.emojiLine,
+    streakCurrent: todayStatus.streakCurrent,
+    streakBest: todayStatus.streakBest,
+    leagues: todayStatus.leagues.length,
+    wantsDetail: wantsRonbotDetail(message),
+  });
+
+  let actionLink: { label: string; href: string } | undefined;
+  if (rendered.action === 'play') {
+    actionLink = { label: tRonbot(lang, 'playTodayCta'), href: `/${lang}/play` };
+  } else if (rendered.action === 'pro') {
+    actionLink = { label: tRonbot(lang, 'seePro'), href: `/${lang}/pro` };
+  } else if (rendered.action === 'result' && playRes) {
+    actionLink = {
+      label: tRonbot(lang, 'suggestMyStatus'),
+      href: `/${lang}/result/${encodeURIComponent(playRes.playId)}`,
     };
   }
-
-  // 4. HOW TO PLAY / RULES / STEP BY STEP ("Cum se joaca?", "Care sunt regulile?", "Ce este RonDuel?", "Cum incep?")
-  const matchedSections: string[] = [];
-
-  if (
-    norm.includes('cum se joaca') ||
-    norm.includes('cum joc') ||
-    norm.includes('regul') ||
-    norm.includes('ce este') ||
-    norm.includes('ce e ronduel') ||
-    norm.includes('despre joc') ||
-    norm.includes('cum functioneaza') ||
-    norm.includes('cum incep') ||
-    norm.includes('explica') ||
-    norm.includes('how to play') ||
-    norm.includes('rules')
-  ) {
-    matchedSections.push(
-      `🎮 **Cum se joacă RonDuel (Pas cu Pas):**\n` +
-        `1. **Fără cont la început:** Apasă **„Joacă runda de azi”**, alege-ți o poreclă și bifează că ai 16+ ani.\n` +
-        `2. **Runda zilnică (~60 secunde):** După numărătoarea **3-2-1**, primești **6 întrebări** identice pentru toți jucătorii în ziua respectivă:\n` +
-        `   • **2 × Grilă (MCQ)** — 4 variante, 1 corectă (*10 secunde*)\n` +
-        `   • **1 × Ordonare** — aranjezi 4 elemente în ordinea cerută cu săgețile Sus/Jos (*15 secunde*)\n` +
-        `   • **1 × Intrusul (Odd-one-out)** — alegi elementul care NU se potrivește (*10 secunde*)\n` +
-        `   • **2 × Logică / Numere** — 4 variante rapide (*15 secunde*)\n` +
-        `3. **O singură încercare pe zi:** După terminare, primești scorul (max **1.200p**) și cardul fără spoilere (\`⚡🟩🟥\`) pe care îl trimiți pe grupul de WhatsApp / Telegram ca să creezi liga voastră!`,
-    );
-  }
-
-  // 5. QUESTION TYPES & TIMERS ("Ce tipuri de intrebari?", "Cat timp am?", "Cate secunde?", "Ordonare")
-  if (
-    norm.includes('tipuri de intreb') ||
-    norm.includes('cate intreb') ||
-    norm.includes('cat timp') ||
-    norm.includes('cate secunde') ||
-    norm.includes('cronometru') ||
-    norm.includes('timer') ||
-    norm.includes('ordonare') ||
-    norm.includes('intrus') ||
-    norm.includes('relaxat')
-  ) {
-    matchedSections.push(
-      `⏱️ **Întrebări & Timp pe întrebare:**\n` +
-        `- Fiecare rundă zilnică are **6 întrebări** (iar un Duel 1v1 are **5 întrebări**).\n` +
-        `- **Grilă (MCQ)** și **Intrusul (Odd-one-out)**: **10 secunde** pe întrebare.\n` +
-        `- **Ordonare (Sequence)** și **Logică / Matematică**: **15 secunde** pe întrebare (la ordonare trebuie ca toate cele 4 poziții să fie în ordinea exactă).\n` +
-        `- **Cronometru relaxat (Accesibilitate):** Din **Setări (/settings)** poți activa opțiunea **+50% timp** (15s / 22.5s) dacă preferi un ritm mai puțin stresant!`,
-    );
-  }
-
-  // 6. SCORING & TIE-BREAKER ("Cum se calculeaza scorul?", "Puncte", "Egalitate")
-  if (
-    norm.includes('scor') ||
-    norm.includes('punct') ||
-    norm.includes('bonus') ||
-    norm.includes('egalitate') ||
-    norm.includes('departaj') ||
-    norm.includes('maxim') ||
-    norm.includes('score')
-  ) {
-    matchedSections.push(
-      `⚡ **Calculul Scorului & Departajarea:**\n` +
-        `- **Răspuns corect:** **100 puncte de bază** + **bonus de viteză (0–100 puncte)** în funcție de cât timp ți-a rămas.\n` +
-        `- Serverul scade automat **250 ms grație de rețea** (ca să nu pierzi puncte din cauza conexiunii).\n` +
-        `- **Maxim pe întrebare:** 200 puncte → **Maxim pe zi:** **1.200 puncte**.\n` +
-        `- **Greșit sau timp expirat:** 0 puncte.\n` +
-        `- **La egalitate de puncte:** câștigă jucătorul cu **timpul total mai mic** măsurat pe server!`,
-    );
-  }
-
-  // 7. EMOJIS & SHARE CARD ("Ce inseamna emoji?", "Fulger", "Share")
-  if (
-    norm.includes('emoji') ||
-    norm.includes('fulger') ||
-    norm.includes('patrat') ||
-    norm.includes('⚡') ||
-    norm.includes('🟩') ||
-    norm.includes('🟥') ||
-    norm.includes('share') ||
-    norm.includes('spoiler')
-  ) {
-    matchedSections.push(
-      `🃏 **Semnificația Emoji-urilor de pe Cardul de Share:**\n` +
-        `- **⚡ (Fulger Volt):** Răspuns corect și **ultra-rapid** (ai răspuns când mai aveai peste **60% din timp** disponibil!).\n` +
-        `- **🟩 (Verde):** Răspuns corect în limita de timp.\n` +
-        `- **🟥 (Roșu):** Răspuns greșit sau timp expirat.\n` +
-        `Cardul nu conține niciodată textul întrebărilor sau răspunsurile, ca să îl poți pune pe grup fără spoilere!`,
-    );
-  }
-
-  // 8. LEAGUES, HIDDEN SCORES & WEEKLY TROPHY ("Ligi", "Grup", "De ce nu vad scorurile?", "Trofeu")
-  if (
-    norm.includes('lig') ||
-    norm.includes('grup') ||
-    norm.includes('prieten') ||
-    norm.includes('clasament') ||
-    norm.includes('ascuns') ||
-    norm.includes('nu vad scor') ||
-    norm.includes('trofeu') ||
-    norm.includes('saptaman') ||
-    norm.includes('cod') ||
-    norm.includes('invit') ||
-    norm.includes('league')
-  ) {
-    matchedSections.push(
-      `🏆 **Ligi, Clasamente & Trofeul Săptămânal:**\n` +
-        `- **Creare automată:** După ce termini runda, apasă **„Trimite pe grup”** — se creează instant o ligă cu un cod unic de 6 caractere (\`/l/COD\`).\n` +
-        `- **De ce sunt ascunse scorurile de azi?** În tabul **Azi**, vezi cine a jucat, dar scorurile lor apar ca **„—”** până când termini și tu runda de azi (regulă anti-spoiler & anti-cheat).\n` +
-        `- **Trofeul Săptămânal 🏆:** Săptămâna ține de Luni 00:00 până Duminică 23:59. Cel mai mare scor cumulat câștigă trofeul săptămânii!\n` +
-        `- **Limite:** Gratuit poți crea **1 ligă** (cu max **5 membri/ligă**) și intra în 10 ligi. Cu **Pro**, ligile urcă la **200 de membri**!`,
-    );
-  }
-
-  // 9. 1v1 DUELS ("Duel", "1v1", "Provocare", "24h", "Walkover")
-  if (
-    norm.includes('duel') ||
-    norm.includes('1v1') ||
-    norm.includes('provoc') ||
-    norm.includes('adversar') ||
-    norm.includes('walkover') ||
-    norm.includes('24h') ||
-    norm.includes('24 de ore')
-  ) {
-    matchedSections.push(
-      `⚔️ **Dueluri 1v1 Asincrone:**\n` +
-        `- Orice membru poate porni un duel 1v1 (din ecranul de rezultat sau scriindu-mi aici *„Creează un duel”*).\n` +
-        `- Conține **5 întrebări** extrase separat din bancă (nu se suprapun niciodată cu runda zilnică de azi!).\n` +
-        `- Fiecare jucător are **24 de ore** să își joace tura. Dacă adversarul nu joacă în 24h după ce ai terminat tu, câștigi prin **walkover (neprezentare)**.\n` +
-        `- Limită cont gratuit: **4 dueluri pe lună** (nelimitat cu Pro).\n` +
-        `- Se păstrează automat scorul direct **W–L (Victorii–Înfrângeri)** între voi!`,
-    );
-  }
-
-  // 10. STREAKS, SHIELD & MIDNIGHT RESET ("Serie", "Streak", "Scut", "Miezul noptii", "Cand apare runda")
-  if (
-    norm.includes('seri') ||
-    norm.includes('streak') ||
-    norm.includes('scut') ||
-    norm.includes('shield') ||
-    norm.includes('reset') ||
-    norm.includes('miezul noptii') ||
-    norm.includes('cand apare') ||
-    norm.includes('de doua ori') ||
-    norm.includes('ies din')
-  ) {
-    matchedSections.push(
-      `🔥 **Seria Zilnică (Streak), Scutul & Resetul la Miezul Nopții:**\n` +
-        `- **Serie (Streak):** Crește cu **+1** în fiecare zi consecutivă în care termini runda. Dacă sari o zi, revine la 0.\n` +
-        `- **Scutul de serie (Pro):** Abonații **RonDuel Pro** primesc **1 scut automat pe săptămână** care îți salvează seria dacă ratezi o zi!\n` +
-        `- **Reset:** Runda nouă se deblochează la **miezul nopții în fusul tău orar local**.\n` +
-        `- **Dacă părăsești pagina în timpul jocului:** Încercarea nu se resetează — întrebarea curentă expiră, iar când revii continui de la următoarea întrebare.`,
-    );
-  }
-
-  // 11. RONDUEL PRO & PRICING ("Pro", "Pret", "Cat costa", "Gratis", "Teme", "Abonament")
-  if (
-    norm.includes('pro') ||
-    norm.includes('pret') ||
-    norm.includes('costa') ||
-    norm.includes('gratis') ||
-    norm.includes('gratuit') ||
-    norm.includes('abonament') ||
-    norm.includes('stripe') ||
-    norm.includes('teme') ||
-    norm.includes('theme')
-  ) {
-    matchedSections.push(
-      `✨ **E gratuit? Ce oferă RonDuel Pro?**\n` +
-        `- **Jocul de bază este 100% gratuit și fără reclame** care să întrerupă jocul!\n` +
-        `- **RonDuel Pro (4,99 €/lună sau 39,99 €/an — economisești 33%):**\n` +
-        `  • Ligi de până la **200 de membri** (față de 5 gratuit)\n` +
-        `  • **Dueluri 1v1 nelimitate** (față de 4/lună gratuit)\n` +
-        `  • **1 Scut automat de serie** pe săptămână\n` +
-        `  • **Statistici de acuratețe pe teme** în Profil (\`/me\`)\n` +
-        `  • **3 teme vizuale Pro** în Setări (\`/settings\`): *Midnight Court*, *Clay Court*, *Neon Arcade*.`,
-    );
-  }
-
-  // 12. ACCOUNT, PWA INSTALL, NOTIFICATIONS & GDPR ("Cont", "Email", "Google", "Instalare", "Telefon", "Stergere", "GDPR")
-  if (
-    norm.includes('cont') ||
-    norm.includes('email') ||
-    norm.includes('google') ||
-    norm.includes('instal') ||
-    norm.includes('telefon') ||
-    norm.includes('aplicati') ||
-    norm.includes('pwa') ||
-    norm.includes('notific') ||
-    norm.includes('sterg') ||
-    norm.includes('export') ||
-    norm.includes('gdpr') ||
-    norm.includes('datele')
-  ) {
-    matchedSections.push(
-      `📱 **Cont, Instalare pe Telefon (PWA), Notificări & GDPR:**\n` +
-        `- **Salvare cont (\`/me\`):** Îți poți conecta oricând sesiunea anonimă cu **Email Magic Link** sau **Google** — îți păstrezi \`uid\`-ul, seria și toate ligile!\n` +
-        `- **Instalare pe telefon (Add to Home Screen):** RonDuel este un PWA. Pe Android și iOS îl poți adăuga pe ecranul principal pentru rulare full-screen și notificări **Web Push** (maxim 2 notificări/zi, la ora 18:00 locală dacă nu ai jucat încă).\n` +
-        `- **GDPR & Confidențialitate (\`/settings\`):** Poți descărca toate datele tale în format **JSON** sau îți poți șterge complet contul cu un singur click.`,
-    );
-  }
-
-  if (matchedSections.length > 0) {
-    return {
-      reply: matchedSections.join('\n\n---\n\n'),
-      actionLink: !todayStatus.played
-        ? { label: '▶️ Joacă runda de azi', href: `/${loc}/play` }
-        : undefined,
-    };
-  }
-
-  // Fallback comprehensive overview if the user typed a greeting or general question
-  const profileSummary = uid ? getUserProfile(uid) : null;
-  const greetingName = profileSummary?.nickname || nickname || 'Campionule';
 
   return {
-    reply:
-      `Salut, **${greetingName}**! Sunt **RonBot ⚡**, ghidul tău din arena RonDuel!\n\n` +
-      `Iată pe scurt **cum se joacă**:\n` +
-      `• În fiecare zi ai **o rundă de 6 întrebări** (~60 secunde): 2 Grilă (10s), 1 Ordonare (15s), 1 Intrus (10s) și 2 Logică (15s).\n` +
-      `• Fiecare răspuns corect îți aduce **100p bază + până la 100p bonus de viteză** (maxim **1.200p/zi**).\n` +
-      `• După rundă, apeși **„Trimite pe grup”** pentru a crea automat o **ligă cu prietenii** sau pornești un **Duel 1v1** de 5 întrebări!\n\n` +
-      `Întreabă-mă orice detaliu (ex: *„Cum se calculează scorul?”*, *„De ce sunt ascunse scorurile în ligă?”*, *„Ce înseamnă ⚡🟩🟥?”*, *„Care e statusul meu azi?”* sau *„Creează un duel”*)!`,
-    actionLink: !todayStatus.played
-      ? { label: '▶️ Joacă runda de azi', href: `/${loc}/play` }
-      : undefined,
+    reply: rendered.reply,
+    actionLink,
+    generic: intent === 'fallback',
   };
 }
 
@@ -541,19 +330,25 @@ export async function runRonBotChat(params: ChatRequestParams): Promise<ChatResp
     adminActionResult,
   });
 
-  const apiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
+  if (!smartFallback.generic) {
+    return {
+      reply: smartFallback.reply,
+      mode: 'ronduel-engine',
+      actionLink: smartFallback.actionLink,
+      adminActionResult,
+    };
+  }
 
+  const apiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
   if (apiKey) {
     try {
       const client = new GoogleGenAI({ apiKey });
       const todayStatus = getTodayStatus(params.uid ?? 'anon', tz);
       const liveContext =
-        `\n[Live Player & Game Context: Today is ${todayStatus.date}, Round #${todayStatus.roundNumber}, Topic: "${todayStatus.topicOfTheDay}". ` +
-        `Player nickname: "${params.nickname ?? 'Anonymous'}", Played today: ${todayStatus.played}, Current streak: ${todayStatus.streakCurrent} days, Best streak: ${todayStatus.streakBest} days, Leagues joined: ${todayStatus.leagues.length}.` +
-        (adminActionResult
-          ? ` Admin action just executed on server: ${adminActionResult.summary}.`
-          : '') +
-        `]`;
+        `\n[Live context: date ${todayStatus.date}, round #${todayStatus.roundNumber}, topic "${todayStatus.topicOfTheDay}". ` +
+        `Nickname "${params.nickname ?? 'guest'}". Played today: ${todayStatus.played}. Streak: ${todayStatus.streakCurrent}. ` +
+        `Answer in the user's language, only the question they asked, in at most 6 short lines unless they asked for detail. ` +
+        `Do not append a play button or the full rulebook.]`;
 
       const interaction = await client.interactions.create({
         model: 'gemini-3.8-flash',
@@ -565,16 +360,14 @@ export async function runRonBotChat(params: ChatRequestParams): Promise<ChatResp
       });
 
       const replyText = interaction.output_text?.trim() || smartFallback.reply;
-
       return {
         reply: replyText,
         interactionId: interaction.id,
         mode: 'gemini-3.8-flash',
-        actionLink: smartFallback.actionLink,
         adminActionResult,
       };
     } catch {
-      // Fall back to the full built-in RonDuel engine
+      // The built-in reply is already short and in the detected language.
     }
   }
 

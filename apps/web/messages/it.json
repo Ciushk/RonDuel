@@ -464,7 +464,9 @@
       "s3Title": "3. Responsabili del trattamento & Analisi",
       "s3Body": "Utilizziamo Firebase (database e autenticazione nell'UE), Stripe (elaborazione sicura dei pagamenti per RonDuel Pro) e PostHog Cloud UE (statistiche anonime a tutela della privacy, attivate solo previo tuo consenso esplicito).",
       "s4Title": "4. I tuoi diritti (Esportazione & Cancellazione)",
-      "s4Body": "Ai sensi del GDPR, hai il diritto di accedere, rettificare, esportare e cancellare i tuoi dati personali ('diritto all'oblio'). Puoi esportare tutti i tuoi dati in formato JSON o eliminare definitivamente il tuo account in qualsiasi momento dalle Impostazioni."
+      "s4Body": "Ai sensi del GDPR, hai il diritto di accedere, rettificare, esportare e cancellare i tuoi dati personali ('diritto all'oblio'). Puoi esportare tutti i tuoi dati in formato JSON o eliminare definitivamente il tuo account in qualsiasi momento dalle Impostazioni.",
+      "s5Title": "5. Account ospite",
+      "s5Body": "Se giochi senza creare un account, RonDuel conserva un profilo ospite e i dati collegati (nome, punteggi, serie, leghe e duelli) per 7 giorni dalla creazione. Se non salvi quel profilo con email o Google entro quei 7 giorni, l’account ospite e tutti i suoi dati vengono eliminati. Salvare l’account mantiene lo stesso profilo e lo rende permanente. Un account salvato resta finché non lo cancelli tu."
     },
     "cookies": {
       "title": "Informativa sui Cookie & Archiviazione locale",
@@ -639,7 +641,32 @@
     "placeholder": "es. Come si gioca? / Crea un duello…",
     "inputLabel": "Messaggio per RonBot",
     "send": "Invia messaggio",
-    "open": "Apri l'assistente IA RonBot"
+    "open": "Apri l'assistente IA RonBot",
+    "guestName": "amico",
+    "seePro": "Vedi RonDuel Pro",
+    "playTodayCta": "▶️ Gioca il turno di oggi",
+    "replyWhatIs": "RonDuel è un quiz quotidiano da giocare con gli amici. Tutti ricevono le stesse 6 domande una volta al giorno, e una risposta giusta e veloce vale più punti. Confrontate i risultati in leghe e duelli 1 contro 1.",
+    "replyReset": "Il turno del giorno si azzera a mezzanotte locale (00:00 nel tuo fuso). Allora si apre il turno nuovo e hai un solo tentativo quel giorno.",
+    "replyScore": "Una risposta giusta vale **100** punti più un bonus velocità fino a **100**.\n\n- Massimo per domanda: 200\n- Massimo al giorno: 1.200\n- Errore o tempo scaduto: 0\n\nIn parità vince il tempo totale più basso.",
+    "replyHowTo": "Tocca gioca, scegli un nome e rispondi a 6 domande in circa un minuto. Hai un tentativo al giorno, poi condividi la scheda senza spoiler.",
+    "replyHowToDetail": "1. Tocca gioca e scegli un nome (senza account).\n2. Dopo il conto alla rovescia ci sono 6 domande: 2 a scelta multipla (10s), 1 ordine (15s), 1 intruso (10s) e 2 di logica (15s).\n3. Un tentativo al giorno. La risposta giusta vale 100 punti più fino a 100 per la velocità (max 1.200).\n4. La scheda mostra ⚡ giusta e veloce, 🟩 giusta, 🟥 sbagliata, senza il testo delle domande.",
+    "replyPro": "RonDuel Pro è facoltativo. Porta le leghe a 200 membri, sblocca duelli 1v1 illimitati, aggiunge uno scudo serie settimanale, statistiche per tema e tre temi visivi. Il gioco del giorno resta gratis.",
+    "replyEmoji": "Sulla scheda, ⚡ è una risposta giusta con molto tempo rimasto, 🟩 è giusta e 🟥 è sbagliata o troppo lenta. La scheda non mostra mai le domande.",
+    "replyLeague": "Una lega è la classifica del tuo gruppo. I punteggi di oggi restano nascosti finché non finisci. Il trofeo settimanale va al miglior totale di domenica. La lega gratis ha 5 persone; Pro ne ha 200.",
+    "replyDuel": "Un duello 1v1 ha 5 domande a parte, non il turno di oggi. Ognuno ha 24 ore. Vince il punteggio più alto e chi non gioca perde. L’account gratis ha 4 duelli al mese.",
+    "replyStreak": "La serie sale di 1 ogni giorno locale in cui finisci il turno. Se salti un giorno torna a 0. Il turno nuovo si apre a mezzanotte locale. Pro può proteggere un giorno perso a settimana.",
+    "replyAccount": "Puoi giocare come ospite. I dati ospite si cancellano 7 giorni dopo la creazione del profilo, a meno che tu non lo salvi con email o Google e tenga lo stesso profilo. Esporta o cancella i dati in Impostazioni.",
+    "replyStatusPlayed": "Oggi ({date}), turno #{round} — {topic}. Hai {score} punti ({emoji}). Serie: {streak} giorni (record {best}). Leghe: {leagues}.",
+    "replyStatusPending": "Oggi ({date}) è il turno #{round} — {topic}. Non hai ancora giocato. Serie: {streak} giorni (record {best}).",
+    "replyFallback": "Ciao {name}! Chiedimi del turno di oggi, del punteggio, delle leghe, dei duelli o di Pro: rispondo in breve.",
+    "replyDuelCreated": "Ho avviato un duello 1v1 per te: 5 domande e 24 ore per giocare. Aprilo e manda il link a un amico.",
+    "replyLeagueCreated": "Ho creato la lega «{name}». Codice invito: {code}. Condividi il link perché gli amici entrino.",
+    "replyActionFailed": "Non sono riuscito: {error}.",
+    "replyAdminScheduled": "Programmato un turno di 6 domande per il {date}.",
+    "replyAdminScheduleFailed": "Non ho potuto programmare il turno del {date}: {error}.",
+    "replyAdminDrafts": "Create {count} nuove domande di tipo {type} su «{topic}» ({ids}).",
+    "replyAdminPanel": "Puoi controllarle nel pannello admin.",
+    "openAdmin": "Apri admin"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia quotidiano con i tuoi amici",
@@ -668,7 +695,9 @@
     "anonWarning": "Il tuo account è collegato solo a questo browser. Connetti Google o l'email per non perdere i progressi e apparire nella top 100 mondiale.",
     "anonExpiry": "Le tue statistiche e i tuoi progressi verranno eliminati automaticamente dopo 1 settimana a meno che tu non crei un account gratuito!",
     "createAccountBtn": "Crea account",
-    "later": "Più tardi"
+    "later": "Più tardi",
+    "guestExpiryBanner": "Il tuo account ospite viene eliminato il {date} se non lo salvi con email o Google.",
+    "saveAccount": "Salva account"
   },
   "leagues": {
     "myCount": "{count, plural, one {# lega} other {# leghe}}",
