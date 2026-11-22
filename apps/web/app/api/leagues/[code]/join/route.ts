@@ -19,10 +19,13 @@ export async function POST(req: Request, context: { params: Promise<{ code: stri
       nickname: body.nickname,
       tz: body.tz,
     });
+    const { getTodayStatus } = await import('@/lib/server-store');
+    const state = getTodayStatus(body.uid, body.tz);
     return NextResponse.json({
       leagueId: league.id,
       name: league.name,
       inviteCode: league.inviteCode,
+      playedToday: Boolean(state.played),
     });
   } catch (err) {
     return NextResponse.json(

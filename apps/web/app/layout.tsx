@@ -9,21 +9,18 @@ import './globals.css';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin', 'latin-ext'],
-  weight: ['700', '800'],
   variable: '--font-bricolage',
   display: 'swap',
 });
 
 const dmSans = DM_Sans({
   subsets: ['latin', 'latin-ext'],
-  weight: ['400', '500', '700'],
   variable: '--font-dm-sans',
   display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['500', '700'],
+  subsets: ['latin'],
   variable: '--font-jetbrains-mono',
   display: 'swap',
 });
@@ -43,9 +40,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/brand/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/brand/icon-512.png', sizes: '512x512', type: 'image/png' },
-      { url: '/brand/icon.svg', type: 'image/svg+xml' },
     ],
     apple: [{ url: '/brand/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },

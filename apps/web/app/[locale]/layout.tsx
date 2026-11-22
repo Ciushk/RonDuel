@@ -31,12 +31,12 @@ export async function generateMetadata({
     description,
     manifest: '/manifest.json',
     alternates: {
-      canonical: `/${resolvedLocale}`,
+      canonical: `https://ronduel.web.app/${resolvedLocale}`,
       languages: {
-        ro: '/ro',
-        en: '/en',
-        es: '/es',
-        pt: '/pt',
+        ...Object.fromEntries(
+          routing.locales.map((code) => [code, `https://ronduel.web.app/${code}`])
+        ),
+        'x-default': 'https://ronduel.web.app/ro',
       },
     },
     openGraph: {
@@ -81,6 +81,11 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang = ${JSON.stringify(locale)};`,
+        }}
+      />
       <AppShell>{children}</AppShell>
     </NextIntlClientProvider>
   );

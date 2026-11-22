@@ -7,7 +7,7 @@ import { startRound } from '@/lib/server-store';
 const StartSchema = z.object({
   uid: z.string().min(3),
   tz: z.string().min(1).default('UTC'),
-  locale: z.enum(LOCALES).default('en'),
+  locale: z.string().min(2).default('ro'),
   nickname: z.string().optional(),
   relaxedTimer: z.boolean().optional(),
 });
@@ -15,13 +15,18 @@ const StartSchema = z.object({
 export async function POST(req: Request) {
   try {
     const body = StartSchema.parse(await req.json());
+    const normalizedLocale = (body.locale.split(/[-_]/)[0]?.toLowerCase() || 'ro') as Locale;
+    const activeLocale = LOCALES.includes(normalizedLocale) ? normalizedLocale : 'ro';
     const result = startRound({
       uid: body.uid,
       tz: body.tz,
-      locale: body.locale as Locale,
+      locale: activeLocale,
       nickname: body.nickname,
       relaxedTimer: body.relaxedTimer,
     });
+    if ('alreadyFinished' in result && result.alreadyFinished) {
+      return NextResponse.json(result, { status: 409 });
+    }
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json(

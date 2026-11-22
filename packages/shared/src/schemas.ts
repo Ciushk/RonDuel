@@ -6,10 +6,11 @@ export const INVITE_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const INVITE_CODE_LENGTH = 6;
 
 export const FREE_LIMITS = {
-  maxOwnedLeagues: 3,
-  maxMembersPerLeague: 25,
+  maxOwnedLeagues: 1,
+  maxMembersPerLeague: 5,
   maxJoinedLeagues: 10,
-  maxActiveDuels: 3,
+  maxActiveDuels: 1,
+  maxMonthlyDuels: 4,
 } as const;
 
 export const PRO_LIMITS = {
@@ -17,6 +18,7 @@ export const PRO_LIMITS = {
   maxMembersPerLeague: 200,
   maxJoinedLeagues: 100,
   maxActiveDuels: 100,
+  maxMonthlyDuels: 10_000,
 } as const;
 
 export const QuestionLocaleContentSchema = z.object({
@@ -30,14 +32,7 @@ export const QuestionSchema = z.object({
   type: z.enum(QUESTION_TYPES),
   difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   topics: z.array(z.string().min(1)).min(1),
-  content: z.record(z.enum(LOCALES), QuestionLocaleContentSchema).or(
-    z.object({
-      en: QuestionLocaleContentSchema.optional(),
-      es: QuestionLocaleContentSchema.optional(),
-      pt: QuestionLocaleContentSchema.optional(),
-      ro: QuestionLocaleContentSchema.optional(),
-    }),
-  ),
+  content: z.record(z.string(), QuestionLocaleContentSchema),
   answer: z.object({
     correctIndex: z.number().int().min(0).max(3).optional(),
   }),
@@ -104,7 +99,31 @@ export function validateNickname(
       return { ok: false, reason: 'blocked' };
     }
   }
+  // Reject repeated single-char strings (e.g. "BBBBBBBBBBBBBBBBBBBB", "aaaaa")
+  if (/^(.)\1{3,}$/i.test(normalized)) {
+    return { ok: false, reason: 'repeated' };
+  }
+  // Reject placeholder names
+  if (/^(placeholder|test|anon|undefined|null)$/i.test(normalized)) {
+    return { ok: false, reason: 'placeholder' };
+  }
   return { ok: true, value: normalized };
+}
+
+export function isValidNickname(raw?: string | null): boolean {
+  if (!raw || typeof raw !== 'string') return false;
+  const res = validateNickname(raw);
+  return res.ok;
+}
+
+export function sanitizeDisplayName(raw?: string | null, uid?: string | null): string {
+  if (isValidNickname(raw)) {
+    return raw!.trim();
+  }
+  if (uid && uid.length >= 4) {
+    return `Player_${uid.slice(-4)}`;
+  }
+  return 'Tu';
 }
 
 /** Deterministic PRNG (Mulberry32) from string seed */
@@ -144,23 +163,39 @@ export function generateInviteCode(randomFn: () => number = Math.random): string
 }
 
 const LEAGUE_NAMES: Record<Locale, readonly string[]> = {
-  en: [
-    'Thursday Thunder',
-    'Coffee Duelists',
-    'Split Court Squad',
-    'Midnight Sparks',
-    'Brainy Bunch',
-  ],
+  en: ['Thursday Thunder', 'Coffee Duelists', 'Split Court Squad', 'Midnight Sparks', 'Brainy Bunch'],
+  ro: ['Fulgerul Zilei', 'Duelul de Cafea', 'Gașca de Aur', 'Minți Rapide', 'Liga Prietenilor'],
   es: ['Trueno Diario', 'Duelo de Café', 'Equipo Relámpago', 'Mentes Rápidas', 'Liga del Grupo'],
   pt: ['Trovão Diário', 'Duelo do Café', 'Esquadrão Relâmpago', 'Mentes Rápidas', 'Liga da Galera'],
-  ro: ['Fulgerul Zilei', 'Duelul de Cafea', 'Gașca de Aur', 'Minți Rapide', 'Liga Prietenilor'],
+  de: ['Donnerstag-Donner', 'Kaffee-Duellanten', 'Blitz-Team', 'Schnelle Köpfe', 'Freundesliga'],
+  fr: ['Tonnerre du Jour', 'Duel Café', 'Équipe Éclair', 'Esprits Vifs', 'Ligue des Potes'],
+  it: ['Tuono Quotidiano', 'Duello al Caffè', 'Squadra Lampo', 'Menti Rapide', 'Lega degli Amici'],
+  nl: ['Donderdag Donder', 'Koffieduelleerders', 'Bliksemteam', 'Snelle Geesten', 'Vriendenliga'],
+  pl: ['Codzienny Piorun', 'Pojedynek przy Kawie', 'Błyskawiczna Ekipa', 'Bystre Głowy', 'Liga Przyjaciół'],
+  bg: ['Дневен Гръм', 'Кафе Дуел', 'Светкавичен Отбор', 'Бързи Умове', 'Лига на Приятелите'],
+  cs: ['Denní Hrom', 'Kávový Duel', 'Bleskový Tým', 'Bystré Hlavy', 'Liga Přátel'],
+  da: ['Dagens Torden', 'Kaffeduel', 'Lynholdet', 'Kvikke Hoveder', 'Venneligaen'],
+  el: ['Καθημερινός Κεραυνός', 'Μονομαχία Καφέ', 'Ομάδα Αστραπή', 'Έξυπνα Μυαλά', 'Λίγκα Φίλων'],
+  et: ['Päeva Äike', 'Kohviduell', 'Välgutiim', 'Toredad Taibid', 'Sõprade Liiga'],
+  fi: ['Päivän Ukkonen', 'Kahviduelli', 'Salamatiimi', 'Vikkelät Mielet', 'Kaveriliiga'],
+  ga: ['Torann an Lae', 'Comhrac Caife', 'Foireann Tintreach', 'Aigne Thapa', 'Sraith na gCairde'],
+  hr: ['Dnevni Grom', 'Kavanski Dvoboj', 'Munjevita Ekipa', 'Bistri Umovi', 'Liga Prijatelja'],
+  hu: ['Napi Mennydörgés', 'Kávé Párbaj', 'Villám Csapat', 'Gyors Elmék', 'Barátok Ligája'],
+  lt: ['Dienos Perkūnas', 'Kavos Dvikova', 'Žaibo Komanda', 'Aštrūs Protai', 'Draugų Lyga'],
+  lv: ['Dienas Pērkons', 'Kafijas Divcīņa', 'Zibens Komanda', 'Gudrie Prāti', 'Draugu Līga'],
+  mt: ['Ragħad tal-Jum', 'Dwell tal-Kafè', 'Skwadra Sajjetta', 'Imħuħ Ħfief', 'Lega tal-Ħbieb'],
+  nb: ['Dagens Torden', 'Kaffeduell', 'Lynlaget', 'Kjappe Hoder', 'Venneligaen'],
+  sk: ['Denný Hrom', 'Kávový Duel', 'Bleskový Tím', 'Bystré Hlavy', 'Liga Priateľov'],
+  sl: ['Dnevni Grom', 'Kavni Dvoboj', 'Strela Ekipa', 'Bistri Umi', 'Liga Prijateljev'],
+  sv: ['Dagens Åska', 'Kaffeduell', 'Blixtlaget', 'Snabba Hjärnor', 'Vänligan'],
+  uk: ['Щоденний Грім', 'Кавовий Дуель', 'Команда Блискавка', 'Кмітливі Уми', 'Ліга Друзів'],
 };
 
 export function suggestLeagueName(
   locale: Locale = 'en',
   randomFn: () => number = Math.random,
 ): string {
-  const list = LEAGUE_NAMES[locale] ?? LEAGUE_NAMES.en;
+  const list = LEAGUE_NAMES[locale] ?? LEAGUE_NAMES.en!;
   return list[Math.floor(randomFn() * list.length)]!;
 }
 
@@ -198,9 +233,13 @@ export function diffCalendarDays(dateA: string, dateB: string): number {
   return Math.round((utcB - utcA) / 86_400_000);
 }
 
-export function computeRoundNumber(date: string, launchDate = '2026-12-01'): number {
+export function computeRoundNumber(date: string, launchDate = '2026-11-01'): number {
   const diff = diffCalendarDays(launchDate, date);
-  return Math.max(1, diff + 1);
+  if (diff < 0) {
+    const epochDays = diffCalendarDays('2026-01-01', date);
+    return Math.max(1, (epochDays % 10000) + 1);
+  }
+  return diff + 1;
 }
 
 export function updateStreak(params: {

@@ -1,14 +1,31 @@
 'use client';
 
-import { Flame, ShareNetwork, Sword, Trophy } from '@phosphor-icons/react';
+import { CheckCircle, Flame, GlobeHemisphereWest, ShareNetwork, ShieldCheck, Sword, Trophy, Users } from '@phosphor-icons/react';
 import { buildShareCardText } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { Button, Card, Chip, Toast } from '@/components/ui';
-import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
+import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
+import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
+import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
+import { EmojiTiles } from '@/components/result/EmojiTiles';
+import { ScoreCountUp } from '@/components/result/ScoreCountUp';
+import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
+import { trackEvent } from '@/lib/analytics';
+import { cn } from '@/lib/cn';
+import { formatRomanianPlayers } from '@/lib/format';
+import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
+
+interface LeagueRankInfo {
+  id: string;
+  name: string;
+  inviteCode: string;
+  isWorld: boolean;
+  rank: number;
+  totalMembers: number;
+}
 
 interface ResultData {
   playId: string;
@@ -22,12 +39,17 @@ interface ResultData {
   finishedPlaysCount?: number;
   review: Array<{
     index: number;
+    questionId?: string;
     prompt: string;
     correctAnswer: string;
     explanation?: string;
     points: number;
     emoji: string;
+    correct?: boolean;
+    timedOut?: boolean;
+    userAnswer?: string | null;
   }>;
+  leagueRanks?: LeagueRankInfo[];
   primaryLeague: { id: string; inviteCode?: string; name?: string } | null;
 }
 
@@ -39,59 +61,254 @@ export default function ResultPage() {
   const rawPlayId = decodeURIComponent(params.playId);
 
   const [data, setData] = useState<ResultData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string>('');
-  const [leagueInfo, setLeagueInfo] = useState<{
-    id: string;
-    inviteCode: string;
-    name: string;
-  } | null>(null);
+  const [isCreateLeagueOpen, setIsCreateLeagueOpen] = useState(false);
+  const [isJoinCodeOpen, setIsJoinCodeOpen] = useState(false);
+  const [isSharePickerOpen, setIsSharePickerOpen] = useState(false);
+  const [isLinkSheetOpen, setIsLinkSheetOpen] = useState(false);
+  const [isAccountLinked, setIsAccountLinked] = useState(false);
+  const [showSlimBanner, setShowSlimBanner] = useState(false);
+  const [returnTo, setReturnTo] = useState<string | null>(null);
+  const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState<'răspuns greșit' | 'întrebare ambiguă' | 'greșeală de limbă'>('răspuns greșit');
+  const [isReporting, setIsReporting] = useState(false);
+
+  const [animated, setAnimated] = useState(false);
+  const [showPB, setShowPB] = useState(false);
+  const [showTiles, setShowTiles] = useState(false);
+  const [flameBumping, setFlameBumping] = useState(false);
+  const [showRows, setShowRows] = useState(false);
+  const [isPB, setIsPB] = useState(false);
+
+  const skipAnimation = useCallback(() => {
+    if (!animated) return;
+    setAnimated(false);
+    setShowPB(isPB);
+    setShowTiles(true);
+    setShowRows(true);
+    setFlameBumping(false);
+    if (data && typeof window !== 'undefined') {
+      sessionStorage.setItem(`rd-result-seen-${data.playId}`, '1');
+    }
+  }, [animated, isPB, data]);
 
   useEffect(() => {
+    if (!data || typeof window === 'undefined') return;
+
+    const storageKeySeen = `rd-result-seen-${data.playId}`;
+    const alreadySeen = sessionStorage.getItem(storageKeySeen);
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Check personal best
+    const bestKey = 'rd_best_score_record';
+    const recordedBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
+    const personalBest = data.totalScore > 0 && data.totalScore >= recordedBest;
+    if (data.totalScore > recordedBest) {
+      localStorage.setItem(bestKey, String(data.totalScore));
+    }
+    setIsPB(personalBest);
+
+    const isRankOne = Boolean(data.leagueRanks?.some((l) => l.rank === 1));
+
+    if (alreadySeen || prefersReduced) {
+      setAnimated(false);
+      setShowPB(personalBest);
+      setShowTiles(true);
+      setShowRows(true);
+      setFlameBumping(false);
+      return;
+    }
+
+    setAnimated(true);
+
+    const pbTimer = setTimeout(() => {
+      if (personalBest) setShowPB(true);
+    }, 620);
+
+    const tilesTimer = setTimeout(() => {
+      setShowTiles(true);
+    }, 650);
+
+    const confettiTimer = setTimeout(async () => {
+      if (personalBest || isRankOne) {
+        try {
+          const confetti = (await import('canvas-confetti')).default;
+          confetti({
+            particleCount: 65,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#FF5A4E', '#3D7BFF', '#C6FF3D', '#FFC53D'],
+          });
+          vibrate([60, 40, 120]);
+        } catch {}
+      }
+    }, 700);
+
+    const flameTimer = setTimeout(() => {
+      setFlameBumping(true);
+    }, 1180);
+
+    const rowsTimer = setTimeout(() => {
+      setShowRows(true);
+    }, 1250);
+
+    const completeTimer = setTimeout(() => {
+      setAnimated(false);
+      sessionStorage.setItem(storageKeySeen, '1');
+    }, 1600);
+
+    return () => {
+      clearTimeout(pbTimer);
+      clearTimeout(tilesTimer);
+      clearTimeout(confettiTimer);
+      clearTimeout(flameTimer);
+      clearTimeout(rowsTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [data]);
+
+  useEffect(() => {
+    const session = getLocalSession();
+    setIsAccountLinked(!session.isAnonymous && Boolean(session.email));
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('returnTo');
+      if (q) setReturnTo(q);
+    }
+  }, []);
+
+  const loadResult = async () => {
+    setLoading(true);
+    setError(null);
     const resolvedPlayId =
       rawPlayId === '_shell' && typeof window !== 'undefined'
         ? decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() ?? rawPlayId)
         : rawPlayId;
-    fetch(`/api/game/result/${encodeURIComponent(resolvedPlayId)}`)
-      .then((r) => r.json())
-      .then((res: ResultData) => {
-        setData(res);
-        if (res.primaryLeague?.inviteCode) {
-          setLeagueInfo({
-            id: res.primaryLeague.id,
-            inviteCode: res.primaryLeague.inviteCode,
-            name: res.primaryLeague.name ?? 'My League',
-          });
-        }
-      })
-      .catch(() => {});
-  }, [rawPlayId]);
 
-  const handleShare = async () => {
-    if (!data) return;
-    const session = getLocalSession();
-    let activeLeague = leagueInfo;
-
-    if (!activeLeague) {
-      const res = await fetch('/api/leagues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: session.uid,
-          tz: getBrowserTimeZone(),
-          locale,
-        }),
-      });
-      const created = await res.json();
-      activeLeague = {
-        id: created.leagueId,
-        inviteCode: created.inviteCode,
-        name: created.name,
-      };
-      setLeagueInfo(activeLeague);
+    if (!resolvedPlayId || resolvedPlayId === '_shell') {
+      setLoading(false);
+      setError('Identificatorul rundei nu este valid.');
+      return;
     }
 
-    const origin = window.location.origin;
-    const inviteUrl = `${origin}/${locale}/l/${activeLeague.inviteCode}?r=${session.uid}`;
+    let cached: ResultData | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`rd_play_${resolvedPlayId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed.totalScore === 'number') {
+            cached = parsed;
+          }
+        }
+      } catch {}
+    }
+
+    try {
+      const r = await fetch(
+        `/api/game/result/${encodeURIComponent(resolvedPlayId)}?t=${Date.now()}`,
+        { cache: 'no-store' },
+      );
+      if (!r.ok) {
+        throw new Error(`Status ${r.status}`);
+      }
+      const res: ResultData = await r.json();
+      if (res && typeof res.totalScore === 'number') {
+        setData(res);
+        setError(null);
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`rd_play_${resolvedPlayId}`, JSON.stringify(res));
+          } catch {}
+        }
+
+        // Account linking sheet logic
+        const session = getLocalSession();
+        const alreadyLinked = !session.isAnonymous && Boolean(session.email);
+        if (!alreadyLinked) {
+          try {
+            const stored = localStorage.getItem('rd_link_sheet_state');
+            const state: { dismissedDates: string[]; showCount: number } = stored
+              ? JSON.parse(stored)
+              : { dismissedDates: [], showCount: 0 };
+
+            const today = res.date;
+            const dismissedToday = state.dismissedDates.includes(today);
+            const playsCount = res.finishedPlaysCount ?? 1;
+
+            if (
+              !dismissedToday &&
+              state.showCount < 3 &&
+              (playsCount === 1 || res.streakCurrent === 3)
+            ) {
+              const timer = setTimeout(() => {
+                setIsLinkSheetOpen(true);
+                const trigger = playsCount === 1 ? 'round_1' : 'streak_3';
+                trackEvent('account_link_prompt_shown', { trigger });
+                trackEvent('link_prompt_shown', {
+                  score: res.totalScore,
+                  streak: res.streakCurrent,
+                  playsCount,
+                });
+              }, 1000);
+              return () => clearTimeout(timer);
+            } else if (playsCount >= 2 && playsCount <= 3) {
+              setShowSlimBanner(true);
+            }
+          } catch {
+            // fallback
+          }
+        }
+        return;
+      }
+      throw new Error('Datele scorului nu sunt valide.');
+    } catch (err: any) {
+      if (cached) {
+        setData(cached);
+        setError(null);
+      } else {
+        setError(err?.message || 'Nu s-a putut încărca scorul.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadResult();
+  }, [rawPlayId]);
+
+  const handleLinkDismissed = () => {
+    setIsLinkSheetOpen(false);
+    if (!data) return;
+    try {
+      const stored = localStorage.getItem('rd_link_sheet_state');
+      const state: { dismissedDates: string[]; showCount: number } = stored
+        ? JSON.parse(stored)
+        : { dismissedDates: [], showCount: 0 };
+      if (!state.dismissedDates.includes(data.date)) {
+        state.dismissedDates.push(data.date);
+      }
+      state.showCount += 1;
+      localStorage.setItem('rd_link_sheet_state', JSON.stringify(state));
+      setShowSlimBanner(true);
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
+
+  const handleLinkSuccess = () => {
+    setIsAccountLinked(true);
+    setShowSlimBanner(false);
+    setIsLinkSheetOpen(false);
+    setToast('Cont salvat ✓');
+    setTimeout(() => setToast(''), 3500);
+  };
+
+  const triggerShareWithLink = async (inviteUrl: string) => {
+    if (!data) return;
     const cardText = buildShareCardText({
       roundNumber: data.roundNumber,
       totalScore: data.totalScore,
@@ -113,6 +330,61 @@ export default function ResultPage() {
     setTimeout(() => setToast(''), 3000);
   };
 
+  const [createdLeague, setCreatedLeague] = useState<{
+    id: string;
+    name: string;
+    inviteCode: string;
+  } | null>(null);
+
+  const privateLeagues = (data?.leagueRanks ?? []).filter((l) => !l.isWorld);
+  const primaryLeague =
+    createdLeague ||
+    (privateLeagues.length > 0 ? privateLeagues[0] : null) ||
+    data?.primaryLeague;
+
+  const handleShareClick = async () => {
+    if (!data) return;
+    const session = getLocalSession();
+    if (privateLeagues.length === 0 && !createdLeague) {
+      try {
+        const res = await fetch('/api/leagues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: session.uid,
+            tz: getBrowserTimeZone(),
+            locale,
+          }),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          const info = {
+            id: created.leagueId,
+            name: created.name,
+            inviteCode: created.inviteCode,
+          };
+          setCreatedLeague(info);
+          const origin = window.location.origin;
+          const url = `${origin}/${locale}/l/${created.inviteCode}?r=${session.uid}`;
+          void triggerShareWithLink(url);
+          return;
+        }
+      } catch {
+        // fallback to dialog
+      }
+      setIsCreateLeagueOpen(true);
+    } else if (privateLeagues.length <= 1) {
+      const lg = createdLeague || privateLeagues[0] || data?.primaryLeague;
+      const origin = window.location.origin;
+      const url = lg?.inviteCode
+        ? `${origin}/${locale}/l/${lg.inviteCode}?r=${session.uid}`
+        : `${origin}/${locale}?r=${session.uid}`;
+      void triggerShareWithLink(url);
+    } else {
+      setIsSharePickerOpen(true);
+    }
+  };
+
   const handleCreateDuel = async () => {
     const s = getLocalSession();
     const res = await fetch('/api/duels', {
@@ -122,7 +394,6 @@ export default function ResultPage() {
         challengerUid: s.uid,
         nickname: s.nickname || undefined,
         tz: getBrowserTimeZone(),
-        leagueId: leagueInfo?.id,
       }),
     });
     const created = await res.json();
@@ -131,65 +402,345 @@ export default function ResultPage() {
     }
   };
 
-  if (!data) {
+  const submitQuestionReport = async () => {
+    if (!reportingQuestionId || isReporting) return;
+    setIsReporting(true);
+    try {
+      const session = getLocalSession();
+      const res = await fetch('/api/questions/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: reportingQuestionId,
+          reason: reportReason,
+          reporterUid: session.uid,
+        }),
+      });
+      if (res.ok) {
+        setToast('Raportul a fost trimis. Mulțumim!');
+      } else {
+        setToast('Nu s-a putut trimite raportul.');
+      }
+    } catch {
+      setToast('Eroare de rețea.');
+    } finally {
+      setIsReporting(false);
+      setReportingQuestionId(null);
+      setTimeout(() => setToast(''), 3000);
+    }
+  };
+
+  if (loading && !data) {
     return (
-      <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">Loading…</main>
+      <main className="text-muted mx-auto max-w-[480px] px-4 py-16 text-center font-bold space-y-3">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-volt border-t-transparent" />
+        <p>Se calculează scorul…</p>
+      </main>
     );
   }
 
+  if (error || !data || typeof data.totalScore !== 'number') {
+    return (
+      <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-12 text-center">
+        <Card variant="sticker" className="p-6 space-y-4">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 border-2 border-border text-2xl shadow-sm">
+            🎯
+          </div>
+          <div className="space-y-1">
+            <h1 className="font-display text-xl font-extrabold text-ink">
+              Se procesează rezultatul…
+            </h1>
+            <p className="text-muted text-xs leading-relaxed max-w-[280px] mx-auto">
+              Runda ta a fost înregistrată. Apasă pe reîncearcă pentru a vizualiza scorul și clasamentul.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-2">
+            <Button variant="volt" fullWidth onClick={loadResult}>
+              Reîncearcă
+            </Button>
+            <Link href={`/${locale}`} className="block">
+              <Button variant="secondary" fullWidth>
+                Înapoi acasă
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </main>
+    );
+  }
+
+  const worldRank = data.leagueRanks?.find((l) => l.isWorld);
+
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
-      <Card className="space-y-4 text-center">
-        <Chip tone="volt">{t('result.title', { number: data.roundNumber })}</Chip>
+      {/* Warning banner for unlinked anonymous users */}
+      {!isAccountLinked && (
+        <Card variant="sticker" className="border-2 border-ron-strong bg-ron/10 p-3.5 shadow-sm text-left space-y-1">
+          <div className="flex items-start gap-2.5">
+            <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
+            <div className="space-y-0.5 min-w-0">
+              <p className="font-display font-black text-xs text-ron-strong">
+                Salvează-ți scorul gratuit!
+              </p>
+              <p className="text-[11px] font-bold text-ink/80 leading-snug">
+                Statisticile și progresul tău se vor șterge automat după 1 săptămână dacă nu ai un cont gratuit.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsLinkSheetOpen(true)}
+                className="mt-1 inline-flex text-xs font-black text-ron-strong underline hover:text-ink cursor-pointer"
+              >
+                Creează cont gratuit acum →
+              </button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Slim banner on Day 2 & 3 for unlinked users */}
+      {!isAccountLinked && showSlimBanner && (
+        <button
+          type="button"
+          onClick={() => setIsLinkSheetOpen(true)}
+          className="border-border-subtle bg-surface-2 hover:bg-surface text-ink flex w-full items-center justify-between rounded-xl border p-3 text-left shadow-sm transition"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={20} weight="bold" className="text-duel-strong shrink-0" />
+            <span className="text-xs font-bold">Scorul tău nu e salvat încă. Salvează-l</span>
+          </div>
+          <span className="text-duel-strong text-xs font-extrabold underline">Salvează</span>
+        </button>
+      )}
+
+      <Card
+        onClick={skipAnimation}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') skipAnimation();
+        }}
+        tabIndex={animated ? 0 : undefined}
+        className={cn('space-y-4 text-center', animated ? 'cursor-pointer' : '')}
+      >
+        <h1 className="sr-only">{t('result.title', { number: data.roundNumber })}</h1>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Chip tone="volt">{t('result.title', { number: data.roundNumber })}</Chip>
+          {showPB && isPB && (
+            <Chip tone="volt" className="rd-pop-in font-black">
+              ⚡ {t('result.personalBest')}
+            </Chip>
+          )}
+        </div>
+
         <p className="text-muted text-sm font-bold">{t('result.scoreLabel')}</p>
-        <p className="rd-tabular font-display text-ink text-6xl font-extrabold">
-          {data.totalScore.toLocaleString()}
-        </p>
-        <p className="text-3xl tracking-widest" aria-label={data.emojiLine}>
-          {data.emojiLine}
-        </p>
+        <div className="flex items-center justify-center gap-3">
+          <ScoreCountUp score={data.totalScore} animated={animated} />
+          <Chip tone="neutral" className="rd-tabular text-sm font-bold">
+            {t('result.correctCount', {
+              correct:
+                data.review.filter(
+                  (r) => r.correct || (r.points && r.points > 0) || r.emoji === '🟩' || r.emoji === '⚡',
+                ).length,
+              total: 6,
+            })}
+          </Chip>
+        </div>
+
+        {(() => {
+          const correctCount = data.review.filter(
+            (r) => r.correct || (r.points && r.points > 0) || r.emoji === '🟩' || r.emoji === '⚡',
+          ).length;
+          let cheerKey = 'result.cheer0';
+          if (correctCount === 6) cheerKey = 'result.cheer6';
+          else if (correctCount === 5) cheerKey = 'result.cheer5';
+          else if (correctCount >= 3) cheerKey = 'result.cheer3_4';
+          else if (correctCount >= 1) cheerKey = 'result.cheer1_2';
+          return <p className="text-muted text-sm font-bold">{t(cheerKey)}</p>;
+        })()}
+
+        {/* Emoji Tiles with legend */}
+        {showTiles && (
+          <div className="space-y-1.5">
+            <EmojiTiles emojiLine={data.emojiLine} animated={animated} />
+            <p className="text-muted text-xs font-medium tracking-normal">
+              {t('result.emojiLegend')}
+            </p>
+          </div>
+        )}
+
+        {/* Streak with Single Flame Bump */}
         <div className="flex items-center justify-center gap-2 text-sm font-bold">
-          <Flame size={18} weight="fill" className="text-ron-strong" aria-hidden="true" />
+          <Flame
+            size={18}
+            weight="fill"
+            className={cn('text-ron-strong', flameBumping && animated ? 'rd-flame-bump' : '')}
+            aria-hidden="true"
+          />
           <span>{t('result.streak', { days: data.streakCurrent })}</span>
         </div>
 
-        <Button fullWidth size="lg" onClick={() => void handleShare()}>
+        {/* League ranks breakdown */}
+        <div className="border-border-subtle bg-surface-2 rounded-2xl border p-3.5 space-y-2 text-left">
+          <p className="font-display text-muted text-xs font-extrabold uppercase tracking-wider">
+            Scorul tău a fost înregistrat în:
+          </p>
+          <div className="space-y-2">
+            {worldRank && (
+              <div
+                style={animated ? ({ animationDelay: '0ms' } as React.CSSProperties) : undefined}
+                className={cn(
+                  'flex items-center justify-between gap-2 text-xs font-bold',
+                  animated && showRows ? 'rd-row-slide' : '',
+                )}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <GlobeHemisphereWest size={16} weight="bold" className="text-duel-strong shrink-0" />
+                  <span className="text-ink truncate">RonDuel World</span>
+                </div>
+                <span className="rd-tabular text-ink shrink-0 font-extrabold">
+                  Locul #{worldRank.rank}{' '}
+                  <span className="text-muted font-medium">({formatRomanianPlayers(worldRank.totalMembers, locale)})</span>
+                </span>
+              </div>
+            )}
+
+            {privateLeagues.map((lg, idx) => (
+              <div
+                key={lg.id}
+                style={animated ? ({ animationDelay: `${(idx + (worldRank ? 1 : 0)) * 80}ms` } as React.CSSProperties) : undefined}
+                className={cn(
+                  'flex items-center justify-between gap-2 text-xs font-bold',
+                  animated && showRows ? 'rd-row-slide' : '',
+                )}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <Trophy size={16} weight="fill" className="text-volt-strong shrink-0" />
+                  <span className="text-ink truncate">{lg.name}</span>
+                </div>
+                <span className="rd-tabular text-ink shrink-0 font-extrabold">
+                  Locul #{lg.rank}{' '}
+                  <span className="text-muted font-medium">({formatRomanianPlayers(lg.totalMembers, locale)})</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Primary action: Trimite pe grup */}
+        <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
           <ShareNetwork size={20} weight="bold" aria-hidden="true" />
           {t('result.shareCta')}
         </Button>
 
-        <Button fullWidth size="md" variant="secondary" onClick={() => void handleCreateDuel()}>
-          <Sword size={18} weight="bold" aria-hidden="true" />
-          {t('result.challengeFriend')}
-        </Button>
-
-        <Link
-          href={`/${locale}/me`}
-          className="text-duel-strong inline-block text-xs font-bold underline"
-        >
-          {t('result.remindTomorrow')} →
-        </Link>
-
-        {!leagueInfo && <p className="text-muted text-xs">{t('result.shareHint')}</p>}
-
-        {leagueInfo && (
+        {(primaryLeague || returnTo) && (
           <Link
-            href={`/${locale}/league/${leagueInfo.id}`}
+            href={returnTo || `/${locale}/league/${primaryLeague?.id}`}
             className="rd-sticker rd-sticker-pressable bg-duel-strong inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] px-5 text-base font-bold text-[var(--rd-on-blue)]"
           >
             <Trophy size={18} weight="fill" aria-hidden="true" />
-            {t('result.openLeague')} ({leagueInfo.name})
+            {t('result.openLeague')} {primaryLeague?.name ? `(${primaryLeague.name})` : ''}
           </Link>
         )}
+
+        {/* Secondary actions: Provoacă-ți prietenii & Ai un cod */}
+        <div className="grid gap-2">
+          <Button
+            fullWidth
+            size="md"
+            variant="secondary"
+            onClick={() => setIsCreateLeagueOpen(true)}
+          >
+            <Users size={18} weight="bold" aria-hidden="true" />
+            Provoacă-ți prietenii — creează-ți liga
+          </Button>
+
+          <Button
+            fullWidth
+            size="sm"
+            variant="secondary"
+            onClick={() => setIsJoinCodeOpen(true)}
+          >
+            Ai un cod? Intră în liga lor
+          </Button>
+
+          <Button
+            fullWidth
+            size="sm"
+            variant="secondary"
+            onClick={() => void handleCreateDuel()}
+          >
+            <Sword size={16} weight="bold" aria-hidden="true" />
+            {t('result.challengeFriend')}
+          </Button>
+        </div>
       </Card>
 
-      {/* Install prompt shown only after the 2nd completed round (§6.1) */}
-      {(data.finishedPlaysCount ?? 0) >= 2 && (
-        <Card variant="secondary" className="space-y-1.5 text-center">
-          <p className="font-display text-base font-extrabold">{t('result.installTitle')}</p>
-          <p className="text-muted text-xs">{t('result.installBody')}</p>
-        </Card>
-      )}
+      {/* Share picker sheet if multiple private leagues */}
+      <Sheet
+        open={isSharePickerOpen}
+        onClose={() => setIsSharePickerOpen(false)}
+        title="Alege liga pe care vrei s-o trimiți"
+      >
+        <div className="space-y-2">
+          {privateLeagues.map((lg) => (
+            <button
+              key={lg.id}
+              type="button"
+              onClick={() => {
+                setIsSharePickerOpen(false);
+                const origin = window.location.origin;
+                const url = `${origin}/${locale}/l/${lg.inviteCode}?r=${getLocalSession().uid}`;
+                void triggerShareWithLink(url);
+              }}
+              className="border-border bg-surface-2 hover:bg-surface flex w-full items-center justify-between rounded-xl border p-3.5 text-left transition"
+            >
+              <div className="flex items-center gap-3">
+                <Trophy size={20} weight="fill" className="text-volt-strong" />
+                <span className="text-ink text-sm font-bold">{lg.name}</span>
+              </div>
+              <ShareNetwork size={18} weight="bold" className="text-muted" />
+            </button>
+          ))}
+          <Button
+            fullWidth
+            size="md"
+            variant="secondary"
+            onClick={() => {
+              setIsSharePickerOpen(false);
+              const origin = window.location.origin;
+              const url = `${origin}/${locale}?r=${getLocalSession().uid}`;
+              void triggerShareWithLink(url);
+            }}
+          >
+            Trimite link general (RonDuel)
+          </Button>
+        </div>
+      </Sheet>
+
+      {/* Account Linking Bottom Sheet */}
+      <AccountLinkingSheet
+        open={isLinkSheetOpen}
+        onClose={handleLinkDismissed}
+        score={data.totalScore}
+        streak={data.streakCurrent}
+        onLinked={handleLinkSuccess}
+      />
+
+      {/* Create League Dialog */}
+      <CreateLeagueDialog
+        open={isCreateLeagueOpen}
+        onClose={() => setIsCreateLeagueOpen(false)}
+        uid={getLocalSession().uid}
+        onCreated={(league) => {
+          const origin = window.location.origin;
+          const url = `${origin}/${locale}/l/${league.inviteCode}?r=${getLocalSession().uid}`;
+          void triggerShareWithLink(url);
+        }}
+      />
+
+      {/* Join League by Code */}
+      <JoinByCodeDialog
+        open={isJoinCodeOpen}
+        onClose={() => setIsJoinCodeOpen(false)}
+      />
 
       {toast && (
         <div className="flex justify-center">
@@ -197,6 +748,7 @@ export default function ResultPage() {
         </div>
       )}
 
+      {/* Review Section */}
       <section className="space-y-3" aria-labelledby="review-heading">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="review-heading" className="font-display text-xl font-extrabold">
@@ -210,19 +762,115 @@ export default function ResultPage() {
             {t('rules.resultLink')}
           </Link>
         </div>
-        {data.review.map((item) => (
-          <Card key={item.index} variant="subtle" className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-bold">{item.prompt}</span>
-              <span className="rd-tabular shrink-0 text-sm font-bold">
-                {item.emoji} +{item.points}
-              </span>
-            </div>
-            <p className="text-correct-text text-sm font-bold">{item.correctAnswer}</p>
-            {item.explanation && <p className="text-muted text-xs">{item.explanation}</p>}
-          </Card>
-        ))}
+        {data.review.map((item) => {
+          const isCorrect = Boolean(
+            item.correct ||
+              (item.points && item.points > 0) ||
+              item.emoji === '🟩' ||
+              item.emoji === '⚡',
+          );
+          return (
+            <Card key={item.index} variant="subtle" className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-bold">{item.prompt}</span>
+                <span className="rd-tabular shrink-0 text-sm font-bold">
+                  {item.emoji} +{item.points}
+                </span>
+              </div>
+
+              <div className="space-y-1 text-xs sm:text-sm font-bold">
+                {isCorrect ? (
+                  <div className="flex items-center gap-1.5 text-correct-text">
+                    <span className="text-base" aria-hidden="true">✓</span>
+                    <span>{item.correctAnswer}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1.5 text-wrong">
+                      <span className="text-base" aria-hidden="true">✗</span>
+                      <span>
+                        {t('result.yourAnswer', {
+                          answer: item.userAnswer || (item.timedOut ? t('play.timedOut') : '—'),
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-correct-text">
+                      <span className="text-base" aria-hidden="true">✓</span>
+                      <span>{item.correctAnswer}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {item.explanation && <p className="text-muted text-xs">{item.explanation}</p>}
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => setReportingQuestionId(item.questionId || `q_${item.index}`)}
+                  className="text-muted hover:text-wrong text-[11px] font-bold underline cursor-pointer"
+                >
+                  Raportează întrebarea
+                </button>
+              </div>
+            </Card>
+          );
+        })}
       </section>
+
+      {/* Report Question Sheet */}
+      <Sheet
+        open={Boolean(reportingQuestionId)}
+        onClose={() => setReportingQuestionId(null)}
+        title="Raportează întrebarea"
+      >
+        <div className="space-y-3.5">
+          <p className="text-xs text-muted font-medium">
+            Selectează motivul pentru care raportezi această întrebare:
+          </p>
+          <div className="space-y-2">
+            {[
+              { id: 'răspuns greșit', label: 'Răspuns greșit' },
+              { id: 'întrebare ambiguă', label: 'Întrebare ambiguă' },
+              { id: 'greșeală de limbă', label: 'Greșeală de limbă' },
+            ].map((opt) => (
+              <label
+                key={opt.id}
+                className="flex items-center gap-2.5 p-3 rounded-xl border-2 border-border bg-surface-2 cursor-pointer font-bold text-sm text-ink hover:bg-surface"
+              >
+                <input
+                  type="radio"
+                  name="report_reason"
+                  value={opt.id}
+                  checked={reportReason === opt.id}
+                  onChange={() => setReportReason(opt.id as any)}
+                  className="h-4 w-4 accent-ron-strong"
+                />
+                <span>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="pt-2 flex gap-2">
+            <Button
+              size="md"
+              variant="secondary"
+              fullWidth
+              onClick={() => setReportingQuestionId(null)}
+            >
+              Anulează
+            </Button>
+            <Button
+              size="md"
+              variant="danger"
+              fullWidth
+              disabled={isReporting}
+              onClick={() => void submitQuestionReport()}
+            >
+              {isReporting ? 'Se trimite…' : 'Trimite raportul'}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </main>
   );
 }

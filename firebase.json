@@ -5,20 +5,41 @@
   },
   "hosting": {
     "public": "hosting-dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "predeploy": ["node scripts/build-hosting.mjs"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "predeploy": [
+      "node scripts/build-hosting.mjs"
+    ],
     "cleanUrls": true,
     "trailingSlash": false,
     "redirects": [
       {
-        "source": "/",
-        "destination": "/ro",
-        "type": 302
-      },
-      {
         "source": "/legal/:doc",
         "destination": "/ro/legal/:doc",
         "type": 302
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin-allow-popups"
+          }
+        ]
+      },
+      {
+        "source": "/api/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+          }
+        ]
       }
     ],
     "rewrites": [
@@ -29,22 +50,422 @@
           "region": "europe-west1"
         }
       },
-      { "source": "/ro/result/**", "destination": "/ro/result/_shell.html" },
-      { "source": "/ro/l/**", "destination": "/ro/l/_shell.html" },
-      { "source": "/ro/league/**", "destination": "/ro/league/_shell.html" },
-      { "source": "/ro/duel/**", "destination": "/ro/duel/_shell.html" },
-      { "source": "/en/result/**", "destination": "/en/result/_shell.html" },
-      { "source": "/en/l/**", "destination": "/en/l/_shell.html" },
-      { "source": "/en/league/**", "destination": "/en/league/_shell.html" },
-      { "source": "/en/duel/**", "destination": "/en/duel/_shell.html" },
-      { "source": "/es/result/**", "destination": "/es/result/_shell.html" },
-      { "source": "/es/l/**", "destination": "/es/l/_shell.html" },
-      { "source": "/es/league/**", "destination": "/es/league/_shell.html" },
-      { "source": "/es/duel/**", "destination": "/es/duel/_shell.html" },
-      { "source": "/pt/result/**", "destination": "/pt/result/_shell.html" },
-      { "source": "/pt/l/**", "destination": "/pt/l/_shell.html" },
-      { "source": "/pt/league/**", "destination": "/pt/league/_shell.html" },
-      { "source": "/pt/duel/**", "destination": "/pt/duel/_shell.html" }
+      {
+        "source": "/ro/result/**",
+        "destination": "/ro/result/_shell.html"
+      },
+      {
+        "source": "/ro/l/**",
+        "destination": "/ro/l/_shell.html"
+      },
+      {
+        "source": "/ro/league/**",
+        "destination": "/ro/league/_shell.html"
+      },
+      {
+        "source": "/ro/duel/**",
+        "destination": "/ro/duel/_shell.html"
+      },
+      {
+        "source": "/en/result/**",
+        "destination": "/en/result/_shell.html"
+      },
+      {
+        "source": "/en/l/**",
+        "destination": "/en/l/_shell.html"
+      },
+      {
+        "source": "/en/league/**",
+        "destination": "/en/league/_shell.html"
+      },
+      {
+        "source": "/en/duel/**",
+        "destination": "/en/duel/_shell.html"
+      },
+      {
+        "source": "/es/result/**",
+        "destination": "/es/result/_shell.html"
+      },
+      {
+        "source": "/es/l/**",
+        "destination": "/es/l/_shell.html"
+      },
+      {
+        "source": "/es/league/**",
+        "destination": "/es/league/_shell.html"
+      },
+      {
+        "source": "/es/duel/**",
+        "destination": "/es/duel/_shell.html"
+      },
+      {
+        "source": "/pt/result/**",
+        "destination": "/pt/result/_shell.html"
+      },
+      {
+        "source": "/pt/l/**",
+        "destination": "/pt/l/_shell.html"
+      },
+      {
+        "source": "/pt/league/**",
+        "destination": "/pt/league/_shell.html"
+      },
+      {
+        "source": "/pt/duel/**",
+        "destination": "/pt/duel/_shell.html"
+      },
+      {
+        "source": "/de/result/**",
+        "destination": "/de/result/_shell.html"
+      },
+      {
+        "source": "/de/l/**",
+        "destination": "/de/l/_shell.html"
+      },
+      {
+        "source": "/de/league/**",
+        "destination": "/de/league/_shell.html"
+      },
+      {
+        "source": "/de/duel/**",
+        "destination": "/de/duel/_shell.html"
+      },
+      {
+        "source": "/fr/result/**",
+        "destination": "/fr/result/_shell.html"
+      },
+      {
+        "source": "/fr/l/**",
+        "destination": "/fr/l/_shell.html"
+      },
+      {
+        "source": "/fr/league/**",
+        "destination": "/fr/league/_shell.html"
+      },
+      {
+        "source": "/fr/duel/**",
+        "destination": "/fr/duel/_shell.html"
+      },
+      {
+        "source": "/it/result/**",
+        "destination": "/it/result/_shell.html"
+      },
+      {
+        "source": "/it/l/**",
+        "destination": "/it/l/_shell.html"
+      },
+      {
+        "source": "/it/league/**",
+        "destination": "/it/league/_shell.html"
+      },
+      {
+        "source": "/it/duel/**",
+        "destination": "/it/duel/_shell.html"
+      },
+      {
+        "source": "/nl/result/**",
+        "destination": "/nl/result/_shell.html"
+      },
+      {
+        "source": "/nl/l/**",
+        "destination": "/nl/l/_shell.html"
+      },
+      {
+        "source": "/nl/league/**",
+        "destination": "/nl/league/_shell.html"
+      },
+      {
+        "source": "/nl/duel/**",
+        "destination": "/nl/duel/_shell.html"
+      },
+      {
+        "source": "/pl/result/**",
+        "destination": "/pl/result/_shell.html"
+      },
+      {
+        "source": "/pl/l/**",
+        "destination": "/pl/l/_shell.html"
+      },
+      {
+        "source": "/pl/league/**",
+        "destination": "/pl/league/_shell.html"
+      },
+      {
+        "source": "/pl/duel/**",
+        "destination": "/pl/duel/_shell.html"
+      },
+      {
+        "source": "/bg/result/**",
+        "destination": "/bg/result/_shell.html"
+      },
+      {
+        "source": "/bg/l/**",
+        "destination": "/bg/l/_shell.html"
+      },
+      {
+        "source": "/bg/league/**",
+        "destination": "/bg/league/_shell.html"
+      },
+      {
+        "source": "/bg/duel/**",
+        "destination": "/bg/duel/_shell.html"
+      },
+      {
+        "source": "/cs/result/**",
+        "destination": "/cs/result/_shell.html"
+      },
+      {
+        "source": "/cs/l/**",
+        "destination": "/cs/l/_shell.html"
+      },
+      {
+        "source": "/cs/league/**",
+        "destination": "/cs/league/_shell.html"
+      },
+      {
+        "source": "/cs/duel/**",
+        "destination": "/cs/duel/_shell.html"
+      },
+      {
+        "source": "/da/result/**",
+        "destination": "/da/result/_shell.html"
+      },
+      {
+        "source": "/da/l/**",
+        "destination": "/da/l/_shell.html"
+      },
+      {
+        "source": "/da/league/**",
+        "destination": "/da/league/_shell.html"
+      },
+      {
+        "source": "/da/duel/**",
+        "destination": "/da/duel/_shell.html"
+      },
+      {
+        "source": "/el/result/**",
+        "destination": "/el/result/_shell.html"
+      },
+      {
+        "source": "/el/l/**",
+        "destination": "/el/l/_shell.html"
+      },
+      {
+        "source": "/el/league/**",
+        "destination": "/el/league/_shell.html"
+      },
+      {
+        "source": "/el/duel/**",
+        "destination": "/el/duel/_shell.html"
+      },
+      {
+        "source": "/et/result/**",
+        "destination": "/et/result/_shell.html"
+      },
+      {
+        "source": "/et/l/**",
+        "destination": "/et/l/_shell.html"
+      },
+      {
+        "source": "/et/league/**",
+        "destination": "/et/league/_shell.html"
+      },
+      {
+        "source": "/et/duel/**",
+        "destination": "/et/duel/_shell.html"
+      },
+      {
+        "source": "/fi/result/**",
+        "destination": "/fi/result/_shell.html"
+      },
+      {
+        "source": "/fi/l/**",
+        "destination": "/fi/l/_shell.html"
+      },
+      {
+        "source": "/fi/league/**",
+        "destination": "/fi/league/_shell.html"
+      },
+      {
+        "source": "/fi/duel/**",
+        "destination": "/fi/duel/_shell.html"
+      },
+      {
+        "source": "/ga/result/**",
+        "destination": "/ga/result/_shell.html"
+      },
+      {
+        "source": "/ga/l/**",
+        "destination": "/ga/l/_shell.html"
+      },
+      {
+        "source": "/ga/league/**",
+        "destination": "/ga/league/_shell.html"
+      },
+      {
+        "source": "/ga/duel/**",
+        "destination": "/ga/duel/_shell.html"
+      },
+      {
+        "source": "/hr/result/**",
+        "destination": "/hr/result/_shell.html"
+      },
+      {
+        "source": "/hr/l/**",
+        "destination": "/hr/l/_shell.html"
+      },
+      {
+        "source": "/hr/league/**",
+        "destination": "/hr/league/_shell.html"
+      },
+      {
+        "source": "/hr/duel/**",
+        "destination": "/hr/duel/_shell.html"
+      },
+      {
+        "source": "/hu/result/**",
+        "destination": "/hu/result/_shell.html"
+      },
+      {
+        "source": "/hu/l/**",
+        "destination": "/hu/l/_shell.html"
+      },
+      {
+        "source": "/hu/league/**",
+        "destination": "/hu/league/_shell.html"
+      },
+      {
+        "source": "/hu/duel/**",
+        "destination": "/hu/duel/_shell.html"
+      },
+      {
+        "source": "/lt/result/**",
+        "destination": "/lt/result/_shell.html"
+      },
+      {
+        "source": "/lt/l/**",
+        "destination": "/lt/l/_shell.html"
+      },
+      {
+        "source": "/lt/league/**",
+        "destination": "/lt/league/_shell.html"
+      },
+      {
+        "source": "/lt/duel/**",
+        "destination": "/lt/duel/_shell.html"
+      },
+      {
+        "source": "/lv/result/**",
+        "destination": "/lv/result/_shell.html"
+      },
+      {
+        "source": "/lv/l/**",
+        "destination": "/lv/l/_shell.html"
+      },
+      {
+        "source": "/lv/league/**",
+        "destination": "/lv/league/_shell.html"
+      },
+      {
+        "source": "/lv/duel/**",
+        "destination": "/lv/duel/_shell.html"
+      },
+      {
+        "source": "/mt/result/**",
+        "destination": "/mt/result/_shell.html"
+      },
+      {
+        "source": "/mt/l/**",
+        "destination": "/mt/l/_shell.html"
+      },
+      {
+        "source": "/mt/league/**",
+        "destination": "/mt/league/_shell.html"
+      },
+      {
+        "source": "/mt/duel/**",
+        "destination": "/mt/duel/_shell.html"
+      },
+      {
+        "source": "/nb/result/**",
+        "destination": "/nb/result/_shell.html"
+      },
+      {
+        "source": "/nb/l/**",
+        "destination": "/nb/l/_shell.html"
+      },
+      {
+        "source": "/nb/league/**",
+        "destination": "/nb/league/_shell.html"
+      },
+      {
+        "source": "/nb/duel/**",
+        "destination": "/nb/duel/_shell.html"
+      },
+      {
+        "source": "/sk/result/**",
+        "destination": "/sk/result/_shell.html"
+      },
+      {
+        "source": "/sk/l/**",
+        "destination": "/sk/l/_shell.html"
+      },
+      {
+        "source": "/sk/league/**",
+        "destination": "/sk/league/_shell.html"
+      },
+      {
+        "source": "/sk/duel/**",
+        "destination": "/sk/duel/_shell.html"
+      },
+      {
+        "source": "/sl/result/**",
+        "destination": "/sl/result/_shell.html"
+      },
+      {
+        "source": "/sl/l/**",
+        "destination": "/sl/l/_shell.html"
+      },
+      {
+        "source": "/sl/league/**",
+        "destination": "/sl/league/_shell.html"
+      },
+      {
+        "source": "/sl/duel/**",
+        "destination": "/sl/duel/_shell.html"
+      },
+      {
+        "source": "/sv/result/**",
+        "destination": "/sv/result/_shell.html"
+      },
+      {
+        "source": "/sv/l/**",
+        "destination": "/sv/l/_shell.html"
+      },
+      {
+        "source": "/sv/league/**",
+        "destination": "/sv/league/_shell.html"
+      },
+      {
+        "source": "/sv/duel/**",
+        "destination": "/sv/duel/_shell.html"
+      },
+      {
+        "source": "/uk/result/**",
+        "destination": "/uk/result/_shell.html"
+      },
+      {
+        "source": "/uk/l/**",
+        "destination": "/uk/l/_shell.html"
+      },
+      {
+        "source": "/uk/league/**",
+        "destination": "/uk/league/_shell.html"
+      },
+      {
+        "source": "/uk/duel/**",
+        "destination": "/uk/duel/_shell.html"
+      }
     ]
   },
   "functions": [

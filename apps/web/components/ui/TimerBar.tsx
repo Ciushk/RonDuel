@@ -5,10 +5,11 @@ import { cn } from '@/lib/cn';
 export interface TimerBarProps {
   remainingMs: number;
   limitMs: number;
+  label?: string;
   className?: string;
 }
 
-export function TimerBar({ remainingMs, limitMs, className }: TimerBarProps) {
+export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarProps) {
   const clamped = Math.max(0, Math.min(limitMs, remainingMs));
   const pct = limitMs > 0 ? (clamped / limitMs) * 100 : 0;
   const secondsLeft = Math.ceil(clamped / 1000);
@@ -17,7 +18,7 @@ export function TimerBar({ remainingMs, limitMs, className }: TimerBarProps) {
   return (
     <div className={cn('w-full space-y-1', className)}>
       <div className="flex items-center justify-between text-xs font-bold">
-        <span className="text-muted">Time left</span>
+        <span className="text-muted">{label || 'Time left'}</span>
         <span
           className={cn('rd-tabular text-sm font-bold', isUrgent ? 'text-ron-strong' : 'text-ink')}
         >

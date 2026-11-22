@@ -43,4 +43,65 @@ function copyPreRendered(srcDir, relDir = '') {
 }
 
 copyPreRendered(serverAppDir);
+
+if (fs.existsSync(path.join(outDir, '_not-found.html'))) {
+  fs.copyFileSync(path.join(outDir, '_not-found.html'), path.join(outDir, '404.html'));
+}
+
+const locales = [
+  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
+  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
+  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+];
+
+// 4. Ensure <html lang="${locale}"> in pre-rendered static HTML files for each locale
+for (const locale of locales) {
+  const locHtml = path.join(outDir, `${locale}.html`);
+  const locDir = path.join(outDir, locale);
+  if (fs.existsSync(locHtml)) {
+    let content = fs.readFileSync(locHtml, 'utf8');
+    if (content.includes('<html')) {
+      const patched = content.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
+      fs.writeFileSync(locHtml, patched, 'utf8');
+    }
+    fs.mkdirSync(locDir, { recursive: true });
+    fs.copyFileSync(locHtml, path.join(locDir, 'index.html'));
+  }
+
+  if (!fs.existsSync(locDir)) continue;
+
+  function patchLocaleHtml(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        patchLocaleHtml(fullPath);
+      } else if (entry.name.endsWith('.html')) {
+        let content = fs.readFileSync(fullPath, 'utf8');
+        if (content.includes('<html')) {
+          const patched = content.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
+          if (patched !== content) {
+            fs.writeFileSync(fullPath, patched, 'utf8');
+          }
+        }
+      }
+    }
+  }
+
+  patchLocaleHtml(locDir);
+}
+console.log('Patched <html lang="..."> across all pre-rendered locale HTML files.');
+
+const shellRoutes = ['result', 'l', 'league', 'duel'];
+for (const locale of locales) {
+  for (const route of shellRoutes) {
+    const shellPath = path.join(outDir, locale, route, '_shell.html');
+    if (!fs.existsSync(shellPath)) {
+      throw new Error(`Missing expected hosting shell: ${shellPath}`);
+    }
+  }
+}
+console.log('Verified all 104 client shells exist across 26 locales.');
+
 console.log('Packaged Firebase Hosting directory at hosting-dist/');
+

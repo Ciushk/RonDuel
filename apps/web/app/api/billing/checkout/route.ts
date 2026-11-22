@@ -5,7 +5,8 @@ import { getOrCreateUser, processStripeWebhook } from '@/lib/server-store';
 
 const CheckoutSchema = z.object({
   uid: z.string().min(3),
-  plan: z.enum(['monthly', 'yearly']),
+  plan: z.enum(['monthly', 'yearly', 'freeze_1', 'freeze_3']),
+  trial: z.boolean().optional(),
   euWithdrawalConsent: z.literal(true, {
     errorMap: () => ({
       message: 'EU immediate digital content access consent is required before checkout.',
@@ -19,9 +20,27 @@ export async function POST(req: Request) {
     const user = getOrCreateUser({ uid: body.uid });
     if (user.isAnonymous) {
       return NextResponse.json(
-        { error: 'Please upgrade your anonymous account before purchasing RonDuel Pro.' },
+        { error: 'Please upgrade your anonymous account before purchasing RonDuel Pro or Streak Freezes.' },
         { status: 403 },
       );
+    }
+
+    if (body.trial) {
+      const trialDays = 7;
+      const trialEndsAt = new Date(Date.now() + trialDays * 86_400_000).toISOString();
+      user.pro = {
+        active: true,
+        plan: body.plan === 'yearly' ? 'yearly' : 'monthly',
+        until: trialEndsAt,
+        isTrial: true,
+        trialEndsAt,
+      };
+      user.freezes = Math.min(5, (user.freezes ?? 0) + 1);
+      return NextResponse.json({
+        mode: 'trial_activated',
+        pro: user.pro,
+        freezes: user.freezes,
+      });
     }
 
     // In local/test mode without a live STRIPE_SECRET_KEY, simulate the Stripe webhook callback
@@ -37,6 +56,7 @@ export async function POST(req: Request) {
         mode: 'local_test_webhook',
         eventId,
         pro: res.pro,
+        freezes: res.freezes,
       });
     }
 

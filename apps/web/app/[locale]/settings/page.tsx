@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { Button, Card, Toast } from '@/components/ui';
 import {
   clearLocalSession,
@@ -59,6 +60,11 @@ export default function SettingsPage() {
       <h1 className="font-display text-3xl font-extrabold">{t('settings.title')}</h1>
 
       <Card className="space-y-4">
+        {/* Language Section mirroring the header selector */}
+        <div className="flex min-h-11 items-center justify-between gap-3 text-sm font-bold">
+          <span>{t('settings.language')}</span>
+          <LanguageSelector source="settings" showFullLabel />
+        </div>
         <label className="flex min-h-11 items-center justify-between gap-3 text-sm font-bold">
           <span>{t('settings.theme')}</span>
           <select

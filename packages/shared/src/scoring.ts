@@ -1,16 +1,20 @@
 import { z } from 'zod';
 
-export const LOCALES = ['en', 'es', 'pt', 'ro'] as const;
+export const LOCALES = [
+  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
+  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
+  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const QUESTION_TYPES = ['mcq', 'order', 'odd', 'logic'] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
 
 export const ITEM_TIME_LIMIT_MS: Record<QuestionType, number> = {
-  mcq: 10_000,
-  odd: 10_000,
-  order: 15_000,
-  logic: 15_000,
+  mcq: 30_000,
+  odd: 30_000,
+  order: 30_000,
+  logic: 30_000,
 };
 
 export const NETWORK_GRACE_MS = 250;

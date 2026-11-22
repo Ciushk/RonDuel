@@ -28,6 +28,7 @@ Operatorul RonDuel este Pixel-WebAPP SRL, CUI 54870881, Nr. Reg. Com. J202603803
 2.3. **Schimbarea fusului orar.** Fusul orar salvat în contul tău se poate schimba **cel mult o dată la 24 de ore**. Fiecare schimbare este înregistrată, ca nimeni să nu poată „sări” într-o zi viitoare pentru a vedea runda din timp.
 
 2.4. **Ce conține runda.** De regulă, runda are **6 întrebări**:
+
 - 2 întrebări cu variante (o singură variantă corectă din 4);
 - 1 întrebare de ordonare (aranjezi 4 elemente în ordinea cerută);
 - 1 întrebare „intrusul” (alegi varianta care nu se potrivește);
@@ -36,10 +37,10 @@ Operatorul RonDuel este Pixel-WebAPP SRL, CUI 54870881, Nr. Reg. Com. J202603803
 Compoziția unei runde poate varia. Numărul de întrebări și timpul fiecăreia îl vezi în aplicație înainte să începi.
 
 2.5. **Timp pe întrebare:**
-- întrebări cu variante și „intrusul”: **10 secunde**;
-- ordonare și logică/calcul: **15 secunde**.
 
-O rundă obișnuită durează cam 60 de secunde, cel mult 75.
+- fiecare întrebare are o limită standard de **30 de secunde** (6 întrebări = ~3 minute).
+
+O rundă obișnuită durează cam 3 minute.
 
 2.6. **Limba întrebărilor.** Dacă o întrebare nu are încă o traducere verificată în română, o primești în engleză, marcată cu eticheta „EN”.
 
@@ -63,16 +64,18 @@ O rundă obișnuită durează cam 60 de secunde, cel mult 75.
 > bonus = round( 100 × max(0, (limită − timp) / limită) )
 
 unde:
-- **limită** = timpul întrebării (10 sau 15 secunde);
+
+- **limită** = timpul întrebării (30 de secunde);
 - **timp** = timpul măsurat **pe serverul nostru**, de la momentul în care ți-a fost trimisă întrebarea până la momentul în care a ajuns răspunsul tău, **minus 250 de milisecunde** pentru întârzierile de rețea. Timpul nu poate fi mai mic de 0;
 - **round** = rotunjire la cel mai apropiat număr întreg.
 
 Bonusul e cu atât mai mare cu cât răspunzi mai repede. Un răspuns corect primește între 100 și 200 de puncte.
 
-4.3. **Exemple** (întrebare de 10 secunde, răspuns corect):
-- răspuns ajuns pe server după 2,25 s: timp = 2 s, bonus = round(100 × 8/10) = 80, total **180**;
-- răspuns ajuns după 7,75 s: timp = 7,5 s, bonus = round(100 × 2,5/10) = 25, total **125**;
-- răspuns ajuns după expirarea timpului: **0 puncte**. [DE CONFIRMAT: specificația nu spune dacă toleranța de 250 ms se aplică și la expirare. Dacă se aplică, un răspuns ajuns între 10 s și 10,25 s încă primește puncte. Propunere: toleranța se aplică doar la calculul bonusului, iar limita de expirare rămâne 10 s, măsurată pe server.]
+4.3. **Exemple** (întrebare de 30 de secunde, răspuns corect):
+
+- răspuns ajuns pe server după 6,25 s: timp = 6 s, bonus = round(100 × 24/30) = 80, total **180**;
+- răspuns ajuns după 15,25 s: timp = 15 s, bonus = round(100 × 15/30) = 50, total **150**;
+- răspuns ajuns după expirarea timpului: **0 puncte**. [DE CONFIRMAT: specificația nu spune dacă toleranța de 250 ms se aplică și la expirare. Dacă se aplică, un răspuns ajuns între 30 s și 30,25 s încă primește puncte. Propunere: toleranța se aplică doar la calculul bonusului, iar limita de expirare rămâne 30 s, măsurată pe server.]
 
 4.4. **Scor maxim: 1.200 de puncte pe zi** (6 întrebări × 200).
 
@@ -93,6 +96,7 @@ Bonusul e cu atât mai mare cu cât răspunzi mai repede. Un răspuns corect pri
 ## 6. Clasamente
 
 6.1. Fiecare ligă are trei clasamente:
+
 - **Azi**: scorurile din runda zilei;
 - **Săptămâna aceasta**: suma scorurilor zilnice din săptămâna ligii; zilele în care nu ai jucat contează cu 0;
 - **General**: scorul total, numărul de runde jucate, trofeele săptămânale câștigate și cea mai lungă serie.
@@ -114,13 +118,15 @@ Bonusul e cu atât mai mare cu cât răspunzi mai repede. Un răspuns corect pri
 7.3. **Intrarea în timpul săptămânii.** Poți intra într-o ligă oricând. Zilele de dinainte de intrare contează cu 0 în clasamentul săptămânii.
 
 7.4. **Limite pentru contul gratuit.** În prezent, un cont gratuit poate:
-- crea cel mult **3 ligi**, fiecare cu cel mult **25 de membri**;
-- fi membru în cel mult **10 ligi**;
-- avea cel mult **3 dueluri active** în același timp.
 
-Limitele în vigoare sunt afișate în aplicație și pot fi modificate (art. 6.4 din Termeni). Dacă o ligă gratuită are deja 25 de membri, următorul jucător nu mai poate intra, iar aplicația îi spune de ce.
+- crea cel mult **1 ligă**, cu cel mult **5 membri** (tu inclus);
+- fi membru în cel mult **10 ligi**;
+- avea cel mult **4 dueluri pe lună** (și 1 duel activ în același timp).
+
+Limitele în vigoare sunt afișate în aplicație și pot fi modificate (art. 6.4 din Termeni). Dacă o ligă gratuită are deja 5 membri, următorul jucător nu mai poate intra, iar aplicația îi spune de ce.
 
 7.5. **Proprietarul ligii** (unul singur pe ligă) poate:
+
 - schimba numele ligii și fusul ei orar;
 - schimba nickname-ul unui membru sau elimina un membru;
 - transfera proprietatea altui membru.
@@ -142,6 +148,7 @@ Proprietarul trebuie să respecte regulile de conduită (art. 8 din Termeni). Or
 8.4. **Cine câștigă.** Câștigă scorul mai mare. La scor egal, câștigă cine are **timpul total mai mic**. [DE CONFIRMAT: dacă și timpul e egal. Propunere: duelul se încheie la egalitate.]
 
 8.5. **Termene și expirare:**
+
 - fiecare jucător are **24 de ore** să-și joace partea;
 - dacă adversarul nu începe duelul în 24 de ore de la creare, duelul **expiră** și nu are câștigător;
 - dacă cel care a lansat provocarea și-a terminat partea, iar adversarul nu joacă în 24 de ore de atunci, câștigă cel care a lansat provocarea, **prin neprezentarea adversarului**. Rezultatul e marcat ca atare.
@@ -159,6 +166,7 @@ Proprietarul trebuie să respecte regulile de conduită (art. 8 din Termeni). Or
 ## 10. Corectitudine și trișat
 
 10.1. **Ce înseamnă trișat.** Este interzis:
+
 - să folosești scripturi, boți, extensii sau alte unelte automate care răspund în locul tău;
 - să folosești mai multe conturi ca să joci aceeași rundă de mai multe ori, ca să vezi întrebările înainte sau ca să umfli o ligă;
 - să manipulezi fusul orar, ceasul sau cererile către server, ca să obții runda din timp sau mai mult timp;
@@ -166,12 +174,14 @@ Proprietarul trebuie să respecte regulile de conduită (art. 8 din Termeni). Or
 - să publici întrebările sau răspunsurile zilei înainte ca ziua să se termine, cu scopul de a avantaja pe cineva. [DE CONFIRMAT: dacă această regulă se adoptă.]
 
 10.2. **Cum detectăm.** Toate punctele și timpii se calculează pe server. Răspunsurile nu ajung în aplicație înainte să răspunzi. Marcăm pentru verificare de către un om, fără să blocăm automat:
+
 - rundele în care **cel puțin 3 răspunsuri** au venit în mai puțin de **0,4 secunde**;
 - situațiile în care mai multe conturi de pe același dispozitiv sau de la aceeași adresă IP joacă în aceeași ligă în aceeași zi.
 
 O rundă marcată contează în continuare până la verificare.
 
 10.3. **Sancțiuni**, proporționale cu gravitatea faptei:
+
 - **anularea scorului** unei runde sau al unui duel; clasamentele afectate se recalculează;
 - restrângerea temporară a unor funcții;
 - **suspendarea sau închiderea contului**, în cazuri grave sau repetate.
@@ -195,6 +205,7 @@ O rundă marcată contează în continuare până la verificare.
 ## 12. Ce primești cu RonDuel Pro
 
 12.1. Pro este un abonament plătit, opțional. Condițiile lui sunt în [Termenii Pro](https://ronduel.eu/ro/termeni-pro). Pro include:
+
 - ligi de până la **200 de membri**, ligi private cu aprobarea cererilor de intrare și emoji sau culoare proprie pentru ligă;
 - **dueluri nelimitate**;
 - **arhiva** rundelor trecute;
@@ -220,4 +231,5 @@ O rundă marcată contează în continuare până la verificare.
 Întrebări despre reguli: contact@pixel-webapp.ro.
 
 ---
-*Ultima actualizare: [DATA] (propunere: 1 decembrie 2026)*
+
+_Ultima actualizare: [DATA] (propunere: 1 decembrie 2026)_

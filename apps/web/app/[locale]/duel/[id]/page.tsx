@@ -11,11 +11,13 @@ import {
 } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { AuthModal } from '@/components/AuthModal';
+import { VersusCard } from '@/components/duel/VersusCard';
 import { Avatar, Button, Card, Chip, TimerBar, Toast } from '@/components/ui';
-import { getLocalSession, vibrate } from '@/lib/session';
+import { getBrowserTimeZone, getLocalSession, recordPlayedDuel, vibrate } from '@/lib/session';
 
 interface ClientItem {
   index: number;
@@ -33,6 +35,8 @@ interface DuelView {
   opponentUid: string | null;
   winnerUid: string | null;
   walkover: boolean;
+  walkoverNote?: string;
+  rated?: boolean;
   sides: Record<
     string,
     {
@@ -56,6 +60,7 @@ interface DuelView {
 export default function DuelPage() {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const rawDuelId = decodeURIComponent(params.id);
   const duelId =
@@ -69,7 +74,7 @@ export default function DuelPage() {
   const [totalItems, setTotalItems] = useState(5);
   const [item, setItem] = useState<ClientItem | null>(null);
   const [orderList, setOrderList] = useState<string[]>([]);
-  const [remainingMs, setRemainingMs] = useState(10_000);
+  const [remainingMs, setRemainingMs] = useState(30_000);
   const [feedback, setFeedback] = useState<{
     correct: boolean;
     points: number;
@@ -77,11 +82,15 @@ export default function DuelPage() {
   } | null>(null);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [toast, setToast] = useState('');
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isRematching, setIsRematching] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const deadlineRef = useRef<number>(0);
 
   const loadDuel = useCallback(() => {
     const s = getLocalSession();
     setMyUid(s.uid);
+    setIsAnonymous(s.isAnonymous || !s.email);
     fetch(`/api/duels/${encodeURIComponent(duelId)}?locale=${encodeURIComponent(locale)}`)
       .then((r) => r.json())
       .then((d: DuelView) => setDuel(d))
@@ -92,8 +101,38 @@ export default function DuelPage() {
     loadDuel();
   }, [loadDuel]);
 
+  const handleRematch = async () => {
+    if (!duel || isRematching) return;
+    const s = getLocalSession();
+    const opponent = duel.sides.challenger?.uid === s.uid ? duel.sides.opponent : duel.sides.challenger;
+    setIsRematching(true);
+    try {
+      const res = await fetch('/api/duels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengerUid: s.uid,
+          opponentUid: opponent?.uid ?? null,
+          nickname: s.nickname || undefined,
+          tz: getBrowserTimeZone(),
+        }),
+      });
+      const data = await res.json();
+      if (data.duelId) {
+        router.push(`/${locale}/duel/${encodeURIComponent(data.duelId)}`);
+      } else {
+        setToast(data.error || 'Nu s-a putut crea revanșa');
+        setIsRematching(false);
+      }
+    } catch {
+      setToast('Eroare la crearea revanșei');
+      setIsRematching(false);
+    }
+  };
+
   const startMyTurn = async () => {
     const s = getLocalSession();
+    recordPlayedDuel(duelId);
     const res = await fetch(`/api/duels/${encodeURIComponent(duelId)}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -289,73 +328,85 @@ export default function DuelPage() {
     !mySide?.finishedAt && duel.status !== 'complete' && duel.status !== 'expired';
   const winnerSide = duel.winnerUid ? duel.sides[duel.winnerUid] : undefined;
 
+  const headToHead = opponent
+    ? {
+        meWins: duel.headToHead[myUid] ?? 0,
+        opponentWins:
+          duel.headToHead[duel.opponentUid === myUid ? duel.challengerUid : duel.opponentUid!] ?? 0,
+      }
+    : null;
+
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
-      <Card className="space-y-4 text-center">
+      {/* Header link & chip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
         <Chip tone="volt">
           <Sword size={14} weight="fill" aria-hidden="true" />
           {t('duel.title')}
         </Chip>
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-          <p className="text-muted">{t('duel.subtitle')}</p>
-          <span className="text-muted" aria-hidden="true">
-            ·
-          </span>
-          <Link
-            href={`/${locale}/regulament#dueluri`}
-            data-testid="duel-rules-link"
-            className="text-duel-strong inline-flex min-h-11 items-center font-bold underline underline-offset-2"
+        <Link
+          href={`/${locale}/regulament#dueluri`}
+          data-testid="duel-rules-link"
+          className="text-duel-strong inline-flex min-h-11 items-center font-bold underline underline-offset-2"
+        >
+          {t('rules.duelLink')}
+        </Link>
+      </div>
+
+      {/* Versus Card */}
+      <VersusCard
+        duelId={duel.id}
+        challenger={challenger ?? { uid: duel.challengerUid, nickname: 'Challenger' }}
+        opponent={opponent}
+        myUid={myUid}
+        winnerUid={duel.winnerUid}
+        status={duel.status}
+        canPlayMyTurn={canPlayMyTurn}
+        onPlay={() => void startMyTurn()}
+        headToHead={headToHead}
+      />
+
+      {/* Rematch & Share Actions */}
+      <div className="flex flex-col gap-3">
+        {duel.status === 'complete' && (
+          <Button
+            fullWidth
+            size="lg"
+            variant="primary"
+            disabled={isRematching}
+            onClick={() => void handleRematch()}
+            className="font-black"
           >
-            {t('rules.duelLink')}
-          </Link>
-        </div>
-
-        {/* Split Court Versus Arena */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="border-border bg-ron/20 rounded-[16px] border-2 p-4 text-center">
-            <Avatar nickname={challenger?.nickname ?? 'Red'} size="md" />
-            <p className="font-display mt-2 text-base font-extrabold">
-              {challenger?.nickname ?? 'Challenger'}
-            </p>
-            <p className="rd-tabular mt-1 text-2xl font-extrabold">
-              {challenger?.finishedAt ? challenger.score : '—'}
-            </p>
-          </div>
-
-          <div className="border-border bg-duel/20 rounded-[16px] border-2 p-4 text-center">
-            <Avatar nickname={opponent?.nickname ?? 'VS'} size="md" />
-            <p className="font-display mt-2 text-base font-extrabold">
-              {opponent?.nickname ?? 'Open Opponent'}
-            </p>
-            <p className="rd-tabular mt-1 text-2xl font-extrabold">
-              {opponent?.finishedAt ? opponent.score : '—'}
-            </p>
-          </div>
-        </div>
-
-        {duel.status === 'complete' && winnerSide && (
-          <div className="border-border bg-volt rounded-[14px] border-2 p-3 text-sm font-extrabold text-[#16131F]">
-            <Trophy size={18} weight="fill" className="mr-1.5 inline" aria-hidden="true" />
-            {t('duel.winnerBanner', { name: winnerSide.nickname })}
-            {duel.walkover && ` · ${t('duel.walkoverNote')}`}
-          </div>
-        )}
-
-        {canPlayMyTurn ? (
-          <Button fullWidth size="lg" onClick={() => void startMyTurn()}>
-            {t('duel.yourTurn')}
+            <Sword size={18} weight="bold" className="mr-1.5" />
+            {isRematching ? 'Se inițiază…' : 'Revanșă'}
           </Button>
-        ) : (
-          duel.status !== 'complete' && (
-            <p className="text-muted text-sm font-bold">{t('duel.waitingOpponent')}</p>
-          )
         )}
 
         <Button fullWidth size="sm" variant="blue" onClick={() => void copyLink()}>
           <Copy size={16} weight="bold" aria-hidden="true" />
           {t('duel.copyChallengeLink')}
         </Button>
-      </Card>
+      </div>
+
+      {/* Anonymous Warning Banner */}
+      {duel.status === 'complete' && isAnonymous && (
+        <Card variant="sticker" className="border-2 border-border bg-surface-2 p-3.5 space-y-2 text-left">
+          <p className="text-xs font-extrabold text-ink leading-snug">
+            Intră în cont ca să-ți păstrezi bilanțul la dueluri
+          </p>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="volt"
+              fullWidth
+              onClick={() => setAuthModalOpen(true)}
+              className="text-xs font-bold"
+            >
+              Loghează-te / Crează cont
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {toast && (
         <div className="flex justify-center">
@@ -363,15 +414,16 @@ export default function DuelPage() {
         </div>
       )}
 
-      {duel.opponentUid && (
-        <Card variant="subtle" className="flex items-center justify-between text-sm font-bold">
-          <span>{t('duel.headToHead')}</span>
-          <span className="rd-tabular">
-            {challenger?.nickname}: {duel.headToHead[duel.challengerUid] ?? 0}W —{' '}
-            {opponent?.nickname}: {duel.headToHead[duel.opponentUid] ?? 0}W
-          </span>
-        </Card>
-      )}
+      {/* Auth Modal for anonymous users wanting to save duel stats */}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode="login"
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          loadDuel();
+        }}
+      />
 
       {duel.breakdown.length > 0 && (
         <section className="space-y-3" aria-labelledby="duel-breakdown-heading">

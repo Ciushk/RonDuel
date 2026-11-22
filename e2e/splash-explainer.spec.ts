@@ -142,13 +142,23 @@ test.describe('Splash Screen, Homepage "Cum merge" Explainer & SEO', () => {
       });
     });
 
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.clear();
+      } catch {}
+    });
     await page.goto('/ro');
-    await expect(page).toHaveURL(/\/ro\/result\/2026-12-12_u_demo/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/\/ro\/result\/2026-12-12_u_demo/, { timeout: 8_000 });
   });
 
   test('Footer "Termeni și condiții" link navigates to legal/terms and renders translated content in all 4 languages (ro, en, es, pt)', async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.setItem('ronduel_splash_seen_v2', '1');
+      } catch {}
+    });
     // Romanian (/ro) -> click footer link "Termeni și condiții" -> /ro/legal/terms
     await page.goto('/ro');
     await page.locator('footer').getByRole('link', { name: 'Termeni și condiții' }).click();

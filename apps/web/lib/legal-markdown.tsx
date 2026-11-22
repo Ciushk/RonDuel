@@ -119,11 +119,7 @@ export function renderLegalInline(text: string, keyPrefix = 'inl'): ReactNode[] 
     // 6. Bare URL
     if (tok.startsWith('http://') || tok.startsWith('https://')) {
       nodes.push(
-        <a
-          key={key}
-          href={tok}
-          className="text-duel-strong font-bold underline underline-offset-2"
-        >
+        <a key={key} href={tok} className="text-duel-strong font-bold underline underline-offset-2">
           {tok}
         </a>,
       );

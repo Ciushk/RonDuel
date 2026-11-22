@@ -28,12 +28,14 @@ A operadora do RonDuel é Pixel-WebAPP SRL, CUI 54870881, N.º Reg. Comercial J2
 2.3. **Mudança de fuso horário.** O fuso horário salvo na sua conta pode ser alterado **no máximo uma vez a cada 24 horas** e cada alteração é registrada.
 
 2.4. **O que contém a rodada.** Normalmente, a rodada tem **6 perguntas**:
+
 - 2 perguntas de múltipla escolha (1 correta entre 4);
 - 1 pergunta de ordenação (organizar 4 itens na ordem pedida);
 - 1 pergunta «o intruso» (escolher a opção que não combina);
 - 2 perguntas de lógica ou cálculo (com 4 opções).
 
 2.5. **Tempo por pergunta:**
+
 - múltipla escolha e «o intruso»: **10 segundos**;
 - ordenação e lógica/cálculo: **15 segundos**.
 
@@ -61,6 +63,7 @@ Uma rodada normal dura cerca de 60 segundos, no máximo 75.
 > bonus = round( 100 × max(0, (limite − tempo) / limite) )
 
 onde:
+
 - **limite** = tempo da pergunta (10 ou 15 segundos);
 - **tempo** = tempo medido **em nosso servidor**, desde o envio da pergunta até a chegada da sua resposta, **menos 250 milissegundos** de tolerância de rede (mínimo 0);
 - **round** = arredondamento para o inteiro mais próximo.
@@ -68,6 +71,7 @@ onde:
 Uma resposta correta recebe entre 100 e 200 pontos.
 
 4.3. **Exemplos** (pergunta de 10 segundos, resposta correta):
+
 - resposta recebida após 2,25 s: tempo = 2 s, bônus = round(100 × 8/10) = 80, total **180**;
 - resposta recebida após 7,75 s: tempo = 7,5 s, bônus = round(100 × 2,5/10) = 25, total **125**;
 - resposta após o tempo expirar: **0 pontos**. [A CONFIRMAR: se a tolerância de 250 ms também se aplica ao limite de expiração.]
@@ -91,6 +95,7 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 ## 6. Rankings
 
 6.1. Cada liga tem três rankings:
+
 - **Hoje**: pontuações da rodada do dia;
 - **Esta semana**: soma das pontuações diárias na semana da liga (dias não jogados valem 0);
 - **Geral**: pontuação total, rodadas jogadas, troféus semanais e maior sequência.
@@ -112,9 +117,10 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 7.3. **Entrada durante a semana.** Você pode entrar a qualquer momento; os dias anteriores contam como 0 no ranking semanal.
 
 7.4. **Limites da conta gratuita:**
-- criar até **3 ligas**, cada uma com até **25 membros**;
+
+- criar até **1 liga**, com até **5 membros** (você incluído);
 - ser membro de até **10 ligas**;
-- ter até **3 duelos ativos** ao mesmo tempo.
+- ter no máximo **4 duelos por mês** (e 1 duelo ativo ao mesmo tempo).
 
 7.5. **O proprietário da liga** pode alterar o nome e fuso horário da liga, alterar o apelido ou remover um membro e transferir a propriedade.
 
@@ -133,6 +139,7 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 8.4. **Quem vence.** Vence a maior pontuação e, em caso de empate, o **menor tempo total**. [A CONFIRMAR: empate total de pontos e tempo.]
 
 8.5. **Prazos e expiração:**
+
 - cada jogador tem **24 horas** para jogar sua parte;
 - se o oponente não começar em 24 horas após a criação, o duelo **expira** sem vencedor;
 - se quem desafiou terminou sua parte e o oponente não jogar em 24 horas a partir daí, vence quem desafiou **por W.O. (ausência do oponente)**.
@@ -150,6 +157,7 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 ## 10. Jogo limpo e trapaça
 
 10.1. **O que significa trapaça:**
+
 - usar scripts, bots ou ferramentas automatizadas;
 - usar várias contas para repetir a mesma rodada ou inflar uma liga;
 - manipular fuso horário, relógio ou requisições ao servidor;
@@ -157,10 +165,12 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 - publicar perguntas ou respostas do dia antes do fim do dia. [A CONFIRMAR: adoção desta regra.]
 
 10.2. **Como detectamos.** Marcamos para verificação humana sem bloqueio automático:
+
 - rodadas com **pelo menos 3 respostas** em menos de **0,4 segundos**;
 - várias contas do mesmo dispositivo ou IP na mesma liga no mesmo dia.
 
 10.3. **Sanções:**
+
 - **anulação da pontuação** de uma rodada ou duelo e recálculo dos rankings;
 - restrição temporária de funções;
 - **suspensão ou encerramento da conta** em casos graves ou repetidos.
@@ -184,6 +194,7 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 ## 12. O que você recebe com o RonDuel Pro
 
 12.1. O Pro é uma assinatura paga opcional regida pelos [Termos Pro](https://ronduel.eu/pt/legal/terms). O Pro inclui:
+
 - ligas de até **200 membros**, ligas privadas com aprovação e emoji/cor própria;
 - **duelos ilimitados**;
 - **arquivo** de rodadas passadas;
@@ -209,4 +220,5 @@ Uma resposta correta recebe entre 100 e 200 pontos.
 Dúvidas sobre as regras: contact@pixel-webapp.ro.
 
 ---
-*Última atualização: [DATA] (proposta: 1 de dezembro de 2026)*
+
+_Última atualização: [DATA] (proposta: 1 de dezembro de 2026)_

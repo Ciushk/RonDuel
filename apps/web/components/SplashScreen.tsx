@@ -2,9 +2,12 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Chip, Wordmark } from '@/components/ui';
+import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
+import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
+import { Button, Chip, Wordmark } from '@/components/ui';
+import { trackEvent } from '@/lib/analytics';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 export interface SplashRoundStatus {
@@ -13,9 +16,10 @@ export interface SplashRoundStatus {
   played: boolean;
   playId?: string;
   streakCurrent: number;
+  isAnonymous?: boolean;
 }
 
-const SPLASH_SESSION_KEY = 'ronduel_splash_shown_v1';
+const SPLASH_SESSION_KEY = 'ronduel_splash_seen_v2';
 
 const TOPIC_MAP: Record<string, { emoji: string; key: string }> = {
   'World & Science 🌍': { emoji: '🌍', key: 'World & Science' },
@@ -71,74 +75,217 @@ export function SplashScreen() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [fading, setFading] = useState(false);
+  const [unmounted, setUnmounted] = useState(false);
+  const [isSignedInUser, setIsSignedInUser] = useState(false);
   const [status, setStatus] = useState<SplashRoundStatus>({
     roundNumber: 1,
     topicOfTheDay: 'World & Science 🌍',
     played: false,
     streakCurrent: 0,
   });
-  const [fading, setFading] = useState(false);
-  const [unmounted, setUnmounted] = useState(false);
+
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+
+  const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
-    // Only show once per tab session on first page load / PWA launch
+    const isHomeRoute = pathname === `/${locale}` || pathname === `/${locale}/`;
+    if (!isHomeRoute) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+      }
+      setUnmounted(true);
+      return;
+    }
+
+    // Only show once per session
     try {
       if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === '1') {
-        setFading(true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+        }
         setUnmounted(true);
         return;
       }
-      window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
     } catch {
       // ignore storage errors
     }
 
-    let cancelled = false;
     const session = getLocalSession();
     const tz = getBrowserTimeZone();
+    const isReturningAuth = Boolean(
+      !session.isAnonymous || session.email || (session.authProvider && session.authProvider !== 'anonymous')
+    );
+    setIsSignedInUser(isReturningAuth);
 
-    const startFadeOut = () => {
-      if (cancelled) return;
+    // Check prefers-reduced-motion
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    trackEvent('splash_shown', { returning: isReturningAuth, locale });
+
+    const dismissSplash = () => {
+      try {
+        window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+      } catch {}
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+      }
       setFading(true);
       window.setTimeout(() => {
-        if (!cancelled) setUnmounted(true);
+        setUnmounted(true);
       }, 220);
     };
 
-    // Hard cap: max ~1.2s total splash duration
-    const maxTimer = window.setTimeout(startFadeOut, 950);
+    if (isReturningAuth) {
+      // Signed in with Google/email: short splash (logo only, max 0.8s) then home hub
+      const timer = window.setTimeout(dismissSplash, 750);
+      timersRef.current.push(timer);
+    } else if (prefersReducedMotion) {
+      // Reduced motion: jump straight to step 3, under 1.8s
+      setStep(3);
+      const timer = window.setTimeout(dismissSplash, 950);
+      timersRef.current.push(timer);
+    } else {
+      // Animated 3-step splash:
+      // Step 1: ~450ms logo centered
+      // Step 2: ~400ms logo slides up, tagline fades in
+      // Step 3: buttons slide in
+      // Total under 1.8s: transitions to home hub unless CTA clicked
+      const t1 = window.setTimeout(() => setStep(2), 450);
+      const t2 = window.setTimeout(() => setStep(3), 850);
+      const t3 = window.setTimeout(dismissSplash, 1150);
+      timersRef.current.push(t1, t2, t3);
+    }
 
     fetch(`/api/game/status?uid=${encodeURIComponent(session.uid)}&tz=${encodeURIComponent(tz)}`)
       .then((r) => r.json())
       .then((data: SplashRoundStatus) => {
-        if (cancelled) return;
         setStatus({
           roundNumber: data.roundNumber ?? 1,
           topicOfTheDay: data.topicOfTheDay ?? 'World & Science 🌍',
           played: Boolean(data.played),
           playId: data.playId,
           streakCurrent: data.streakCurrent ?? 0,
+          isAnonymous: data.isAnonymous,
         });
 
-        const isHomeRoute = pathname === `/${locale}` || pathname === `/${locale}/`;
+        const isHomeRoute =
+          (typeof window !== 'undefined' &&
+            (window.location.pathname === `/${locale}` ||
+              window.location.pathname === `/${locale}/`)) ||
+          pathname === `/${locale}` ||
+          pathname === `/${locale}/`;
         if (data.played && data.playId && isHomeRoute) {
           router.replace(`/${locale}/result/${encodeURIComponent(data.playId)}`);
+          if (typeof window !== 'undefined') {
+            window.location.href = `/${locale}/result/${encodeURIComponent(data.playId)}`;
+          }
+          dismissSplash();
         }
-
-        // Fade out promptly once hydrated and status is ready (never block when app is ready)
-        window.setTimeout(startFadeOut, 180);
       })
-      .catch(() => {
-        if (!cancelled) startFadeOut();
-      });
+      .catch(() => {});
 
     return () => {
-      cancelled = true;
-      window.clearTimeout(maxTimer);
+      timersRef.current.forEach((tId) => window.clearTimeout(tId));
     };
   }, [locale, pathname, router]);
 
-  if (unmounted) return null;
+  if (unmounted) {
+    return (
+      <>
+        <CreateLeagueWizard
+          open={wizardOpen}
+          onClose={() => setWizardOpen(false)}
+          onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
+        />
+        <JoinByCodeDialog
+          open={joinDialogOpen}
+          onClose={() => setJoinDialogOpen(false)}
+        />
+      </>
+    );
+  }
+
+  const handleTapAnywhere = () => {
+    if (step < 3 && !isSignedInUser) {
+      setStep(3);
+    } else {
+      try {
+        window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+      } catch {}
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+      }
+      setFading(true);
+      setTimeout(() => setUnmounted(true), 200);
+    }
+  };
+
+  const handleCreateLeague = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+    }
+    trackEvent('splash_cta_clicked', { cta: 'create' });
+    setFading(true);
+    setTimeout(() => {
+      setUnmounted(true);
+      setWizardOpen(true);
+    }, 180);
+  };
+
+  const handleJoinLeague = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+    }
+    trackEvent('splash_cta_clicked', { cta: 'join' });
+    setFading(true);
+    setTimeout(() => {
+      setUnmounted(true);
+      setJoinDialogOpen(true);
+    }, 180);
+  };
+
+  const handlePlayPublic = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ronduel_splash_dismissed'));
+    }
+    trackEvent('splash_cta_clicked', { cta: 'play_public' });
+    setFading(true);
+
+    const s = getLocalSession();
+    // Silently ensure user joins public world league
+    fetch('/api/leagues/WORLD1/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: s.uid,
+        nickname: s.nickname || `Player_${s.uid.slice(-3)}`,
+        tz: getBrowserTimeZone(),
+      }),
+    }).catch(() => {});
+
+    setTimeout(() => {
+      setUnmounted(true);
+      router.push(`/${locale}/play`);
+    }, 180);
+  };
 
   const { emoji, name: themeName } = parseTopicChip(status.topicOfTheDay, (key) => {
     try {
@@ -167,42 +314,115 @@ export function SplashScreen() {
       : null;
 
   return (
-    <div
-      data-testid="pwa-splash"
-      aria-hidden="true"
-      className={`rd-splash-overlay bg-bg text-ink pointer-events-none fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center ${
-        fading ? 'opacity-0' : 'opacity-100'
-      }`}
-    >
-      <div className="flex max-w-[360px] flex-col items-center gap-3.5">
-        <div className="rd-seam h-2 w-24 rounded-full" />
-
-        <div className="rd-splash-logo flex flex-col items-center gap-2">
-          <Wordmark size="lg" />
-        </div>
-
-        <p data-testid="splash-tagline" className="text-muted text-base font-medium">
-          {taglineText}
-        </p>
-
-        <Chip
-          data-testid="splash-round-chip"
-          tone="volt"
-          className="px-3 py-1.5 text-xs font-extrabold"
-        >
-          {roundChipText}
-        </Chip>
-
-        {streakText && (
-          <Chip
-            data-testid="splash-streak-chip"
-            tone="gold"
-            className="px-3 py-1 text-xs font-extrabold"
+    <>
+      <div
+        data-testid="pwa-splash"
+        role="dialog"
+        aria-modal="true"
+        aria-label="RonDuel Splash"
+        onClick={handleTapAnywhere}
+        className={`rd-splash-overlay bg-bg text-ink fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center select-none ${
+          fading ? 'pointer-events-none opacity-0' : 'opacity-100'
+        }`}
+      >
+        <div className="flex w-full max-w-[360px] flex-col items-center">
+          {/* Logo container with vertical slide transition */}
+          <div
+            className={`transition-transform duration-500 ease-out ${
+              isSignedInUser
+                ? 'translate-y-0 scale-100'
+                : step === 1
+                  ? 'translate-y-0 scale-95'
+                  : '-translate-y-6 sm:-translate-y-8 scale-100'
+            }`}
           >
-            {streakText}
-          </Chip>
-        )}
+            <div className="rd-splash-logo flex flex-col items-center gap-2">
+              <Wordmark size="lg" />
+            </div>
+          </div>
+
+          {/* Tagline & round chip (Step 2 & 3 or signed in) */}
+          <div
+            className={`mt-4 flex flex-col items-center gap-2.5 transition-all duration-400 ease-out ${
+              isSignedInUser
+                ? 'opacity-100 translate-y-0'
+                : step >= 2
+                  ? 'opacity-100 translate-y-0'
+                  : 'pointer-events-none opacity-0 translate-y-2'
+            }`}
+          >
+            <p data-testid="splash-tagline" className="text-muted text-base font-medium">
+              {taglineText}
+            </p>
+
+            <Chip
+              data-testid="splash-round-chip"
+              tone="volt"
+              className="px-3 py-1.5 text-xs font-extrabold"
+            >
+              {roundChipText}
+            </Chip>
+
+            {streakText && (
+              <Chip
+                data-testid="splash-streak-chip"
+                tone="gold"
+                className="px-3 py-1 text-xs font-extrabold"
+              >
+                {streakText}
+              </Chip>
+            )}
+          </div>
+
+          {/* Staggered buttons in Step 3 for new/anonymous users */}
+          {!isSignedInUser && (
+            <div
+              className={`mt-8 flex w-full flex-col items-stretch gap-3 transition-all duration-400 ease-out ${
+                step === 3
+                  ? 'opacity-100 translate-y-0'
+                  : 'pointer-events-none opacity-0 translate-y-6'
+              }`}
+            >
+              <Button
+                size="lg"
+                variant="primary"
+                fullWidth
+                onClick={handleCreateLeague}
+                className="shadow-[var(--rd-shadow-button)]"
+              >
+                {t('createLeague')}
+              </Button>
+
+              <Button
+                size="lg"
+                variant="secondary"
+                fullWidth
+                onClick={handleJoinLeague}
+              >
+                {t('joinLeague')}
+              </Button>
+
+              <button
+                type="button"
+                onClick={handlePlayPublic}
+                className="text-muted hover:text-ink mt-1 text-xs font-bold underline underline-offset-4 cursor-pointer py-1.5"
+              >
+                {t('playWithoutLeague')}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      <CreateLeagueWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
+      />
+      <JoinByCodeDialog
+        open={joinDialogOpen}
+        onClose={() => setJoinDialogOpen(false)}
+      />
+    </>
   );
 }

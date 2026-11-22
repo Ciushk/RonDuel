@@ -13,14 +13,22 @@ import {
   type Locale,
   type QuestionType,
 } from '@ronduel/shared';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+
+if (getApps().length === 0) {
+  initializeApp();
+}
 
 import {
   approveAdminQuestion,
   createDuel,
   createLeague,
+  createOrUpdateAdminQuestion,
+  deleteLeague,
   deleteUserData,
   exportUserData,
   finishRound,
@@ -34,17 +42,25 @@ import {
   getTodayStatus,
   getUserProfile,
   joinLeague,
+  leaveOrRemoveLeagueMember,
   processStripeWebhook,
   publishAdminRound,
+  renameLeague,
   scheduleAdminRound,
   startDuelSide,
   startRound,
   submitAnswer,
   submitDuelAnswer,
+  changeUserNickname,
+  checkLeagueNameAvailable,
+  checkNicknameAvailable,
+  ensureUpcomingDailyRounds,
+  promoteReserveRoundIfNeeded,
   unsubscribeUserEmail,
   updateNotificationPrefs,
   upgradeAccount,
 } from '../../apps/web/lib/server-store.js';
+import { generateLiveGeminiTemplates } from '../../apps/web/lib/ai-question-bank.js';
 import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
@@ -58,6 +74,9 @@ export const health = onRequest((_req, res) => {
  * Unified HTTP API handler for Firebase Hosting rewrites ("/api/**" -> api function in europe-west1).
  */
 export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   try {
     const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
     const pathname = url.pathname.replace(/^\/api/, '') || '/';
@@ -83,7 +102,16 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     if (method === 'GET' && pathname === '/game/status') {
       const uid = url.searchParams.get('uid') ?? 'anon';
       const tz = url.searchParams.get('tz') ?? 'UTC';
-      res.status(200).json(getTodayStatus(uid, tz));
+      const rawLeagues = url.searchParams.get('leagues');
+      const clientLeagueIds = rawLeagues ? rawLeagues.split(',').filter(Boolean) : undefined;
+      res.status(200).json(getTodayStatus(uid, tz, clientLeagueIds));
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/leagues/check-name') {
+      const name = url.searchParams.get('name') ?? '';
+      const excludeId = url.searchParams.get('excludeId') ?? undefined;
+      res.status(200).json(checkLeagueNameAvailable(name, excludeId));
       return;
     }
 
@@ -113,7 +141,9 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     if (method === 'POST' && pathname === '/game/finish') {
-      res.status(200).json(finishRound(String(body.uid), String(body.playId)));
+      res.status(200).json(
+        finishRound(String(body.uid), String(body.playId), body.clientSummary as any),
+      );
       return;
     }
 
@@ -152,15 +182,58 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     const leagueGetMatch = pathname.match(/^\/leagues\/([^/]+)$/);
-    if (method === 'GET' && leagueGetMatch) {
-      const uid = url.searchParams.get('uid') ?? undefined;
-      const lg = getLeagueByCodeOrId(decodeURIComponent(leagueGetMatch[1]!), uid);
-      if (!lg) {
-        res.status(404).json({ error: 'League not found' });
+    if (leagueGetMatch) {
+      const code = decodeURIComponent(leagueGetMatch[1]!);
+      if (method === 'GET') {
+        const uid = url.searchParams.get('uid') ?? undefined;
+        const lg = getLeagueByCodeOrId(code, uid);
+        if (!lg) {
+          res.status(404).json({ error: 'League not found' });
+          return;
+        }
+        res.status(200).json(lg);
         return;
       }
-      res.status(200).json(lg);
-      return;
+      if (method === 'PATCH') {
+        try {
+          const lg = renameLeague({
+            codeOrId: code,
+            actorUid: String(body.actorUid),
+            name: String(body.name),
+          });
+          res.status(200).json({ success: true, name: lg.name });
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (method === 'DELETE') {
+        try {
+          const result = deleteLeague({
+            codeOrId: code,
+            actorUid: String(body.actorUid),
+          });
+          res.status(200).json(result);
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (method === 'POST') {
+        try {
+          const action = String(body.action);
+          const targetUid = action === 'leave' ? String(body.actorUid) : String(body.targetUid);
+          const result = leaveOrRemoveLeagueMember({
+            codeOrId: code,
+            targetUid,
+            actorUid: String(body.actorUid),
+          });
+          res.status(200).json(result);
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
     }
 
     if (method === 'POST' && pathname === '/duels') {
@@ -218,6 +291,26 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     if (method === 'GET' && pathname === '/me/profile') {
       const uid = url.searchParams.get('uid') ?? 'anon';
       res.status(200).json(getUserProfile(uid));
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/me/nickname') {
+      try {
+        const uid = String(body.uid ?? '');
+        const nickname = String(body.nickname ?? '');
+        if (!uid || !nickname) {
+          res.status(400).json({ error: 'UID and nickname are required' });
+          return;
+        }
+        if (body.checkOnly) {
+          res.status(200).json(checkNicknameAvailable(nickname, uid));
+          return;
+        }
+        const updated = changeUserNickname({ uid, newNickname: nickname });
+        res.status(200).json(updated);
+      } catch (err: any) {
+        res.status(400).json({ error: err?.message || 'Eroare la schimbarea numelui' });
+      }
       return;
     }
 
@@ -298,52 +391,157 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     if (pathname === '/admin') {
-      const isAdmin = req.headers['x-admin-token'] === 'local-admin';
-      if (!isAdmin) {
+      let adminIdentity: { uid: string; email?: string } | null = null;
+      const authHeader = String(req.headers['authorization'] ?? '');
+      if (authHeader.toLowerCase().startsWith('bearer ')) {
+        try {
+          const token = authHeader.slice(7).trim();
+          const decoded = await getAuth().verifyIdToken(token);
+          if (decoded.admin === true) {
+            adminIdentity = { uid: decoded.uid, email: decoded.email };
+          }
+        } catch {
+          // invalid token
+        }
+      }
+      const isProd = process.env.NODE_ENV === 'production';
+      if (!isProd && req.headers['x-admin-token'] === 'local-admin') {
+        adminIdentity = { uid: 'admin_ci', email: 'admin@ronduel.eu' };
+      }
+
+      if (!adminIdentity) {
         res.status(403).json({ error: 'Forbidden: admin access required' });
         return;
       }
+
       if (method === 'GET') {
         res.status(200).json(getAdminDashboard());
         return;
       }
       const action = String(body.action ?? '');
       if (action === 'generate_drafts') {
+        const draftParams = {
+          topic: String(body.topic ?? 'Science'),
+          type: (body.type as QuestionType) ?? 'mcq',
+          difficulty: ((Number(body.difficulty ?? 2) as 1 | 2 | 3) || 2) as 1 | 2 | 3,
+          count: Number(body.count ?? 2),
+        };
+        const liveTemplates = await generateLiveGeminiTemplates(draftParams);
         res.status(200).json({
           drafts: generateAiQuestionDrafts({
-            topic: String(body.topic ?? 'Science'),
-            type: (body.type as QuestionType) ?? 'mcq',
-            difficulty: (Number(body.difficulty ?? 2) as 1 | 2 | 3) || 2,
-            count: Number(body.count ?? 2),
+            ...draftParams,
+            customTemplates: liveTemplates ?? undefined,
           }),
         });
         return;
       }
       if (action === 'approve_question') {
-        res.status(200).json({ question: approveAdminQuestion(String(body.questionId)) });
+        try {
+          res.status(200).json({
+            question: approveAdminQuestion(
+              String(body.questionId),
+              adminIdentity.uid,
+              adminIdentity.email,
+            ),
+          });
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (action === 'save_question') {
+        try {
+          const q = createOrUpdateAdminQuestion({
+            id: body.id ? String(body.id) : undefined,
+            type: body.type as QuestionType,
+            difficulty: (Number(body.difficulty) || 2) as 1 | 2 | 3,
+            topics: Array.isArray(body.topics) ? (body.topics as string[]) : ['general'],
+            timerSec: Number(body.timerSec) || 15,
+            content: body.content as any,
+            extraContent: body.extraContent as any,
+            answer: body.answer as any,
+            reviewStatus: body.reviewStatus as any,
+            actorUid: adminIdentity.uid,
+            actorEmail: adminIdentity.email,
+          });
+          res.status(200).json({ question: q });
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
         return;
       }
       if (action === 'schedule_round') {
-        res.status(200).json(
-          scheduleAdminRound({
-            date: String(body.date),
-            questionIds: (body.questionIds as string[]) ?? [],
-            topicOfTheDay: String(body.topicOfTheDay ?? 'Daily Duel'),
-          }),
-        );
+        try {
+          res.status(200).json(
+            scheduleAdminRound({
+              date: String(body.date),
+              questionIds: (body.questionIds as string[]) ?? [],
+              topicOfTheDay: String(body.topicOfTheDay ?? 'Daily Duel'),
+              actorUid: adminIdentity.uid,
+              actorEmail: adminIdentity.email,
+            }),
+          );
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
         return;
       }
       if (action === 'publish_round') {
-        res.status(200).json({
-          round: publishAdminRound({
-            date: String(body.date),
-            explicitFallbackLocales: (body.explicitFallbackLocales as Locale[]) ?? [
-              'es',
-              'pt',
-              'ro',
-            ],
-          }),
-        });
+        try {
+          res.status(200).json({
+            round: publishAdminRound({
+              date: String(body.date),
+              explicitFallbackLocales: (body.explicitFallbackLocales as Locale[]) ?? [
+                'es',
+                'pt',
+                'ro',
+              ],
+            }),
+          });
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (action === 'rename_league') {
+        try {
+          const lg = renameLeague({
+            codeOrId: String(body.codeOrId),
+            actorUid: adminIdentity.uid,
+            name: String(body.name),
+            isAdmin: true,
+          });
+          res.status(200).json({ league: lg });
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (action === 'delete_league') {
+        try {
+          const r = deleteLeague({
+            codeOrId: String(body.codeOrId),
+            actorUid: adminIdentity.uid,
+            isAdmin: true,
+          });
+          res.status(200).json(r);
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
+        return;
+      }
+      if (action === 'remove_league_member') {
+        try {
+          const r = leaveOrRemoveLeagueMember({
+            codeOrId: String(body.codeOrId),
+            targetUid: String(body.targetUid),
+            actorUid: adminIdentity.uid,
+            isAdmin: true,
+          });
+          res.status(200).json(r);
+        } catch (e: any) {
+          res.status(400).json({ error: e.message });
+        }
         return;
       }
     }
@@ -408,3 +606,27 @@ export const dailyContentGuard = onSchedule('0 12 * * *', async () => {
   void validateRoundSchedule;
   void canPublishRound;
 });
+
+/**
+ * Scheduled Cloud Function (Cloud Scheduler, daily 03:00 Europe/Bucharest)
+ * Generates daily rounds with Gemini and maintains a 7-day buffer + reserve pool.
+ */
+export const dailyRoundGenerator = onSchedule(
+  { schedule: '0 3 * * *', timeZone: 'Europe/Bucharest' },
+  async () => {
+    await ensureUpcomingDailyRounds(7);
+  },
+);
+
+/**
+ * Fallback promotion at 23:00 the day before if next day has no ready round.
+ */
+export const dailyFallbackPromoter = onSchedule(
+  { schedule: '0 23 * * *', timeZone: 'Europe/Bucharest' },
+  async () => {
+    const tomorrow = new Date(Date.now() + 86_400_000);
+    const dateStr = getLocalDateString(tomorrow, 'Europe/Bucharest');
+    promoteReserveRoundIfNeeded(dateStr);
+  },
+);
+

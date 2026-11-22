@@ -78,7 +78,7 @@ COMPLETE RONDUEL RULES & SPECIFICATION:
      * Azi (Today) — live updates! IMPORTANT: Other members' scores for today are hidden ("—") until YOU finish today's round, to prevent spoilers and cheating.
      * Săptămâna (This Week) — Monday 00:00 to Sunday 23:59:59 in the league's timezone; sum of daily scores. The #1 player at the end of Sunday wins the Weekly Trophy 🏆!
      * All-time — total score, rounds played, weekly wins, best streak.
-   - Free tier limits: create up to 3 leagues (up to 25 members per league), join up to 10 leagues.
+    - Free tier limits: create up to 1 league (up to 5 members per league), join up to 10 leagues.
 
 5. ASYNC 1v1 DUELS (DUELURI 1v1 ASINCRONE):
    - Tap "Provoacă un prieten (Duel 1v1)" on the result screen or ask RonBot to create a duel.
@@ -87,16 +87,16 @@ COMPLETE RONDUEL RULES & SPECIFICATION:
    - Higher score wins; ties are broken by lower total time (totalMs).
    - If the opponent never plays within 24h after the challenger finishes, the challenger wins by walkover (neprezentare).
    - A permanent head-to-head record (W-L) is tracked between every pair of players.
-   - Free users can have up to 3 active duels at once (unlimited with Pro).
+   - Free users can create up to 4 duels per month (unlimited with Pro).
 
 6. STREAKS & DAILY RESET (SERIA ZILNICĂ ȘI RESETUL LA MIEZUL NOPȚII):
    - Every consecutive local calendar day you finish a round increases your streak 🔥 by +1. Missing a day resets it to 0.
    - Reset happens at your local midnight (Wordle model), so everyone plays their morning round at a natural hour.
    - Timezone changes are rate-limited to once per 24h to prevent date-hopping.
 
-7. RONDEL PRO ($4.99/month or $39.99/year — save 33%):
-   - Leagues up to 200 members (instead of 25).
-   - Unlimited active 1v1 duels (instead of 3).
+7. RONDEL PRO (€4.99/month or €39.99/year — save 33%):
+   - Leagues up to 200 members (instead of 5).
+   - Unlimited 1v1 duels (instead of 4/month).
    - 1 automatic Weekly Streak Shield 🛡️ per ISO week (automatically protects your streak if you miss 1 day).
    - Pro Topic Accuracy statistics on your Profile (/me).
    - 3 exclusive Split Court visual themes in Settings (/settings): Midnight Court, Clay Court, and Neon Arcade.
@@ -409,7 +409,7 @@ function buildSmartRonDuelReply(params: {
         `- **Creare automată:** După ce termini runda, apasă **„Trimite pe grup”** — se creează instant o ligă cu un cod unic de 6 caractere (\`/l/COD\`).\n` +
         `- **De ce sunt ascunse scorurile de azi?** În tabul **Azi**, vezi cine a jucat, dar scorurile lor apar ca **„—”** până când termini și tu runda de azi (regulă anti-spoiler & anti-cheat).\n` +
         `- **Trofeul Săptămânal 🏆:** Săptămâna ține de Luni 00:00 până Duminică 23:59. Cel mai mare scor cumulat câștigă trofeul săptămânii!\n` +
-        `- **Limite:** Gratuit poți crea până la **3 ligi** (cu max **25 membri/ligă**) și intra în 10 ligi. Cu **Pro**, ligile urcă la **200 de membri**!`,
+        `- **Limite:** Gratuit poți crea **1 ligă** (cu max **5 membri/ligă**) și intra în 10 ligi. Cu **Pro**, ligile urcă la **200 de membri**!`,
     );
   }
 
@@ -428,6 +428,7 @@ function buildSmartRonDuelReply(params: {
         `- Orice membru poate porni un duel 1v1 (din ecranul de rezultat sau scriindu-mi aici *„Creează un duel”*).\n` +
         `- Conține **5 întrebări** extrase separat din bancă (nu se suprapun niciodată cu runda zilnică de azi!).\n` +
         `- Fiecare jucător are **24 de ore** să își joace tura. Dacă adversarul nu joacă în 24h după ce ai terminat tu, câștigi prin **walkover (neprezentare)**.\n` +
+        `- Limită cont gratuit: **4 dueluri pe lună** (nelimitat cu Pro).\n` +
         `- Se păstrează automat scorul direct **W–L (Victorii–Înfrângeri)** între voi!`,
     );
   }
@@ -468,9 +469,9 @@ function buildSmartRonDuelReply(params: {
     matchedSections.push(
       `✨ **E gratuit? Ce oferă RonDuel Pro?**\n` +
         `- **Jocul de bază este 100% gratuit și fără reclame** care să întrerupă jocul!\n` +
-        `- **RonDuel Pro ($4.99/lună sau $39.99/an — economisești 33%):**\n` +
-        `  • Ligi de până la **200 de membri** (față de 25 gratuit)\n` +
-        `  • **Dueluri 1v1 nelimitate** (față de 3 active gratuit)\n` +
+        `- **RonDuel Pro (4,99 €/lună sau 39,99 €/an — economisești 33%):**\n` +
+        `  • Ligi de până la **200 de membri** (față de 5 gratuit)\n` +
+        `  • **Dueluri 1v1 nelimitate** (față de 4/lună gratuit)\n` +
         `  • **1 Scut automat de serie** pe săptămână\n` +
         `  • **Statistici de acuratețe pe teme** în Profil (\`/me\`)\n` +
         `  • **3 teme vizuale Pro** în Setări (\`/settings\`): *Midnight Court*, *Clay Court*, *Neon Arcade*.`,

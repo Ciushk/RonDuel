@@ -1,0 +1,198 @@
+'use client';
+
+import { Trophy } from '@phosphor-icons/react';
+import { sanitizeDisplayName } from '@ronduel/shared';
+import React, { useEffect, useState } from 'react';
+
+import { Avatar, Button, Chip } from '@/components/ui';
+
+export interface PodiumStyle {
+  isPodium: boolean;
+  cupColor: string;
+  badgeBg: string;
+  cardStyle: string;
+}
+
+export function getPodiumStyle(rank: number, isCurrentUser = false): PodiumStyle {
+  if (rank === 1) {
+    return {
+      isPodium: true,
+      cupColor: 'text-amber-500',
+      badgeBg: 'bg-gradient-to-r from-amber-400 to-yellow-300 text-black border-2 border-amber-500 shadow-sm',
+      cardStyle:
+        'border-2 border-amber-400 bg-gradient-to-r from-amber-500/[0.12] via-yellow-400/[0.08] to-amber-500/[0.12] shadow-[2px_2px_0px_0px_rgba(245,158,11,0.85)] dark:border-amber-400 dark:bg-amber-950/25',
+    };
+  }
+  if (rank === 2) {
+    return {
+      isPodium: true,
+      cupColor: 'text-slate-400',
+      badgeBg: 'bg-gradient-to-r from-slate-200 to-slate-300 text-slate-800 border-2 border-slate-400 shadow-sm',
+      cardStyle:
+        'border-2 border-slate-300 bg-gradient-to-r from-slate-300/[0.12] via-slate-200/[0.08] to-slate-300/[0.12] shadow-[2px_2px_0px_0px_rgba(148,163,184,0.75)] dark:border-slate-400 dark:bg-slate-900/30',
+    };
+  }
+  if (rank === 3) {
+    return {
+      isPodium: true,
+      cupColor: 'text-amber-700',
+      badgeBg: 'bg-gradient-to-r from-amber-700 to-amber-600 text-amber-50 border-2 border-amber-700 shadow-sm',
+      cardStyle:
+        'border-2 border-amber-700/60 bg-gradient-to-r from-amber-700/[0.12] via-amber-600/[0.08] to-amber-700/[0.12] shadow-[2px_2px_0px_0px_rgba(180,83,9,0.75)] dark:border-amber-700 dark:bg-amber-950/20',
+    };
+  }
+  if (isCurrentUser) {
+    return {
+      isPodium: false,
+      cupColor: '',
+      badgeBg: 'bg-volt text-ink border-2 border-border font-black',
+      cardStyle:
+        'border-2 border-border bg-volt/10 text-ink shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] ring-2 ring-volt-strong/70',
+    };
+  }
+  return {
+    isPodium: false,
+    cupColor: '',
+    badgeBg: 'bg-surface-2 text-ink border-2 border-border font-black',
+    cardStyle:
+      'border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] shadow-[var(--rd-shadow-key)]',
+  };
+}
+
+export function RankBadge({ rank }: { rank: number }) {
+  const podium = getPodiumStyle(rank);
+  if (rank === 1) {
+    return (
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+        <Trophy size={20} weight="fill" className="text-amber-600 drop-shadow-sm" />
+      </div>
+    );
+  }
+  if (rank === 2) {
+    return (
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+        <Trophy size={19} weight="fill" className="text-slate-600 drop-shadow-sm" />
+      </div>
+    );
+  }
+  if (rank === 3) {
+    return (
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${podium.badgeBg}`}>
+        <Trophy size={18} weight="fill" className="text-amber-900 drop-shadow-sm" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-surface-2 text-xs font-black shadow-sm text-ink">
+      #{rank}
+    </div>
+  );
+}
+
+interface StickyUserRankProps {
+  myRank?: number | null;
+  myScore?: number | null;
+  myNickname?: string;
+  myUid?: string;
+  label?: string;
+}
+
+export function StickyUserRank({
+  myRank,
+  myScore,
+  myNickname,
+  myUid,
+  label = 'Locul tău:',
+}: StickyUserRankProps) {
+  const [isInViewport, setIsInViewport] = useState(false);
+
+  useEffect(() => {
+    if (!myUid || typeof window === 'undefined') return;
+    const target = document.getElementById(`rank-row-${myUid}`);
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsInViewport(Boolean(entry?.isIntersecting));
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [myUid]);
+
+  if (!myRank && myScore == null) return null;
+
+  const handleScrollToMe = () => {
+    if (!myUid || typeof window === 'undefined') return;
+    const target = document.getElementById(`rank-row-${myUid}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('ring-4', 'ring-volt-strong', 'scale-[1.02]');
+      setTimeout(() => {
+        target.classList.remove('ring-4', 'ring-volt-strong', 'scale-[1.02]');
+      }, 2000);
+    }
+  };
+
+  const displayName = sanitizeDisplayName(myNickname, myUid);
+
+  return (
+    <aside
+      aria-label="Poziția ta în clasament"
+      className="fixed bottom-20 left-0 right-0 z-30 px-4 pointer-events-none sm:bottom-6"
+    >
+      <div className="mx-auto max-w-[480px] pointer-events-auto">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleScrollToMe}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleScrollToMe();
+            }
+          }}
+          className={`cursor-pointer rounded-2xl border-2 border-border bg-surface text-ink p-3 shadow-[0_6px_20px_rgba(0,0,0,0.18),var(--rd-shadow-key)] flex items-center justify-between gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] select-none ${
+            isInViewport
+              ? 'bg-gradient-to-r from-surface via-surface-2 to-surface border-border'
+              : 'bg-gradient-to-r from-volt/25 via-surface to-surface border-volt-strong ring-2 ring-volt-strong/50'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-volt font-black text-sm text-[#16131F] shadow-sm">
+              #{myRank ?? '—'}
+            </div>
+            <Avatar nickname={displayName} size="sm" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-sm truncate">{displayName}</span>
+                <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
+                  Tu
+                </Chip>
+              </div>
+              <p className="text-muted text-xs font-bold truncate">
+                {label} <span className="text-ink">#{myRank ?? '—'}</span>
+                {myScore != null && (
+                  <span className="rd-tabular font-extrabold text-ron-strong ml-1.5">
+                    · {myScore.toLocaleString()} pct
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            size="sm"
+            variant={isInViewport ? 'secondary' : 'volt'}
+            className="shrink-0 text-xs font-black h-8 px-2.5 shadow-sm"
+          >
+            {isInViewport ? 'Ești aici 📍' : 'Locul meu 🎯'}
+          </Button>
+        </div>
+      </div>
+    </aside>
+  );
+}

@@ -15,7 +15,13 @@ import {
 } from '@/lib/legal-markdown';
 
 function loadRegulamentMarkdown(locale: string): string {
-  const filePath = path.join(process.cwd(), 'content', 'legal', locale, 'regulament.md');
+  let filePath = path.join(process.cwd(), 'content', 'legal', locale, 'regulament.md');
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(process.cwd(), 'content', 'legal', 'en', 'regulament.md');
+  }
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(process.cwd(), 'content', 'legal', 'ro', 'regulament.md');
+  }
   const raw = fs.readFileSync(filePath, 'utf8');
   return raw
     .replace(/\[DATA\]/g, RULES_RO_VERSION.lastUpdated)
@@ -40,8 +46,7 @@ export async function generateMetadata({
   const md = loadRegulamentMarkdown(locale);
   const isDraft = hasLegalPlaceholders(md);
 
-  const title =
-    locale === 'ro' ? 'Regulamentul jocului | RonDuel' : t('rules.metaTitle');
+  const title = locale === 'ro' ? 'Regulamentul jocului | RonDuel' : t('rules.metaTitle');
   const description =
     locale === 'ro'
       ? 'Cum funcționează RonDuel: runda zilnică, calculul punctelor, egalități, ligi, dueluri, serii, trișat și ce include Pro. Fără premii, fără jocuri de noroc.'
@@ -94,7 +99,9 @@ function renderMarkdownDocument(md: string): {
 
     // Horizontal rule
     if (trimmed === '---') {
-      elements.push(<hr key={`hr-${keyCounter++}`} className="border-border-subtle my-6 border-t" />);
+      elements.push(
+        <hr key={`hr-${keyCounter++}`} className="border-border-subtle my-6 border-t" />,
+      );
       i += 1;
       continue;
     }
@@ -111,7 +118,7 @@ function renderMarkdownDocument(md: string): {
         <h2
           key={`h2-${keyCounter++}`}
           id={anchor}
-          className="font-display text-ink mt-8 mb-3 scroll-mt-20 text-2xl font-extrabold"
+          className="font-display text-ink mb-3 mt-8 scroll-mt-20 text-2xl font-extrabold"
         >
           {renderLegalInline(headingText, `h2-inl-${artNum}`)}
         </h2>,
@@ -188,11 +195,7 @@ function renderMarkdownDocument(md: string): {
   return { h1, articles, elements };
 }
 
-export default async function RegulamentPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function RegulamentPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
@@ -202,22 +205,27 @@ export default async function RegulamentPage({
   const t = await getTranslations({ locale });
   const md = loadRegulamentMarkdown(locale);
   const isDraft = hasLegalPlaceholders(md);
+  const isFallback = !['ro', 'en', 'es', 'pt'].includes(locale);
   const { h1, articles, elements } = renderMarkdownDocument(md);
 
   return (
-    <main
-      lang={locale}
-      className="mx-auto max-w-[720px] space-y-5 px-4 py-6 leading-[1.6]"
-    >
+    <main lang={locale} className="mx-auto max-w-[720px] space-y-5 px-4 py-6 leading-[1.6]">
       {isDraft && (
         <div
           role="status"
           data-testid="legal-draft-banner"
           className="border-border bg-gold rounded-[14px] border-2 px-4 py-3 text-sm font-extrabold text-[#16131F]"
         >
-          {locale === 'ro'
-            ? 'DRAFT – textul juridic nu este final'
-            : t('rules.draftBanner')}
+          {locale === 'ro' ? 'DRAFT – textul juridic nu este final' : t('rules.draftBanner')}
+        </div>
+      )}
+
+      {isFallback && (
+        <div
+          role="note"
+          className="border-border bg-surface-2 text-ink rounded-[14px] border px-4 py-2.5 text-xs font-bold"
+        >
+          {t('rules.englishOnlyNotice')}
         </div>
       )}
 

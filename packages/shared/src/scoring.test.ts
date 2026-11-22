@@ -37,7 +37,7 @@ describe('computeItemScore', () => {
     });
     expect(res).toEqual({
       points: 100,
-      effectiveElapsedMs: 10_000,
+      effectiveElapsedMs: 30_000,
       timedOut: false,
       emoji: '🟩',
     });
@@ -51,7 +51,7 @@ describe('computeItemScore', () => {
     });
     expect(res).toEqual({
       points: 0,
-      effectiveElapsedMs: 10_001,
+      effectiveElapsedMs: 30_001,
       timedOut: true,
       emoji: '🟥',
     });

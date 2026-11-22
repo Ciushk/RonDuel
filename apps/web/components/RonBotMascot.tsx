@@ -22,6 +22,7 @@ interface ChatMessage {
 export function RonBotMascot() {
   const pathname = usePathname();
   const isOnAdminPage = pathname?.startsWith('/admin') ?? false;
+  const isPlayPage = pathname?.includes('/play') ?? false;
 
   const botRef = useRef<HTMLButtonElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -30,6 +31,9 @@ export function RonBotMascot() {
   const [eyeOffset, setEyeOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [blinking, setBlinking] = useState(false);
   const [bouncing, setBouncing] = useState(false);
+
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [splashFinished, setSplashFinished] = useState(false);
 
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -41,6 +45,44 @@ export function RonBotMascot() {
       text: 'Salut! Sunt RonBot ⚡! Mă uit după fiecare mișcare din arenă. Întreabă-mă orice: „Cum se joacă?”, „Cum se calculează scorul?”, „Ce înseamnă ⚡🟩🟥?”, „Care e statusul meu azi?” sau „Creează un duel”!',
     },
   ]);
+
+  // Sync consent and splash state
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkStatus = () => {
+      const session = getLocalSession();
+      setConsentAccepted(session.analyticsConsent === 'accepted');
+
+      const isHome = !pathname || pathname === '/' || /^\/[a-z]{2}(\/)?$/.test(pathname);
+      const splashSeen = window.sessionStorage.getItem('ronduel_splash_seen_v2') === '1';
+      setSplashFinished(!isHome || splashSeen);
+    };
+
+    checkStatus();
+
+    const handleSessionUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<ReturnType<typeof getLocalSession>>;
+      if (customEvent.detail) {
+        setConsentAccepted(customEvent.detail.analyticsConsent === 'accepted');
+      } else {
+        const s = getLocalSession();
+        setConsentAccepted(s.analyticsConsent === 'accepted');
+      }
+    };
+
+    const handleSplashDismissed = () => {
+      setSplashFinished(true);
+    };
+
+    window.addEventListener('ronduel_session_updated', handleSessionUpdated);
+    window.addEventListener('ronduel_splash_dismissed', handleSplashDismissed);
+
+    return () => {
+      window.removeEventListener('ronduel_session_updated', handleSessionUpdated);
+      window.removeEventListener('ronduel_splash_dismissed', handleSplashDismissed);
+    };
+  }, [pathname]);
 
   // Eye tracking for desktop mousemove AND mobile button taps / pointerdown
   useEffect(() => {
@@ -190,8 +232,10 @@ export function RonBotMascot() {
         'Ce oferă RonDuel Pro?',
       ];
 
+  if (isPlayPage || !consentAccepted || !splashFinished) return null;
+
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-20 sm:bottom-6 right-4 z-50 flex flex-col items-end gap-2">
       {open && (
         <section
           role="dialog"

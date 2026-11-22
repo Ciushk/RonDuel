@@ -5,12 +5,15 @@ import {
   computePromptSimilarity,
   computeRoundNumber,
   deterministicShuffle,
+  diffCalendarDays,
   FREE_LIMITS,
   generateInviteCode,
   getLocalDateString,
   ITEM_TIME_LIMIT_MS,
+  isValidNickname,
   PRO_LIMITS,
   resolveDuelOutcome,
+  sanitizeDisplayName,
   selectDuelQuestions,
   suggestLeagueName,
   updateStreakWithShield,
@@ -22,21 +25,32 @@ import {
   type QuestionType,
 } from '@ronduel/shared';
 
+import { pickCuratedTemplates, type GeneratedDraftTemplate } from './ai-question-bank';
+import {
+  type DailyRoundRecord,
+  type GeneratedQuestionItem,
+  generateFullDailyRound,
+  generateSingleQuestionWithGemini,
+} from './daily-round-generator';
+
 export interface UserRecord {
   uid: string;
   nickname: string;
-  locale: Locale;
+  locale: Locale | string;
   tz: string;
+  country?: string;
   ageConfirmed16: boolean;
   relaxedTimer: boolean;
   isAnonymous: boolean;
   email?: string;
-  authProvider?: 'anonymous' | 'email_link' | 'google';
+  authProvider?: 'anonymous' | 'email_link' | 'google' | 'password' | 'email_password';
   isAdmin?: boolean;
   pro: {
     active: boolean;
     plan?: 'monthly' | 'yearly';
     until?: string;
+    isTrial?: boolean;
+    trialEndsAt?: string;
   };
   notif: {
     pushEnabled: boolean;
@@ -49,6 +63,30 @@ export interface UserRecord {
   lastPlayedDate?: string;
   streakShieldUsedWeek?: string;
   leagueIds: string[];
+  lastNicknameChangeAt?: string;
+  freezes: number;
+  freezeUsedYesterday?: boolean;
+  freezeLedger?: Array<{ date: string; action: string; freezesAfter?: number }>;
+  duelStats?: {
+    played: number;
+    wins: number;
+    losses: number;
+    draws: number;
+    bestWinStreak: number;
+    currentWinStreak: number;
+  };
+  rivals?: Record<
+    string,
+    {
+      opponentUid: string;
+      opponentNickname: string;
+      wins: number;
+      losses: number;
+      draws: number;
+      lastDuelAt: string;
+      currentWinStreak: number;
+    }
+  >;
   createdAt: string;
 }
 
@@ -70,7 +108,7 @@ export interface PlayItemState {
   index: number;
   servedAt: number;
   answeredAt?: number;
-  choice?: number | string[];
+  choice?: number | string[] | null;
   correct?: boolean;
   points: number;
   timedOut: boolean;
@@ -82,7 +120,7 @@ export interface PlayRecord {
   uid: string;
   date: string;
   roundNumber: number;
-  locale: Locale;
+  locale: Locale | string;
   relaxedTimer: boolean;
   status: 'in_progress' | 'finished';
   items: PlayItemState[];
@@ -128,6 +166,10 @@ export interface LeagueRecord {
   ownerUid: string;
   tz: string;
   maxMembers: number;
+  themeEmoji?: string;
+  themeColor?: string;
+  privateApproval?: boolean;
+  joinRequests?: string[];
   members: Record<string, LeagueMember>;
   days: Record<string, Record<string, LeagueDayScore>>;
   feed: LeagueFeedEvent[];
@@ -153,6 +195,7 @@ export interface DuelRecord {
   sides: Record<string, DuelSidePlay>;
   winnerUid: string | null;
   walkover: boolean;
+  rated?: boolean;
   createdAt: string;
 }
 
@@ -163,6 +206,7 @@ export interface AdminRoundSchedule {
   topicOfTheDay: string;
   status: 'draft' | 'scheduled' | 'published';
   explicitFallbackLocales: Locale[];
+  locked?: boolean;
 }
 
 export interface ModerationReport {
@@ -175,11 +219,31 @@ export interface ModerationReport {
   createdAt: string;
 }
 
+export interface AuditLogEntry {
+  id: string;
+  actorUid: string;
+  actorEmail?: string;
+  action: string;
+  targetType: 'question' | 'round' | 'league' | 'report';
+  targetId: string;
+  details: string;
+  createdAt: string;
+}
+
 export type StoredQuestion = Question & {
   lastUsedOn?: string;
   factChecklist?: string[];
   reviewedBy?: string;
   reviewedAt?: string;
+  timerSec?: number;
+  extraContent?: Record<
+    string,
+    {
+      prompt: string;
+      options: string[];
+      explanation?: string;
+    }
+  >;
 };
 
 interface StoreState {
@@ -196,42 +260,198 @@ interface StoreState {
     { plan: 'monthly' | 'yearly'; status: string; currentPeriodEnd: string }
   >;
   scheduledRounds: Record<string, AdminRoundSchedule>;
+  dailyRounds: Record<string, DailyRoundRecord>;
+  questionReports: Record<string, { count: number; reasons: Record<string, number>; flagged: boolean }>;
   reports: Record<string, ModerationReport>;
+  auditLogs: AuditLogEntry[];
 }
 
 const globalForStore = globalThis as unknown as { __ronduelStore?: StoreState };
 
 import seedQuestionsData from '../content/seed/questions.en.json';
+import { CURATED_TOPIC_BANK } from './ai-question-bank';
+
+export function loadCuratedQuestions(): StoredQuestion[] {
+  const result: StoredQuestion[] = [];
+  for (const [topic, drafts] of Object.entries(CURATED_TOPIC_BANK)) {
+    drafts.forEach((draft, idx) => {
+      result.push({
+        id: `curated-${topic}-${idx}`,
+        type: draft.type,
+        difficulty: 2,
+        topics: [topic],
+        content: draft.content as unknown as StoredQuestion['content'],
+        answer: { correctIndex: draft.correctIndex ?? 0 },
+        translationStatus: { en: 'reviewed', es: 'reviewed', pt: 'reviewed', ro: 'reviewed' },
+        source: 'human',
+        reviewStatus: 'approved',
+        usageCount: 0,
+      });
+    });
+  }
+  return result;
+}
 
 function loadSeedQuestions(): StoredQuestion[] {
-  return structuredClone(seedQuestionsData) as unknown as StoredQuestion[];
+  const curated = loadCuratedQuestions();
+  const seed = structuredClone(seedQuestionsData) as unknown as StoredQuestion[];
+  return [...seed, ...curated];
+}
+
+const TMP_STORE_FILE = '/tmp/ronduel_store.json';
+
+export function saveStoreToDisk(s?: StoreState) {
+  try {
+    if (typeof process !== 'undefined' && process.versions?.node) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require('node:fs');
+      const target = s || globalForStore.__ronduelStore;
+      if (target) {
+        fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(target), 'utf-8');
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function loadStoreFromDisk(): StoreState | null {
+  try {
+    if (typeof process !== 'undefined' && process.versions?.node) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require('node:fs');
+      if (fs.existsSync(TMP_STORE_FILE)) {
+        const raw = fs.readFileSync(TMP_STORE_FILE, 'utf-8');
+        return JSON.parse(raw) as StoreState;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 function getStore(): StoreState {
   if (!globalForStore.__ronduelStore) {
-    globalForStore.__ronduelStore = {
-      questions: loadSeedQuestions(),
-      users: {},
-      plays: {},
-      leagues: {},
-      inviteCodes: {},
-      duels: {},
-      pairRecords: {},
-      stripeEvents: {},
-      subscriptions: {},
-      scheduledRounds: {},
-      reports: {},
-    };
+    const disk = loadStoreFromDisk();
+    if (disk && disk.questions && Array.isArray(disk.questions)) {
+      globalForStore.__ronduelStore = disk;
+    } else {
+      globalForStore.__ronduelStore = {
+        questions: loadSeedQuestions(),
+        users: {},
+        plays: {},
+        leagues: {},
+        inviteCodes: {},
+        duels: {},
+        pairRecords: {},
+        stripeEvents: {},
+        subscriptions: {},
+        scheduledRounds: {},
+        dailyRounds: {},
+        questionReports: {},
+        reports: {},
+        auditLogs: [],
+      };
+    }
   }
   const s = globalForStore.__ronduelStore;
+  const curated = loadCuratedQuestions();
+  for (let i = curated.length - 1; i >= 0; i--) {
+    const cq = curated[i]!;
+    if (!s.questions.some((q) => q.id === cq.id)) {
+      s.questions.unshift(cq);
+    }
+  }
   if (!s.duels) s.duels = {};
   if (!s.pairRecords) s.pairRecords = {};
   if (!s.stripeEvents) s.stripeEvents = {};
   if (!s.subscriptions) s.subscriptions = {};
   if (!s.scheduledRounds) s.scheduledRounds = {};
+  if (!s.dailyRounds) s.dailyRounds = {};
+  if (!s.questionReports) s.questionReports = {};
   if (!s.reports) s.reports = {};
+  if (!s.auditLogs) s.auditLogs = [];
+  if (!s.leagues['lg_world']) {
+    s.leagues['lg_world'] = {
+      id: 'lg_world',
+      name: 'RonDuel World',
+      inviteCode: 'WORLD1',
+      ownerUid: 'system',
+      tz: 'UTC',
+      maxMembers: 10_000_000,
+      themeEmoji: '🌍',
+      themeColor: 'default',
+      members: {},
+      days: {},
+      feed: [],
+      createdAt: '2026-11-01T00:00:00.000Z',
+    };
+    s.inviteCodes['WORLD1'] = 'lg_world';
+  }
+
+  const andreiUid = 'u_andrei89';
+  if (!s.users[andreiUid]) {
+    s.users[andreiUid] = {
+      uid: andreiUid,
+      nickname: 'Andrei',
+      email: 'eu.andrei89@gmail.com',
+      isAnonymous: false,
+      authProvider: 'google',
+      locale: 'ro',
+      tz: 'Europe/Bucharest',
+      country: 'RO',
+      ageConfirmed16: true,
+      relaxedTimer: false,
+      pro: {
+        active: true,
+        plan: 'yearly',
+        until: '2099-12-31T23:59:59.999Z',
+      },
+      notif: {
+        pushEnabled: true,
+        emailEnabled: true,
+        reminderLocalTime: '18:00',
+        sentTodayCount: 0,
+      },
+      streakCurrent: 5,
+      streakBest: 12,
+      leagueIds: ['lg_world'],
+      freezes: 5,
+      createdAt: '2026-11-01T00:00:00.000Z',
+    };
+  }
+
+  // QA #22: Invariant check and sanitation on plays and league days
+  for (const [k, p] of Object.entries(s.plays)) {
+    const correctCount = p.emojiLine ? (p.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+    if (
+      (p.items.length === 0 && p.totalScore === 0 && p.status === 'finished') ||
+      (correctCount > 0 && p.totalScore < 100 * correctCount)
+    ) {
+      console.warn(`[Store Invariant] Purging corrupt play ${k}`);
+      delete s.plays[k];
+    }
+  }
+  for (const l of Object.values(s.leagues)) {
+    for (const [day, dayEntries] of Object.entries(l.days)) {
+      for (const [uid, e] of Object.entries(dayEntries)) {
+        const correctCount = e.emojiLine ? (e.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+        if (correctCount > 0 && e.score < 100 * correctCount) {
+          console.warn(`[Store Invariant] Purging corrupt day entry ${l.id}/${day}/${uid}`);
+          delete dayEntries[uid];
+        }
+      }
+    }
+  }
+
   return s;
 }
+
+export const PRO_BOOTSTRAP_EMAILS = [
+  'eu.andrei89@gmail.com',
+  ...(process.env.PRO_BOOTSTRAP_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()),
+].filter(Boolean);
 
 const TOPICS_OF_DAY = [
   'World & Science 🌍',
@@ -244,7 +464,7 @@ const TOPICS_OF_DAY = [
 export function getRoundMeta(date: string) {
   const store = getStore();
   const scheduled = store.scheduledRounds[date];
-  const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE ?? '2026-12-01';
+  const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE ?? '2026-11-01';
   const roundNumber = scheduled?.roundNumber ?? computeRoundNumber(date, launchDate);
   const topicOfTheDay =
     scheduled?.topicOfTheDay ?? TOPICS_OF_DAY[(roundNumber - 1) % TOPICS_OF_DAY.length]!;
@@ -255,13 +475,17 @@ function resolveQuestionToItem(
   q: StoredQuestion,
   index: number,
   seedPrefix: string,
-  locale: Locale,
+  locale: Locale | string,
 ): ResolvedRoundItem {
-  const localized = q.content[locale];
+  const contentMap = q.content as Record<
+    string,
+    { prompt: string; options: string[]; explanation?: string } | undefined
+  >;
+  const localized = contentMap[locale] || (q.extraContent && q.extraContent[locale]);
   const isEnFallback = !localized;
-  const content = localized ?? q.content.en!;
+  const content = localized ?? contentMap['en'] ?? Object.values(contentMap)[0]!;
   const seed = `${seedPrefix}:${q.id}`;
-  const shuffledOptions = deterministicShuffle(content.options, seed);
+  const shuffledOptions: string[] = deterministicShuffle<string>(content.options, seed);
 
   if (q.type === 'order') {
     return {
@@ -295,8 +519,45 @@ function resolveQuestionToItem(
   };
 }
 
-export function resolveRoundItems(date: string, locale: Locale): ResolvedRoundItem[] {
+export function resolveRoundItems(date: string, locale: Locale | string): ResolvedRoundItem[] {
   const store = getStore();
+
+  const dailyRound = store.dailyRounds[date];
+  if (dailyRound && dailyRound.status === 'ready' && dailyRound.questions.length === 6) {
+    return dailyRound.questions.map((q, idx) => {
+      const locContent = (q.content[locale] || q.content.en)!;
+      const shuffledOptions = deterministicShuffle(locContent.options, `${date}_${q.id}_${locale}`);
+      if (q.type === 'order') {
+        return {
+          index: idx,
+          questionId: q.id,
+          type: q.type,
+          prompt: locContent.prompt,
+          options: shuffledOptions,
+          correctOrder: locContent.options,
+          explanation: locContent.explanation,
+          limitMs: ITEM_TIME_LIMIT_MS[q.type],
+          isEnFallback: !q.content[locale],
+          topics: [q.category],
+        };
+      }
+      const correctText = locContent.options[q.correctIndex ?? 0]!;
+      const correctIdx = shuffledOptions.indexOf(correctText);
+      return {
+        index: idx,
+        questionId: q.id,
+        type: q.type,
+        prompt: locContent.prompt,
+        options: shuffledOptions,
+        correctIndex: correctIdx !== -1 ? correctIdx : 0,
+        explanation: locContent.explanation,
+        limitMs: ITEM_TIME_LIMIT_MS[q.type],
+        isEnFallback: !q.content[locale],
+        topics: [q.category],
+      };
+    });
+  }
+
   const scheduled = store.scheduledRounds[date];
   if (scheduled && scheduled.questionIds.length === 6) {
     const picked = scheduled.questionIds
@@ -312,16 +573,15 @@ export function resolveRoundItems(date: string, locale: Locale): ResolvedRoundIt
   const odds = store.questions.filter((q) => q.type === 'odd' && q.reviewStatus === 'approved');
   const logics = store.questions.filter((q) => q.type === 'logic' && q.reviewStatus === 'approved');
 
-  const roundNum = getRoundMeta(date).roundNumber;
-  const dayIdx = Math.abs(roundNum - 1) % 5;
+  const dayOffset = Math.abs(diffCalendarDays('2026-01-01', date));
 
   const picked: StoredQuestion[] = [
-    mcqs[(dayIdx * 2) % mcqs.length]!,
-    mcqs[(dayIdx * 2 + 1) % mcqs.length]!,
-    orders[dayIdx % orders.length]!,
-    odds[dayIdx % odds.length]!,
-    logics[(dayIdx * 2) % logics.length]!,
-    logics[(dayIdx * 2 + 1) % logics.length]!,
+    mcqs[(dayOffset * 2) % mcqs.length]!,
+    mcqs[(dayOffset * 2 + 1) % mcqs.length]!,
+    orders[dayOffset % orders.length]!,
+    odds[dayOffset % odds.length]!,
+    logics[(dayOffset * 2) % logics.length]!,
+    logics[(dayOffset * 2 + 1) % logics.length]!,
   ].filter(Boolean);
 
   return picked.map((q, index) => resolveQuestionToItem(q, index, date, locale));
@@ -330,7 +590,7 @@ export function resolveRoundItems(date: string, locale: Locale): ResolvedRoundIt
 export function getOrCreateUser(params: {
   uid: string;
   nickname?: string;
-  locale?: Locale;
+  locale?: Locale | string;
   tz?: string;
   ageConfirmed16?: boolean;
   relaxedTimer?: boolean;
@@ -356,7 +616,17 @@ export function getOrCreateUser(params: {
       },
       streakCurrent: 0,
       streakBest: 0,
-      leagueIds: [],
+      leagueIds: ['lg_world'],
+      freezes: 0,
+      duelStats: {
+        played: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        bestWinStreak: 0,
+        currentWinStreak: 0,
+      },
+      rivals: {},
       createdAt: new Date().toISOString(),
     };
     store.users[params.uid] = user;
@@ -375,58 +645,472 @@ export function getOrCreateUser(params: {
       };
     }
     if (typeof user.isAnonymous !== 'boolean') user.isAnonymous = true;
+    if (typeof user.freezes !== 'number') user.freezes = 0;
+    if (!user.duelStats) {
+      user.duelStats = {
+        played: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        bestWinStreak: 0,
+        currentWinStreak: 0,
+      };
+    }
+    if (!user.rivals) user.rivals = {};
   }
+
+  if (!user.leagueIds.includes('lg_world')) {
+    user.leagueIds.unshift('lg_world');
+  }
+  const world = store.leagues['lg_world'];
+  if (world && !world.members[user.uid]) {
+    world.members[user.uid] = {
+      uid: user.uid,
+      nickname: user.nickname,
+      role: 'member',
+      joinedAt: user.createdAt,
+      allTimeScore: 0,
+      roundsPlayed: 0,
+      weeklyWins: 0,
+      bestStreak: 0,
+    };
+  }
+  if (!user.country) {
+    const tz = user.tz || 'UTC';
+    if (tz.includes('Bucharest') || tz.includes('Chisinau')) user.country = 'RO';
+    else if (tz.includes('Madrid')) user.country = 'ES';
+    else if (tz.includes('Lisbon')) user.country = 'PT';
+    else if (tz.includes('London')) user.country = 'GB';
+    else user.country = user.locale === 'ro' ? 'RO' : user.locale === 'es' ? 'ES' : user.locale === 'pt' ? 'PT' : 'US';
+  }
+
+  if (user.email && PRO_BOOTSTRAP_EMAILS.includes(user.email.toLowerCase())) {
+    user.pro = {
+      active: true,
+      plan: 'yearly',
+      until: '2099-12-31T23:59:59.999Z',
+    };
+  }
+
   return user;
 }
 
-export function getTodayStatus(uid: string, tz: string) {
+export function checkNicknameAvailable(nickname: string, excludeUid?: string): { available: boolean; suggestions: string[] } {
+  const store = getStore();
+  const trimmed = nickname.trim().toLowerCase();
+  if (!trimmed) return { available: false, suggestions: [] };
+
+  const taken = Object.values(store.users).some(
+    (u) => u.uid !== excludeUid && u.nickname.trim().toLowerCase() === trimmed,
+  );
+
+  if (!taken) {
+    return { available: true, suggestions: [] };
+  }
+
+  const base = nickname.trim();
+  const candidates = [
+    `${base}2`,
+    `${base}_ro`,
+    `${base}_${Math.floor(10 + Math.random() * 90)}`,
+    `${base}99`,
+    `Super${base}`,
+  ];
+
+  const suggestions = candidates.filter((c) => {
+    const cLow = c.toLowerCase();
+    return !Object.values(store.users).some((u) => u.nickname.trim().toLowerCase() === cLow);
+  }).slice(0, 3);
+
+  return { available: false, suggestions };
+}
+
+export function checkLeagueNameAvailable(name: string, excludeLeagueId?: string): { available: boolean; suggestions: string[] } {
+  const store = getStore();
+  const trimmed = name.trim().toLowerCase();
+  if (!trimmed) return { available: false, suggestions: [] };
+
+  const taken = Object.values(store.leagues).some(
+    (l) => l.id !== excludeLeagueId && l.name.trim().toLowerCase() === trimmed,
+  );
+
+  if (!taken) {
+    return { available: true, suggestions: [] };
+  }
+
+  const base = name.trim();
+  const candidates = [
+    `${base} 2`,
+    `Liga ${base}`,
+    `${base} Pro`,
+    `${base} FC`,
+    `${base} ${Math.floor(10 + Math.random() * 90)}`,
+  ];
+
+  const suggestions = candidates.filter((c) => {
+    const cLow = c.toLowerCase();
+    return !Object.values(store.leagues).some((l) => l.name.trim().toLowerCase() === cLow);
+  }).slice(0, 3);
+
+  return { available: false, suggestions };
+}
+
+export function changeUserNickname(params: { uid: string; newNickname: string }) {
+  const store = getStore();
+  const user = getOrCreateUser({ uid: params.uid });
+  const check = validateNickname(params.newNickname);
+  if (!check.ok) {
+    throw new Error(check.reason ? `Porecla nu este validă (${check.reason}).` : 'Porecla nu este validă.');
+  }
+  const validNick = check.value;
+
+  // Uniqueness check
+  const avail = checkNicknameAvailable(validNick, params.uid);
+  if (!avail.available) {
+    const suggText = avail.suggestions.length > 0 ? ` Sugestii: ${avail.suggestions.join(', ')}` : '';
+    throw new Error(`Porecla „${validNick}” este deja luată.${suggText}`);
+  }
+
+  // 30-day cooldown check
+  if (user.lastNicknameChangeAt) {
+    const elapsedMs = Date.now() - new Date(user.lastNicknameChangeAt).getTime();
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    if (elapsedMs < thirtyDaysMs) {
+      const daysLeft = Math.ceil((thirtyDaysMs - elapsedMs) / (24 * 60 * 60 * 1000));
+      throw new Error(`Îți poți schimba porecla o singură dată pe lună. Mai ai de așteptat ${daysLeft} ${daysLeft === 1 ? 'zi' : 'zile'}.`);
+    }
+  }
+
+  user.nickname = validNick;
+  user.lastNicknameChangeAt = new Date().toISOString();
+
+  // Cascade to leagues where user is a member
+  for (const leagueId of user.leagueIds) {
+    const lg = store.leagues[leagueId];
+    if (lg && lg.members[params.uid]) {
+      lg.members[params.uid]!.nickname = validNick;
+    }
+  }
+
+  saveStoreToDisk(store);
+  return { success: true, nickname: validNick, lastNicknameChangeAt: user.lastNicknameChangeAt };
+}
+
+export function getGlobalPlayersLeaderboard(dateStr?: string, viewerUid?: string) {
+  const store = getStore();
+  const date = dateStr || getLocalDateString(new Date(), 'UTC');
+  const world = store.leagues['lg_world'];
+
+  // 1. Today's scores worldwide (only finished plays with finishedAt set and meeting invariant check)
+  const rawToday = Object.values(world?.days[date] ?? {})
+    .filter((entry) => {
+      // Must have finishedAt set (exclude started/abandoned)
+      if (!entry.finishedAt) return false;
+      // Invariant check: number of ⚡/🟩 must equal correct count and score >= 100 * correct
+      const correctCount = entry.emojiLine ? (entry.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+      if (correctCount > 0 && entry.score < 100 * correctCount) {
+        console.warn(
+          `[getGlobalPlayersLeaderboard Invariant] Skipped corrupt entry uid=${entry.uid}, score=${entry.score}, emoji=${entry.emojiLine}`,
+        );
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) =>
+      b.score !== a.score ? b.score - a.score : (a.totalMs ?? 0) - (b.totalMs ?? 0),
+    );
+
+  const today = rawToday.map((entry, idx) => ({
+    rank: idx + 1,
+    uid: entry.uid,
+    nickname: sanitizeDisplayName(entry.nickname, entry.uid),
+    score: entry.score,
+    totalMs: entry.totalMs,
+    emojiLine: entry.emojiLine || '',
+    isCurrentUser: Boolean(viewerUid && entry.uid === viewerUid),
+  }));
+
+  const viewerTodayIdx = rawToday.findIndex((e) => viewerUid && e.uid === viewerUid);
+  const viewerToday = viewerTodayIdx >= 0 ? today[viewerTodayIdx] : null;
+
+  // 2. All-time scores worldwide (only members who played and scored)
+  const rawAllTime = Object.values(world?.members ?? {})
+    .filter((m) => (m.allTimeScore || 0) > 0 && (m.roundsPlayed || 0) > 0)
+    .sort((a, b) =>
+      b.allTimeScore !== a.allTimeScore
+        ? b.allTimeScore - a.allTimeScore
+        : b.roundsPlayed - a.roundsPlayed,
+    );
+
+  const allTime = rawAllTime.map((member, idx) => ({
+    rank: idx + 1,
+    uid: member.uid,
+    nickname: sanitizeDisplayName(member.nickname, member.uid),
+    allTimeScore: member.allTimeScore,
+    roundsPlayed: member.roundsPlayed,
+    isCurrentUser: Boolean(viewerUid && member.uid === viewerUid),
+  }));
+
+  const viewerAllTimeIdx = rawAllTime.findIndex((m) => viewerUid && m.uid === viewerUid);
+  const viewerAllTime = viewerAllTimeIdx >= 0 ? allTime[viewerAllTimeIdx] : null;
+
+  return {
+    today,
+    allTime,
+    viewerToday,
+    viewerAllTime,
+    totalPlayers: Object.keys(world?.members ?? {}).length,
+  };
+}
+
+export function getLeagueLeaderboard(dateStr?: string) {
+  const store = getStore();
+  const date = dateStr || getLocalDateString(new Date(), 'UTC');
+  const list = Object.values(store.leagues)
+    .filter((l) => l.id !== 'lg_world')
+    .map((l) => {
+      const todayEntries = Object.values(l.days[date] ?? {});
+      const totalPoints = todayEntries.reduce((sum, e) => sum + (e.score ?? 0), 0);
+      const allTimePoints = Object.values(l.members).reduce(
+        (sum, m) => sum + (m.allTimeScore || 0),
+        0,
+      );
+      const playedTodayCount = todayEntries.length;
+      const memberCount = Object.keys(l.members).length;
+      const avgScore = playedTodayCount > 0 ? Math.round(totalPoints / playedTodayCount) : 0;
+      return {
+        id: l.id,
+        name: l.name,
+        themeEmoji: l.themeEmoji || '🏆',
+        memberCount,
+        maxMembers: l.maxMembers,
+        playedTodayCount,
+        totalPoints,
+        allTimePoints,
+        avgScore,
+      };
+    })
+    .sort((a, b) =>
+      b.allTimePoints !== a.allTimePoints
+        ? b.allTimePoints - a.allTimePoints
+        : b.memberCount - a.memberCount,
+    )
+    .map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+    }));
+
+  return list;
+}
+
+export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string[]) {
   const store = getStore();
   const date = getLocalDateString(new Date(), tz);
   const meta = getRoundMeta(date);
   const playId = `${date}_${uid}`;
-  const play = store.plays[playId];
+  const play =
+    store.plays[playId] ||
+    store.plays[`${uid}_${date}`] ||
+    Object.values(store.plays).find((p) => p.uid === uid && p.date === date);
   const user = getOrCreateUser({ uid, tz });
+
+  if (clientLeagueIds && Array.isArray(clientLeagueIds)) {
+    for (const lid of clientLeagueIds) {
+      if (store.leagues[lid] && !user.leagueIds.includes(lid)) {
+        user.leagueIds.push(lid);
+        if (!store.leagues[lid].members[uid]) {
+          store.leagues[lid].members[uid] = {
+            uid,
+            nickname: user.nickname,
+            role: store.leagues[lid].ownerUid === uid ? 'owner' : 'member',
+            joinedAt: new Date().toISOString(),
+            allTimeScore: 0,
+            roundsPlayed: 0,
+            weeklyWins: 0,
+            bestStreak: user.streakBest,
+          };
+        }
+      }
+    }
+  }
+
   const finishedPlaysCount = Object.values(store.plays).filter(
     (p) => p.uid === uid && p.status === 'finished',
   ).length;
 
+  const now = Date.now();
   const activeDuels = Object.values(store.duels)
     .filter(
       (d) =>
         (d.challengerUid === uid || d.opponentUid === uid) &&
         (d.status === 'pending' || d.status === 'active'),
     )
-    .map((d) => ({
-      id: d.id,
-      status: d.status,
-      challengerNickname: d.sides[d.challengerUid]?.nickname ?? 'Challenger',
-      opponentNickname: d.opponentUid
-        ? (d.sides[d.opponentUid]?.nickname ?? 'Opponent')
-        : 'Open invite',
-      myTurn: !d.sides[uid]?.finishedAt,
-    }));
+    .map((d) => {
+      const createdAtMs = new Date(d.createdAt).getTime();
+      const expiresAtMs = createdAtMs + 24 * 3600 * 1000;
+      const timeLeftMs = Math.max(0, expiresAtMs - now);
+      return {
+        id: d.id,
+        status: d.status,
+        challengerNickname: d.sides[d.challengerUid]?.nickname ?? 'Challenger',
+        opponentNickname: d.opponentUid
+          ? (d.sides[d.opponentUid]?.nickname ?? 'Adversar')
+          : 'Adversar liber',
+        myTurn: !d.sides[uid]?.finishedAt,
+        timeLeftMs,
+      };
+    });
+
+  const ownedLeaguesCount = Object.values(store.leagues).filter(
+    (l) => l.ownerUid === uid && l.id !== 'lg_world',
+  ).length;
+  const maxOwnedLeagues = user.pro.active
+    ? PRO_LIMITS.maxOwnedLeagues
+    : FREE_LIMITS.maxOwnedLeagues;
+  const maxActiveDuels = user.pro.active
+    ? PRO_LIMITS.maxActiveDuels
+    : FREE_LIMITS.maxActiveDuels;
+
+  const currentMonth = date.slice(0, 7);
+  const monthlyDuelsCount = Object.values(store.duels).filter((d) => {
+    if (d.challengerUid !== uid) return false;
+    const dMonth = getLocalDateString(new Date(d.createdAt), user.tz || tz).slice(0, 7);
+    return dMonth === currentMonth;
+  }).length;
+  const maxMonthlyDuels = user.pro.active
+    ? PRO_LIMITS.maxMonthlyDuels
+    : FREE_LIMITS.maxMonthlyDuels;
+
+  // RonDuel World public league
+  const world = store.leagues['lg_world'];
+  const worldTodayEntries = Object.values(world?.days[date] ?? {})
+    .filter((entry) => {
+      if (!entry.finishedAt) return false;
+      const correctCount = entry.emojiLine ? (entry.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+      if (correctCount > 0 && entry.score < 100 * correctCount) return false;
+      return true;
+    })
+    .sort((a, b) =>
+      b.score !== a.score ? b.score - a.score : (a.totalMs ?? 0) - (b.totalMs ?? 0),
+    );
+  const myWorldRankIdx = worldTodayEntries.findIndex((e) => e.uid === uid);
+  const myWorldRankToday = myWorldRankIdx >= 0 ? myWorldRankIdx + 1 : null;
+  const worldLeague = world
+    ? {
+        id: world.id,
+        name: world.name,
+        memberCount: Object.keys(world.members).length,
+        playedTodayCount: worldTodayEntries.length,
+        myRankToday: myWorldRankToday,
+        myScore: play?.status === 'finished' ? play.totalScore : null,
+        myNickname: user.nickname,
+      }
+    : null;
+
+  const leaguesLeaderboard = getLeagueLeaderboard(date);
+
+  // Private leagues: query all leagues where uid is owner or member
+  const allUserLeagues = Object.values(store.leagues).filter(
+    (l) =>
+      l.id !== 'lg_world' &&
+      (l.ownerUid === uid || Boolean(l.members[uid]) || user.leagueIds.includes(l.id)),
+  );
+  for (const l of allUserLeagues) {
+    if (!user.leagueIds.includes(l.id)) {
+      user.leagueIds.push(l.id);
+    }
+  }
+
+  const privateLeagues = allUserLeagues.map((l) => {
+    const todayEntries = Object.values(l.days[date] ?? {})
+      .filter((entry) => {
+        if (!entry.finishedAt) return false;
+        const correctCount = entry.emojiLine ? (entry.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+        if (correctCount > 0 && entry.score < 100 * correctCount) return false;
+        return true;
+      })
+      .sort((a, b) =>
+        b.score !== a.score ? b.score - a.score : (a.totalMs ?? 0) - (b.totalMs ?? 0),
+      );
+    const myRankIdx = todayEntries.findIndex((e) => e.uid === uid);
+    const memberList = Object.values(l.members);
+    const initials = memberList.slice(0, 4).map((m) =>
+      (m.nickname || 'P').slice(0, 2).toUpperCase(),
+    );
+    const intlRankIdx = leaguesLeaderboard.findIndex((lb) => lb.id === l.id);
+    const intlRank = intlRankIdx >= 0 ? intlRankIdx + 1 : null;
+    const intlTotalPoints = intlRankIdx >= 0 ? leaguesLeaderboard[intlRankIdx]!.allTimePoints : 0;
+
+    return {
+      id: l.id,
+      name: l.name,
+      inviteCode: l.inviteCode,
+      ownerUid: l.ownerUid,
+      isOwner: l.ownerUid === uid,
+      memberCount: memberList.length,
+      maxMembers: l.maxMembers,
+      isFull: memberList.length >= l.maxMembers,
+      playedTodayCount: todayEntries.length,
+      myRankToday: myRankIdx >= 0 ? myRankIdx + 1 : null,
+      myScore: play?.status === 'finished' ? play.totalScore : null,
+      myNickname: user.nickname,
+      intlRank,
+      intlTotalPoints,
+      initials,
+    };
+  });
+
+  const hasFullFreeLeague = privateLeagues.some(
+    (l) => l.isOwner && !user.pro.active && l.memberCount >= 5,
+  );
+
+  const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: user.tz || tz }));
+  const currentHour = nowInTz.getHours();
+  const streakAtRisk =
+    currentHour >= 20 &&
+    play?.status !== 'finished' &&
+    (user.freezes ?? 0) === 0 &&
+    user.streakCurrent > 0;
+
+  const freezeNotice = user.freezeUsedYesterday
+    ? `🧊 Ți-am folosit un scut ieri. Seria ta: ${user.streakCurrent} zile.`
+    : null;
+  if (user.freezeUsedYesterday) {
+    user.freezeUsedYesterday = false;
+  }
 
   return {
     ...meta,
     played: play?.status === 'finished',
     inProgress: play?.status === 'in_progress',
     playId: play ? play.playId : undefined,
+    score: play?.status === 'finished' ? play.totalScore : null,
+    totalScore: play?.status === 'finished' ? play.totalScore : null,
+    emojiLine: play?.status === 'finished' ? play.emojiLine : null,
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
+    freezes: user.freezes ?? 0,
+    streakAtRisk,
+    freezeNotice,
     isPro: user.pro.active,
     isAnonymous: user.isAnonymous,
+    authProvider: user.authProvider,
+    email: user.email,
     finishedPlaysCount,
+    ownedLeaguesCount,
+    maxOwnedLeagues,
+    activeDuelsCount: activeDuels.length,
+    maxActiveDuels,
+    monthlyDuelsCount,
+    maxMonthlyDuels,
     activeDuels,
-    leagues: user.leagueIds
-      .map((id) => store.leagues[id])
-      .filter((l): l is LeagueRecord => Boolean(l))
-      .map((l) => ({
-        id: l.id,
-        name: l.name,
-        inviteCode: l.inviteCode,
-        memberCount: Object.keys(l.members).length,
-        playedTodayCount: Object.keys(l.days[date] ?? {}).length,
-      })),
+    worldLeague,
+    privateLeagues,
+    hasFullFreeLeague,
+    leaguesLeaderboard,
+    globalPlayersLeaderboard: getGlobalPlayersLeaderboard(date, uid),
+    // Keep backward-compatible leagues array
+    leagues: privateLeagues.length > 0 ? privateLeagues : (worldLeague ? [worldLeague] : []),
   };
 }
 
@@ -444,7 +1128,7 @@ function toClientItem(item: ResolvedRoundItem, relaxedTimer: boolean) {
 export function startRound(params: {
   uid: string;
   tz: string;
-  locale: Locale;
+  locale: Locale | string;
   nickname?: string;
   relaxedTimer?: boolean;
 }) {
@@ -462,14 +1146,19 @@ export function startRound(params: {
   const playId = `${date}_${params.uid}`;
   const resolved = resolveRoundItems(date, params.locale);
 
-  let play = store.plays[playId];
+  let play =
+    store.plays[playId] ||
+    store.plays[`${params.uid}_${date}`] ||
+    Object.values(store.plays).find((p) => p.uid === params.uid && p.date === date);
+
   if (play?.status === 'finished') {
-    return { alreadyFinished: true as const, playId };
+    return { alreadyFinished: true as const, playId: play.playId };
   }
 
   const now = Date.now();
+  let activePlay: PlayRecord;
   if (!play) {
-    play = {
+    activePlay = {
       playId,
       uid: params.uid,
       date,
@@ -482,18 +1171,59 @@ export function startRound(params: {
       totalMs: 0,
       emojiLine: '',
     };
-    store.plays[playId] = play;
+    store.plays[playId] = activePlay;
+    store.plays[`${params.uid}_${date}`] = activePlay;
+  } else {
+    activePlay = play;
+    // If round was already started, advance any questions whose timer expired
+    let curr = activePlay.items.find((i) => i.answeredAt === undefined);
+    while (curr) {
+      const resItem = resolved[curr.index]!;
+      const limitMs = activePlay.relaxedTimer ? Math.round(resItem.limitMs * 1.5) : resItem.limitMs;
+      const elapsedMs = now - curr.servedAt;
+      if (elapsedMs >= limitMs) {
+        // Expired! Mark as timed out / wrong and advance
+        curr.answeredAt = curr.servedAt + limitMs;
+        curr.choice = null;
+        curr.correct = false;
+        curr.points = 0;
+        curr.timedOut = true;
+        curr.emoji = '🟥';
+        activePlay.totalMs += limitMs;
+
+        const nextIndex = curr.index + 1;
+        if (nextIndex < resolved.length) {
+          activePlay.items.push({ index: nextIndex, servedAt: curr.answeredAt, points: 0, timedOut: false });
+          curr = activePlay.items.find((i) => i.answeredAt === undefined);
+        } else {
+          // All questions finished
+          activePlay.status = 'finished';
+          finishRound(params.uid, activePlay.playId);
+          store.plays[playId] = activePlay;
+          store.plays[`${params.uid}_${date}`] = activePlay;
+          saveStoreToDisk(store);
+          return { alreadyFinished: true as const, playId: activePlay.playId };
+        }
+      } else {
+        // Still has time
+        break;
+      }
+    }
   }
 
   const currentItemState =
-    play.items.find((i) => i.answeredAt === undefined) ?? play.items[play.items.length - 1]!;
+    activePlay.items.find((i) => i.answeredAt === undefined) ?? activePlay.items[activePlay.items.length - 1]!;
   const resolvedItem = resolved[currentItemState.index]!;
-  const clientItem = toClientItem(resolvedItem, play.relaxedTimer);
+  const clientItem = toClientItem(resolvedItem, activePlay.relaxedTimer);
   const elapsedMs = Math.max(0, now - currentItemState.servedAt);
+
+  store.plays[playId] = activePlay;
+  store.plays[`${params.uid}_${date}`] = activePlay;
+  saveStoreToDisk(store);
 
   return {
     alreadyFinished: false as const,
-    playId,
+    playId: activePlay.playId,
     roundNumber: meta.roundNumber,
     totalItems: resolved.length,
     item: clientItem,
@@ -562,6 +1292,11 @@ export function submitAnswer(params: {
     nextPayload = toClientItem(resolved[nextIndex]!, play.relaxedTimer);
   }
 
+  store.plays[params.playId] = play;
+  store.plays[`${play.uid}_${play.date}`] = play;
+  store.plays[`${play.date}_${play.uid}`] = play;
+  saveStoreToDisk(store);
+
   return {
     correct: itemState.correct,
     points: itemState.points,
@@ -574,17 +1309,90 @@ export function submitAnswer(params: {
   };
 }
 
-export function finishRound(uid: string, playId: string) {
+export function finishRound(
+  uid: string,
+  playId: string,
+  clientSummary?: {
+    totalScore?: number;
+    totalMs?: number;
+    emojiLine?: string;
+    items?: Array<{ index: number; points: number; emoji?: string }>;
+  },
+) {
   const store = getStore();
-  const play = store.plays[playId];
-  if (!play || play.uid !== uid) {
-    throw new Error('Play not found');
+  let foundPlay: PlayRecord | undefined =
+    store.plays[playId] ||
+    Object.values(store.plays).find(
+      (p) => p.uid === uid && (p.playId === playId || p.playId.includes(uid)),
+    );
+
+  if (!foundPlay) {
+    const parts = playId.split('_');
+    let date = getLocalDateString(new Date(), 'UTC');
+    if (parts.length >= 2) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0]!)) date = parts[0]!;
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!)) date = parts[parts.length - 1]!;
+    }
+    const meta = getRoundMeta(date);
+    const user = getOrCreateUser({ uid });
+    foundPlay = {
+      playId,
+      uid,
+      date,
+      roundNumber: meta.roundNumber,
+      locale: user.locale || 'ro',
+      relaxedTimer: user.relaxedTimer,
+      status: 'finished',
+      items: [],
+      totalScore: 0,
+      totalMs: 0,
+      emojiLine: '',
+      finishedAt: new Date().toISOString(),
+    };
+    store.plays[playId] = foundPlay;
+    store.plays[`${foundPlay.date}_${uid}`] = foundPlay;
+    store.plays[`${uid}_${foundPlay.date}`] = foundPlay;
+  }
+
+  const play: PlayRecord = foundPlay;
+
+  // Compute score, totalMs and emojiLine ONLY from server-stored answers; ignore clientSummary overrides
+  const answeredItems = play.items.filter((it) => it.answeredAt !== undefined);
+  if (answeredItems.length > 0) {
+    play.totalScore = answeredItems.reduce((sum, item) => sum + (item.points || 0), 0);
+    play.totalMs = answeredItems.reduce(
+      (sum, item) => sum + Math.max(0, (item.answeredAt || item.servedAt) - item.servedAt),
+      0,
+    );
+    play.emojiLine = buildEmojiLine(
+      answeredItems.map((i) => ({
+        emoji: (i.emoji as '⚡' | '🟩' | '🟥') ?? (i.correct ? '🟩' : '🟥'),
+      })),
+    );
+  } else {
+    play.totalScore = 0;
+    play.totalMs = 0;
+    play.emojiLine = '';
+  }
+
+  // Invariant check: number of ⚡/🟩 must equal correct count and score >= 100 * correct
+  const correctCount = play.items.filter((i) => i.correct || (i.points && i.points > 0)).length;
+  const emojiCorrectCount = (play.emojiLine.match(/[⚡🟩]/gu) || []).length;
+  if (correctCount !== emojiCorrectCount || (correctCount > 0 && play.totalScore < 100 * correctCount)) {
+    if (answeredItems.length > 0) {
+      play.emojiLine = buildEmojiLine(
+        answeredItems.map((i) => ({
+          emoji: (i.points && i.points > 100) ? '⚡' : (i.correct || (i.points && i.points > 0)) ? '🟩' : '🟥',
+        })),
+      );
+    } else {
+      play.emojiLine = '';
+    }
   }
 
   if (play.status !== 'finished') {
     play.status = 'finished';
     play.finishedAt = new Date().toISOString();
-    play.emojiLine = buildEmojiLine(play.items.map((i) => ({ emoji: i.emoji ?? '🟥' })));
 
     const user = getOrCreateUser({ uid });
     const nextStreak = updateStreakWithShield({
@@ -600,26 +1408,29 @@ export function finishRound(uid: string, playId: string) {
     user.lastPlayedDate = play.date;
     user.streakShieldUsedWeek = nextStreak.streakShieldUsedWeek;
 
-    for (const leagueId of user.leagueIds) {
-      const league = store.leagues[leagueId];
-      if (!league) continue;
-      const member = league.members[uid];
-      if (!member) continue;
-      member.allTimeScore += play.totalScore;
-      member.roundsPlayed += 1;
-      member.bestStreak = Math.max(member.bestStreak, user.streakBest);
-      member.lastFinishedDate = play.date;
+    // Only update leagues if the player actually played answered questions
+    if (answeredItems.length > 0) {
+      for (const leagueId of user.leagueIds) {
+        const league = store.leagues[leagueId];
+        if (!league) continue;
+        const member = league.members[uid];
+        if (!member) continue;
+        member.allTimeScore += play.totalScore;
+        member.roundsPlayed += 1;
+        member.bestStreak = Math.max(member.bestStreak, user.streakBest);
+        member.lastFinishedDate = play.date;
 
-      if (!league.days[play.date]) league.days[play.date] = {};
-      league.days[play.date]![uid] = {
-        uid,
-        nickname: member.nickname,
-        score: play.totalScore,
-        totalMs: play.totalMs,
-        emojiLine: play.emojiLine,
-        relaxedTimer: play.relaxedTimer,
-        finishedAt: play.finishedAt,
-      };
+        if (!league.days[play.date]) league.days[play.date] = {};
+        league.days[play.date]![uid] = {
+          uid,
+          nickname: member.nickname,
+          score: play.totalScore,
+          totalMs: play.totalMs,
+          emojiLine: play.emojiLine,
+          relaxedTimer: play.relaxedTimer,
+          finishedAt: play.finishedAt,
+        };
+      }
     }
   }
 
@@ -629,45 +1440,185 @@ export function finishRound(uid: string, playId: string) {
     (p) => p.uid === uid && p.status === 'finished',
   ).length;
 
-  return {
+  const result = {
     playId: play.playId,
     date: play.date,
     roundNumber: play.roundNumber,
-    totalScore: play.totalScore,
-    totalMs: play.totalMs,
-    emojiLine: play.emojiLine,
+    totalScore: play.totalScore ?? 0,
+    totalMs: play.totalMs ?? 0,
+    emojiLine: play.emojiLine || '',
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
     finishedPlaysCount,
-    review: resolved.map((r, idx) => ({
-      index: idx,
-      prompt: r.prompt,
-      correctAnswer:
-        r.type === 'order' ? (r.correctOrder ?? []).join(' → ') : r.options[r.correctIndex ?? 0]!,
-      explanation: r.explanation,
-      points: play.items[idx]?.points ?? 0,
-      emoji: play.items[idx]?.emoji ?? '🟥',
-    })),
-    primaryLeague: user.leagueIds[0]
-      ? {
-          id: user.leagueIds[0],
-          inviteCode: store.leagues[user.leagueIds[0]]?.inviteCode,
-          name: store.leagues[user.leagueIds[0]]?.name,
+    review: resolved.map((r, idx) => {
+      const itemState = play.items.find((i) => i.index === idx);
+      const isCorrect = itemState ? Boolean(itemState.correct || (itemState.points && itemState.points > 0)) : false;
+      const isTimedOut = itemState ? Boolean(itemState.timedOut) : false;
+      let userAnswer: string | null = null;
+      if (itemState && itemState.choice !== undefined && itemState.choice !== null) {
+        if (r.type === 'order' && Array.isArray(itemState.choice)) {
+          userAnswer = itemState.choice.join(' → ');
+        } else if (typeof itemState.choice === 'number') {
+          userAnswer = r.options[itemState.choice] ?? null;
         }
-      : null,
+      }
+      return {
+        index: idx,
+        questionId: r.questionId,
+        prompt: r.prompt,
+        correctAnswer:
+          r.type === 'order' ? (r.correctOrder ?? []).join(' → ') : r.options[r.correctIndex ?? 0]!,
+        explanation: r.explanation,
+        points: itemState?.points ?? 0,
+        emoji: itemState?.emoji ?? (isCorrect ? '🟩' : '🟥'),
+        correct: isCorrect,
+        timedOut: isTimedOut,
+        userAnswer,
+      };
+    }),
+    leagueRanks: user.leagueIds
+      .map((id) => store.leagues[id])
+      .filter((l): l is LeagueRecord => Boolean(l))
+      .map((lg) => {
+        const todayEntries = Object.values(lg.days[play.date] ?? {}).sort((a, b) =>
+          b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs,
+        );
+        const rankIdx = todayEntries.findIndex((e) => e.uid === uid);
+        return {
+          id: lg.id,
+          name: lg.name,
+          inviteCode: lg.inviteCode,
+          isWorld: lg.id === 'lg_world',
+          rank: rankIdx >= 0 ? rankIdx + 1 : 1,
+          totalMembers: Object.keys(lg.members).length,
+        };
+      }),
+    primaryLeague: (() => {
+      const pId = user.leagueIds.find((id) => id !== 'lg_world');
+      const pLg = pId ? store.leagues[pId] : null;
+      return pLg
+        ? {
+            id: pLg.id,
+            inviteCode: pLg.inviteCode,
+            name: pLg.name,
+          }
+        : null;
+    })(),
   };
+
+  store.plays[play.playId] = play;
+  store.plays[`${play.date}_${uid}`] = play;
+  store.plays[`${uid}_${play.date}`] = play;
+  saveStoreToDisk(store);
+
+  return result;
 }
 
 export function getPlayResult(playId: string) {
   const store = getStore();
-  const play = store.plays[playId];
-  if (!play || play.status !== 'finished') return null;
-  return finishRound(play.uid, playId);
+  let foundPlay: PlayRecord | undefined =
+    store.plays[playId] ||
+    Object.values(store.plays).find((p) => p.playId === playId || playId.includes(p.playId));
+
+  if (!foundPlay) {
+    const parts = playId.split('_');
+    if (parts.length >= 2) {
+      let date = '';
+      let uid = '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0]!)) {
+        date = parts[0]!;
+        uid = parts.slice(1).join('_');
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!)) {
+        date = parts[parts.length - 1]!;
+        uid = parts.slice(0, -1).join('_');
+      }
+      if (date && uid) {
+        foundPlay =
+          store.plays[`${date}_${uid}`] ||
+          store.plays[`${uid}_${date}`] ||
+          Object.values(store.plays).find((p) => p.uid === uid && p.date === date);
+      }
+    }
+  }
+
+  if (foundPlay) {
+    return finishRound(foundPlay.uid, foundPlay.playId);
+  }
+
+  // Graceful recovery: Reconstruct play from playId so the user never receives 404 or a crash
+  const parts = playId.split('_');
+  if (parts.length >= 2) {
+    let date = '';
+    let uid = '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0]!)) {
+      date = parts[0]!;
+      uid = parts.slice(1).join('_');
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!)) {
+      date = parts[parts.length - 1]!;
+      uid = parts.slice(0, -1).join('_');
+    }
+    if (date && uid) {
+      const user = getOrCreateUser({ uid });
+      const meta = getRoundMeta(date);
+      const recoveredPlay: PlayRecord = {
+        playId: `${date}_${uid}`,
+        uid,
+        date,
+        roundNumber: meta.roundNumber,
+        locale: user.locale || 'ro',
+        relaxedTimer: user.relaxedTimer,
+        status: 'finished',
+        items: [],
+        totalScore: 0,
+        totalMs: 0,
+        emojiLine: '',
+        finishedAt: new Date().toISOString(),
+      };
+      store.plays[`${date}_${uid}`] = recoveredPlay;
+      store.plays[`${uid}_${date}`] = recoveredPlay;
+      saveStoreToDisk(store);
+      return finishRound(uid, `${date}_${uid}`);
+    }
+  }
+
+  return null;
 }
 
-export function createLeague(params: { uid: string; name?: string; tz: string; locale: Locale }) {
+export function createLeague(params: {
+  uid: string;
+  name?: string;
+  tz: string;
+  locale: Locale;
+  themeEmoji?: string;
+  themeColor?: string;
+  plan?: 'free' | 'pro_trial' | 'pro';
+}) {
   const store = getStore();
   const user = getOrCreateUser({ uid: params.uid, tz: params.tz, locale: params.locale });
+
+  if (params.plan === 'pro_trial' && !user.pro.active) {
+    const trialEndsAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    user.pro = {
+      active: true,
+      plan: 'yearly',
+      until: trialEndsAt,
+      isTrial: true,
+      trialEndsAt,
+    };
+  }
+
+  const ownedCount = Object.values(store.leagues).filter((l) => l.ownerUid === params.uid).length;
+  const maxOwned = user.pro.active ? PRO_LIMITS.maxOwnedLeagues : FREE_LIMITS.maxOwnedLeagues;
+  if (ownedCount >= maxOwned) {
+    throw new Error('Ai folosit liga gratuită. Cu Pro creezi ligi nelimitate.');
+  }
+
+  const trimmedName = params.name?.trim();
+  if (trimmedName !== undefined && trimmedName.length > 0) {
+    if (trimmedName.length < 2 || trimmedName.length > 30) {
+      throw new Error('League name must be between 2 and 30 characters.');
+    }
+  }
 
   let inviteCode = generateInviteCode();
   while (store.inviteCodes[inviteCode]) {
@@ -675,8 +1626,16 @@ export function createLeague(params: { uid: string; name?: string; tz: string; l
   }
 
   const id = `lg_${inviteCode.toLowerCase()}`;
-  const name = params.name?.trim() || suggestLeagueName(params.locale);
-  const maxMembers = user.pro.active
+  const name = trimmedName || suggestLeagueName(params.locale);
+  const nameCheck = checkLeagueNameAvailable(name);
+  if (!nameCheck.available) {
+    const suggText = nameCheck.suggestions.length > 0 ? ` Sugestii: ${nameCheck.suggestions.join(', ')}` : '';
+    throw new Error(`Numele de ligă „${name}” este deja folosit.${suggText}`);
+  }
+
+  const isProLeague =
+    params.plan === 'pro_trial' || (params.plan === 'pro' && user.pro.active);
+  const maxMembers = isProLeague
     ? PRO_LIMITS.maxMembersPerLeague
     : FREE_LIMITS.maxMembersPerLeague;
 
@@ -687,6 +1646,8 @@ export function createLeague(params: { uid: string; name?: string; tz: string; l
     ownerUid: params.uid,
     tz: params.tz,
     maxMembers,
+    themeEmoji: params.themeEmoji || '🏆',
+    themeColor: params.themeColor || 'default',
     members: {
       [params.uid]: {
         uid: params.uid,
@@ -736,10 +1697,11 @@ export function createLeague(params: { uid: string; name?: string; tz: string; l
     user.leagueIds.push(id);
   }
 
+  saveStoreToDisk(store);
   return league;
 }
 
-export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string) {
+export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countryFilter?: string) {
   const store = getStore();
   const id = store.inviteCodes[codeOrId.toUpperCase()] ?? codeOrId;
   const league = store.leagues[id];
@@ -747,35 +1709,274 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string) {
 
   const today = getLocalDateString(new Date(), league.tz);
   const viewerMember = viewerUid ? league.members[viewerUid] : undefined;
-  const viewerFinishedToday = viewerMember?.lastFinishedDate === today;
+  const globalPlay = viewerUid ? store.plays[`${today}_${viewerUid}`] : undefined;
 
-  const rawToday = Object.values(league.days[today] ?? {}).sort((a, b) =>
-    b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs,
+  // Auto-sync today's play if viewer played globally but joined mid-day or wasn't synced
+  if (viewerUid && viewerMember && globalPlay?.status === 'finished') {
+    if (!league.days[today]) league.days[today] = {};
+    if (!league.days[today]![viewerUid]) {
+      league.days[today]![viewerUid] = {
+        uid: viewerUid,
+        nickname: viewerMember.nickname,
+        score: globalPlay.totalScore,
+        totalMs: globalPlay.totalMs,
+        emojiLine: globalPlay.emojiLine,
+        relaxedTimer: globalPlay.relaxedTimer,
+        finishedAt: globalPlay.finishedAt ?? new Date().toISOString(),
+      };
+      viewerMember.lastFinishedDate = today;
+    }
+  }
+
+  const viewerFinishedToday = Boolean(
+    viewerMember?.lastFinishedDate === today || globalPlay?.status === 'finished',
   );
+  const viewerScoreToday =
+    globalPlay?.status === 'finished'
+      ? globalPlay.totalScore
+      : (viewerUid ? league.days[today]?.[viewerUid]?.score ?? null : null);
+  const isWorld = league.id === 'lg_world';
 
-  const todayScores = rawToday.map((entry) => ({
+  let rawToday = Object.values(league.days[today] ?? {})
+    .filter((entry) => {
+      if (!entry.finishedAt) return false;
+      const correctCount = entry.emojiLine ? (entry.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
+      if (correctCount > 0 && entry.score < 100 * correctCount) return false;
+      return true;
+    })
+    .sort((a, b) =>
+      b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs,
+    );
+
+  if (countryFilter) {
+    rawToday = rawToday.filter((entry) => {
+      const u = store.users[entry.uid];
+      return u?.country === countryFilter;
+    });
+  }
+
+  let viewerRankToday: number | null = null;
+  if (viewerUid) {
+    const vIdx = rawToday.findIndex((entry) => entry.uid === viewerUid);
+    if (vIdx !== -1) {
+      viewerRankToday = vIdx + 1;
+    }
+  }
+
+  // For all players, compute ranks and keep all members in world league
+  const filteredToday = rawToday;
+
+  const todayScores = filteredToday.map((entry, idx) => ({
+    rank: idx + 1,
     uid: entry.uid,
-    nickname: entry.nickname,
-    score: viewerFinishedToday ? entry.score : null,
-    totalMs: viewerFinishedToday ? entry.totalMs : null,
-    emojiLine: viewerFinishedToday ? entry.emojiLine : null,
+    nickname: sanitizeDisplayName(entry.nickname, entry.uid),
+    score: viewerFinishedToday || !isWorld ? entry.score : null,
+    totalMs: viewerFinishedToday || !isWorld ? entry.totalMs : null,
+    emojiLine: viewerFinishedToday || !isWorld ? entry.emojiLine : null,
     relaxedTimer: entry.relaxedTimer,
+    isCurrentUser: Boolean(viewerUid && entry.uid === viewerUid),
   }));
 
-  const allTime = Object.values(league.members).sort((a, b) => b.allTimeScore - a.allTimeScore);
+  let allTimeMembers = Object.values(league.members)
+    .filter((m) => (m.allTimeScore || 0) > 0 && (m.roundsPlayed || 0) > 0)
+    .sort((a, b) => b.allTimeScore - a.allTimeScore);
+
+  if (countryFilter) {
+    allTimeMembers = allTimeMembers.filter((m) => {
+      const u = store.users[m.uid];
+      return u?.country === countryFilter;
+    });
+  }
+
+  let viewerRankAllTime: number | null = null;
+  if (viewerUid) {
+    const vIdx = allTimeMembers.findIndex((m) => m.uid === viewerUid);
+    if (vIdx !== -1) {
+      viewerRankAllTime = vIdx + 1;
+    }
+  }
+
+  const allTime = allTimeMembers.map((member, idx) => ({
+    rank: idx + 1,
+    uid: member.uid,
+    nickname: sanitizeDisplayName(member.nickname, member.uid),
+    allTimeScore: member.allTimeScore,
+    roundsPlayed: member.roundsPlayed,
+    joinedAt: member.joinedAt,
+    scoreToday:
+      viewerFinishedToday || !isWorld
+        ? (league.days[today]?.[member.uid]?.score ?? null)
+        : null,
+    isCurrentUser: Boolean(viewerUid && member.uid === viewerUid),
+  }));
+
+  const adminMember = league.members[league.ownerUid];
+  const adminUser = store.users[league.ownerUid];
+  const adminName = adminMember?.nickname ?? adminUser?.nickname ?? 'Admin';
+
+  const leaguesLb = getLeagueLeaderboard(today);
+  const intlRankIdx = leaguesLb.findIndex((l) => l.id === league.id);
+  const intlRank = intlRankIdx >= 0 ? intlRankIdx + 1 : null;
 
   return {
     id: league.id,
     name: league.name,
     inviteCode: league.inviteCode,
+    ownerUid: league.ownerUid,
+    adminName,
+    themeEmoji: league.themeEmoji ?? '🏆',
+    themeColor: league.themeColor ?? 'default',
     tz: league.tz,
     memberCount: Object.keys(league.members).length,
-    maxMembers: league.maxMembers,
+    maxMembers: isWorld ? 10_000_000 : league.maxMembers,
+    createdAt: league.createdAt || '2026-11-01T00:00:00.000Z',
     viewerFinishedToday,
+    viewerScoreToday,
+    viewerRankToday,
+    viewerRankAllTime,
+    isWorld,
+    intlRank,
+    isOwner: Boolean(viewerUid && league.ownerUid === viewerUid),
+    isMember: Boolean(viewerMember),
+    privateApproval: Boolean(league.privateApproval),
     todayScores,
     allTime,
     feed: (league.feed ?? []).slice(-10).reverse(),
   };
+}
+
+export function renameLeague(params: {
+  codeOrId: string;
+  actorUid: string;
+  name: string;
+  isAdmin?: boolean;
+}) {
+  const store = getStore();
+  const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
+  const league = store.leagues[id];
+  if (!league) throw new Error('League not found');
+  if (!params.isAdmin && league.ownerUid !== params.actorUid) {
+    throw new Error('Only the league owner can rename the league');
+  }
+  const trimmed = params.name.trim();
+  if (trimmed.length < 2 || trimmed.length > 30) {
+    throw new Error('League name must be between 2 and 30 characters');
+  }
+  const nameCheck = checkLeagueNameAvailable(trimmed, league.id);
+  if (!nameCheck.available) {
+    const suggText = nameCheck.suggestions.length > 0 ? ` Sugestii: ${nameCheck.suggestions.join(', ')}` : '';
+    throw new Error(`Numele de ligă „${trimmed}” este deja folosit.${suggText}`);
+  }
+  league.name = trimmed;
+  saveStoreToDisk(store);
+  return league;
+}
+
+export function deleteLeague(params: {
+  codeOrId: string;
+  actorUid: string;
+  isAdmin?: boolean;
+}) {
+  const store = getStore();
+  const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
+  const league = store.leagues[id];
+  if (!league) throw new Error('League not found');
+  if (!params.isAdmin && league.ownerUid !== params.actorUid) {
+    throw new Error('Only the league owner can delete the league');
+  }
+  delete store.inviteCodes[league.inviteCode];
+  for (const memberUid of Object.keys(league.members)) {
+    const u = store.users[memberUid];
+    if (u) {
+      u.leagueIds = u.leagueIds.filter((lid) => lid !== league.id);
+    }
+  }
+  delete store.leagues[id];
+  return { deleted: true, leagueId: id };
+}
+
+export function leaveOrRemoveLeagueMember(params: {
+  codeOrId: string;
+  targetUid: string;
+  actorUid: string;
+  isAdmin?: boolean;
+}) {
+  const store = getStore();
+  const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
+  const league = store.leagues[id];
+  if (!league) throw new Error('League not found');
+
+  const isSelf = params.targetUid === params.actorUid;
+  const isOwner = league.ownerUid === params.actorUid;
+  if (!isSelf && !isOwner && !params.isAdmin) {
+    throw new Error('Not authorized to remove this member');
+  }
+
+  delete league.members[params.targetUid];
+  const user = store.users[params.targetUid];
+  if (user) {
+    user.leagueIds = user.leagueIds.filter((lid) => lid !== league.id);
+  }
+
+  const remainingMembers = Object.values(league.members);
+  if (remainingMembers.length === 0) {
+    delete store.inviteCodes[league.inviteCode];
+    delete store.leagues[id];
+    return { deletedLeague: true, leagueId: id };
+  }
+
+  if (league.ownerUid === params.targetUid) {
+    const oldest = [...remainingMembers].sort((a, b) => a.joinedAt.localeCompare(b.joinedAt))[0]!;
+    league.ownerUid = oldest.uid;
+    oldest.role = 'owner';
+  }
+
+  return { deletedLeague: false, leagueId: id };
+}
+
+export function regenerateLeagueInviteCode(params: {
+  codeOrId: string;
+  actorUid: string;
+}) {
+  const store = getStore();
+  const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
+  const league = store.leagues[id];
+  if (!league) throw new Error('League not found');
+  if (league.ownerUid !== params.actorUid) {
+    throw new Error('Only the league owner can regenerate the code');
+  }
+  const user = store.users[params.actorUid];
+  if (!user?.pro.active) {
+    throw new Error('Regenerating invite code is a Pro feature');
+  }
+  delete store.inviteCodes[league.inviteCode];
+  let newCode = generateInviteCode();
+  while (store.inviteCodes[newCode]) {
+    newCode = generateInviteCode();
+  }
+  league.inviteCode = newCode;
+  store.inviteCodes[newCode] = id;
+  return { success: true, inviteCode: newCode };
+}
+
+export function setLeaguePrivateApproval(params: {
+  codeOrId: string;
+  actorUid: string;
+  enabled: boolean;
+}) {
+  const store = getStore();
+  const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
+  const league = store.leagues[id];
+  if (!league) throw new Error('League not found');
+  if (league.ownerUid !== params.actorUid) {
+    throw new Error('Only the league owner can manage approval');
+  }
+  const user = store.users[params.actorUid];
+  if (!user?.pro.active) {
+    throw new Error('Private approval is a Pro feature');
+  }
+  league.privateApproval = params.enabled;
+  return { success: true, privateApproval: league.privateApproval };
 }
 
 export function joinLeague(params: {
@@ -786,7 +1987,7 @@ export function joinLeague(params: {
 }) {
   const store = getStore();
   const id = store.inviteCodes[params.inviteCode.toUpperCase()];
-  if (!id) throw new Error('League not found');
+  if (!id) throw new Error('Codul nu există');
   const league = store.leagues[id]!;
 
   const nickCheck = validateNickname(params.nickname);
@@ -794,11 +1995,16 @@ export function joinLeague(params: {
     throw new Error(`Invalid nickname: ${nickCheck.reason}`);
   }
 
-  if (!league.members[params.uid] && Object.keys(league.members).length >= league.maxMembers) {
-    throw new Error('League is full (25 members on Free tier). Upgrade to Pro for up to 200.');
+  const user = getOrCreateUser({ uid: params.uid, nickname: nickCheck.value, tz: params.tz });
+  const privateCount = user.leagueIds.filter((lId) => lId !== 'lg_world').length;
+  if (!league.members[params.uid] && !user.pro.active && privateCount >= FREE_LIMITS.maxJoinedLeagues) {
+    throw new Error('Ai atins limita de 10 ligi în versiunea gratuită. Treci la Pro pentru ligi nelimitate!');
   }
 
-  const user = getOrCreateUser({ uid: params.uid, nickname: nickCheck.value, tz: params.tz });
+  if (!league.members[params.uid] && Object.keys(league.members).length >= league.maxMembers) {
+    throw new Error('Liga e plină. Cere-i adminului să treacă la Pro.');
+  }
+
   if (!league.members[params.uid]) {
     league.members[params.uid] = {
       uid: params.uid,
@@ -818,6 +2024,23 @@ export function joinLeague(params: {
       text: `${nickCheck.value} joined the league`,
       createdAt: new Date().toISOString(),
     });
+    const today = getLocalDateString(new Date(), params.tz || league.tz);
+    const todayPlay = store.plays[`${today}_${params.uid}`];
+    if (todayPlay?.status === 'finished') {
+      if (!league.days[today]) league.days[today] = {};
+      league.days[today]![params.uid] = {
+        uid: params.uid,
+        nickname: nickCheck.value,
+        score: todayPlay.totalScore,
+        totalMs: todayPlay.totalMs,
+        emojiLine: todayPlay.emojiLine,
+        relaxedTimer: todayPlay.relaxedTimer,
+        finishedAt: todayPlay.finishedAt ?? new Date().toISOString(),
+      };
+      league.members[params.uid]!.allTimeScore = todayPlay.totalScore;
+      league.members[params.uid]!.roundsPlayed = 1;
+      league.members[params.uid]!.lastFinishedDate = today;
+    }
   } else {
     league.members[params.uid]!.nickname = nickCheck.value;
   }
@@ -868,6 +2091,20 @@ export function createDuel(params: {
     nickname: params.nickname,
     tz: params.tz,
   });
+
+  const userTz = params.tz || user.tz || 'Europe/Bucharest';
+  const currentMonth = getLocalDateString(new Date(), userTz).slice(0, 7);
+  const monthlyCount = Object.values(store.duels).filter((d) => {
+    if (d.challengerUid !== params.challengerUid) return false;
+    const dMonth = getLocalDateString(new Date(d.createdAt), userTz).slice(0, 7);
+    return dMonth === currentMonth;
+  }).length;
+  const maxMonthly = user.pro.active ? PRO_LIMITS.maxMonthlyDuels : FREE_LIMITS.maxMonthlyDuels;
+  if (monthlyCount >= maxMonthly) {
+    throw new Error(
+      `Free tier monthly limit reached (${FREE_LIMITS.maxMonthlyDuels} duels/month). Upgrade to Pro for unlimited duels.`,
+    );
+  }
 
   const activeCount = Object.values(store.duels).filter(
     (d) =>
@@ -926,7 +2163,7 @@ export function createDuel(params: {
   return duel;
 }
 
-function resolveDuelItems(duel: DuelRecord, locale: Locale): ResolvedRoundItem[] {
+function resolveDuelItems(duel: DuelRecord, locale: Locale | string): ResolvedRoundItem[] {
   const store = getStore();
   return duel.questionIds.map((qid, idx) => {
     const q = store.questions.find((item) => item.id === qid) ?? store.questions[idx]!;
@@ -971,6 +2208,8 @@ export function getDuelView(duelId: string, locale: Locale = 'en') {
     opponentUid: duel.opponentUid,
     winnerUid: duel.winnerUid,
     walkover: duel.walkover,
+    walkoverNote: duel.walkover ? 'câștigat prin neprezentare' : undefined,
+    rated: duel.rated ?? false,
     createdAt: duel.createdAt,
     sides: Object.fromEntries(
       Object.entries(duel.sides).map(([uid, s]) => [
@@ -999,6 +2238,146 @@ export function getDuelView(duelId: string, locale: Locale = 'en') {
             opponentPts: opponentSide?.items[idx]?.points ?? 0,
           }))
         : [],
+  };
+}
+
+export function getUserDuels(uid: string) {
+  const store = getStore();
+  const now = Date.now();
+  const user = getOrCreateUser({ uid });
+
+  const all = Object.values(store.duels).filter(
+    (d) => d.challengerUid === uid || d.opponentUid === uid,
+  );
+
+  const yourTurn: Array<{
+    id: string;
+    status: string;
+    isChallenger: boolean;
+    myNickname: string;
+    opponentNickname: string;
+    opponentUid: string | null;
+    myScore: number;
+    opponentScore: number;
+    winnerUid: string | null;
+    isWinner: boolean;
+    isTie: boolean;
+    myTurn: boolean;
+    timeLeftMs: number;
+    createdAt: string;
+  }> = [];
+
+  const waiting: Array<{
+    id: string;
+    status: string;
+    isChallenger: boolean;
+    myNickname: string;
+    opponentNickname: string;
+    opponentUid: string | null;
+    myScore: number;
+    opponentScore: number;
+    winnerUid: string | null;
+    isWinner: boolean;
+    isTie: boolean;
+    myTurn: boolean;
+    timeLeftMs: number;
+    createdAt: string;
+  }> = [];
+
+  const finished: Array<{
+    id: string;
+    status: string;
+    isChallenger: boolean;
+    myNickname: string;
+    opponentNickname: string;
+    opponentUid: string | null;
+    myScore: number;
+    opponentScore: number;
+    winnerUid: string | null;
+    isWinner: boolean;
+    isTie: boolean;
+    myTurn: boolean;
+    timeLeftMs: number;
+    createdAt: string;
+  }> = [];
+
+  for (const d of all) {
+    const isChallenger = d.challengerUid === uid;
+    const opponentUid = isChallenger ? d.opponentUid : d.challengerUid;
+    const mySide = d.sides[uid];
+    const oppSide = opponentUid ? d.sides[opponentUid] : null;
+
+    const oppNickname = oppSide?.nickname || (opponentUid ? 'Adversar' : 'În așteptare adversar');
+    const myNickname = mySide?.nickname || 'Tu';
+    const createdAtMs = new Date(d.createdAt).getTime();
+    const expiresAtMs = createdAtMs + 24 * 3600 * 1000;
+    const timeLeftMs = Math.max(0, expiresAtMs - now);
+
+    const rival = opponentUid ? user.rivals?.[opponentUid] : undefined;
+    const h2h = rival
+      ? {
+          myWins: rival.wins,
+          opponentWins: rival.losses,
+          draws: rival.draws,
+          winStreak: rival.currentWinStreak,
+        }
+      : null;
+
+    const summary = {
+      id: d.id,
+      status: d.status,
+      isChallenger,
+      myNickname,
+      opponentNickname: oppNickname,
+      opponentUid,
+      myScore: mySide?.score ?? 0,
+      opponentScore: oppSide?.score ?? 0,
+      winnerUid: d.winnerUid,
+      isWinner: d.winnerUid === uid,
+      isTie: d.status === 'complete' && !d.winnerUid,
+      walkover: d.walkover,
+      walkoverNote: d.walkover ? 'câștigat prin neprezentare' : undefined,
+      rated: d.rated ?? false,
+      h2h,
+      myTurn: !mySide?.finishedAt,
+      timeLeftMs,
+      createdAt: d.createdAt,
+    };
+
+    if (d.status === 'complete' || d.status === 'expired') {
+      finished.push(summary);
+    } else if (!mySide?.finishedAt) {
+      yourTurn.push(summary);
+    } else {
+      waiting.push(summary);
+    }
+  }
+
+  yourTurn.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  waiting.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  finished.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  const activeCount = yourTurn.length + waiting.length;
+  const maxActive = user.pro.active ? PRO_LIMITS.maxActiveDuels : FREE_LIMITS.maxActiveDuels;
+
+  const userTz = user.tz || 'Europe/Bucharest';
+  const currentMonth = getLocalDateString(new Date(), userTz).slice(0, 7);
+  const monthlyCount = Object.values(store.duels).filter((d) => {
+    if (d.challengerUid !== uid) return false;
+    const dMonth = getLocalDateString(new Date(d.createdAt), userTz).slice(0, 7);
+    return dMonth === currentMonth;
+  }).length;
+  const maxMonthly = user.pro.active ? PRO_LIMITS.maxMonthlyDuels : FREE_LIMITS.maxMonthlyDuels;
+
+  return {
+    yourTurn,
+    waiting,
+    finished,
+    isPro: user.pro.active,
+    activeCount,
+    maxActive,
+    monthlyCount,
+    maxMonthly,
   };
 }
 
@@ -1134,22 +2513,137 @@ export function submitDuelAnswer(params: {
     duel.winnerUid = outcome.winnerUid;
     duel.walkover = outcome.walkover;
 
-    if (outcome.status === 'complete' && outcome.winnerUid && duel.opponentUid) {
-      const pk = getPairKey(duel.challengerUid, duel.opponentUid);
-      if (!store.pairRecords[pk]) store.pairRecords[pk] = {};
-      store.pairRecords[pk]![outcome.winnerUid] =
-        (store.pairRecords[pk]![outcome.winnerUid] ?? 0) + 1;
+    const challengerUser = store.users[duel.challengerUid];
+    const opponentUser = duel.opponentUid ? store.users[duel.opponentUid] : undefined;
+    const isChallengerAuth = Boolean(
+      challengerUser &&
+        !challengerUser.isAnonymous &&
+        challengerUser.authProvider &&
+        challengerUser.authProvider !== 'anonymous',
+    );
+    const isOpponentAuth = Boolean(
+      opponentUser &&
+        !opponentUser.isAnonymous &&
+        opponentUser.authProvider &&
+        opponentUser.authProvider !== 'anonymous',
+    );
+    const isRated = isChallengerAuth && isOpponentAuth;
+    duel.rated = isRated;
 
-      if (duel.leagueId && store.leagues[duel.leagueId]) {
-        const lg = store.leagues[duel.leagueId]!;
-        const winnerNick = duel.sides[outcome.winnerUid]?.nickname ?? 'Winner';
-        if (!lg.feed) lg.feed = [];
-        lg.feed.push({
-          id: `ev_${Date.now()}`,
-          type: 'duel_complete',
-          text: `⚔️ ${winnerNick} won a 1v1 duel (${challengerSide?.score ?? 0} vs ${opponentSide?.score ?? 0})`,
-          createdAt: new Date().toISOString(),
-        });
+    if (outcome.status === 'complete' && duel.opponentUid) {
+      const oppUid = duel.opponentUid;
+      const chUid = duel.challengerUid;
+
+      if (isRated && challengerUser && opponentUser) {
+        if (!challengerUser.duelStats) {
+          challengerUser.duelStats = {
+            played: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            bestWinStreak: 0,
+            currentWinStreak: 0,
+          };
+        }
+        if (!opponentUser.duelStats) {
+          opponentUser.duelStats = {
+            played: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            bestWinStreak: 0,
+            currentWinStreak: 0,
+          };
+        }
+        if (!challengerUser.rivals) challengerUser.rivals = {};
+        if (!opponentUser.rivals) opponentUser.rivals = {};
+
+        if (!challengerUser.rivals[oppUid]) {
+          challengerUser.rivals[oppUid] = {
+            opponentUid: oppUid,
+            opponentNickname: opponentUser.nickname,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            lastDuelAt: new Date().toISOString(),
+            currentWinStreak: 0,
+          };
+        }
+        if (!opponentUser.rivals[chUid]) {
+          opponentUser.rivals[chUid] = {
+            opponentUid: chUid,
+            opponentNickname: challengerUser.nickname,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            lastDuelAt: new Date().toISOString(),
+            currentWinStreak: 0,
+          };
+        }
+
+        challengerUser.duelStats.played += 1;
+        opponentUser.duelStats.played += 1;
+        challengerUser.rivals[oppUid].lastDuelAt = new Date().toISOString();
+        opponentUser.rivals[chUid].lastDuelAt = new Date().toISOString();
+
+        if (outcome.winnerUid === chUid) {
+          challengerUser.duelStats.wins += 1;
+          challengerUser.duelStats.currentWinStreak += 1;
+          challengerUser.duelStats.bestWinStreak = Math.max(
+            challengerUser.duelStats.bestWinStreak,
+            challengerUser.duelStats.currentWinStreak,
+          );
+          challengerUser.rivals[oppUid].wins += 1;
+          challengerUser.rivals[oppUid].currentWinStreak += 1;
+
+          opponentUser.duelStats.losses += 1;
+          opponentUser.duelStats.currentWinStreak = 0;
+          opponentUser.rivals[chUid].losses += 1;
+          opponentUser.rivals[chUid].currentWinStreak = 0;
+        } else if (outcome.winnerUid === oppUid) {
+          opponentUser.duelStats.wins += 1;
+          opponentUser.duelStats.currentWinStreak += 1;
+          opponentUser.duelStats.bestWinStreak = Math.max(
+            opponentUser.duelStats.bestWinStreak,
+            opponentUser.duelStats.currentWinStreak,
+          );
+          opponentUser.rivals[chUid].wins += 1;
+          opponentUser.rivals[chUid].currentWinStreak += 1;
+
+          challengerUser.duelStats.losses += 1;
+          challengerUser.duelStats.currentWinStreak = 0;
+          challengerUser.rivals[oppUid].losses += 1;
+          challengerUser.rivals[oppUid].currentWinStreak = 0;
+        } else {
+          challengerUser.duelStats.draws += 1;
+          challengerUser.duelStats.currentWinStreak = 0;
+          challengerUser.rivals[oppUid].draws += 1;
+          challengerUser.rivals[oppUid].currentWinStreak = 0;
+
+          opponentUser.duelStats.draws += 1;
+          opponentUser.duelStats.currentWinStreak = 0;
+          opponentUser.rivals[chUid].draws += 1;
+          opponentUser.rivals[chUid].currentWinStreak = 0;
+        }
+      }
+
+      if (outcome.winnerUid) {
+        const pk = getPairKey(duel.challengerUid, duel.opponentUid);
+        if (!store.pairRecords[pk]) store.pairRecords[pk] = {};
+        store.pairRecords[pk]![outcome.winnerUid] =
+          (store.pairRecords[pk]![outcome.winnerUid] ?? 0) + 1;
+
+        if (duel.leagueId && store.leagues[duel.leagueId]) {
+          const lg = store.leagues[duel.leagueId]!;
+          const winnerNick = duel.sides[outcome.winnerUid]?.nickname ?? 'Winner';
+          if (!lg.feed) lg.feed = [];
+          lg.feed.push({
+            id: `ev_${Date.now()}`,
+            type: 'duel_complete',
+            text: `⚔️ ${winnerNick} won a 1v1 duel (${challengerSide?.score ?? 0} vs ${opponentSide?.score ?? 0})`,
+            createdAt: new Date().toISOString(),
+          });
+        }
       }
     }
   }
@@ -1170,12 +2664,98 @@ export function submitDuelAnswer(params: {
 export function upgradeAccount(params: {
   uid: string;
   email: string;
-  provider: 'email_link' | 'google';
+  provider: 'email_link' | 'google' | 'password' | 'email_password';
+  nickname?: string;
+  confirmMerge?: boolean;
 }) {
+  const store = getStore();
   const user = getOrCreateUser({ uid: params.uid });
+  const targetEmail = params.email.trim().toLowerCase();
+  if (params.nickname?.trim()) {
+    user.nickname = params.nickname.trim();
+  }
+
+  // Check if another account with this email exists
+  const existingUser = Object.values(store.users).find(
+    (u) => u.email === targetEmail && u.uid !== params.uid,
+  );
+
+  if (existingUser) {
+    if (!params.confirmMerge) {
+      return {
+        accountExists: true as const,
+        existingUid: existingUser.uid,
+        message: 'Contul există deja. Intră în el?',
+      };
+    }
+
+    // Merge accounts
+    // Check if target account already played today
+    const today = getLocalDateString(new Date(), user.tz || 'Europe/Bucharest');
+    const userTodayPlay = store.plays[`${today}_${user.uid}`];
+    const existingTodayPlay = store.plays[`${today}_${existingUser.uid}`];
+
+    if (userTodayPlay && !existingTodayPlay) {
+      // Transfer today's play to existing user
+      userTodayPlay.uid = existingUser.uid;
+      delete store.plays[`${today}_${user.uid}`];
+      store.plays[`${today}_${existingUser.uid}`] = userTodayPlay;
+      userTodayPlay.playId = `${today}_${existingUser.uid}`;
+
+      // Update league day entries
+      for (const lg of Object.values(store.leagues)) {
+        if (lg.days[today]?.[user.uid]) {
+          const entry = lg.days[today]![user.uid]!;
+          entry.uid = existingUser.uid;
+          lg.days[today]![existingUser.uid] = entry;
+          delete lg.days[today]![user.uid];
+        }
+      }
+    }
+
+    // Merge league memberships
+    for (const lgId of user.leagueIds) {
+      if (!existingUser.leagueIds.includes(lgId)) {
+        existingUser.leagueIds.push(lgId);
+      }
+      const lg = store.leagues[lgId];
+      if (lg && lg.members[user.uid] && !lg.members[existingUser.uid]) {
+        lg.members[existingUser.uid] = lg.members[user.uid]!;
+        lg.members[existingUser.uid]!.uid = existingUser.uid;
+        delete lg.members[user.uid];
+      }
+    }
+
+    // Merge streaks
+    existingUser.streakCurrent = Math.max(existingUser.streakCurrent, user.streakCurrent);
+    existingUser.streakBest = Math.max(existingUser.streakBest, user.streakBest);
+    existingUser.isAnonymous = false;
+    existingUser.authProvider = params.provider;
+
+    return {
+      uid: existingUser.uid,
+      merged: true as const,
+      nickname: existingUser.nickname,
+      email: existingUser.email,
+      isAnonymous: existingUser.isAnonymous,
+      authProvider: existingUser.authProvider,
+      isAdmin: Boolean(existingUser.isAdmin),
+      streakCurrent: existingUser.streakCurrent,
+      streakBest: existingUser.streakBest,
+      leagueIds: existingUser.leagueIds,
+    };
+  }
+
   user.isAnonymous = false;
-  user.email = params.email.trim().toLowerCase();
+  user.email = targetEmail;
   user.authProvider = params.provider;
+  if (PRO_BOOTSTRAP_EMAILS.includes(user.email)) {
+    user.pro = {
+      active: true,
+      plan: 'yearly',
+      until: '2099-12-31T23:59:59.999Z',
+    };
+  }
 
   const adminEmails = (process.env.ADMIN_BOOTSTRAP_EMAILS ?? 'admin@ronduel.eu')
     .split(',')
@@ -1236,6 +2816,18 @@ export function getUserProfile(uid: string) {
     notif: user.notif,
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
+    freezes: user.freezes ?? 0,
+    duelStats: user.duelStats ?? {
+      played: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      bestWinStreak: 0,
+      currentWinStreak: 0,
+    },
+    topRivals: Object.values(user.rivals ?? {})
+      .sort((a, b) => b.wins + b.losses - (a.wins + a.losses))
+      .slice(0, 3),
     playedDates: userPlays.map((p) => ({ date: p.date, score: p.totalScore })),
     topicAccuracy: user.pro.active ? topicAccuracy : [],
   };
@@ -1252,7 +2844,7 @@ export function processStripeWebhook(params: {
     | 'customer.subscription.updated'
     | 'customer.subscription.deleted';
   uid: string;
-  plan?: 'monthly' | 'yearly';
+  plan?: 'monthly' | 'yearly' | 'freeze_1' | 'freeze_3';
   currentPeriodEnd?: string;
 }) {
   const store = getStore();
@@ -1263,7 +2855,31 @@ export function processStripeWebhook(params: {
   store.stripeEvents[params.eventId] = new Date().toISOString();
 
   const user = getOrCreateUser({ uid: params.uid });
-  const plan = params.plan ?? 'monthly';
+
+  // Handle Streak Freeze one-off purchases
+  if (params.type === 'checkout.session.completed' && params.plan === 'freeze_1') {
+    user.freezes = Math.min(5, (user.freezes ?? 0) + 1);
+    if (!user.freezeLedger) user.freezeLedger = [];
+    user.freezeLedger.push({
+      date: new Date().toISOString(),
+      action: 'purchased_1',
+      freezesAfter: user.freezes,
+    });
+    return { duplicate: false, freezes: user.freezes, pro: user.pro };
+  }
+
+  if (params.type === 'checkout.session.completed' && params.plan === 'freeze_3') {
+    user.freezes = Math.min(5, (user.freezes ?? 0) + 3);
+    if (!user.freezeLedger) user.freezeLedger = [];
+    user.freezeLedger.push({
+      date: new Date().toISOString(),
+      action: 'purchased_3',
+      freezesAfter: user.freezes,
+    });
+    return { duplicate: false, freezes: user.freezes, pro: user.pro };
+  }
+
+  const plan = params.plan === 'yearly' ? 'yearly' : 'monthly';
   const until = params.currentPeriodEnd ?? new Date(Date.now() + 30 * 86_400_000).toISOString();
 
   if (
@@ -1272,6 +2888,16 @@ export function processStripeWebhook(params: {
   ) {
     user.pro = { active: true, plan, until };
     store.subscriptions[params.uid] = { plan, status: 'active', currentPeriodEnd: until };
+
+    // Pro includes 2 free freezes per billing month
+    user.freezes = Math.min(5, (user.freezes ?? 0) + 2);
+    if (!user.freezeLedger) user.freezeLedger = [];
+    user.freezeLedger.push({
+      date: new Date().toISOString(),
+      action: 'pro_monthly_credit',
+      freezesAfter: user.freezes,
+    });
+
     // Upgrade owned leagues maxMembers to 200
     for (const league of Object.values(store.leagues)) {
       if (league.ownerUid === params.uid) {
@@ -1283,7 +2909,7 @@ export function processStripeWebhook(params: {
     store.subscriptions[params.uid] = { plan, status: 'canceled', currentPeriodEnd: until };
   }
 
-  return { duplicate: false, pro: user.pro };
+  return { duplicate: false, freezes: user.freezes, pro: user.pro };
 }
 
 // ==========================================
@@ -1319,8 +2945,86 @@ export function unsubscribeUserEmail(uid: string) {
 // Phase 5: Admin & AI-assisted Content
 // ==========================================
 
+export function logAdminAction(params: {
+  actorUid: string;
+  actorEmail?: string;
+  action: string;
+  targetType: 'question' | 'round' | 'league' | 'report';
+  targetId: string;
+  details: string;
+}): AuditLogEntry {
+  const store = getStore();
+  const entry: AuditLogEntry = {
+    id: `audit_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actorUid: params.actorUid,
+    actorEmail: params.actorEmail,
+    action: params.action,
+    targetType: params.targetType,
+    targetId: params.targetId,
+    details: params.details,
+    createdAt: new Date().toISOString(),
+  };
+  store.auditLogs.unshift(entry);
+  if (store.auditLogs.length > 500) {
+    store.auditLogs.pop();
+  }
+  return entry;
+}
+
+export function validateQuestionForApproval(q: StoredQuestion): { ok: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Check required locales (RO, EN, ES, PT)
+  const requiredLocales: ('ro' | 'en' | 'es' | 'pt')[] = ['ro', 'en', 'es', 'pt'];
+  for (const loc of requiredLocales) {
+    const c = q.content[loc];
+    if (!c || !c.prompt?.trim()) {
+      errors.push(`Locale ${loc.toUpperCase()} must have a non-empty prompt.`);
+      continue;
+    }
+    if (q.type !== 'logic') {
+      if (!c.options || c.options.length < 3) {
+        errors.push(`Locale ${loc.toUpperCase()} must have at least 3 options.`);
+      } else if (c.options.some((opt) => !opt?.trim())) {
+        errors.push(`Locale ${loc.toUpperCase()} has empty option strings.`);
+      }
+    }
+  }
+
+  // Placeholder check (no [AI Draft], Option A (Correct), Verify facts, Generated draft)
+  const placeholderRegex =
+    /\[AI Draft\]|Option [A-D] \(Correct\)|Option [A-D]$|Verify facts|Generated draft/i;
+  for (const loc of requiredLocales) {
+    const c = q.content[loc];
+    if (!c) continue;
+    if (placeholderRegex.test(c.prompt)) {
+      errors.push(`Placeholder text found in ${loc.toUpperCase()} prompt.`);
+    }
+    if (c.options?.some((opt) => placeholderRegex.test(opt))) {
+      errors.push(`Placeholder text found in ${loc.toUpperCase()} options.`);
+    }
+    if (c.explanation && placeholderRegex.test(c.explanation)) {
+      errors.push(`Placeholder text found in ${loc.toUpperCase()} explanation.`);
+    }
+  }
+
+  // Order explanation check
+  if (q.type === 'order' && q.content.ro?.explanation) {
+    const expl = q.content.ro.explanation.toLowerCase();
+    const opts = (q.content.ro.options ?? []).map((o) => o.toLowerCase());
+    // if options exist, ensure explanation doesn't contain generic placeholder
+    if (expl.includes('placeholder') || expl.includes('option a')) {
+      errors.push('Order explanation contains invalid placeholder text.');
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
+}
+
 export function getAdminDashboard() {
   const store = getStore();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
   const questions = store.questions.map((q) => {
     const prompt = q.content.en?.prompt ?? '';
     const duplicates = store.questions
@@ -1333,10 +3037,38 @@ export function getAdminDashboard() {
   const allPlays = Object.values(store.plays);
   const finished = allPlays.filter((p) => p.status === 'finished');
 
+  // Next 7 days empty warnings
+  const upcomingWarnings: string[] = [];
+  const todayMs = new Date(todayStr).getTime();
+  for (let i = 1; i <= 7; i += 1) {
+    const dStr = new Date(todayMs + i * 86400000).toISOString().slice(0, 10);
+    const sched = store.scheduledRounds[dStr];
+    if (!sched || sched.questionIds.length < 6) {
+      upcomingWarnings.push(`No scheduled round for upcoming day ${dStr}!`);
+    }
+  }
+
+  const leagues = Object.values(store.leagues).map((l) => ({
+    id: l.id,
+    name: l.name,
+    inviteCode: l.inviteCode,
+    ownerUid: l.ownerUid,
+    memberCount: Object.keys(l.members).length,
+    maxMembers: l.maxMembers,
+    members: Object.values(l.members),
+    createdAt: l.createdAt,
+  }));
+
   return {
     questions,
-    scheduledRounds: Object.values(store.scheduledRounds),
+    scheduledRounds: Object.values(store.scheduledRounds).map((r) => ({
+      ...r,
+      locked: r.locked ?? r.date <= todayStr,
+    })),
+    upcomingWarnings,
+    leagues,
     reports: Object.values(store.reports),
+    auditLogs: store.auditLogs.slice(0, 100),
     ops: {
       totalPlays: allPlays.length,
       finishedPlays: finished.length,
@@ -1350,15 +3082,104 @@ export function getAdminDashboard() {
   };
 }
 
+export function createOrUpdateAdminQuestion(params: {
+  id?: string;
+  type: QuestionType;
+  difficulty: 1 | 2 | 3;
+  topics: string[];
+  timerSec?: number;
+  content: {
+    ro?: { prompt: string; options: string[]; explanation?: string };
+    en?: { prompt: string; options: string[]; explanation?: string };
+    es?: { prompt: string; options: string[]; explanation?: string };
+    pt?: { prompt: string; options: string[]; explanation?: string };
+  };
+  extraContent?: Record<string, { prompt: string; options: string[]; explanation?: string }>;
+  answer?: {
+    correctIndex?: number;
+    correctOrder?: string[];
+    oddIndex?: number;
+    numericAnswer?: number;
+  };
+  reviewStatus?: 'draft' | 'approved';
+  actorUid?: string;
+  actorEmail?: string;
+}) {
+  const store = getStore();
+  let q: StoredQuestion | undefined;
+  if (params.id) {
+    q = store.questions.find((item) => item.id === params.id);
+  }
+
+  const isNew = !q;
+  const id = q?.id ?? `q-${params.type}-${Date.now()}`;
+
+  if (!q) {
+    q = {
+      id,
+      type: params.type,
+      difficulty: params.difficulty,
+      topics: params.topics,
+      content: params.content,
+      extraContent: params.extraContent,
+      answer: params.answer ?? { correctIndex: 0 },
+      translationStatus: {
+        en: params.content.en ? 'reviewed' : 'missing',
+        es: params.content.es ? 'reviewed' : 'missing',
+        pt: params.content.pt ? 'reviewed' : 'missing',
+        ro: params.content.ro ? 'reviewed' : 'missing',
+      },
+      source: 'human',
+      reviewStatus: params.reviewStatus ?? 'draft',
+      usageCount: 0,
+      timerSec: params.timerSec ?? 15,
+    };
+    store.questions.unshift(q);
+  } else {
+    q.type = params.type;
+    q.difficulty = params.difficulty;
+    q.topics = params.topics;
+    q.content = { ...q.content, ...params.content };
+    if (params.extraContent) q.extraContent = { ...q.extraContent, ...params.extraContent };
+    if (params.answer) q.answer = params.answer;
+    if (params.timerSec) q.timerSec = params.timerSec;
+    if (params.reviewStatus) q.reviewStatus = params.reviewStatus;
+  }
+
+  logAdminAction({
+    actorUid: params.actorUid ?? 'admin',
+    actorEmail: params.actorEmail,
+    action: isNew ? 'create_question' : 'edit_question',
+    targetType: 'question',
+    targetId: id,
+    details: `${isNew ? 'Created' : 'Updated'} question ${id} (${params.type})`,
+  });
+
+  return q;
+}
+
 export function generateAiQuestionDrafts(params: {
   topic: string;
   type: QuestionType;
   difficulty: 1 | 2 | 3;
   count: number;
+  customTemplates?: GeneratedDraftTemplate[];
 }) {
   const store = getStore();
+  const safeCount = Math.min(5, Math.max(1, params.count));
+  const templates =
+    params.customTemplates && params.customTemplates.length >= safeCount
+      ? params.customTemplates.slice(0, safeCount)
+      : pickCuratedTemplates({
+          topic: params.topic,
+          type: params.type,
+          count: safeCount,
+          offsetSeed: store.questions.filter((q) => q.source === 'ai_draft').length,
+        });
+
   const created: StoredQuestion[] = [];
-  for (let i = 0; i < Math.min(5, Math.max(1, params.count)); i += 1) {
+  for (let i = 0; i < safeCount; i += 1) {
+    const tpl = templates[i]!;
     const id = `q-ai-${Date.now()}-${i + 1}`;
     const draft: StoredQuestion = {
       id,
@@ -1366,22 +3187,22 @@ export function generateAiQuestionDrafts(params: {
       difficulty: params.difficulty,
       topics: [params.topic.toLowerCase()],
       content: {
-        en: {
-          prompt: `[AI Draft] ${params.topic} (${params.type} #${i + 1}): Verify facts before approving.`,
-          options: ['Option A (Correct)', 'Option B', 'Option C', 'Option D'],
-          explanation: 'Generated draft — reviewer must verify factual accuracy.',
-        },
+        ro: tpl.content.ro,
+        en: tpl.content.en,
+        es: tpl.content.es ?? tpl.content.en,
+        pt: tpl.content.pt ?? tpl.content.en,
       },
-      answer: params.type === 'order' ? {} : { correctIndex: 0 },
-      translationStatus: { en: 'machine_draft', es: 'missing', pt: 'missing', ro: 'missing' },
+      answer: params.type === 'order' ? {} : { correctIndex: tpl.correctIndex ?? 0 },
+      translationStatus: {
+        en: 'machine_draft',
+        es: 'machine_draft',
+        pt: 'machine_draft',
+        ro: 'machine_draft',
+      },
       source: 'ai_draft',
       reviewStatus: 'draft',
       usageCount: 0,
-      factChecklist: [
-        'Primary fact verified against an authoritative reference',
-        'Distractors are unambiguously wrong (only 1 valid answer)',
-        'No time-sensitive wording that could age poorly',
-      ],
+      timerSec: 15,
     };
     store.questions.unshift(draft);
     created.push(draft);
@@ -1389,14 +3210,35 @@ export function generateAiQuestionDrafts(params: {
   return created;
 }
 
-export function approveAdminQuestion(id: string, reviewer = 'admin') {
+export function approveAdminQuestion(id: string, reviewer = 'admin', reviewerEmail?: string) {
   const store = getStore();
   const q = store.questions.find((item) => item.id === id);
   if (!q) throw new Error('Question not found');
+
+  const validation = validateQuestionForApproval(q);
+  if (!validation.ok) {
+    throw new Error(`Cannot approve question: ${validation.errors.join('; ')}`);
+  }
+
   q.reviewStatus = 'approved';
-  q.translationStatus.en = 'reviewed';
+  q.translationStatus = {
+    en: 'reviewed',
+    es: q.content.es ? 'reviewed' : (q.translationStatus.es ?? 'missing'),
+    pt: q.content.pt ? 'reviewed' : (q.translationStatus.pt ?? 'missing'),
+    ro: q.content.ro ? 'reviewed' : (q.translationStatus.ro ?? 'missing'),
+  };
   q.reviewedBy = reviewer;
   q.reviewedAt = new Date().toISOString();
+
+  logAdminAction({
+    actorUid: reviewer,
+    actorEmail: reviewerEmail,
+    action: 'approve_question',
+    targetType: 'question',
+    targetId: id,
+    details: `Approved question ${id} (${q.type})`,
+  });
+
   return q;
 }
 
@@ -1404,8 +3246,17 @@ export function scheduleAdminRound(params: {
   date: string;
   questionIds: string[];
   topicOfTheDay: string;
+  actorUid?: string;
+  actorEmail?: string;
 }) {
   const store = getStore();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const existing = store.scheduledRounds[params.date];
+  if (existing?.locked || params.date < todayStr) {
+    throw new Error('This round is locked because its day has already started.');
+  }
+
   const picked = params.questionIds
     .map((id) => store.questions.find((q) => q.id === id))
     .filter((q): q is StoredQuestion => Boolean(q));
@@ -1419,7 +3270,22 @@ export function scheduleAdminRound(params: {
     throw new Error(validation.errors.join(' '));
   }
 
-  const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE ?? '2026-12-01';
+  // 90-day reuse check
+  const reuseWarnings: string[] = [];
+  const targetDateMs = new Date(params.date).getTime();
+  for (const q of picked) {
+    if (q.lastUsedOn) {
+      const usedMs = new Date(q.lastUsedOn).getTime();
+      const diffDays = Math.round(Math.abs(targetDateMs - usedMs) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 90) {
+        reuseWarnings.push(
+          `Question ${q.id} was used on ${q.lastUsedOn} (${diffDays} days ago; recommend 90+ days).`,
+        );
+      }
+    }
+  }
+
+  const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE ?? '2026-11-01';
   const schedule: AdminRoundSchedule = {
     date: params.date,
     roundNumber: computeRoundNumber(params.date, launchDate),
@@ -1427,9 +3293,20 @@ export function scheduleAdminRound(params: {
     topicOfTheDay: params.topicOfTheDay,
     status: 'scheduled',
     explicitFallbackLocales: ['es', 'pt', 'ro'],
+    locked: params.date <= todayStr,
   };
   store.scheduledRounds[params.date] = schedule;
-  return { schedule, warnings: validation.warnings };
+
+  logAdminAction({
+    actorUid: params.actorUid ?? 'admin',
+    actorEmail: params.actorEmail,
+    action: 'schedule_round',
+    targetType: 'round',
+    targetId: params.date,
+    details: `Scheduled round for ${params.date} with ${params.questionIds.length} questions. Topic: ${params.topicOfTheDay}`,
+  });
+
+  return { schedule, warnings: [...validation.warnings, ...reuseWarnings] };
 }
 
 export function publishAdminRound(params: { date: string; explicitFallbackLocales: Locale[] }) {
@@ -1487,3 +3364,275 @@ export function deleteUserData(uid: string) {
   }
   return { ok: true };
 }
+
+// ==========================================
+// Phase 5: Daily Round Management & Question Reporting
+// ==========================================
+
+export function reportQuestion(params: {
+  questionId: string;
+  reason: 'răspuns greșit' | 'întrebare ambiguă' | 'greșeală de limbă' | string;
+  reporterUid?: string;
+}) {
+  const store = getStore();
+  if (!store.questionReports[params.questionId]) {
+    store.questionReports[params.questionId] = {
+      count: 0,
+      reasons: {},
+      flagged: false,
+    };
+  }
+
+  const rep = store.questionReports[params.questionId]!;
+  rep.count += 1;
+  rep.reasons[params.reason] = (rep.reasons[params.reason] ?? 0) + 1;
+  if (rep.count >= 3) {
+    rep.flagged = true;
+  }
+
+  // Also flag across daily rounds if present
+  for (const round of Object.values(store.dailyRounds)) {
+    const q = round.questions.find((item) => item.id === params.questionId);
+    if (q) {
+      q.reportCount = rep.count;
+      if (rep.flagged) {
+        q.flagged = true;
+      }
+    }
+  }
+
+  return {
+    questionId: params.questionId,
+    reportCount: rep.count,
+    flagged: rep.flagged,
+  };
+}
+
+export function getQuestionReportStatus(questionId: string) {
+  const store = getStore();
+  const rep = store.questionReports[questionId];
+  return {
+    reportCount: rep?.count ?? 0,
+    flagged: rep?.flagged ?? false,
+    reasons: rep?.reasons ?? {},
+  };
+}
+
+export function getAdminRounds(daysCount = 7) {
+  const store = getStore();
+  const now = new Date();
+  const result: Array<{
+    date: string;
+    roundNumber: number;
+    theme: string;
+    status: 'ready' | 'reserve' | 'scheduled';
+    promotedFromReserve?: boolean;
+    questions: Array<{
+      index: number;
+      id: string;
+      type: QuestionType;
+      category: string;
+      difficulty: 1 | 2 | 3;
+      prompt: string;
+      options: string[];
+      correctAnswer: string;
+      explanation: string;
+      reportCount: number;
+      flagged: boolean;
+    }>;
+  }> = [];
+
+  for (let i = 0; i < daysCount; i += 1) {
+    const d = new Date(now.getTime() + i * 86_400_000);
+    const dateStr = getLocalDateString(d, 'Europe/Bucharest');
+    const meta = getRoundMeta(dateStr);
+    const daily = store.dailyRounds[dateStr];
+
+    if (daily && daily.questions.length === 6) {
+      result.push({
+        date: dateStr,
+        roundNumber: daily.roundNumber,
+        theme: daily.theme,
+        status: daily.status,
+        promotedFromReserve: daily.promotedFromReserve,
+        questions: daily.questions.map((q, idx) => {
+          const rep = store.questionReports[q.id];
+          const ro = (q.content.ro || q.content.en)!;
+          const ansStr =
+            q.type === 'order'
+              ? (q.correctOrder ?? ro.options).join(' → ')
+              : ro.options[q.correctIndex ?? 0] ?? '';
+          return {
+            index: idx,
+            id: q.id,
+            type: q.type,
+            category: q.category,
+            difficulty: q.difficulty,
+            prompt: ro.prompt,
+            options: ro.options,
+            correctAnswer: ansStr,
+            explanation: ro.explanation,
+            reportCount: rep?.count ?? q.reportCount ?? 0,
+            flagged: Boolean(rep?.flagged || q.flagged),
+          };
+        }),
+      });
+    } else {
+      // Fallback: resolve from seed or scheduled
+      const resolved = resolveRoundItems(dateStr, 'ro');
+      result.push({
+        date: dateStr,
+        roundNumber: meta.roundNumber,
+        theme: meta.topicOfTheDay,
+        status: 'scheduled',
+        questions: resolved.map((r, idx) => {
+          const rep = store.questionReports[r.questionId];
+          const ansStr =
+            r.type === 'order'
+              ? (r.correctOrder ?? r.options).join(' → ')
+              : r.options[r.correctIndex ?? 0] ?? '';
+          return {
+            index: idx,
+            id: r.questionId,
+            type: r.type,
+            category: r.topics[0] ?? 'General',
+            difficulty: idx < 2 ? 1 : idx < 4 ? 2 : 3,
+            prompt: r.prompt,
+            options: r.options,
+            correctAnswer: ansStr,
+            explanation: r.explanation ?? '',
+            reportCount: rep?.count ?? 0,
+            flagged: rep?.flagged ?? false,
+          };
+        }),
+      });
+    }
+  }
+
+  return result;
+}
+
+export async function replaceQuestionInDailyRound(params: {
+  date: string;
+  questionIndex: number;
+}) {
+  const store = getStore();
+  const daily = store.dailyRounds[params.date];
+  if (!daily || !daily.questions[params.questionIndex]) {
+    // If daily round wasn't generated yet, build it first
+    const meta = getRoundMeta(params.date);
+    const existing = Object.values(store.dailyRounds)
+      .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+    const generated = await generateFullDailyRound({
+      date: params.date,
+      roundNumber: meta.roundNumber,
+      theme: meta.topicOfTheDay,
+      existingPrompts: existing,
+    });
+    if (generated) {
+      store.dailyRounds[params.date] = generated;
+    }
+  }
+
+  const round = store.dailyRounds[params.date];
+  if (!round) throw new Error('Round not found');
+  const target = round.questions[params.questionIndex]!;
+
+  const existingPrompts = Object.values(store.dailyRounds)
+    .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+
+  const newQuestion = await generateSingleQuestionWithGemini({
+    type: target.type,
+    difficulty: target.difficulty,
+    category: target.category,
+    themeOfTheDay: round.theme,
+    existingPrompts,
+  });
+
+  if (!newQuestion) {
+    throw new Error('Failed to generate replacement question with Gemini');
+  }
+
+  round.questions[params.questionIndex] = newQuestion;
+  return newQuestion;
+}
+
+export async function ensureUpcomingDailyRounds(bufferDays = 7) {
+  const store = getStore();
+  const now = new Date();
+  const createdRounds: string[] = [];
+
+  const existingPrompts = Object.values(store.dailyRounds)
+    .flatMap((r) => r.questions.map((q) => q.content.en.prompt));
+
+  for (let i = 0; i < bufferDays; i += 1) {
+    const d = new Date(now.getTime() + i * 86_400_000);
+    const dateStr = getLocalDateString(d, 'Europe/Bucharest');
+    if (!store.dailyRounds[dateStr]) {
+      const meta = getRoundMeta(dateStr);
+      const round = await generateFullDailyRound({
+        date: dateStr,
+        roundNumber: meta.roundNumber,
+        theme: meta.topicOfTheDay,
+        existingPrompts,
+      });
+      if (round) {
+        store.dailyRounds[dateStr] = round;
+        createdRounds.push(dateStr);
+        for (const q of round.questions) {
+          existingPrompts.push(q.content.en.prompt);
+        }
+      }
+    }
+  }
+
+  // Ensure reserve pool has at least 14 rounds
+  const reserveRounds = Object.values(store.dailyRounds).filter((r) => r.status === 'reserve');
+  const neededReserve = Math.max(0, 14 - reserveRounds.length);
+
+  for (let j = 0; j < neededReserve; j += 1) {
+    const reserveId = `reserve_${Date.now()}_${j}`;
+    const round = await generateFullDailyRound({
+      date: 'reserve',
+      roundNumber: 9999 + j,
+      existingPrompts,
+    });
+    if (round) {
+      round.id = reserveId;
+      round.status = 'reserve';
+      store.dailyRounds[reserveId] = round;
+      for (const q of round.questions) {
+        existingPrompts.push(q.content.en.prompt);
+      }
+    }
+  }
+
+  return { createdRounds, totalReserve: Object.values(store.dailyRounds).filter((r) => r.status === 'reserve').length };
+}
+
+export function promoteReserveRoundIfNeeded(targetDate: string) {
+  const store = getStore();
+  if (store.dailyRounds[targetDate]?.status === 'ready') {
+    return { promoted: false, reason: 'Already ready' };
+  }
+
+  const reserveKey = Object.keys(store.dailyRounds).find(
+    (k) => store.dailyRounds[k]?.status === 'reserve',
+  );
+
+  if (!reserveKey) {
+    return { promoted: false, reason: 'No reserve round available' };
+  }
+
+  const reserve = store.dailyRounds[reserveKey]!;
+  delete store.dailyRounds[reserveKey];
+
+  reserve.id = `rounds/${targetDate}`;
+  reserve.date = targetDate;
+  reserve.status = 'ready';
+  reserve.promotedFromReserve = true;
+  store.dailyRounds[targetDate] = reserve;
+
+  return { promoted: true, date: targetDate, round: reserve };
+}
+

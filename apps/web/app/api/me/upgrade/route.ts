@@ -6,7 +6,9 @@ import { upgradeAccount } from '@/lib/server-store';
 const UpgradeSchema = z.object({
   uid: z.string().min(3),
   email: z.string().email(),
-  provider: z.enum(['email_link', 'google']),
+  provider: z.enum(['email_link', 'google', 'password', 'email_password']),
+  nickname: z.string().optional(),
+  confirmMerge: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {

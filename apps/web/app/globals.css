@@ -20,12 +20,15 @@
   --rd-on-wrong: #ffffff;
   --rd-border: #16131f;
   --rd-border-subtle: rgba(22, 19, 31, 0.14);
+  --border-color: #16131f;
   --rd-shadow-sticker: 0 4px 0 #16131f;
   --rd-shadow-sheet: 0 8px 24px rgba(22, 19, 31, 0.08);
   --rd-seam: linear-gradient(135deg, #ff5a4e 0 50%, #3d7bff 50% 100%);
 }
 
-[data-theme='dark'] {
+[data-theme='dark'],
+.dark,
+html[data-theme='dark'] {
   --rd-bg: #0e0d15;
   --rd-surface: #1a1824;
   --rd-surface-2: #24212f;
@@ -44,6 +47,7 @@
   --rd-on-wrong: #0e0d15;
   --rd-border: #2e2a3b;
   --rd-border-subtle: #2e2a3b;
+  --border-color: #2e2a3b;
   --rd-shadow-sticker: 0 0 0 1px #2e2a3b;
   --rd-shadow-sheet: 0 12px 32px rgba(0, 0, 0, 0.45);
   --rd-seam: linear-gradient(135deg, #ff6b60 0 50%, #6f98ff 50% 100%);
@@ -68,6 +72,7 @@
   --rd-on-wrong: #ffffff;
   --rd-border: #000000;
   --rd-border-subtle: #000000;
+  --border-color: #000000;
   --rd-shadow-sticker: 0 4px 0 #000000;
   --rd-shadow-sheet: 0 0 0 2px #000000;
   --rd-seam: linear-gradient(135deg, #b00000 0 50%, #0033cc 50% 100%);
@@ -92,6 +97,7 @@
   --rd-on-wrong: #070913;
   --rd-border: #2b355c;
   --rd-border-subtle: #2b355c;
+  --border-color: #2b355c;
   --rd-shadow-sticker: 0 0 0 1px #2b355c;
   --rd-shadow-sheet: 0 12px 32px rgba(0, 0, 0, 0.55);
   --rd-seam: linear-gradient(135deg, #ff6b60 0 50%, #5ea1ff 50% 100%);
@@ -116,6 +122,7 @@
   --rd-on-wrong: #ffffff;
   --rd-border: #23160f;
   --rd-border-subtle: rgba(35, 22, 15, 0.16);
+  --border-color: #23160f;
   --rd-shadow-sticker: 0 4px 0 #23160f;
   --rd-shadow-sheet: 0 8px 24px rgba(35, 22, 15, 0.1);
   --rd-seam: linear-gradient(135deg, #e0533c 0 50%, #2b6cb0 50% 100%);
@@ -140,6 +147,7 @@
   --rd-on-wrong: #090614;
   --rd-border: #382b63;
   --rd-border-subtle: #382b63;
+  --border-color: #382b63;
   --rd-shadow-sticker: 0 0 0 1px #382b63;
   --rd-shadow-sheet: 0 12px 32px rgba(0, 0, 0, 0.6);
   --rd-seam: linear-gradient(135deg, #ff4d79 0 50%, #38bdf8 50% 100%);
@@ -242,6 +250,310 @@
 
 .rd-no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* --- PLAY: Lock-in & Answer Moments --- */
+@keyframes rd-lock-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+}
+
+.rd-locked {
+  transform: translateY(2px) !important;
+  box-shadow: none !important;
+  background-color: var(--rd-surface-2) !important;
+  position: relative;
+}
+
+.rd-locked::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 3px solid var(--rd-blue);
+  border-radius: 18px;
+  pointer-events: none;
+  animation: rd-lock-pulse 700ms ease-in-out infinite;
+}
+
+@keyframes rd-pop {
+  0% {
+    transform: translateY(2px) scale(0.97);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.rd-pop {
+  animation: rd-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rd-pop-icon {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.rd-pop-icon {
+  animation: rd-pop-icon 220ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms backwards;
+}
+
+@keyframes rd-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.rd-shake {
+  animation: rd-shake 160ms linear forwards;
+}
+
+@keyframes rd-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px) scale(1);
+  }
+}
+
+.rd-float-up {
+  animation: rd-float-up 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms forwards;
+  pointer-events: none;
+}
+
+@keyframes rd-ray {
+  0% {
+    transform: rotate(var(--r, 0deg)) translateY(-10px) scaleY(0.4);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--r, 0deg)) translateY(-48px) scaleY(1);
+    opacity: 0;
+  }
+}
+
+.rd-ray {
+  animation: rd-ray 380ms ease-out forwards;
+}
+
+@keyframes rd-ray-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.rd-ray-ring {
+  animation: rd-ray-ring 380ms ease-out forwards;
+}
+
+/* --- VERSUS CARD MOMENT --- */
+@keyframes rd-vs-slide-left {
+  0% {
+    transform: translateX(-60%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.rd-vs-left {
+  animation: rd-vs-slide-left 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes rd-vs-slide-right {
+  0% {
+    transform: translateX(60%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.rd-vs-right {
+  animation: rd-vs-slide-right 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes rd-vs-seam {
+  0% {
+    transform: scaleY(0) rotate(14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1) rotate(14deg);
+    opacity: 1;
+  }
+}
+
+.rd-vs-seam {
+  animation: rd-vs-seam 200ms ease-out 260ms backwards;
+}
+
+@keyframes rd-vs-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(-14deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+
+.rd-vs-stamp {
+  animation: rd-vs-stamp 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms backwards;
+}
+
+@keyframes rd-vs-clash {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.rd-vs-clash {
+  animation: rd-vs-clash 160ms ease-out 320ms;
+}
+
+@keyframes rd-vs-spark {
+  0% {
+    transform: rotate(var(--r, 0deg)) translateY(-30px);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--r, 0deg)) translateY(-78px);
+    opacity: 0;
+  }
+}
+
+.rd-vs-spark {
+  animation: rd-vs-spark 380ms ease-out 320ms forwards;
+}
+
+@keyframes rd-vs-status {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rd-vs-status {
+  animation: rd-vs-status 260ms ease-out 560ms backwards;
+}
+
+/* --- RESULT REVEAL MOMENT --- */
+@keyframes rd-land {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.rd-land {
+  animation: rd-land 260ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rd-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rd-pop-in {
+  animation: rd-pop-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rd-tile-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6) rotate(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+.rd-tile-pop {
+  animation: rd-tile-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes rd-flame-bump {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.45) rotate(-8deg);
+  }
+}
+
+.rd-flame-bump {
+  animation: rd-flame-bump 420ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rd-row-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rd-row-slide {
+  animation: rd-row-slide 300ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

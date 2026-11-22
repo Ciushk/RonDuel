@@ -28,6 +28,7 @@ The operator of RonDuel is Pixel-WebAPP SRL, CUI 54870881, Trade Registry No. J2
 2.3. **Changing your time zone.** The time zone stored on your account can change **at most once every 24 hours**. Every change is logged so nobody can "jump" into a future day to preview the round early.
 
 2.4. **What the round contains.** Typically, a round has **6 questions**:
+
 - 2 multiple-choice questions (one correct option out of 4);
 - 1 ordering question (arrange 4 items in the requested order);
 - 1 "odd one out" question (pick the option that does not belong);
@@ -36,10 +37,10 @@ The operator of RonDuel is Pixel-WebAPP SRL, CUI 54870881, Trade Registry No. J2
 The composition of a round may vary. You see the number of questions and each time limit in the app before starting.
 
 2.5. **Time per question:**
-- multiple-choice and "odd one out": **10 seconds**;
-- ordering and logic/calculation: **15 seconds**.
 
-A typical round takes around 60 seconds, at most 75.
+- each question has a standard limit of **30 seconds** (6 questions = ~3 minutes).
+
+A typical round takes around 3 minutes.
 
 2.6. **Question language.** If a question does not yet have a verified translation in your language, you receive it in English, marked with the "EN" badge.
 
@@ -63,16 +64,18 @@ A typical round takes around 60 seconds, at most 75.
 > bonus = round( 100 × max(0, (limit − time) / limit) )
 
 where:
-- **limit** = the question time limit (10 or 15 seconds);
+
+- **limit** = the question time limit (30 seconds);
 - **time** = the elapsed time measured **on our server**, from the moment the question was sent to you until your answer arrived, **minus 250 milliseconds** for network latency. Time cannot be less than 0;
 - **round** = rounding to the nearest integer.
 
 The faster you answer, the higher the bonus. A correct answer earns between 100 and 200 points.
 
-4.3. **Examples** (10-second question, correct answer):
-- answer received by server after 2.25 s: time = 2 s, bonus = round(100 × 8/10) = 80, total **180**;
-- answer received after 7.75 s: time = 7.5 s, bonus = round(100 × 2.5/10) = 25, total **125**;
-- answer received after time expired: **0 points**. [TO BE CONFIRMED: the specification does not state whether the 250 ms grace also applies to the timeout check. Proposal: the grace applies only to the bonus calculation, while the timeout limit remains 10 s measured on the server.]
+4.3. **Examples** (30-second question, correct answer):
+
+- answer received by server after 6.25 s: time = 6 s, bonus = round(100 × 24/30) = 80, total **180**;
+- answer received after 15.25 s: time = 15 s, bonus = round(100 × 15/30) = 50, total **150**;
+- answer received after time expired: **0 points**. [TO BE CONFIRMED: the specification does not state whether the 250 ms grace also applies to the timeout check. Proposal: the grace applies only to the bonus calculation, while the timeout limit remains 30 s measured on the server.]
 
 4.4. **Maximum score: 1,200 points per day** (6 questions × 200).
 
@@ -93,6 +96,7 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 ## 6. Leaderboards
 
 6.1. Each league has three leaderboards:
+
 - **Today**: scores from today's round;
 - **This week**: sum of daily scores in the league week; missed days count as 0;
 - **All-time**: total score, rounds played, weekly trophies won, and longest streak.
@@ -114,11 +118,13 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 7.3. **Joining mid-week.** You can join a league anytime. Days before joining count as 0 in the weekly standings.
 
 7.4. **Free account limits.** Currently, a free account can:
-- create up to **3 leagues**, each with up to **25 members**;
+
+- create up to **1 league**, with up to **5 members** (including yourself);
 - be a member of up to **10 leagues**;
-- have up to **3 active duels** at the same time.
+- have at most **4 duels per month** (and 1 active duel at a time).
 
 7.5. **League owner** (one per league) can:
+
 - change the league name and time zone;
 - rename or remove a member;
 - transfer ownership to another member.
@@ -138,6 +144,7 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 8.4. **Who wins.** The higher score wins. On a tie, the **lower total time** wins. [TO BE CONFIRMED: full tie behavior. Proposal: the duel ends in a draw.]
 
 8.5. **Time windows and expiration:**
+
 - each player has **24 hours** to play their part;
 - if the opponent does not start within 24 hours of creation, the duel **expires** with no winner;
 - if the challenger finished their part and the opponent does not play within 24 hours after that, the challenger wins **by walkover**.
@@ -155,6 +162,7 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 ## 10. Fair Play and Anti-Cheat
 
 10.1. **What counts as cheating.** It is prohibited to:
+
 - use scripts, bots, extensions, or automated tools that answer for you;
 - use multiple accounts to replay the same round, preview questions, or inflate a league;
 - manipulate time zones, clocks, or server requests;
@@ -162,10 +170,12 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 - publish today's questions or answers before the day ends to give someone an advantage. [TO BE CONFIRMED: adoption of this rule.]
 
 10.2. **How we detect it.** All points and times are computed server-side. Correct answers never reach the client before you answer. We flag for human review without auto-blocking:
+
 - rounds where **at least 3 answers** arrived in less than **0.4 seconds**;
 - multiple accounts from the same device or IP playing in the same league on the same day.
 
 10.3. **Penalties**, proportional to severity:
+
 - **voiding the score** of a round or duel and recalculating leaderboards;
 - temporary feature restrictions;
 - **account suspension or termination** for severe or repeated violations.
@@ -189,6 +199,7 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 ## 12. What You Get With RonDuel Pro
 
 12.1. Pro is an optional paid subscription governed by the [Pro Terms](https://ronduel.eu/en/legal/terms). Pro includes:
+
 - leagues up to **200 members**, private leagues with join approval, and custom league emoji/color;
 - **unlimited duels**;
 - **archive** of past rounds;
@@ -214,4 +225,5 @@ The faster you answer, the higher the bonus. A correct answer earns between 100 
 Questions about the rules: contact@pixel-webapp.ro.
 
 ---
-*Last updated: [DATA] (proposal: December 1, 2026)*
+
+_Last updated: [DATA] (proposal: December 1, 2026)_

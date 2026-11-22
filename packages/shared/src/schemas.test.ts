@@ -4,10 +4,12 @@ import {
   buildShareCardText,
   computeRoundNumber,
   deterministicShuffle,
+  FREE_LIMITS,
   generateInviteCode,
   getLocalDateString,
   INVITE_CODE_ALPHABET,
   pickWeeklyWinner,
+  PRO_LIMITS,
   updateStreak,
   validateNickname,
 } from './schemas.js';
@@ -26,6 +28,13 @@ describe('validateNickname', () => {
     expect(validateNickname('sh1t_happens').ok).toBe(false);
     expect(validateNickname('p1zda').ok).toBe(false);
     expect(validateNickname('C4C4T').ok).toBe(false);
+  });
+
+  it('rejects repeated single-char nicknames and placeholders', () => {
+    expect(validateNickname('BBBBBBBBBBBBBBBBBBBB').ok).toBe(false);
+    expect(validateNickname('aaaaa').ok).toBe(false);
+    expect(validateNickname('placeholder').ok).toBe(false);
+    expect(validateNickname('test').ok).toBe(false);
   });
 });
 
@@ -100,4 +109,11 @@ describe('invite code, share card, and weekly winner', () => {
     ]);
     expect(winner?.uid).toBe('u2');
   });
+
+  it('enforces 4 duels per month limit for free tier', () => {
+    expect(FREE_LIMITS.maxMonthlyDuels).toBe(4);
+    expect(FREE_LIMITS.maxActiveDuels).toBe(1);
+    expect(PRO_LIMITS.maxMonthlyDuels).toBeGreaterThanOrEqual(100);
+  });
 });
+

@@ -2,10 +2,11 @@
 
 import { ArrowDown, ArrowUp, CheckCircle, Lightning, XCircle } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button, Card, Chip, TimerBar } from '@/components/ui';
+import { Button, Card, Chip, TimerBar, Wordmark } from '@/components/ui';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface ClientItem {
@@ -39,14 +40,20 @@ export default function PlayPage() {
   const [totalItems, setTotalItems] = useState(6);
   const [item, setItem] = useState<ClientItem | null>(null);
   const [orderList, setOrderList] = useState<string[]>([]);
-  const [remainingMs, setRemainingMs] = useState(10_000);
+  const [remainingMs, setRemainingMs] = useState(30_000);
   const [feedback, setFeedback] = useState<AnswerFeedback | null>(null);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+  const [lockedIndex, setLockedIndex] = useState<number | null>(null);
+  const [isFastAnswer, setIsFastAnswer] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [todayInfo, setTodayInfo] = useState<{ roundNumber: number; theme: string } | null>(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState('');
 
   const deadlineRef = useRef<number>(0);
+  const clientAnswersRef = useRef<Array<{ index: number; points: number; emoji: string }>>([]);
 
   const beginRound = useCallback(async () => {
+    clientAnswersRef.current = [];
     const session = getLocalSession();
     const res = await fetch('/api/game/start', {
       method: 'POST',
@@ -60,8 +67,13 @@ export default function PlayPage() {
       }),
     });
     const data = await res.json();
+    const returnTo = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnTo') : null;
     if (data.alreadyFinished && data.playId) {
-      router.replace(`/${locale}/result/${encodeURIComponent(data.playId)}`);
+      router.replace(
+        returnTo
+          ? `/${locale}/result/${encodeURIComponent(data.playId)}?returnTo=${encodeURIComponent(returnTo)}`
+          : `/${locale}/result/${encodeURIComponent(data.playId)}`,
+      );
       return;
     }
     setPlayId(data.playId);
@@ -72,6 +84,24 @@ export default function PlayPage() {
     deadlineRef.current = Date.now() + data.remainingMs;
     setPhase('playing');
   }, [locale, router]);
+
+  useEffect(() => {
+    const session = getLocalSession();
+    const tz = getBrowserTimeZone();
+    fetch(`/api/game/status?uid=${encodeURIComponent(session.uid)}&tz=${encodeURIComponent(tz)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.roundNumber) {
+          setTodayInfo({ roundNumber: d.roundNumber, theme: d.topicOfTheDay || d.theme });
+        }
+        if (d.played && d.playId) {
+          router.replace(`/${locale}/result/${encodeURIComponent(d.playId)}`);
+        } else if (d.inProgress) {
+          void beginRound();
+        }
+      })
+      .catch(() => {});
+  }, [locale, router, beginRound]);
 
   // 3-2-1 countdown
   useEffect(() => {
@@ -90,8 +120,16 @@ export default function PlayPage() {
   const handleSubmit = useCallback(
     async (choice: number | string[] | null) => {
       if (!item || !playId || submitting || feedback) return;
+      if (typeof choice === 'number') {
+        setSelectedChoice(choice);
+        setLockedIndex(choice);
+        vibrate(15);
+      }
       setSubmitting(true);
-      if (typeof choice === 'number') setSelectedChoice(choice);
+
+      const currentRemaining = Math.max(0, deadlineRef.current - Date.now());
+      const isFast = item.limitMs > 0 && currentRemaining >= item.limitMs * 0.67;
+      setIsFastAnswer(isFast);
 
       const session = getLocalSession();
       const res = await fetch('/api/game/answer', {
@@ -108,6 +146,19 @@ export default function PlayPage() {
       setFeedback(data);
       setSubmitting(false);
 
+      const announcement = data.timedOut
+        ? t('play.srTimeout')
+        : data.correct
+          ? t('play.srCorrect', { points: data.points ?? 0 })
+          : t('play.srWrong', { answer: item.options[data.correctIndex ?? 0] ?? '' });
+      setLiveAnnouncement(announcement);
+
+      clientAnswersRef.current.push({
+        index: item.index,
+        points: data.points ?? 0,
+        emoji: data.correct ? '🟩' : '🟥',
+      });
+
       if (data.correct) {
         vibrate(20);
       } else {
@@ -122,17 +173,57 @@ export default function PlayPage() {
           deadlineRef.current = Date.now() + data.next.limitMs;
           setFeedback(null);
           setSelectedChoice(null);
+          setLockedIndex(null);
+          setIsFastAnswer(false);
         } else {
+          const totalScore = clientAnswersRef.current.reduce((sum, a) => sum + (a.points || 0), 0);
+          const emojiLine = clientAnswersRef.current.map((a) => a.emoji).join('');
+          const clientSummary = {
+            totalScore,
+            emojiLine,
+            items: clientAnswersRef.current,
+          };
+
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(
+                `rd_play_${playId}`,
+                JSON.stringify({
+                  playId,
+                  date: new Date().toISOString().slice(0, 10),
+                  roundNumber: todayInfo?.roundNumber ?? 1,
+                  totalScore,
+                  totalMs: 0,
+                  emojiLine,
+                  streakCurrent: 1,
+                  streakBest: 1,
+                  review: [],
+                  leagueRanks: [],
+                  primaryLeague: null,
+                }),
+              );
+            } catch {}
+          }
+
           await fetch('/api/game/finish', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, playId }),
-          });
-          router.replace(`/${locale}/result/${encodeURIComponent(playId)}`);
+            body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
+          }).catch(() => {});
+
+          const returnTo =
+            typeof window !== 'undefined'
+              ? new URLSearchParams(window.location.search).get('returnTo')
+              : null;
+          router.replace(
+            returnTo
+              ? `/${locale}/result/${encodeURIComponent(playId)}?returnTo=${encodeURIComponent(returnTo)}`
+              : `/${locale}/result/${encodeURIComponent(playId)}`,
+          );
         }
-      }, 1100);
+      }, 1500);
     },
-    [item, playId, submitting, feedback, locale, router],
+    [item, playId, submitting, feedback, locale, router, todayInfo?.roundNumber, t],
   );
 
   // Item countdown tick
@@ -159,33 +250,82 @@ export default function PlayPage() {
 
   if (phase === 'ready') {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col items-center justify-center gap-6 px-4">
-        <div className="rd-seam h-2 w-24 rounded-full" aria-hidden="true" />
-        <Card className="w-full space-y-5 text-center">
-          <h1 className="font-display text-3xl font-extrabold">{t('play.readyTitle')}</h1>
-          <p className="text-muted text-sm">{t('play.readySubtitle')}</p>
-          <Button
-            fullWidth
-            size="lg"
-            onClick={() => {
-              setCountdown(3);
-              setPhase('countdown');
-            }}
+      <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col justify-between px-4 py-6">
+        <header className="flex items-center justify-between">
+          <Link
+            href={`/${locale}`}
+            className="text-muted hover:text-ink text-sm font-bold transition-colors"
           >
-            {t('play.startNow')}
-          </Button>
-        </Card>
+            ← {t('play.backToHome')}
+          </Link>
+          <Wordmark size="sm" />
+        </header>
+
+        <div className="my-auto flex flex-col items-center justify-center gap-6">
+          <div className="rd-seam h-2 w-24 rounded-full" aria-hidden="true" />
+          <Card className="w-full space-y-5 text-center">
+            {todayInfo && (
+              <div className="flex justify-center">
+                <Chip tone="volt">
+                  Runda #{todayInfo.roundNumber} · {todayInfo.theme}
+                </Chip>
+              </div>
+            )}
+            <h1 className="font-display text-3xl font-extrabold">{t('play.readyTitle')}</h1>
+            <p className="text-muted text-sm">{t('play.readySubtitle')}</p>
+            <Button
+              fullWidth
+              size="lg"
+              onClick={() => {
+                setCountdown(3);
+                setPhase('countdown');
+              }}
+            >
+              {t('play.startNow')}
+            </Button>
+          </Card>
+        </div>
+
+        <div className="h-6" aria-hidden="true" />
       </main>
     );
   }
 
   if (phase === 'countdown') {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col items-center justify-center gap-4 px-4">
-        <div className="font-display text-ron-strong text-8xl font-extrabold" aria-live="assertive">
-          {countdown}
+      <main className="relative mx-auto flex min-h-dvh max-w-[480px] flex-col justify-between overflow-hidden px-4 py-6">
+        <header className="flex items-center justify-between">
+          <Link
+            href={`/${locale}`}
+            className="text-muted hover:text-ink text-sm font-bold transition-colors"
+          >
+            ← {t('play.backToHome')}
+          </Link>
+          <Wordmark size="sm" />
+        </header>
+
+        <div className="my-auto flex flex-col items-center justify-center text-center">
+          {todayInfo && (
+            <div className="mb-6 flex flex-col items-center justify-center gap-1">
+              <span className="font-display text-muted text-sm font-black uppercase tracking-wider">
+                Runda #{todayInfo.roundNumber}
+              </span>
+              <span className="font-display text-ink text-xl font-extrabold">
+                {todayInfo.theme}
+              </span>
+            </div>
+          )}
+
+          <div
+            className="font-display text-ron-strong text-9xl font-extrabold animate-pulse"
+            aria-live="assertive"
+          >
+            {countdown}
+          </div>
+          <div className="rd-seam mt-6 h-2 w-32 rounded-full" aria-hidden="true" />
         </div>
-        <div className="rd-seam h-2 w-32 rounded-full" aria-hidden="true" />
+
+        <div className="h-6" aria-hidden="true" />
       </main>
     );
   }
@@ -194,6 +334,11 @@ export default function PlayPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col gap-5 px-4 py-6">
+      {/* Persistent live region for screen readers */}
+      <div role="status" aria-live="assertive" className="sr-only">
+        {liveAnnouncement}
+      </div>
+
       <div className="rd-seam h-1.5 w-full rounded-full" aria-hidden="true" />
 
       <div className="flex items-center justify-between gap-2">
@@ -203,12 +348,16 @@ export default function PlayPage() {
         <div className="flex items-center gap-2">
           {item.isEnFallback && locale !== 'en' && <Chip tone="blue">{t('play.enFallback')}</Chip>}
           <Chip tone="neutral" className="uppercase">
-            {item.type}
+            {t(`play.typeLabels.${item.type}`, { default: item.type })}
           </Chip>
         </div>
       </div>
 
-      <TimerBar remainingMs={remainingMs} limitMs={item.limitMs} />
+      <TimerBar
+        remainingMs={remainingMs}
+        limitMs={item.limitMs}
+        label={t('play.timeLeft', { default: 'Timp rămas' })}
+      />
 
       <Card className="space-y-5">
         <h1 className="font-display text-2xl font-extrabold leading-snug">{item.prompt}</h1>
@@ -257,25 +406,74 @@ export default function PlayPage() {
         ) : (
           <div className="grid gap-3">
             {item.options.map((opt, idx) => {
+              const isLocked = submitting && lockedIndex === idx;
+              const isDimmed = submitting && lockedIndex !== null && lockedIndex !== idx;
+              const isSelected = selectedChoice === idx;
               const isCorrectChoice = feedback && feedback.correctIndex === idx;
-              const isWrongSelected = feedback && !feedback.correct && selectedChoice === idx;
+              const isWrongSelected = feedback && !feedback.correct && isSelected;
+              const isCorrectAnswerRevealed = feedback && !feedback.correct && isCorrectChoice;
+
               return (
                 <button
                   key={opt}
                   type="button"
                   disabled={Boolean(feedback) || submitting}
+                  aria-pressed={lockedIndex === idx}
                   onClick={() => void handleSubmit(idx)}
                   className={[
-                    'rd-sticker rd-sticker-pressable flex min-h-14 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 py-3 text-left text-base font-bold transition-colors',
-                    isCorrectChoice
-                      ? 'bg-correct text-[#16131F]'
+                    'rd-sticker rd-sticker-pressable relative flex min-h-14 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 py-3 text-left text-base font-bold transition-all',
+                    isLocked ? 'rd-locked' : '',
+                    isDimmed ? 'opacity-60 pointer-events-none' : '',
+                    isCorrectChoice && isSelected
+                      ? 'bg-correct text-[#16131F] rd-pop'
                       : isWrongSelected
-                        ? 'bg-wrong text-[var(--rd-on-wrong)]'
-                        : 'bg-surface text-ink hover:bg-surface-2',
+                        ? 'bg-wrong text-[var(--rd-on-wrong)] rd-shake'
+                        : isCorrectAnswerRevealed
+                          ? 'border-2 border-correct-text bg-correct/20 text-ink animate-in fade-in duration-300'
+                          : 'bg-surface text-ink hover:bg-surface-2',
                   ].join(' ')}
                 >
-                  <span>{opt}</span>
-                  {isCorrectChoice && <CheckCircle size={22} weight="fill" aria-hidden="true" />}
+                  <span className="flex-1 pr-3">{opt}</span>
+
+                  {/* Screen reader text for choices */}
+                  {isCorrectChoice && <span className="sr-only">{t('play.srOptionCorrect')}</span>}
+                  {isWrongSelected && <span className="sr-only">{t('play.srOptionWrong')}</span>}
+
+                  {/* Float score tag when selected & correct */}
+                  {feedback && feedback.correct && isSelected && (
+                    <span className="rd-float-up pointer-events-none absolute right-3 -top-3 z-30 inline-flex items-center gap-1 rounded-full border-2 border-[#16131F] bg-volt px-2.5 py-0.5 text-xs font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
+                      +{feedback.points}
+                    </span>
+                  )}
+
+                  {/* Status Icons */}
+                  {isCorrectChoice && (
+                    <div className="relative inline-flex items-center justify-center">
+                      <CheckCircle
+                        size={22}
+                        weight="fill"
+                        className={isCorrectAnswerRevealed ? 'text-correct-text rd-pop-icon' : 'rd-pop-icon'}
+                        aria-hidden="true"
+                      />
+                      {/* Fast Answer Bonus Spark Rays */}
+                      {feedback?.correct && isSelected && isFastAnswer && (
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                        >
+                          <span className="rd-ray-ring absolute h-6 w-6 rounded-full border-2 border-volt" />
+                          {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+                            <span
+                              key={deg}
+                              className="rd-ray absolute h-3.5 w-1 rounded-full bg-volt"
+                              style={{ '--r': `${deg}deg` } as React.CSSProperties}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {isWrongSelected && <XCircle size={22} weight="fill" aria-hidden="true" />}
                 </button>
               );
@@ -284,7 +482,7 @@ export default function PlayPage() {
         )}
       </Card>
 
-      <div aria-live="polite" className="min-h-10 text-center">
+      <div className="min-h-10 text-center">
         {feedback && (
           <div className="inline-flex items-center gap-2">
             <Chip tone={feedback.correct ? 'volt' : 'wrong'}>
@@ -292,7 +490,7 @@ export default function PlayPage() {
               {feedback.timedOut
                 ? t('play.timedOut')
                 : feedback.correct
-                  ? `${t('play.correct')} +${feedback.points}`
+                  ? `${t('play.correct')} +${feedback.points}${isFastAnswer ? ` · ${t('play.fastBonus')}` : ''}`
                   : t('play.wrong')}
             </Chip>
           </div>

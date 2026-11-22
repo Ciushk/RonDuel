@@ -11,11 +11,15 @@ import {
   Sword,
   Trophy,
 } from '@phosphor-icons/react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useRef, useState, type PointerEvent } from 'react';
 
+import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
+import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { Button, Card, Chip } from '@/components/ui';
 import { cn } from '@/lib/cn';
+import { getLocalSession } from '@/lib/session';
 
 interface HowItWorksSectionProps {
   played: boolean;
@@ -24,8 +28,12 @@ interface HowItWorksSectionProps {
 
 export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [showCreateLeague, setShowCreateLeague] = useState(false);
+  const [showJoinByCode, setShowJoinByCode] = useState(false);
 
   const trackRef = useRef<HTMLDivElement | null>(null);
   const dragStateRef = useRef<{ isDown: boolean; startX: number; scrollLeft: number }>({
@@ -181,6 +189,9 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
         {/* Horizontal snap-x carousel track */}
         <div
           ref={trackRef}
+          tabIndex={0}
+          role="group"
+          aria-label={t('explainer.title')}
           onScroll={handleScroll}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -258,13 +269,31 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
       <div className="space-y-3">
         <h3 className="font-display text-xl font-extrabold">{t('explainer.featuresTitle')}</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Card variant="secondary" className="flex items-start gap-3 p-4">
-            <Chip tone="volt" className="shrink-0 px-2 py-1.5" aria-hidden="true">
-              <LinkSimple size={16} weight="bold" />
-            </Chip>
-            <p className="text-ink text-sm font-bold leading-snug">
-              {t('explainer.featureLeagues')}
-            </p>
+          <Card variant="secondary" className="flex flex-col justify-between gap-3 p-4">
+            <div className="flex items-start gap-3">
+              <Chip tone="volt" className="shrink-0 px-2 py-1.5" aria-hidden="true">
+                <LinkSimple size={16} weight="bold" />
+              </Chip>
+              <p className="text-ink text-sm font-bold leading-snug">
+                {t('explainer.featureLeagues')}
+              </p>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="volt"
+                onClick={() => setShowCreateLeague(true)}
+              >
+                {t('league.createBtn')}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setShowJoinByCode(true)}
+              >
+                {t('splash.joinLeague')}
+              </Button>
+            </div>
           </Card>
 
           <Card variant="secondary" className="flex items-start gap-3 p-4">
@@ -275,6 +304,16 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
           </Card>
         </div>
       </div>
+
+      <CreateLeagueWizard
+        open={showCreateLeague}
+        onClose={() => setShowCreateLeague(false)}
+        onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
+      />
+      <JoinByCodeDialog
+        open={showJoinByCode}
+        onClose={() => setShowJoinByCode(false)}
+      />
 
       {/* d) Short FAQ (accordion), 4 items */}
       <div className="space-y-2.5" data-testid="explainer-faq">
