@@ -110,7 +110,7 @@ export default function LocaleHomePage() {
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [toast, setToast] = useState('');
   const [nickname, setNickname] = useState('');
-  const [ageOk, setAgeOk] = useState(true);
+  const [ageOk, setAgeOk] = useState(false);
   const [nickError, setNickError] = useState('');
   const [countdown, setCountdown] = useState<string>('');
   const [duelError, setDuelError] = useState('');
@@ -330,12 +330,21 @@ export default function LocaleHomePage() {
       {/* Hero Card */}
       <Card className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <Chip tone="volt">{t('brand.roundBadge', { number: status?.roundNumber ?? 1 })}</Chip>
-          <Chip tone="neutral">
-            {status?.themeKey
-              ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
-              : t('themes.worldScience')}
-          </Chip>
+          {status ? (
+            <>
+              <Chip tone="volt">{t('brand.roundBadge', { number: status.roundNumber })}</Chip>
+              <Chip tone="neutral">
+                {status.themeKey
+                  ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
+                  : t('themes.worldScience')}
+              </Chip>
+            </>
+          ) : (
+            <>
+              <span className="bg-surface-2 h-7 w-24 animate-pulse rounded-full" aria-hidden="true" />
+              <span className="bg-surface-2 h-7 w-28 animate-pulse rounded-full" aria-hidden="true" />
+            </>
+          )}
         </div>
 
         {status?.played ? (
