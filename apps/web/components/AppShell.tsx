@@ -10,7 +10,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { SplashScreen } from '@/components/SplashScreen';
 import { Button, Wordmark } from '@/components/ui';
-import { trackEvent } from '@/lib/analytics';
+import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
@@ -27,6 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const s = getLocalSession();
     setSession(s);
+    syncAnalyticsConsent();
     document.documentElement.setAttribute('data-theme', s.theme);
     document.documentElement.classList.toggle('dark', s.theme === 'dark');
 
@@ -69,6 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const next = { ...session, analyticsConsent };
     saveLocalSession(next);
     setSession(next);
+    syncAnalyticsConsent();
   };
 
   const handleBack = () => {

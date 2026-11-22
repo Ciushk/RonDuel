@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { syncAnalyticsConsent } from '@/lib/analytics';
 import { Button, Card, Toast } from '@/components/ui';
 import {
   clearLocalSession,
@@ -97,9 +98,10 @@ export default function SettingsPage() {
           <input
             type="checkbox"
             checked={session.analyticsConsent === 'accepted'}
-            onChange={(e) =>
-              update({ analyticsConsent: e.target.checked ? 'accepted' : 'rejected' })
-            }
+            onChange={(e) => {
+              update({ analyticsConsent: e.target.checked ? 'accepted' : 'rejected' });
+              syncAnalyticsConsent();
+            }}
             className="h-5 w-5 accent-[var(--rd-blue-strong)]"
           />
         </label>
