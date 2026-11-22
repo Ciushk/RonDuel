@@ -60,8 +60,14 @@ for (const locale of locales) {
   const locDir = path.join(outDir, locale);
   if (fs.existsSync(locHtml)) {
     let content = fs.readFileSync(locHtml, 'utf8');
+    let patched = content;
     if (content.includes('<html')) {
-      const patched = content.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
+      patched = patched.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
+    }
+    if (patched.includes('hrefLang="')) {
+      patched = patched.replaceAll('hrefLang="', '\nhreflang="');
+    }
+    if (patched !== content) {
       fs.writeFileSync(locHtml, patched, 'utf8');
     }
     fs.mkdirSync(locDir, { recursive: true });
@@ -78,11 +84,15 @@ for (const locale of locales) {
         patchLocaleHtml(fullPath);
       } else if (entry.name.endsWith('.html')) {
         let content = fs.readFileSync(fullPath, 'utf8');
+        let patched = content;
         if (content.includes('<html')) {
-          const patched = content.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
-          if (patched !== content) {
-            fs.writeFileSync(fullPath, patched, 'utf8');
-          }
+          patched = patched.replace(/<html([^>]*?)lang="[^"]*"/, `<html$1lang="${locale}"`);
+        }
+        if (patched.includes('hrefLang="')) {
+          patched = patched.replaceAll('hrefLang="', '\nhreflang="');
+        }
+        if (patched !== content) {
+          fs.writeFileSync(fullPath, patched, 'utf8');
         }
       }
     }
@@ -102,6 +112,147 @@ for (const locale of locales) {
   }
 }
 console.log('Verified all 104 client shells exist across 26 locales.');
+
+// 5. Generate localized webmanifest for all 26 locales
+for (const locale of locales) {
+  const msgPath = path.join(webDir, `messages/${locale}.json`);
+  let manifestDesc = 'Daily trivia with your friends';
+  let shortcutPlay = "Play today's round";
+  let shortcutLeagues = 'My leagues';
+  if (fs.existsSync(msgPath)) {
+    try {
+      const msgs = JSON.parse(fs.readFileSync(msgPath, 'utf8'));
+      if (msgs.manifest?.description) manifestDesc = msgs.manifest.description;
+      if (msgs.manifest?.shortcutPlay) shortcutPlay = msgs.manifest.shortcutPlay;
+      if (msgs.manifest?.shortcutLeagues) shortcutLeagues = msgs.manifest.shortcutLeagues;
+    } catch {}
+  }
+  const manifestData = {
+    name: 'RonDuel',
+    short_name: 'RonDuel',
+    description: manifestDesc,
+    start_url: `/${locale}?source=pwa`,
+    display: 'standalone',
+    background_color: '#FFF7EC',
+    theme_color: '#FF5A4E',
+    icons: [
+      { src: '/brand/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/brand/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: '/brand/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+      { src: '/brand/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/brand/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+      { src: '/brand/icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+    ],
+    shortcuts: [
+      { name: shortcutPlay, short_name: 'Play', url: `/${locale}/play` },
+      { name: shortcutLeagues, short_name: 'Leagues', url: `/${locale}/leagues` },
+    ],
+  };
+  fs.writeFileSync(
+    path.join(outDir, `manifest-${locale}.webmanifest`),
+    JSON.stringify(manifestData, null, 2),
+    'utf8',
+  );
+}
+console.log('Generated localized webmanifests for all 26 locales.');
+
+// 6. Generate root /legal and /l client redirect shells
+const rootRedirectShell = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RonDuel</title>
+<script>
+(function() {
+  var supported = ["ro","en","es","pt","de","fr","it","nl","pl","bg","cs","da","el","et","fi","ga","hr","hu","lt","lv","mt","nb","sk","sl","sv","uk"];
+  function detect() {
+    try {
+      var m = document.cookie.match(/(?:^|;\\s*)NEXT_LOCALE=([^;]+)/);
+      if (m) {
+        var c = decodeURIComponent(m[1]).trim().toLowerCase();
+        if (c === 'no' || c === 'nn') c = 'nb';
+        if (supported.indexOf(c) !== -1) return c;
+      }
+    } catch(e){}
+    try {
+      var s = localStorage.getItem('ronduel_locale');
+      if (s) {
+        var c2 = s.trim().toLowerCase();
+        if (c2 === 'no' || c2 === 'nn') c2 = 'nb';
+        if (supported.indexOf(c2) !== -1) return c2;
+      }
+    } catch(e){}
+    var langs = navigator.languages || [navigator.language || 'en'];
+    for (var i = 0; i < langs.length; i++) {
+      var l = langs[i];
+      if (!l) continue;
+      var c3 = l.toLowerCase().split('-')[0];
+      if (c3 === 'no' || c3 === 'nn') c3 = 'nb';
+      if (supported.indexOf(c3) !== -1) return c3;
+    }
+    return 'en';
+  }
+  var loc = detect();
+  var pathname = window.location.pathname;
+  var target = '/' + loc + pathname + window.location.search + window.location.hash;
+  window.location.replace(target);
+})();
+</script>
+</head>
+<body></body>
+</html>`;
+
+fs.mkdirSync(path.join(outDir, 'legal'), { recursive: true });
+fs.writeFileSync(path.join(outDir, 'legal/_shell.html'), rootRedirectShell, 'utf8');
+fs.mkdirSync(path.join(outDir, 'l'), { recursive: true });
+fs.writeFileSync(path.join(outDir, 'l/_shell.html'), rootRedirectShell, 'utf8');
+console.log('Generated root redirection shells for /legal and /l.');
+
+// 7. Inject localized 404 client runtime into hosting-dist/404.html
+const notFoundByLocale = {};
+for (const locale of locales) {
+  const msgPath = path.join(webDir, `messages/${locale}.json`);
+  if (fs.existsSync(msgPath)) {
+    try {
+      const msgs = JSON.parse(fs.readFileSync(msgPath, 'utf8'));
+      if (msgs.notFound) {
+        notFoundByLocale[locale] = msgs.notFound;
+      }
+    } catch {}
+  }
+}
+
+const notFoundPath = path.join(outDir, '404.html');
+if (fs.existsSync(notFoundPath)) {
+  let nfHtml = fs.readFileSync(notFoundPath, 'utf8');
+  const b64Data = Buffer.from(JSON.stringify(notFoundByLocale)).toString('base64');
+  const injectScript = `<script>
+(function() {
+  var b64 = '${b64Data}';
+  var data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), function(c) { return c.charCodeAt(0); })));
+  var seg = window.location.pathname.split('/').filter(Boolean)[0] || '';
+  if (seg === 'no' || seg === 'nn') seg = 'nb';
+  var loc = data[seg] ? seg : 'en';
+  var t = data[loc] || data.en;
+  if (!t) return;
+  document.documentElement.lang = loc;
+  document.title = t.title + ' — RonDuel';
+  var codeEl = document.getElementById('nf-code');
+  if (codeEl) codeEl.textContent = '404 · ' + t.code;
+  var titleEl = document.getElementById('nf-title');
+  if (titleEl) titleEl.textContent = t.title;
+  var bodyEl = document.getElementById('nf-body');
+  if (bodyEl) bodyEl.textContent = t.body;
+  var btnEl = document.getElementById('nf-btn');
+  if (btnEl) btnEl.textContent = t.backToToday;
+  var linkEl = document.getElementById('nf-link');
+  if (linkEl) linkEl.setAttribute('href', '/' + loc);
+})();
+</script>`;
+  nfHtml = nfHtml.replace('</body>', `${injectScript}</body>`);
+  fs.writeFileSync(notFoundPath, nfHtml, 'utf8');
+  console.log('Injected 404 client localization script into hosting-dist/404.html.');
+}
 
 console.log('Packaged Firebase Hosting directory at hosting-dist/');
 

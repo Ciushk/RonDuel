@@ -265,7 +265,7 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
         <p className="text-muted text-xs font-medium">{t('explainer.demoCaption')}</p>
       </Card>
 
-      {/* c) "Ligi și dueluri" row */}
+      {/* c) Leagues and duels row */}
       <div className="space-y-3">
         <h3 className="font-display text-xl font-extrabold">{t('explainer.featuresTitle')}</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -3,7 +3,10 @@
 import { Flame, Lightning, Moon, Sun, Trophy } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
+import { NextIntlClientProvider } from 'next-intl';
+
 import { Avatar, Button, Card, Chip, Sheet, TimerBar, Toast, Wordmark } from '@/components/ui';
+import enMessages from '@/messages/en.json';
 
 type ThemeMode = 'light' | 'dark' | 'high-contrast';
 
@@ -16,7 +19,8 @@ export default function DevUiPage() {
   }, [theme]);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 px-5 py-8">
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <main className="mx-auto max-w-3xl space-y-8 px-5 py-8">
       <header className="border-border-subtle flex flex-wrap items-center justify-between gap-4 border-b pb-5">
         <div className="flex items-center gap-3">
           <img src="/brand/icon.svg" alt="RonDuel icon" width={48} height={48} />
@@ -156,5 +160,6 @@ export default function DevUiPage() {
         </Button>
       </Sheet>
     </main>
+    </NextIntlClientProvider>
   );
 }

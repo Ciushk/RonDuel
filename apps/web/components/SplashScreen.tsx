@@ -12,7 +12,8 @@ import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 export interface SplashRoundStatus {
   roundNumber: number;
-  topicOfTheDay: string;
+  themeKey?: string;
+  topicOfTheDay?: string;
   played: boolean;
   playId?: string;
   streakCurrent: number;
@@ -21,23 +22,23 @@ export interface SplashRoundStatus {
 
 const SPLASH_SESSION_KEY = 'ronduel_splash_seen_v2';
 
-const TOPIC_MAP: Record<string, { emoji: string; key: string }> = {
-  'World & Science 🌍': { emoji: '🌍', key: 'World & Science' },
-  'History & Logic ⏳': { emoji: '⏳', key: 'History & Logic' },
-  'Numbers & Nature 🔢': { emoji: '🔢', key: 'Numbers & Nature' },
-  'Culture & Mind 🎨': { emoji: '🎨', key: 'Culture & Mind' },
-  'Speed & Space 🚀': { emoji: '🚀', key: 'Speed & Space' },
+const THEME_KEYS: Record<string, { emoji: string; key: string }> = {
+  worldScience: { emoji: '🌍', key: 'worldScience' },
+  historyLogic: { emoji: '⏳', key: 'historyLogic' },
+  numbersNature: { emoji: '🔢', key: 'numbersNature' },
+  cultureMind: { emoji: '🎨', key: 'cultureMind' },
+  speedSpace: { emoji: '🚀', key: 'speedSpace' },
 };
 
 export function parseTopicChip(
   rawTopic: string,
   translateTheme: (key: string) => string,
 ): { emoji: string; name: string } {
-  const mapped = TOPIC_MAP[rawTopic];
-  if (mapped) {
+  if (rawTopic in THEME_KEYS) {
+    const item = THEME_KEYS[rawTopic]!;
     return {
-      emoji: mapped.emoji,
-      name: translateTheme(mapped.key),
+      emoji: item.emoji,
+      name: translateTheme(item.key),
     };
   }
   const parts = rawTopic.trim().split(/\s+/);
@@ -52,7 +53,7 @@ export function parseTopicChip(
   }
   return {
     emoji: '🌍',
-    name: rawTopic,
+    name: translateTheme('worldScience'),
   };
 }
 
@@ -71,6 +72,7 @@ export function formatStreakSplash(
 
 export function SplashScreen() {
   const t = useTranslations('splash');
+  const tRoot = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
@@ -81,7 +83,7 @@ export function SplashScreen() {
   const [isSignedInUser, setIsSignedInUser] = useState(false);
   const [status, setStatus] = useState<SplashRoundStatus>({
     roundNumber: 1,
-    topicOfTheDay: 'World & Science 🌍',
+    themeKey: 'worldScience',
     played: false,
     streakCurrent: 0,
   });
@@ -167,7 +169,8 @@ export function SplashScreen() {
       .then((data: SplashRoundStatus) => {
         setStatus({
           roundNumber: data.roundNumber ?? 1,
-          topicOfTheDay: data.topicOfTheDay ?? 'World & Science 🌍',
+          themeKey: (data as any).themeKey ?? 'worldScience',
+          topicOfTheDay: data.topicOfTheDay ?? '',
           played: Boolean(data.played),
           playId: data.playId,
           streakCurrent: data.streakCurrent ?? 0,
@@ -287,13 +290,16 @@ export function SplashScreen() {
     }, 180);
   };
 
-  const { emoji, name: themeName } = parseTopicChip(status.topicOfTheDay, (key) => {
-    try {
-      return t(`themes.${key}` as Parameters<typeof t>[0]);
-    } catch {
-      return key;
-    }
-  });
+  const { emoji, name: themeName } = parseTopicChip(
+    status.themeKey || status.topicOfTheDay || 'worldScience',
+    (key) => {
+      try {
+        return tRoot(`themes.${key}` as Parameters<typeof tRoot>[0]);
+      } catch {
+        return key;
+      }
+    },
+  );
 
   const roundChipText = t('roundChip', {
     number: status.roundNumber,
@@ -319,7 +325,7 @@ export function SplashScreen() {
         data-testid="pwa-splash"
         role="dialog"
         aria-modal="true"
-        aria-label="RonDuel Splash"
+        aria-label="RonDuel"
         onClick={handleTapAnywhere}
         className={`rd-splash-overlay bg-bg text-ink fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center select-none ${
           fading ? 'pointer-events-none opacity-0' : 'opacity-100'

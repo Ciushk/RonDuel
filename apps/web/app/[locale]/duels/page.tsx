@@ -22,7 +22,7 @@ import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 interface DuelSummary {
   id: string;
   status: string;
-  isChallenger: boolean;
+  isDuelHost?: boolean;
   myNickname: string;
   opponentNickname: string;
   opponentUid: string | null;
@@ -55,9 +55,9 @@ interface DuelsResponse {
   maxMonthly?: number;
 }
 
-function formatHoursLeft(ms: number): string {
+function formatHoursLeft(ms: number, t: (key: any, values?: any) => string): string {
   const hours = Math.max(1, Math.ceil(ms / (1000 * 60 * 60)));
-  return `${hours}h rămase`;
+  return t('common.hoursLeft', { hours });
 }
 
 export default function DuelsPage() {
@@ -92,11 +92,11 @@ export default function DuelsPage() {
     setError('');
     const session = getLocalSession();
     if (!duelsData?.isPro && (duelsData?.monthlyCount ?? 0) >= (duelsData?.maxMonthly ?? 4)) {
-      setError('Ai atins limita de 4 dueluri pe lună pentru contul gratuit. Treci la Pro pentru dueluri nelimitate.');
+      setError(t('duels.errorMonthlyLimit', { max: duelsData?.maxMonthly ?? 4 }));
       return;
     }
     if (!duelsData?.isPro && (duelsData?.activeCount ?? 0) >= (duelsData?.maxActive ?? 1)) {
-      setError('Ai deja un duel activ. Termină-l sau treci la Pro pentru dueluri nelimitate.');
+      setError(t('duels.errorActiveDuel'));
       return;
     }
 
@@ -116,18 +116,18 @@ export default function DuelsPage() {
         trackEvent('duel_created', { duel_id: created.duelId });
         router.push(`/${locale}/duel/${encodeURIComponent(created.duelId)}`);
       } else {
-        setError(created.error ?? 'Nu s-a putut crea duelul');
+        setError(created.error ?? t('duels.errorCreate'));
         setCreating(false);
       }
     } catch {
-      setError('Eroare la crearea duelului');
+      setError(t('duels.errorCreateFailed'));
       setCreating(false);
     }
   };
 
   const handleShareDuel = async (duelId: string) => {
     const link = `${window.location.origin}/${locale}/duel/${encodeURIComponent(duelId)}`;
-    const shareText = `Te provoc la un duel pe RonDuel! Ai 5 întrebări rapide: ${link}`;
+    const shareText = t('duels.shareText', { link });
 
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
@@ -136,7 +136,7 @@ export default function DuelsPage() {
       } catch {}
     }
     await navigator.clipboard.writeText(shareText).catch(() => {});
-    setToast('Linkul duelului a fost copiat!');
+    setToast(t('duel.linkCopied'));
     setTimeout(() => setToast(''), 3000);
   };
 
@@ -153,8 +153,11 @@ export default function DuelsPage() {
           <h1 className="font-display text-2xl font-extrabold text-ink">{t('nav.duels')}</h1>
           <p className="text-muted text-xs font-bold">
             {duelsData?.isPro
-              ? 'Nelimitat (Pro) · 1v1 Split Court'
-              : `${duelsData?.monthlyCount ?? 0}/${duelsData?.maxMonthly ?? 4} dueluri luna aceasta`}
+              ? t('duels.unlimitedProLong')
+              : t('duels.monthlyUsage', {
+                  count: duelsData?.monthlyCount ?? 0,
+                  max: duelsData?.maxMonthly ?? 4,
+                })}
           </p>
         </div>
         <Button
@@ -165,7 +168,7 @@ export default function DuelsPage() {
           onClick={handleCreateDuel}
         >
           <Plus size={16} weight="bold" />
-          <span>{creating ? 'Se creează…' : 'Duel nou'}</span>
+          <span>{creating ? t('common.creating') : t('duels.newDuel')}</span>
         </Button>
       </div>
 
@@ -177,13 +180,13 @@ export default function DuelsPage() {
             <div className="space-y-1">
               <p className="font-extrabold text-sm leading-snug">{error}</p>
               <p className="text-xs font-medium text-ink/80">
-                Abonamentul Pro oferă dueluri nelimitate, scut pentru serie și teme vizuale.
+                {t('duels.proUpsell')}
               </p>
             </div>
           </div>
           <Link href={`/${locale}/pro`} className="block pt-1">
             <Button size="sm" variant="primary" fullWidth>
-              Treci la Pro
+              {t('common.goPro')}
             </Button>
           </Link>
         </Card>
@@ -202,26 +205,26 @@ export default function DuelsPage() {
             <Sword size={24} weight="bold" className="text-volt-strong dark:text-volt" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-display font-black text-base text-ink">Niciun duel încă</h3>
+            <h3 className="font-display font-black text-base text-ink">{t('duels.emptyTitle')}</h3>
             <p className="text-muted text-xs max-w-[280px] mx-auto">
-              Provoacă un prieten la un duel 1v1 rapid de 60 de secunde!
+              {t('duels.emptyBody')}
             </p>
           </div>
           <div className="pt-2 flex justify-center">
             <Button size="sm" variant="volt" onClick={handleCreateDuel}>
-              Începe un duel nou
+              {t('duels.startNew')}
             </Button>
           </div>
         </Card>
       )}
 
-      {/* 1. Rândul tău (Your turn) first! */}
+      {/* 1. Your turn first! */}
       {yourTurn.length > 0 && (
         <section className="space-y-2.5">
           <div className="flex items-center gap-2">
             <span className="flex h-2.5 w-2.5 rounded-full bg-ron-strong animate-pulse" />
             <h2 className="text-xs font-black uppercase tracking-wider text-ron-strong">
-              Rândul tău ({yourTurn.length})
+              {t('duels.sectionYourTurn', { count: yourTurn.length })}
             </h2>
           </div>
           <div className="space-y-2">
@@ -234,12 +237,12 @@ export default function DuelsPage() {
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
                     <p className="font-display font-extrabold text-sm truncate">
-                      vs {duel.opponentNickname}
+                      {t('common.versus', { name: duel.opponentNickname })}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs">
                       <span className="text-muted font-bold flex items-center gap-1">
                         <Clock size={12} weight="bold" />
-                        {formatHoursLeft(duel.timeLeftMs)}
+                        {formatHoursLeft(duel.timeLeftMs, t)}
                       </span>
                       {duel.h2h && (
                         <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
@@ -248,7 +251,7 @@ export default function DuelsPage() {
                       )}
                       {duel.h2h && duel.h2h.winStreak >= 3 && (
                         <span className="text-ron-strong text-[11px] font-black">
-                          🔥 {duel.h2h.winStreak} la rând
+                          🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
                         </span>
                       )}
                     </div>
@@ -257,7 +260,7 @@ export default function DuelsPage() {
                 <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
                   <Button size="sm" variant="volt" className="shrink-0 font-black text-xs h-10 px-3">
                     <Play size={14} weight="fill" />
-                    <span>Joacă acum</span>
+                    <span>{t('common.playNow')}</span>
                   </Button>
                 </Link>
               </div>
@@ -266,11 +269,11 @@ export default function DuelsPage() {
         </section>
       )}
 
-      {/* 2. În așteptarea adversarului */}
+      {/* 2. Waiting for opponent */}
       {waiting.length > 0 && (
         <section className="space-y-2.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
-            În așteptarea adversarului ({waiting.length})
+            {t('duels.sectionWaiting', { count: waiting.length })}
           </h2>
           <div className="space-y-2">
             {waiting.map((duel) => (
@@ -282,11 +285,11 @@ export default function DuelsPage() {
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
                     <p className="font-display font-extrabold text-sm truncate">
-                      vs {duel.opponentNickname}
+                      {t('common.versus', { name: duel.opponentNickname })}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
                       <span>
-                        Scorul tău: <strong className="text-ink">{duel.myScore} pct</strong> · {formatHoursLeft(duel.timeLeftMs)}
+                        {t('duels.yourScore', { score: duel.myScore ?? 0 })} · {formatHoursLeft(duel.timeLeftMs, t)}
                       </span>
                       {duel.h2h && (
                         <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
@@ -295,7 +298,7 @@ export default function DuelsPage() {
                       )}
                       {duel.h2h && duel.h2h.winStreak >= 3 && (
                         <span className="text-ron-strong text-[11px] font-black">
-                          🔥 {duel.h2h.winStreak} la rând
+                          🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
                         </span>
                       )}
                     </div>
@@ -312,7 +315,7 @@ export default function DuelsPage() {
                   </Button>
                   <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
                     <Button size="sm" variant="secondary" className="h-10 px-3 text-xs font-bold">
-                      Deschide
+                      {t('common.open')}
                     </Button>
                   </Link>
                 </div>
@@ -326,7 +329,7 @@ export default function DuelsPage() {
       {finished.length > 0 && (
         <section className="space-y-2.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
-            Finalizate ({finished.length})
+            {t('duels.sectionFinished', { count: finished.length })}
           </h2>
           <div className="space-y-2">
             {finished.map((duel) => (
@@ -339,11 +342,11 @@ export default function DuelsPage() {
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
                     <p className="font-display font-extrabold text-sm truncate">
-                      vs {duel.opponentNickname}
+                      {t('common.versus', { name: duel.opponentNickname })}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
                       <span>
-                        {duel.myScore} - {duel.opponentScore} pct
+                        {duel.myScore} - {duel.opponentScore} {t('common.points', { points: '' }).trim()}
                       </span>
                       {duel.h2h && (
                         <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
@@ -352,13 +355,13 @@ export default function DuelsPage() {
                       )}
                       {duel.h2h && duel.h2h.winStreak >= 3 && (
                         <span className="text-ron-strong text-[11px] font-black">
-                          🔥 {duel.h2h.winStreak} la rând
+                          🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
                         </span>
                       )}
                     </div>
                     {duel.walkover && (
                       <p className="text-[11px] font-bold text-ron-strong mt-0.5">
-                        {duel.walkoverNote || 'câștigat prin neprezentare'}
+                        {duel.walkoverNote || t('duels.walkoverBadge')}
                       </p>
                     )}
                   </div>
@@ -366,15 +369,15 @@ export default function DuelsPage() {
                 <div className="shrink-0 text-right">
                   {duel.isWinner ? (
                     <Chip tone="volt" className="font-black text-xs">
-                      {duel.walkover ? 'Neprezentare 🏆' : 'Ai câștigat! 🎉'}
+                      {duel.walkover ? t('duels.walkoverBadge') : t('duels.won')}
                     </Chip>
                   ) : duel.isTie ? (
                     <Chip tone="neutral" className="font-bold text-xs">
-                      Egalitate
+                      {t('duels.draw')}
                     </Chip>
                   ) : (
                     <Chip tone="neutral" className="text-muted font-bold text-xs">
-                      Ai pierdut
+                      {t('duels.lost')}
                     </Chip>
                   )}
                 </div>

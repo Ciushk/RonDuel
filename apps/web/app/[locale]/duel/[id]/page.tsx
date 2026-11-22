@@ -121,11 +121,11 @@ export default function DuelPage() {
       if (data.duelId) {
         router.push(`/${locale}/duel/${encodeURIComponent(data.duelId)}`);
       } else {
-        setToast(data.error || 'Nu s-a putut crea revanșa');
+        setToast(data.error || t('duel.errorRematch'));
         setIsRematching(false);
       }
     } catch {
-      setToast('Eroare la crearea revanșei');
+      setToast(t('duel.errorRematchFailed'));
       setIsRematching(false);
     }
   };
@@ -227,7 +227,7 @@ export default function DuelPage() {
 
   if (!duel) {
     return (
-      <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">Loading…</main>
+      <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">{t('common.loading')}</main>
     );
   }
 
@@ -356,7 +356,7 @@ export default function DuelPage() {
       {/* Versus Card */}
       <VersusCard
         duelId={duel.id}
-        challenger={challenger ?? { uid: duel.challengerUid, nickname: 'Challenger' }}
+        challenger={challenger ?? { uid: duel.challengerUid, nickname: t('duel.challengerFallback') }}
         opponent={opponent}
         myUid={myUid}
         winnerUid={duel.winnerUid}
@@ -378,7 +378,7 @@ export default function DuelPage() {
             className="font-black"
           >
             <Sword size={18} weight="bold" className="mr-1.5" />
-            {isRematching ? 'Se inițiază…' : 'Revanșă'}
+            {isRematching ? t('duel.starting') : t('duel.rematch')}
           </Button>
         )}
 
@@ -392,7 +392,7 @@ export default function DuelPage() {
       {duel.status === 'complete' && isAnonymous && (
         <Card variant="sticker" className="border-2 border-border bg-surface-2 p-3.5 space-y-2 text-left">
           <p className="text-xs font-extrabold text-ink leading-snug">
-            Intră în cont ca să-ți păstrezi bilanțul la dueluri
+            {t('duel.signInToKeepRecord')}
           </p>
           <div className="flex gap-2">
             <Button
@@ -402,7 +402,7 @@ export default function DuelPage() {
               onClick={() => setAuthModalOpen(true)}
               className="text-xs font-bold"
             >
-              Loghează-te / Crează cont
+              {t('duel.signInOrSignUp')}
             </Button>
           </div>
         </Card>

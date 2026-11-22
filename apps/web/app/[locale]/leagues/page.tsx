@@ -16,7 +16,6 @@ import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip } from '@/components/ui';
-import { formatRomanianPlayers } from '@/lib/format';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface GlobalPlayerItem {
@@ -96,7 +95,7 @@ export default function LeaguesPage() {
   const loadData = () => {
     const session = getLocalSession();
     setSessionUid(session.uid);
-    setMyNickname(session.nickname || 'Tu');
+    setMyNickname(session.nickname || t('common.you'));
     const tz = getBrowserTimeZone();
     const leaguesParam = (session.leagueIds || []).join(',');
     fetch(
@@ -152,10 +151,10 @@ export default function LeaguesPage() {
           <h1 className="font-display text-2xl font-extrabold text-ink">{t('nav.leagues')}</h1>
           <p className="text-muted text-xs font-bold">
             {tab === 'my'
-              ? `${privateLeagues.length + 1} ${privateLeagues.length === 0 ? 'ligă' : 'ligi'}`
+              ? t('leagues.myCount', { count: privateLeagues.length + 1 })
               : leaderboardSubTab === 'global'
-                ? `${globalPlayers?.totalPlayers ?? filteredGlobalList.length} jucători în lume`
-                : `${leaguesLeaderboard.length} ligi înregistrate`}
+                ? t('leagues.worldPlayersCount', { count: globalPlayers?.totalPlayers ?? filteredGlobalList.length })
+                : t('leagues.registeredCount', { count: leaguesLeaderboard.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -166,7 +165,7 @@ export default function LeaguesPage() {
             onClick={() => setCreateOpen(true)}
           >
             <Plus size={16} weight="bold" />
-            <span>Creează</span>
+            <span>{t('leagues.createShort')}</span>
           </Button>
           <Button
             size="sm"
@@ -174,12 +173,12 @@ export default function LeaguesPage() {
             className="h-10 px-3 text-xs font-black shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
             onClick={() => setJoinOpen(true)}
           >
-            # Cod
+            {t('leagues.joinByCodeShort')}
           </Button>
         </div>
       </div>
 
-      {/* Main Segmented Tab Switcher: Ligile mele vs Clasament */}
+      {/* Main Segmented Tab Switcher: My leagues vs Leaderboards */}
       <div className="grid grid-cols-2 gap-1 rounded-xl border-2 border-border bg-surface-2 p-1">
         <button
           type="button"
@@ -194,7 +193,7 @@ export default function LeaguesPage() {
           }`}
         >
           <Users size={16} weight="bold" />
-          <span>Ligile mele</span>
+          <span>{t('leagues.tabMine')}</span>
         </button>
         <button
           type="button"
@@ -209,11 +208,11 @@ export default function LeaguesPage() {
           }`}
         >
           <Trophy size={16} weight="fill" className="text-volt-strong" />
-          <span>Clasament</span>
+          <span>{t('leagues.tabLeaderboard')}</span>
         </button>
       </div>
 
-      {/* SUB-TABS when Clasament is active: Clasament Global vs Clasamentul Ligilor */}
+      {/* SUB-TABS when Leaderboards is active: Global Leaderboard vs Leagues Leaderboard */}
       {tab === 'leaderboard' && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-1.5 rounded-xl border-2 border-border bg-surface p-1">
@@ -230,7 +229,7 @@ export default function LeaguesPage() {
               }`}
             >
               <GlobeHemisphereWest size={15} weight="bold" />
-              <span>Clasament Global</span>
+              <span>{t('leagues.globalLeaderboard')}</span>
             </button>
             <button
               type="button"
@@ -245,7 +244,7 @@ export default function LeaguesPage() {
               }`}
             >
               <Trophy size={15} weight="bold" />
-              <span>Clasamentul Ligilor</span>
+              <span>{t('leagues.tabRanking')}</span>
             </button>
           </div>
 
@@ -259,7 +258,9 @@ export default function LeaguesPage() {
             <input
               type="text"
               placeholder={
-                leaderboardSubTab === 'global' ? 'Caută jucător după nume...' : 'Caută ligă...'
+                leaderboardSubTab === 'global'
+                  ? t('leagues.searchPlayerPlaceholder')
+                  : t('leagues.searchLeaguePlaceholder')
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -293,24 +294,26 @@ export default function LeaguesPage() {
                 <Crown size={22} weight="fill" className="text-ron-strong shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="font-extrabold text-sm leading-snug">
-                    Liga ta e plină (5/5). Treci la Pro ca să primești mai mulți prieteni.
+                    {t('leagues.leagueFullCount', { count: 5, max: 5 })}
                   </p>
                   <p className="text-xs font-medium text-ink/80">
-                    Cu Pro deblochezi până la 200 de membri per ligă și dueluri nelimitate.
+                    {t('common.leagueFullBannerBody')}
                   </p>
                 </div>
               </div>
               <Link href={`/${locale}/pro`} className="block pt-1">
                 <Button size="sm" variant="primary" fullWidth>
-                  Treci la Pro
+                  {t('common.goPro')}
                 </Button>
               </Link>
             </Card>
           )}
 
-          {/* 1. LIGA PUBLICĂ (RonDuel World) */}
+          {/* 1. PUBLIC LEAGUE (RonDuel World) */}
           <section className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted">Ligă publică</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+              {t('leagues.publicLeague')}
+            </h2>
             <Link
               href={`/${locale}/league/lg_world`}
               className="border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex flex-col gap-3 rounded-2xl p-4 shadow-[var(--rd-shadow-key)] transition-all select-none"
@@ -330,12 +333,12 @@ export default function LeaguesPage() {
                         RonDuel World
                       </span>
                       <Chip tone="blue" className="text-[10px] py-0 px-1.5 font-black">
-                        GLOBAL
+                        {t('leagues.globalBadge')}
                       </Chip>
                     </div>
                     <p className="text-muted text-xs font-medium">
-                      {formatRomanianPlayers(worldLeague?.memberCount ?? 1, locale)} · Publică ·
-                      Fără limită
+                      {t('league.membersCount', { count: worldLeague?.memberCount ?? 1 })}{' '}
+                      {t('leagues.publicNoLimitSuffix')}
                     </p>
                   </div>
                 </div>
@@ -343,10 +346,10 @@ export default function LeaguesPage() {
                 <div className="shrink-0 text-right">
                   {worldLeague?.myRankToday ? (
                     <Chip tone="volt" className="font-black text-xs">
-                      #{worldLeague.myRankToday} azi
+                      #{worldLeague.myRankToday} {t('league.tabToday').toLowerCase()}
                     </Chip>
                   ) : (
-                    <span className="text-muted text-xs font-bold">Deschide →</span>
+                    <span className="text-muted text-xs font-bold">{t('leagues.open')}</span>
                   )}
                 </div>
               </div>
@@ -362,12 +365,12 @@ export default function LeaguesPage() {
                 <div className="text-right shrink-0">
                   <span className="text-xs font-black text-ink">
                     {worldLeague?.myRankToday
-                      ? `Locul #${worldLeague.myRankToday} mondial`
-                      : 'Clasament disponibil'}
+                      ? t('leagues.worldRank', { rank: worldLeague.myRankToday })
+                      : t('leagues.leaderboardAvailable')}
                   </span>
                   {worldLeague?.myScore != null && (
                     <span className="text-muted text-[11px] font-bold block">
-                      {worldLeague.myScore.toLocaleString()} pct
+                      {t('common.points', { points: worldLeague.myScore.toLocaleString() })}
                     </span>
                   )}
                 </div>
@@ -378,9 +381,14 @@ export default function LeaguesPage() {
           {/* 2. LIGILE MELE (Private Leagues) */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted">Ligile mele</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+                {t('leagues.tabMine')}
+              </h2>
               <span className="text-xs text-muted font-bold">
-                {privateLeagues.length} ligi private (max {status?.isPro ? 'nelimitat' : '10'})
+                {t('leagues.privateCountMax', {
+                  count: privateLeagues.length,
+                  max: status?.isPro ? '∞' : '10',
+                })}
               </span>
             </div>
 
@@ -391,19 +399,18 @@ export default function LeaguesPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-display font-black text-base text-ink">
-                    Joacă cu prietenii tăi!
+                    {t('leagues.emptyTitle')}
                   </h3>
                   <p className="text-muted text-xs max-w-[280px] mx-auto">
-                    Creează o ligă pentru birou, familie sau gașcă. Poți intra în până la 10 ligi
-                    gratuit!
+                    {t('leagues.emptyBodyJoinLimit', { max: 10 })}
                   </p>
                 </div>
                 <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
                   <Button size="sm" variant="primary" onClick={() => setCreateOpen(true)}>
-                    Creează prima ta ligă
+                    {t('leagues.createFirst')}
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => setJoinOpen(true)}>
-                    Alătură-te cu cod
+                    {t('leagues.joinWithCode')}
                   </Button>
                 </div>
               </Card>
@@ -441,13 +448,13 @@ export default function LeaguesPage() {
                             </span>
                             {league.isOwner && (
                               <Chip tone="neutral" className="text-[10px] py-0 px-1 font-bold">
-                                Admin
+                                {t('leagues.adminBadge')}
                               </Chip>
                             )}
                           </div>
                           <p className="text-muted text-xs">
-                            {league.memberCount}/{league.maxMembers ?? 5} jucători ·{' '}
-                            {league.playedTodayCount} au jucat azi
+                            {t('league.membersCount', { count: league.memberCount })} / {league.maxMembers ?? 5} ·{' '}
+                            {t('common.playedTodayCount', { count: league.playedTodayCount })}
                           </p>
                         </div>
                       </div>
@@ -455,10 +462,10 @@ export default function LeaguesPage() {
                       <div className="shrink-0 text-right">
                         {league.intlRank ? (
                           <Chip tone="volt" className="font-black text-xs">
-                            🏆 #{league.intlRank} mondial
+                            🏆 {t('leagues.worldRank', { rank: league.intlRank })}
                           </Chip>
                         ) : (
-                          <span className="text-muted text-xs font-bold">Deschide →</span>
+                          <span className="text-muted text-xs font-bold">{t('leagues.open')}</span>
                         )}
                       </div>
                     </div>
@@ -474,12 +481,12 @@ export default function LeaguesPage() {
                       <div className="text-right shrink-0">
                         <span className="font-black text-ink">
                           {league.myRankToday
-                            ? `Locul #${league.myRankToday} în ligă`
-                            : 'Nejucat azi'}
+                            ? t('leagues.rankInLeague', { rank: league.myRankToday })
+                            : t('leagues.notPlayedToday')}
                         </span>
                         {league.myScore != null && (
                           <span className="text-muted text-[11px] font-bold block">
-                            {league.myScore.toLocaleString()} pct
+                            {t('common.points', { points: league.myScore.toLocaleString() })}
                           </span>
                         )}
                       </div>
@@ -503,11 +510,11 @@ export default function LeaguesPage() {
               {/* Scope Switcher: Azi vs All-Time */}
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="font-display text-lg font-black text-ink">Jucători din lume</h2>
+                  <h2 className="font-display text-lg font-black text-ink">{t('leagues.worldPlayersTitle')}</h2>
                   <p className="text-muted text-xs font-medium">
                     {globalScope === 'today'
-                      ? 'Clasamentul rundei de astăzi'
-                      : 'Clasamentul general din toate timpurile'}
+                      ? t('leagues.todayRoundLeaderboard')
+                      : t('leagues.allTimeLeaderboard')}
                   </p>
                 </div>
                 <div className="flex items-center rounded-lg border-2 border-border bg-surface-2 p-0.5 text-xs font-black">
@@ -520,7 +527,7 @@ export default function LeaguesPage() {
                         : 'text-muted hover:text-ink'
                     }`}
                   >
-                    Azi
+                    {t('league.tabToday')}
                   </button>
                   <button
                     type="button"
@@ -531,7 +538,7 @@ export default function LeaguesPage() {
                         : 'text-muted hover:text-ink'
                     }`}
                   >
-                    All-Time
+                    {t('league.tabAllTime')}
                   </button>
                 </div>
               </div>
@@ -539,11 +546,11 @@ export default function LeaguesPage() {
               {filteredGlobalList.length === 0 ? (
                 <Card className="p-6 text-center space-y-2 border-2 border-dashed border-border bg-surface-2/60">
                   <Trophy size={32} weight="fill" className="text-muted mx-auto" />
-                  <p className="text-ink font-bold text-sm">Niciun jucător găsit.</p>
+                  <p className="text-ink font-bold text-sm">{t('leagues.noPlayersFound')}</p>
                   <p className="text-muted text-xs">
                     {searchQuery
-                      ? 'Încearcă un alt nume de căutare.'
-                      : 'Joacă runda de azi pentru a apărea pe primul loc!'}
+                      ? t('leagues.tryAnotherSearch')
+                      : t('leagues.playToTop')}
                   </p>
                 </Card>
               ) : (
@@ -566,28 +573,29 @@ export default function LeaguesPage() {
                               </span>
                               {player.isCurrentUser && (
                                 <Chip tone="volt" className="text-[10px] py-0 px-1.5 font-black">
-                                  Tu
+                                  {t('common.you')}
                                 </Chip>
                               )}
                             </div>
                             <p className="text-muted text-xs font-medium">
                               {globalScope === 'today'
-                                ? player.emojiLine || 'Rundă finalizată'
-                                : `${player.roundsPlayed ?? 1} runde jucate`}
+                                ? player.emojiLine || t('league.roundFinished')
+                                : t('leagues.roundsPlayed', { count: player.roundsPlayed ?? 1 })}
                             </p>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
                           <span className="rd-tabular font-display font-black text-base text-ink block">
-                            {(globalScope === 'today'
-                              ? player.score
-                              : player.allTimeScore
-                            )?.toLocaleString() ?? '—'}{' '}
-                            pct
+                            {t('common.points', {
+                              points: (globalScope === 'today'
+                                ? player.score
+                                : player.allTimeScore
+                              )?.toLocaleString() ?? '—',
+                            })}
                           </span>
                           <span className="text-muted text-[10px] font-bold">
-                            Locul #{player.rank}
+                            {t('common.rankPlace', { rank: player.rank })}
                           </span>
                         </div>
                       </div>
@@ -602,7 +610,7 @@ export default function LeaguesPage() {
                 myScore={globalScope === 'today' ? myGlobalItem?.score : myGlobalItem?.allTimeScore}
                 myNickname={myGlobalItem?.nickname || myNickname}
                 myUid={sessionUid}
-                label="Locul tău mondial:"
+                label={t('common.yourWorldRank')}
               />
             </div>
           )}
@@ -611,20 +619,20 @@ export default function LeaguesPage() {
           {leaderboardSubTab === 'leagues' && (
             <div className="space-y-3">
               <div>
-                <h2 className="font-display text-lg font-black text-ink">Topul tuturor ligilor</h2>
+                <h2 className="font-display text-lg font-black text-ink">{t('leagues.rankingTitle')}</h2>
                 <p className="text-muted text-xs font-medium">
-                  Clasament internațional după punctajul total al membrilor
+                  {t('leagues.rankingSubtitleTotal')}
                 </p>
               </div>
 
               {filteredLeaguesList.length === 0 ? (
                 <Card className="p-6 text-center space-y-2 border-2 border-dashed border-border bg-surface-2/60">
                   <Trophy size={32} weight="fill" className="text-muted mx-auto" />
-                  <p className="text-ink font-bold text-sm">Nicio ligă găsită.</p>
-                  <p className="text-muted text-xs">Creează prima ligă și intră pe primul loc!</p>
+                  <p className="text-ink font-bold text-sm">{t('leagues.noLeaguesFound')}</p>
+                  <p className="text-muted text-xs">{t('leagues.rankingEmptyCta')}</p>
                   <div className="pt-2">
                     <Button size="sm" variant="volt" onClick={() => setCreateOpen(true)}>
-                      Creează o ligă
+                      {t('splash.createLeague')}
                     </Button>
                   </div>
                 </Card>
@@ -649,23 +657,24 @@ export default function LeaguesPage() {
                               </span>
                               {item.isMember && (
                                 <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
-                                  Liga ta
+                                  {t('leagues.yourLeagueBadge')}
                                 </Chip>
                               )}
                             </div>
                             <p className="text-muted text-xs font-medium">
-                              {formatRomanianPlayers(item.memberCount, locale)} · medie{' '}
-                              {item.avgScore} pct/jucător
+                              {t('league.membersCount', { count: item.memberCount })} · {t('leagues.rankingAverage', { avg: item.avgScore })}
                             </p>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
                           <span className="rd-tabular font-display font-black text-sm text-ink block">
-                            {item.allTimePoints.toLocaleString()} pct
+                            {t('common.points', { points: item.allTimePoints.toLocaleString() })}
                           </span>
                           <span className="text-muted text-[10px] font-bold">
-                            {item.totalPoints > 0 ? `+${item.totalPoints} azi` : '0 azi'}
+                            {item.totalPoints > 0
+                              ? `+${t('leagues.todayCount', { count: item.totalPoints })}`
+                              : t('leagues.todayCount', { count: 0 })}
                           </span>
                         </div>
                       </Link>
@@ -698,3 +707,4 @@ export default function LeaguesPage() {
     </main>
   );
 }
+

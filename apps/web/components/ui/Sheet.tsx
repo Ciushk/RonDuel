@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import { useEffect, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -14,6 +15,8 @@ export interface SheetProps {
 }
 
 export function Sheet({ open, onClose, title, children, className }: SheetProps) {
+  const t = useTranslations('common');
+
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -45,7 +48,7 @@ export function Sheet({ open, onClose, title, children, className }: SheetProps)
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('close')}
             className="border-border-subtle bg-surface-2 text-ink inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border"
           >
             <X size={20} weight="bold" aria-hidden="true" />

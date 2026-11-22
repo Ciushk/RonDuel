@@ -3,7 +3,6 @@ import { Bricolage_Grotesque, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { APPLE_STARTUP_IMAGES } from '@/app/manifest';
-import { RonBotMascot } from '@/components/RonBotMascot';
 
 import './globals.css';
 
@@ -34,9 +33,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://ronduel.web.app'),
-  title: 'RonDuel — Trivia zilnic pentru grupul tău de prieteni',
+  title: 'RonDuel — Daily Trivia with Your Friends',
   description:
-    '6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.',
+    'Daily 6-question trivia duel with your friends. 30 seconds per question, one attempt per day. Create your league!',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -55,9 +54,9 @@ export const metadata: Metadata = {
     startupImage: APPLE_STARTUP_IMAGES,
   },
   openGraph: {
-    title: 'RonDuel — Trivia zilnic pentru grupul tău de prieteni',
+    title: 'RonDuel — Daily Trivia with Your Friends',
     description:
-      '6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.',
+      'Daily 6-question trivia duel with your friends. 30 seconds per question, one attempt per day. Create your league!',
     url: 'https://ronduel.web.app',
     siteName: 'RonDuel',
     type: 'website',
@@ -66,15 +65,15 @@ export const metadata: Metadata = {
         url: '/brand/og-card-ro.png',
         width: 1200,
         height: 630,
-        alt: 'RonDuel #12 · 🟩🟩🟥🟩🟩🟩 · 987/1200 · 🔥 5',
+        alt: 'RonDuel',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RonDuel — Trivia zilnic pentru grupul tău de prieteni',
+    title: 'RonDuel — Daily Trivia with Your Friends',
     description:
-      '6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.',
+      'Daily 6-question trivia duel with your friends. 30 seconds per question, one attempt per day. Create your league!',
     images: ['/brand/og-card-ro.png'],
   },
 };
@@ -88,7 +87,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body className="bg-bg text-ink min-h-dvh antialiased">
         {children}
-        <RonBotMascot />
       </body>
     </html>
   );

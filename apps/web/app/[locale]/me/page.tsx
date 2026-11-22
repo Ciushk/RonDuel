@@ -153,14 +153,14 @@ export default function ProfilePage() {
         body: JSON.stringify({ uid: profile.uid, pack }),
       });
       if (res.ok) {
-        setToast('Scut adăugat cu succes! ✓');
+        setToast(t('profile.shieldAddedToast'));
         loadProfile();
         setFreezeSheetOpen(false);
       } else {
-        setToast('Achiziția nu a putut fi procesată.');
+        setToast(t('profile.purchaseFailed'));
       }
     } catch {
-      setToast('Eroare de rețea.');
+      setToast(t('common.networkError'));
     } finally {
       setBuyingFreeze(false);
       setTimeout(() => setToast(''), 3000);
@@ -184,7 +184,7 @@ export default function ProfilePage() {
     if (s && s.uid) {
       setProfile((prev) => prev ?? {
         uid: s.uid,
-        nickname: s.nickname || 'Anonim',
+        nickname: s.nickname || t('profile.anonymous'),
         email: s.email,
         isAnonymous: s.isAnonymous ?? true,
         authProvider: s.authProvider ?? 'anonymous',
@@ -245,7 +245,7 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setNickError(data.error || 'Nu s-a putut schimba porecla');
+        setNickError(data.error || t('profile.nicknameChangeFailed'));
         try {
           const checkRes = await fetch('/api/me/nickname', {
             method: 'POST',
@@ -266,12 +266,12 @@ export default function ProfilePage() {
 
       const s = getLocalSession();
       saveLocalSession({ ...s, nickname: data.nickname });
-      setToast('Poreclă actualizată cu succes ✓');
+      setToast(t('profile.nicknameUpdated'));
       setNickModalOpen(false);
       loadProfile();
       setTimeout(() => setToast(''), 3000);
     } catch {
-      setNickError('Eroare de rețea');
+      setNickError(t('common.networkError'));
     } finally {
       setNickSaving(false);
     }
@@ -281,7 +281,7 @@ export default function ProfilePage() {
     try {
       const user = await loginWithGoogle();
       if (!user.email) {
-        setToast('Contul Google nu are o adresă de email asociată.');
+        setToast(t('profile.googleAuthFailed'));
         setTimeout(() => setToast(''), 3000);
         return;
       }
@@ -301,25 +301,42 @@ export default function ProfilePage() {
       });
       const data = await res.json().catch(() => ({}));
 
+      const finalUid = data.uid || data.existingUid || user.uid;
+      const finalEmail = data.email || user.email;
+      const finalNick = data.nickname || userNick;
+
       saveLocalSession({
         ...s,
-        uid: data.uid || user.uid,
-        email: data.email || user.email,
-        nickname: data.nickname || userNick,
+        uid: finalUid,
+        email: finalEmail,
+        nickname: finalNick,
         isAnonymous: false,
         authProvider: 'google',
       });
 
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              uid: finalUid,
+              email: finalEmail,
+              nickname: finalNick,
+              isAnonymous: false,
+              authProvider: 'google',
+            }
+          : null,
+      );
+
       trackEvent('login_completed', { method: 'google' });
-      setToast('Conectat cu Google cu succes! ✓');
+      setToast(t('profile.googleLinkedToast'));
       loadProfile();
       setTimeout(() => setToast(''), 3000);
     } catch (err: unknown) {
       const authErr = err as { code?: string; message?: string };
       if (authErr?.code === 'auth/popup-closed-by-user') {
-        setToast('Fereastra de conectare Google a fost închisă.');
+        setToast(t('profile.googleAuthFailed'));
       } else {
-        setToast(authErr?.message || 'Autentificarea Google a fost anulată sau a eșuat.');
+        setToast(authErr?.message || t('profile.googleAuthFailed'));
       }
       setTimeout(() => setToast(''), 3000);
     }
@@ -331,7 +348,7 @@ export default function ProfilePage() {
     getLocalSession();
     trackEvent('logout_completed');
     loadProfile();
-    setToast('Te-ai deconectat cu succes.');
+    setToast(t('profile.signedOutToast'));
     setTimeout(() => setToast(''), 3000);
   };
 
@@ -369,7 +386,7 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setToast(data.error ?? 'Error');
+      setToast(data.error ?? t('common.error'));
       setTimeout(() => setToast(''), 3000);
       return;
     }
@@ -424,17 +441,17 @@ export default function ProfilePage() {
                     {t('profile.proActiveForever')}
                   </span>
                   <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
-                    PRO
+                    {t('profile.proBadge')}
                   </Chip>
                 </div>
                 <p className="text-muted text-xs">
-                  {profile.pro.plan === 'yearly' ? 'Abonament anual activ' : 'Abonament lunar activ'}
+                  {profile.pro.plan === 'yearly' ? t('profile.subscriptionYearly') : t('profile.subscriptionMonthly')}
                 </p>
               </div>
             </div>
             <Link href={`/${locale}/pro`}>
               <Button size="sm" variant="secondary" className="h-9 px-3 text-xs font-bold">
-                Detalii
+                {t('profile.details')}
               </Button>
             </Link>
           </div>
@@ -451,14 +468,14 @@ export default function ProfilePage() {
                   {t('profile.proTrialCard')}
                 </span>
                 <p className="text-muted text-xs">
-                  Ligi mari de 200 membri, dueluri nelimitate & scut serie
+                  {t('profile.proPitch')}
                 </p>
               </div>
             </div>
           </div>
           <Link href={`/${locale}/pro`} className="block pt-1">
             <Button size="sm" variant="primary" fullWidth className="h-10 text-xs font-black">
-              Activează gratuit
+              {t('profile.activateFree')}
             </Button>
           </Link>
         </Card>
@@ -479,7 +496,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleOpenNickModal}
-                aria-label="Schimbă porecla"
+                aria-label={t('profile.changeNickname')}
                 className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-y-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg shadow-sm cursor-pointer select-none"
               >
                 <PencilSimple size={14} weight="bold" />
@@ -500,12 +517,12 @@ export default function ProfilePage() {
             onClick={() => setFreezeSheetOpen(true)}
             className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-y-0.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black shadow-[1px_1px_0px_0px_var(--border-color,#16131F)] transition-all cursor-pointer select-none"
           >
-            <span>🧊 {profile.freezes ?? 0} {profile.freezes === 1 ? 'scut' : 'scuturi'}</span>
+            <span>🧊 {profile.freezes ?? 0}</span>
           </button>
         </div>
       </Card>
 
-      {/* Prominent Action Button: Clasamente sub nume */}
+      {/* Prominent Action Button: Leaderboards under name */}
       <Link href={`/${locale}/leagues?tab=leaderboard`} className="block">
         <Button
           fullWidth
@@ -514,7 +531,7 @@ export default function ProfilePage() {
           className="h-12 font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] text-[#16131F]"
         >
           <Trophy size={20} weight="fill" className="text-[#16131F]" />
-          <span className="text-sm font-black">Clasamente</span>
+          <span className="text-sm font-black">{t('common.leaderboards')}</span>
         </Button>
       </Link>
 
@@ -528,12 +545,12 @@ export default function ProfilePage() {
       <Card className="space-y-3.5 border-2 border-border p-4 shadow-[var(--rd-shadow-key)]">
         <div>
           <h2 className="font-display text-xl font-extrabold text-ink">
-            {!profile.isAnonymous && profile.email ? 'Contul tău' : 'Cont & Salvare Progres'}
+            {!profile.isAnonymous && profile.email ? t('profile.accountTitleLinked') : t('profile.accountTitleAnon')}
           </h2>
           <p className="text-muted text-xs font-medium leading-relaxed mt-0.5">
             {!profile.isAnonymous && profile.email
-              ? 'Progresul, seria și ligile tale sunt salvate pe acest cont securizat.'
-              : 'Loghează-te cu email și parolă sau Google pentru a-ți păstra seria și a apărea în clasamentul global.'}
+              ? t('profile.accountLinkedBody')
+              : t('profile.accountAnonBody')}
           </p>
         </div>
 
@@ -547,7 +564,7 @@ export default function ProfilePage() {
                     {profile.email}
                   </span>
                   <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
-                    {profile.authProvider === 'google' ? 'Autentificat cu Google' : 'Autentificat cu Email & Parolă'}
+                    {profile.authProvider === 'google' ? t('profile.signedInGoogle') : t('profile.signedInEmail')}
                   </span>
                 </div>
               </div>
@@ -560,7 +577,7 @@ export default function ProfilePage() {
               onClick={() => void handleLogout()}
               className="text-xs font-bold"
             >
-              Deconectează-te
+              {t('profile.signOut')}
             </Button>
           </div>
         ) : (
@@ -572,7 +589,7 @@ export default function ProfilePage() {
                 onClick={() => handleOpenAuth('login')}
                 className="font-black text-xs h-11 shadow-sm"
               >
-                Loghează-te
+                {t('auth.loginButton')}
               </Button>
               <Button
                 variant="primary"
@@ -580,7 +597,7 @@ export default function ProfilePage() {
                 onClick={() => handleOpenAuth('signup')}
                 className="font-black text-xs h-11 shadow-sm"
               >
-                Creează cont
+                {t('account.createAccountBtn')}
               </Button>
             </div>
 
@@ -592,7 +609,7 @@ export default function ProfilePage() {
               className="font-bold text-xs h-11 flex items-center justify-center gap-2"
             >
               <GoogleLogo size={18} weight="bold" />
-              <span>Continuă cu Google</span>
+              <span>{t('auth.continueWithGoogle')}</span>
             </Button>
 
             <div className="text-center pt-1">
@@ -601,7 +618,7 @@ export default function ProfilePage() {
                 onClick={() => handleOpenAuth('forgot')}
                 className="text-xs font-bold text-muted hover:text-ink cursor-pointer hover:underline"
               >
-                Am uitat parola?
+                {t('auth.forgotPasswordLink')}
               </button>
             </div>
           </div>
@@ -663,7 +680,7 @@ export default function ProfilePage() {
         <h2 className="font-display text-xl font-extrabold">{t('profile.proStatsTitle')}</h2>
         {profile.pro.active ? (
           profile.topicAccuracy.length === 0 ? (
-            <p className="text-muted text-xs">Play a round to see topic accuracy.</p>
+            <p className="text-muted text-xs">{t('profile.topicAccuracyEmpty')}</p>
           ) : (
             <div className="space-y-2">
               {profile.topicAccuracy.map((row) => (
@@ -698,11 +715,11 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sword size={22} weight="bold" className="text-volt-strong shrink-0" />
-            <h2 className="font-display text-xl font-extrabold text-ink">Bilanț Dueluri 1v1</h2>
+            <h2 className="font-display text-xl font-extrabold text-ink">{t('profile.duelRecordTitle')}</h2>
           </div>
           <Link href={`/${locale}/duels`}>
             <Button size="sm" variant="secondary" className="h-8 px-2.5 text-xs font-bold">
-              Vezi dueluri
+              {t('profile.viewDuels')}
             </Button>
           </Link>
         </div>
@@ -710,19 +727,19 @@ export default function ProfilePage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">Jucate</span>
+            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.duelsPlayed')}</span>
             <span className="rd-tabular font-display text-lg font-extrabold text-ink">
               {profile.duelStats?.played ?? 0}
             </span>
           </div>
           <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-correct block">Victorii</span>
+            <span className="text-[10px] font-bold uppercase text-correct block">{t('profile.duelsWon')}</span>
             <span className="rd-tabular font-display text-lg font-extrabold text-ink">
               {profile.duelStats?.wins ?? 0}
             </span>
           </div>
           <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-wrong block">Înfrângeri</span>
+            <span className="text-[10px] font-bold uppercase text-wrong block">{t('profile.duelsLost')}</span>
             <span className="rd-tabular font-display text-lg font-extrabold text-ink">
               {profile.duelStats?.losses ?? 0}
             </span>
@@ -731,13 +748,13 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-2 gap-2 text-center pt-0.5">
           <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">Rată de victorie</span>
+            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.winRate')}</span>
             <span className="rd-tabular font-display text-base font-extrabold text-ink">
               {Math.round(((profile.duelStats?.wins ?? 0) / (profile.duelStats?.played || 1)) * 100)}%
             </span>
           </div>
           <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-muted block">Cea mai bună serie</span>
+            <span className="text-[10px] font-bold uppercase text-muted block">{t('profile.bestWinStreak')}</span>
             <span className="rd-tabular font-display text-base font-extrabold text-ink flex items-center justify-center gap-1">
               🔥 {profile.duelStats?.bestWinStreak ?? 0}
             </span>
@@ -748,7 +765,7 @@ export default function ProfilePage() {
         {profile.topRivals && profile.topRivals.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border-subtle">
             <h3 className="text-xs font-black uppercase tracking-wider text-muted">
-              Top Rivali
+              {t('profile.topRivals')}
             </h3>
             <div className="space-y-1.5">
               {profile.topRivals.map((rival) => (
@@ -762,7 +779,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-muted rd-tabular">
-                      {rival.wins}V – {rival.losses}Î
+                      {rival.wins}{t('profile.duelsWon').slice(0, 1).toUpperCase()} – {rival.losses}{t('profile.duelsLost').slice(0, 1).toUpperCase()}
                     </span>
                     {rival.currentWinStreak >= 3 && (
                       <span className="text-ron-strong font-black text-[11px]">
@@ -777,7 +794,7 @@ export default function ProfilePage() {
         )}
       </Card>
 
-      {/* Row "Setări" */}
+      {/* Row "Settings" */}
       <Link
         href={`/${locale}/settings`}
         onClick={() => trackEvent('settings_opened', { from: 'profile' })}
@@ -789,7 +806,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <span className="font-display font-extrabold text-sm text-ink block">{t('profile.settingsRow')}</span>
-            <p className="text-muted text-xs">Temă, limbă, cronometru relaxat, export date</p>
+            <p className="text-muted text-xs">{t('profile.settingsHint')}</p>
           </div>
         </div>
         <CaretRight size={20} weight="bold" className="text-muted shrink-0" />
@@ -799,26 +816,26 @@ export default function ProfilePage() {
       <Sheet
         open={freezeSheetOpen}
         onClose={() => setFreezeSheetOpen(false)}
-        title="Scuturi de Serie (Streak Freeze)"
+        title={t('profile.shieldsTitle')}
       >
         <div className="space-y-4">
           <div className="space-y-2 text-xs font-medium text-ink/90 leading-relaxed">
             <p>
-              Scuturile te protejează automat când uiți sau nu ai timp să joci runda zilnică.
+              {t('profile.shieldsIntro')}
             </p>
             <p>
-              Dacă la miezul nopții nu ai jucat, un scut este <strong>consumat automat</strong>, iar seria ta de zile (streak) rămâne intactă!
+              {t.rich('profile.shieldsHow', { b: (chunks) => <strong>{chunks}</strong> })}
             </p>
             <p className="text-muted">
-              Poți deține maximum <strong>5 scuturi</strong> în inventar. Ai acum: <strong>{profile.freezes ?? 0}/5 scuturi</strong>.
+              {t.rich('profile.shieldsInventory', { max: 5, count: `${profile.freezes ?? 0}/5`, b: (chunks) => <strong>{chunks}</strong> })}
             </p>
           </div>
 
           <div className="space-y-2.5 pt-2">
             <div className="flex items-center justify-between p-3 rounded-xl border-2 border-border bg-surface-2">
               <div>
-                <p className="font-extrabold text-sm text-ink">1 Scut de Serie</p>
-                <p className="text-[11px] text-muted font-bold">Protecție pentru o zi omisă</p>
+                <p className="font-extrabold text-sm text-ink">{t('profile.shieldOneTitle')}</p>
+                <p className="text-[11px] text-muted font-bold">{t('profile.shieldOneBody')}</p>
               </div>
               <Button
                 size="sm"
@@ -833,11 +850,11 @@ export default function ProfilePage() {
 
             <div className="flex items-center justify-between p-3 rounded-xl border-2 border-volt bg-volt/20 relative">
               <span className="absolute -top-2.5 right-3 bg-ron-strong text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-border">
-                Cel mai bun preț
+                {t('profile.bestPrice')}
               </span>
               <div>
-                <p className="font-extrabold text-sm text-ink">3 Scuturi de Serie</p>
-                <p className="text-[11px] text-muted font-bold">Economisești 33%</p>
+                <p className="font-extrabold text-sm text-ink">{t('profile.shieldThreeTitle')}</p>
+                <p className="text-[11px] text-muted font-bold">{t('profile.savePercent', { percent: 33 })}</p>
               </div>
               <Button
                 size="sm"
@@ -854,14 +871,14 @@ export default function ProfilePage() {
           {!profile.pro.active && (
             <div className="p-3 rounded-xl border border-border bg-surface text-center space-y-1.5 pt-2">
               <p className="text-xs font-bold text-ink">
-                Vrei scuturi incluse în fiecare lună?
+                {t('profile.shieldsProQuestion')}
               </p>
               <p className="text-[11px] text-muted">
-                Abonații RonDuel Pro primesc automat 2 scuturi gratuite lunar!
+                {t('profile.shieldsProBody')}
               </p>
               <Link href={`/${locale}/pro`} onClick={() => setFreezeSheetOpen(false)}>
                 <Button size="sm" variant="primary" fullWidth className="mt-1 h-9 text-xs font-black">
-                  Treci la Pro
+                  {t('common.goPro')}
                 </Button>
               </Link>
             </div>
@@ -884,27 +901,27 @@ export default function ProfilePage() {
       <Sheet
         open={nickModalOpen}
         onClose={() => setNickModalOpen(false)}
-        title="Schimbă porecla"
+        title={t('profile.changeNickname')}
       >
         <form onSubmit={handleSaveNickname} className="space-y-4 pt-1">
           {getNicknameCooldownDays() > 0 ? (
             <div className="rounded-xl border-2 border-ron-strong bg-ron/10 p-3 space-y-1">
               <p className="text-xs font-black text-ron-strong">
-                Perioadă de așteptare activă (30 de zile)
+                {t('profile.nicknameCooldownTitle')}
               </p>
               <p className="text-[11px] font-bold text-ink/80 leading-snug">
-                Îți poți schimba porecla o singură dată pe lună. Mai ai de așteptat {getNicknameCooldownDays()} {getNicknameCooldownDays() === 1 ? 'zi' : 'zile'}.
+                {t('profile.nicknameCooldownBody', { days: t('common.daysCount', { count: getNicknameCooldownDays() }) })}
               </p>
             </div>
           ) : (
             <p className="text-muted text-xs font-medium leading-relaxed">
-              Alege o poreclă unică. O poți schimba o singură dată la 30 de zile.
+              {t('profile.nicknameIntro')}
             </p>
           )}
 
           <div>
             <label className="text-muted text-xs font-bold block mb-1">
-              Poreclă nouă (2-20 caractere)
+              {t('profile.nicknameNewLabel')}
             </label>
             <input
               type="text"
@@ -927,7 +944,7 @@ export default function ProfilePage() {
 
           {nickSuggestions.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[11px] font-bold text-muted">Sugestii disponibile:</span>
+              <span className="text-[11px] font-bold text-muted">{t('profile.nicknameSuggestions')}</span>
               {nickSuggestions.map((sug) => (
                 <button
                   key={sug}
@@ -952,7 +969,7 @@ export default function ProfilePage() {
               fullWidth
               onClick={() => setNickModalOpen(false)}
             >
-              Anulează
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -960,7 +977,7 @@ export default function ProfilePage() {
               fullWidth
               disabled={nickSaving || getNicknameCooldownDays() > 0}
             >
-              {nickSaving ? 'Se salvează…' : 'Salvează porecla'}
+              {nickSaving ? t('common.saving') : t('profile.nicknameSave')}
             </Button>
           </div>
         </form>

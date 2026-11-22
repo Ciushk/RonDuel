@@ -267,7 +267,7 @@ export default function PlayPage() {
             {todayInfo && (
               <div className="flex justify-center">
                 <Chip tone="volt">
-                  Runda #{todayInfo.roundNumber} · {todayInfo.theme}
+                  {t('brand.roundBadge', { number: todayInfo.roundNumber })} · {todayInfo.theme}
                 </Chip>
               </div>
             )}
@@ -308,7 +308,7 @@ export default function PlayPage() {
           {todayInfo && (
             <div className="mb-6 flex flex-col items-center justify-center gap-1">
               <span className="font-display text-muted text-sm font-black uppercase tracking-wider">
-                Runda #{todayInfo.roundNumber}
+                {t('brand.roundBadge', { number: todayInfo.roundNumber })}
               </span>
               <span className="font-display text-ink text-xl font-extrabold">
                 {todayInfo.theme}
@@ -348,7 +348,7 @@ export default function PlayPage() {
         <div className="flex items-center gap-2">
           {item.isEnFallback && locale !== 'en' && <Chip tone="blue">{t('play.enFallback')}</Chip>}
           <Chip tone="neutral" className="uppercase">
-            {t(`play.typeLabels.${item.type}`, { default: item.type })}
+            {t(`play.typeLabels.${item.type}` as any)}
           </Chip>
         </div>
       </div>
@@ -356,7 +356,7 @@ export default function PlayPage() {
       <TimerBar
         remainingMs={remainingMs}
         limitMs={item.limitMs}
-        label={t('play.timeLeft', { default: 'Timp rămas' })}
+        label={t('play.timeLeft')}
       />
 
       <Card className="space-y-5">

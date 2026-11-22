@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
 import { loginWithGoogle } from '@/lib/firebase';
 import { generateReadableNickname } from '@/lib/format';
 import { getBrowserTimeZone, getLocalSession, recordLeagueId, saveLocalSession } from '@/lib/session';
@@ -78,7 +79,7 @@ export function JoinLeagueClient({
     setResolvedCode(cleanCode);
 
     const s = getLocalSession();
-    setNickname(s.nickname && !s.nickname.startsWith('Player_') ? s.nickname : generateReadableNickname());
+    setNickname(s.nickname && !s.nickname.startsWith('Player_') ? s.nickname : generateReadableNickname(locale));
 
     trackEvent('league_preview_viewed', { code: cleanCode, source: 'invite_link' });
 
@@ -101,7 +102,7 @@ export function JoinLeagueClient({
         setInvalidCode(true);
         setLoading(false);
       });
-  }, [initialCode]);
+  }, [initialCode, locale]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -128,7 +129,7 @@ export function JoinLeagueClient({
     if (!league) return;
 
     if (!ageConfirmed) {
-      setJoinError('Trebuie să confirmi vârsta (16+)');
+      setJoinError(t('errorAgeRequired'));
       return;
     }
 
@@ -178,7 +179,7 @@ export function JoinLeagueClient({
 
       const data = await res.json();
       if (!res.ok) {
-        setJoinError(data.error ?? 'Could not join league');
+        setJoinError(apiErrorMessage(tCommon, data, 'league.errorJoinFailed'));
         setJoinLoading(false);
         return;
       }
@@ -208,7 +209,7 @@ export function JoinLeagueClient({
         }
       }, 700);
     } catch {
-      setJoinError('Network error');
+      setJoinError(tCommon('common.networkError'));
     } finally {
       setJoinLoading(false);
     }
@@ -218,7 +219,7 @@ export function JoinLeagueClient({
     try {
       const user = await loginWithGoogle();
       if (!user.email) {
-        setToast('Contul Google nu are o adresă de email asociată.');
+        setToast(tCommon('auth.errors.googleNoEmail'));
         setTimeout(() => setToast(''), 2500);
         return;
       }
@@ -239,20 +240,24 @@ export function JoinLeagueClient({
 
       const data = await res.json().catch(() => ({}));
 
+      const finalUid = data.uid || data.existingUid || session.uid;
+      const finalEmail = data.email || user.email;
+      const finalNick = data.nickname || userNick;
+
       saveLocalSession({
         ...session,
-        uid: data.uid || session.uid,
-        email: data.email || user.email,
-        nickname: data.nickname || userNick,
+        uid: finalUid,
+        email: finalEmail,
+        nickname: finalNick,
         isAnonymous: false,
         authProvider: 'google',
       });
-      setToast('Cont Google conectat ✓');
+      setToast(t('googleLinkedToast'));
       setTimeout(() => setToast(''), 2500);
     } catch (err: unknown) {
       const authErr = err as { code?: string; message?: string };
       if (authErr?.code !== 'auth/popup-closed-by-user') {
-        setToast('Autentificarea Google a eșuat.');
+        setToast(tCommon('auth.errors.googleFailed'));
         setTimeout(() => setToast(''), 2500);
       }
     }
@@ -262,7 +267,7 @@ export function JoinLeagueClient({
     return (
       <main className="mx-auto flex max-w-[480px] flex-col items-center justify-center px-4 py-16 text-center">
         <div className="rd-seam h-2 w-24 rounded-full mb-4 animate-pulse" />
-        <p className="text-muted text-sm font-bold">Se încarcă liga…</p>
+        <p className="text-muted text-sm font-bold">{t('loading')}</p>
       </main>
     );
   }
@@ -274,7 +279,7 @@ export function JoinLeagueClient({
           <p className="text-4xl">⚠️</p>
           <h1 className="font-display text-2xl font-extrabold">{t('invalidCode')}</h1>
           <p className="text-muted text-sm">
-            Verifică dacă ai introdus codul corect sau cere un link nou de la cel care te-a invitat.
+            {t('invalidCodeHint')}
           </p>
           <Button fullWidth size="lg" variant="primary" onClick={() => router.push(`/${locale}`)}>
             {t('back')}
@@ -354,7 +359,7 @@ export function JoinLeagueClient({
         <Card className="space-y-3 overflow-hidden p-0">
           <div className="border-b border-border-subtle bg-surface-2 px-4 py-2.5">
             <h2 className="font-display text-sm font-extrabold uppercase tracking-wider text-muted">
-              Clasament ligă ({displayMembers.length})
+              {t('leaderboardTitleCount', { count: displayMembers.length })}
             </h2>
           </div>
 
@@ -435,7 +440,7 @@ export function JoinLeagueClient({
               maxLength={20}
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              placeholder="ex. Alex99"
+              placeholder={t('nicknamePlaceholder')}
               className="border-border bg-surface-2 text-ink min-h-12 w-full rounded-[14px] border-2 px-4 text-base font-bold"
             />
           </div>
@@ -473,7 +478,7 @@ export function JoinLeagueClient({
             variant="primary"
             disabled={!ageConfirmed || joinLoading}
           >
-            {joinLoading ? 'Se intră…' : t('joinConfirmBtn')}
+            {joinLoading ? t('joining') : t('joinConfirmBtn')}
           </Button>
 
           {/* Optional links */}
@@ -500,7 +505,7 @@ export function JoinLeagueClient({
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="emailul.tau@exemplu.ro"
+                  placeholder={tCommon('profile.emailPlaceholder')}
                   className="border-border bg-surface-2 text-ink min-h-10 w-full rounded-xl border px-3 text-xs font-medium"
                 />
               </div>

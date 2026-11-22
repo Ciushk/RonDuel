@@ -15,6 +15,7 @@ interface JoinByCodeDialogProps {
 
 export function JoinByCodeDialog({ open, onClose }: JoinByCodeDialogProps) {
   const t = useTranslations('splash');
+  const tCommon = useTranslations();
   const locale = useLocale();
   const router = useRouter();
 
@@ -100,7 +101,7 @@ export function JoinByCodeDialog({ open, onClose }: JoinByCodeDialogProps) {
 
         <div className="flex gap-2 pt-2">
           <Button variant="secondary" fullWidth onClick={onClose} type="button">
-            {t('codeNotFound') ? 'Anulează' : 'Cancel'}
+            {tCommon('common.cancel')}
           </Button>
           <Button
             variant="primary"

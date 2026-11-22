@@ -20,10 +20,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este cea mai mare planetă din Sistemul nostru Solar?',
+          prompt: 'Care este cea mai mare planet\u0103 din Sistemul nostru Solar?',
           options: ['Jupiter', 'Saturn', 'Neptun', 'Uranus'],
           explanation:
-            'Jupiter are o masă de peste două ori mai mare decât toate celelalte planete la un loc.',
+            'Jupiter are o mas\u0103 de peste dou\u0103 ori mai mare dec\u00e2t toate celelalte planete la un loc.',
         },
         en: {
           prompt: 'Which is the largest planet in our Solar System?',
@@ -48,9 +48,9 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este cea mai apropiată stea de Pământ, după Soare?',
+          prompt: 'Care este cea mai apropiat\u0103 stea de P\u0103m\u00e2nt, dup\u0103 Soare?',
           options: ['Proxima Centauri', 'Sirius', 'Betelgeuse', 'Vega'],
-          explanation: 'Proxima Centauri se află la aproximativ 4,24 ani-lumină de Sistemul Solar.',
+          explanation: 'Proxima Centauri se afl\u0103 la aproximativ 4,24 ani-lumin\u0103 de Sistemul Solar.',
         },
         en: {
           prompt: 'Which is the closest star to Earth after the Sun?',
@@ -75,10 +75,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Pe ce planetă din Sistemul Solar se află vulcanul gigant Olympus Mons?',
+          prompt: 'Pe ce planet\u0103 din Sistemul Solar se afl\u0103 vulcanul gigant Olympus Mons?',
           options: ['Marte', 'Venus', 'Mercur', 'Jupiter'],
           explanation:
-            'Olympus Mons de pe Marte are aproximativ 22 km înălțime, fiind cel mai înalt vulcan planetar cunoscut.',
+            'Olympus Mons de pe Marte are aproximativ 22 km \u00een\u0103l\u021bime, fiind cel mai \u00eenalt vulcan planetar cunoscut.',
         },
         en: {
           prompt: 'On which planet in the Solar System is the giant volcano Olympus Mons located?',
@@ -104,10 +104,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       type: 'order',
       content: {
         ro: {
-          prompt: 'Ordonează planetele de la cea mai apropiată la cea mai îndepărtată de Soare:',
-          options: ['Mercur', 'Venus', 'Pământ', 'Marte'],
+          prompt: 'Ordoneaz\u0103 planetele de la cea mai apropiat\u0103 la cea mai \u00eendep\u0103rtat\u0103 de Soare:',
+          options: ['Mercur', 'Venus', 'P\u0103m\u00e2nt', 'Marte'],
           explanation:
-            'Cele patru planete telurice interioare sunt Mercur, Venus, Pământ și Marte.',
+            'Cele patru planete telurice interioare sunt Mercur, Venus, P\u0103m\u00e2nt \u0219i Marte.',
         },
         en: {
           prompt: 'Order the planets from closest to farthest from the Sun:',
@@ -132,10 +132,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Găsește intrusul: care dintre următoarele NU este o planetă din Sistemul Solar?',
+          prompt: 'G\u0103se\u0219te intrusul: care dintre urm\u0103toarele NU este o planet\u0103 din Sistemul Solar?',
           options: ['Sirius', 'Neptun', 'Saturn', 'Venus'],
           explanation:
-            'Sirius este o stea (cea mai strălucitoare de pe cerul nopții), nu o planetă.',
+            'Sirius este o stea (cea mai str\u0103lucitoare de pe cerul nop\u021bii), nu o planet\u0103.',
         },
         en: {
           prompt: 'Find the odd one out: which of these is NOT a planet in our Solar System?',
@@ -162,10 +162,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'În ce an a avut loc Marea Unire de la Alba Iulia?',
+          prompt: '\u00cen ce an a avut loc Marea Unire de la Alba Iulia?',
           options: ['1918', '1859', '1877', '1922'],
           explanation:
-            'Marea Adunare Națională de la Alba Iulia a votat Unirea la 1 decembrie 1918.',
+            'Marea Adunare Na\u021bional\u0103 de la Alba Iulia a votat Unirea la 1 decembrie 1918.',
         },
         en: {
           prompt: 'In which year did the Great Union of Alba Iulia take place in Romania?',
@@ -192,10 +192,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Cine a fost primul om care a pășit pe Lună în 1969?',
+          prompt: 'Cine a fost primul om care a p\u0103\u0219it pe Lun\u0103 \u00een 1969?',
           options: ['Neil Armstrong', 'Buzz Aldrin', 'Iuri Gagarin', 'Michael Collins'],
           explanation:
-            'Neil Armstrong a pășit pe Lună la 20 iulie 1969 în cadrul misiunii Apollo 11.',
+            'Neil Armstrong a p\u0103\u0219it pe Lun\u0103 la 20 iulie 1969 \u00een cadrul misiunii Apollo 11.',
         },
         en: {
           prompt: 'Who was the first person to walk on the Moon in 1969?',
@@ -219,7 +219,7 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       type: 'order',
       content: {
         ro: {
-          prompt: 'Ordonează cronologic aceste invenții, de la cea mai veche la cea mai recentă:',
+          prompt: 'Ordoneaz\u0103 cronologic aceste inven\u021bii, de la cea mai veche la cea mai recent\u0103:',
           options: ['Tiparul cu litere mobile', 'Motorul cu abur', 'Telefonul', 'Internetul (WWW)'],
           explanation:
             'Tiparul lui Gutenberg (~1440), motorul cu abur (~1712/1776), telefonul (1876), World Wide Web (1989).',
@@ -251,10 +251,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este unitatea de măsură în Sistemul Internațional pentru forță?',
+          prompt: 'Care este unitatea de m\u0103sur\u0103 \u00een Sistemul Interna\u021bional pentru for\u021b\u0103?',
           options: ['Newton (N)', 'Joule (J)', 'Watt (W)', 'Pascal (Pa)'],
           explanation:
-            'Forța se măsoară în Newtoni (1 N = 1 kg·m/s²), în timp ce Joule măsoară energia.',
+            'For\u021ba se m\u0103soar\u0103 \u00een Newtoni (1 N = 1 kg·m/s²), \u00een timp ce Joule m\u0103soar\u0103 energia.',
         },
         en: {
           prompt: 'What is the SI unit of force?',
@@ -281,9 +281,9 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este viteza aproximativă a luminii în vid?',
+          prompt: 'Care este viteza aproximativ\u0103 a luminii \u00een vid?',
           options: ['300.000 km/s', '150.000 km/s', '340 m/s', '30.000 km/s'],
-          explanation: 'Lumina se propagă în vid cu aproximativ 299.792 km/s (~300.000 km/s).',
+          explanation: 'Lumina se propag\u0103 \u00een vid cu aproximativ 299.792 km/s (~300.000 km/s).',
         },
         en: {
           prompt: 'What is the approximate speed of light in a vacuum?',
@@ -309,10 +309,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Ce număr urmează în șirul: 3, 6, 12, 24, ...?',
+          prompt: 'Ce num\u0103r urmeaz\u0103 \u00een \u0219irul: 3, 6, 12, 24, ...?',
           options: ['48', '36', '42', '54'],
           explanation:
-            'Fiecare termen se obține prin înmulțirea termenului precedent cu 2 (24 × 2 = 48).',
+            'Fiecare termen se ob\u021bine prin \u00eenmul\u021birea termenului precedent cu 2 (24 × 2 = 48).',
         },
         en: {
           prompt: 'Which number comes next in the sequence: 3, 6, 12, 24, ...?',
@@ -337,10 +337,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       content: {
         ro: {
           prompt:
-            'Dacă 5 mașini produc 5 piese în 5 minute, în câte minute produc 100 de mașini 100 de piese?',
+            'Dac\u0103 5 ma\u0219ini produc 5 piese \u00een 5 minute, \u00een c\u00e2te minute produc 100 de ma\u0219ini 100 de piese?',
           options: ['5 minute', '100 minute', '20 minute', '1 minut'],
           explanation:
-            'Fiecare mașină produce o piesă în 5 minute, deci 100 de mașini în paralel tot 5 minute lucrează.',
+            'Fiecare ma\u0219in\u0103 produce o pies\u0103 \u00een 5 minute, deci 100 de ma\u0219ini \u00een paralel tot 5 minute lucreaz\u0103.',
         },
         en: {
           prompt:
@@ -372,10 +372,10 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Prin câte capitale europene trece fluviul Dunărea?',
+          prompt: 'Prin c\u00e2te capitale europene trece fluviul Dun\u0103rea?',
           options: ['4 capitale', '3 capitale', '5 capitale', '2 capitale'],
           explanation:
-            'Dunărea traversează patru capitale: Viena, Bratislava, Budapesta și Belgrad.',
+            'Dun\u0103rea traverseaz\u0103 patru capitale: Viena, Bratislava, Budapesta \u0219i Belgrad.',
         },
         en: {
           prompt: 'How many European capital cities does the Danube River flow through?',
@@ -402,26 +402,26 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este cel mai înalt vârf montan din România?',
-          options: ['Vârful Moldoveanu', 'Vârful Negoiu', 'Vârful Omu', 'Vârful Parângul Mare'],
-          explanation: 'Vârful Moldoveanu din Munții Făgăraș are altitudinea de 2.544 metri.',
+          prompt: 'Care este cel mai \u00eenalt v\u00e2rf montan din Rom\u00e2nia?',
+          options: ['V\u00e2rful Moldoveanu', 'V\u00e2rful Negoiu', 'V\u00e2rful Omu', 'V\u00e2rful Par\u00e2ngul Mare'],
+          explanation: 'V\u00e2rful Moldoveanu din Mun\u021bii F\u0103g\u0103ra\u0219 are altitudinea de 2.544 metri.',
         },
         en: {
           prompt: 'Which is the highest mountain peak in Romania?',
-          options: ['Moldoveanu Peak', 'Negoiu Peak', 'Omu Peak', 'Parângul Mare Peak'],
+          options: ['Moldoveanu Peak', 'Negoiu Peak', 'Omu Peak', 'Par\u00e2ngul Mare Peak'],
           explanation:
-            'Moldoveanu Peak in the Făgăraș Mountains reaches an elevation of 2,544 meters.',
+            'Moldoveanu Peak in the F\u0103g\u0103ra\u0219 Mountains reaches an elevation of 2,544 meters.',
         },
         es: {
-          prompt: '¿Cuál es el pico montañoso más alto de Rumanía?',
-          options: ['Pico Moldoveanu', 'Pico Negoiu', 'Pico Omu', 'Pico Parângul Mare'],
+          prompt: '\u00bfCu\u00e1l es el pico monta\u00f1oso m\u00e1s alto de Ruman\u00eda?',
+          options: ['Pico Moldoveanu', 'Pico Negoiu', 'Pico Omu', 'Pico Par\u00e2ngul Mare'],
           explanation:
-            'El Pico Moldoveanu en los Montes Făgăraș alcanza los 2.544 metros de altitud.',
+            'El Pico Moldoveanu en los Montes F\u0103g\u0103ra\u0219 alcanza los 2.544 metros de altitud.',
         },
         pt: {
-          prompt: 'Qual é o pico de montanha mais alto da Romênia?',
-          options: ['Pico Moldoveanu', 'Pico Negoiu', 'Pico Omu', 'Pico Parângul Mare'],
-          explanation: 'O Pico Moldoveanu nas Montanhas Făgăraș tem 2.544 metros de altitude.',
+          prompt: 'Qual \u00e9 o pico de montanha mais alto da Rom\u00eania?',
+          options: ['Pico Moldoveanu', 'Pico Negoiu', 'Pico Omu', 'Pico Par\u00e2ngul Mare'],
+          explanation: 'O Pico Moldoveanu nas Montanhas F\u0103g\u0103ra\u0219 tem 2.544 metros de altitude.',
         },
       },
     },
@@ -502,7 +502,7 @@ Return ONLY a valid JSON array where each element has:
   "type": "${params.type}",
   "correctIndex": 0,
   "content": {
-    "ro": { "prompt": "Întrebarea în română cu diacritice corecte (ș, ț, ă, â, î)?", "options": ["Varianta corectă", "Distractor 2", "Distractor 3", "Distractor 4"], "explanation": "Explicație scurtă și clară." },
+    "ro": { "prompt": "\u00centrebarea \u00een rom\u00e2n\u0103 cu diacritice corecte (\u0219, \u021b, \u0103, \u00e2, \u00ee)?", "options": ["Varianta corect\u0103", "Distractor 2", "Distractor 3", "Distractor 4"], "explanation": "Explica\u021bie scurt\u0103 \u0219i clar\u0103." },
     "en": { "prompt": "Question in English?", "options": ["Correct option", "Distractor 2", "Distractor 3", "Distractor 4"], "explanation": "Short clear explanation." },
     "es": { "prompt": "¿Pregunta en español?", "options": ["Opción correcta", "Distractor 2", "Distractor 3", "Distractor 4"], "explanation": "Explicación breve y clara." },
     "pt": { "prompt": "Pergunta em português?", "options": ["Opção correta", "Distrator 2", "Distrator 3", "Distrator 4"], "explanation": "Explicação curta e clara." }

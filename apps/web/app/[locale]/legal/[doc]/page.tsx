@@ -69,7 +69,7 @@ export default async function LegalPage({
         <h1 className="font-display text-3xl font-extrabold">{title}</h1>
       </div>
 
-      <nav aria-label="Legal documents" className="flex flex-wrap gap-2">
+      <nav aria-label={t('legal.navLabel')} className="flex flex-wrap gap-2">
         {navDocs.map((item) => (
           <Link
             key={item.key}

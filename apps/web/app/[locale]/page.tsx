@@ -26,6 +26,8 @@ import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
+import { generateReadableNickname } from '@/lib/nickname-words';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
 
 interface ActiveDuel {
@@ -53,6 +55,7 @@ interface LeagueItem {
 interface TodayStatus {
   date: string;
   roundNumber: number;
+  themeKey?: string;
   topicOfTheDay: string;
   themeEmoji?: string;
   themeTitle?: string;
@@ -81,18 +84,6 @@ interface TodayStatus {
   hasFullFreeLeague?: boolean;
 }
 
-const SUGGESTED_NAMES = ['Spark', 'Ace', 'Volt', 'Nova', 'Blitz'];
-
-function formatRomanianStreak(days: number, locale: string): string {
-  if (locale !== 'ro') {
-    return days === 1 ? '1 day' : `${days} days`;
-  }
-  if (days === 1) return '1 zi';
-  const mod100 = days % 100;
-  if (mod100 >= 2 && mod100 <= 19) return `${days} zile`;
-  return `${days} de zile`;
-}
-
 function getSecondsUntilMidnight(): number {
   const now = new Date();
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
@@ -104,11 +95,6 @@ function formatCountdown(sec: number): string {
   const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatHoursLeft(ms: number): string {
-  const hours = Math.max(1, Math.ceil(ms / (1000 * 60 * 60)));
-  return `${hours}h rămase`;
 }
 
 export default function LocaleHomePage() {
@@ -160,11 +146,10 @@ export default function LocaleHomePage() {
   useEffect(() => {
     const session = getLocalSession();
     setNickname(
-      session.nickname ||
-        `${SUGGESTED_NAMES[Math.floor(Math.random() * SUGGESTED_NAMES.length)]}_${session.uid.slice(-3)}`,
+      session.nickname || generateReadableNickname(locale),
     );
     loadStatus();
-  }, []);
+  }, [locale]);
 
   // Countdown timer to midnight
   useEffect(() => {
@@ -196,8 +181,8 @@ export default function LocaleHomePage() {
       roundNumber: status.roundNumber,
       totalScore: status.score ?? status.totalScore ?? 0,
       emojiLine: status.emojiLine || '',
-      streak: status.streakCurrent,
-      inviteUrl,
+      streakText: t('result.streak', { count: status.streakCurrent }),
+      beatMeText: t('result.shareBeatMe', { url: inviteUrl }),
     });
 
     trackEvent('league_invite_shared', {
@@ -249,11 +234,11 @@ export default function LocaleHomePage() {
     setDuelError('');
     const s = getLocalSession();
     if (!status?.isPro && (status?.monthlyDuelsCount ?? 0) >= (status?.maxMonthlyDuels ?? 4)) {
-      setDuelError('Ai atins limita de 4 dueluri pe lună pentru contul gratuit. Treci la Pro pentru dueluri nelimitate.');
+      setDuelError(t('duels.errorMonthlyLimit', { max: status?.maxMonthlyDuels ?? 4 }));
       return;
     }
     if (!status?.isPro && (status?.activeDuelsCount ?? 0) >= (status?.maxActiveDuels ?? 1)) {
-      setDuelError('Ai deja un duel activ. Termină-l sau treci la Pro pentru dueluri nelimitate.');
+      setDuelError(t('duels.errorActiveDuel'));
       return;
     }
     const res = await fetch('/api/duels', {
@@ -270,7 +255,7 @@ export default function LocaleHomePage() {
       trackEvent('duel_created', { duel_id: created.duelId });
       router.push(`/${locale}/duel/${encodeURIComponent(created.duelId)}`);
     } else {
-      setDuelError(created.error ?? 'Nu s-a putut crea duelul');
+      setDuelError(apiErrorMessage(t, created, 'duels.errorCreate'));
     }
   };
 
@@ -279,14 +264,14 @@ export default function LocaleHomePage() {
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
-      <h1 className="sr-only">RonDuel – Trivia zilnic cu prietenii tăi</h1>
+      <h1 className="sr-only">{t('home.heroTitle')}</h1>
 
       {/* Streak badge for returning player */}
       {status && status.streakCurrent > 0 && (
         <div className="flex items-center justify-between">
           <Chip tone="volt" className="gap-1.5 px-3 py-1 font-bold">
             <Flame size={16} weight="fill" className="text-ron-strong" aria-hidden="true" />
-            <span>{formatRomanianStreak(status.streakCurrent, locale)}</span>
+            <span>{t('common.daysCount', { count: status.streakCurrent })}</span>
           </Chip>
         </div>
       )}
@@ -298,10 +283,10 @@ export default function LocaleHomePage() {
             <span className="text-xl">⚠️</span>
             <div className="space-y-0.5">
               <p className="font-display font-black text-xs text-ron-strong">
-                Seria ta de {formatRomanianStreak(status.streakCurrent, locale)} este în pericol!
+                {t('home.streakAtRiskTitle', { days: status.streakCurrent })}
               </p>
               <p className="text-[11px] font-bold text-ink/80">
-                Joacă runda de azi înainte de miezul nopții pentru a nu pierde seria.
+                {t('home.streakAtRiskBody')}
               </p>
             </div>
           </div>
@@ -327,16 +312,16 @@ export default function LocaleHomePage() {
             <Crown size={22} weight="fill" className="text-ron-strong shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-extrabold text-sm leading-snug">
-                Liga ta e plină. Treci la Pro ca să primești mai mulți prieteni.
+                {t('common.leagueFullBanner')}
               </p>
               <p className="text-xs font-medium text-ink/80">
-                Cu Pro deblochezi până la 200 de membri per ligă și dueluri nelimitate.
+                {t('common.leagueFullBannerBody')}
               </p>
             </div>
           </div>
           <Link href={`/${locale}/pro`} className="block pt-1">
             <Button size="sm" variant="primary" fullWidth>
-              Treci la Pro
+              {t('common.goPro')}
             </Button>
           </Link>
         </Card>
@@ -347,15 +332,16 @@ export default function LocaleHomePage() {
         <div className="flex items-center justify-between gap-2">
           <Chip tone="volt">{t('brand.roundBadge', { number: status?.roundNumber ?? 1 })}</Chip>
           <Chip tone="neutral">
-            {status?.themeEmoji ? `${status.themeEmoji} ` : ''}
-            {status?.themeTitle ?? status?.topicOfTheDay ?? 'World & Science 🌍'}
+            {status?.themeKey
+              ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
+              : t('themes.worldScience')}
           </Chip>
         </div>
 
         {status?.played ? (
           <div className="space-y-3 text-center py-2">
             <h2 className="font-display text-xl font-extrabold text-ink">
-              Ai jucat runda de azi! 🎉
+              {t('home.playedToday')}
             </h2>
             <p className="rd-tabular font-display text-ink text-5xl font-extrabold">
               {(status.score ?? status.totalScore ?? 0).toLocaleString()}
@@ -367,20 +353,20 @@ export default function LocaleHomePage() {
             )}
             <div className="text-muted flex items-center justify-center gap-1.5 text-xs font-bold pt-1">
               <Clock size={16} weight="bold" />
-              <span>Următoarea rundă în: {countdown}</span>
+              <span>{t('home.nextRoundIn', { time: countdown })}</span>
             </div>
 
             <div className="pt-2 space-y-2">
               <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
                 <ShareNetwork size={20} weight="bold" aria-hidden="true" />
-                Trimite pe grup
+                {t('result.shareCta')}
               </Button>
               {status.playId && (
                 <Link
                   href={`/${locale}/result/${encodeURIComponent(status.playId)}`}
                   className="text-muted hover:text-ink block text-xs font-bold underline py-1"
                 >
-                  Vezi rezultatul detaliat →
+                  {t('home.viewDetailedResult')}
                 </Link>
               )}
             </div>
@@ -389,9 +375,9 @@ export default function LocaleHomePage() {
           <div className="space-y-3">
             <div className="space-y-1">
               <h2 className="font-display text-2xl font-extrabold text-ink">
-                {status?.inProgress ? 'Continuă runda de azi' : 'Runda de azi'}
+                {status?.inProgress ? t('brand.continueRound') : t('common.todayRound')}
               </h2>
-              <p className="text-muted text-xs font-medium">6 întrebări · ~60 secunde</p>
+              <p className="text-muted text-xs font-medium">{t('home.roundMeta')}</p>
             </div>
 
             <Button fullWidth size="lg" onClick={handlePrimaryCta}>
@@ -400,11 +386,11 @@ export default function LocaleHomePage() {
                 ? t('brand.continueRound')
                 : isFirstTimeVisitor
                   ? t('brand.playToday')
-                  : 'Joacă acum'}
+                  : t('common.playNow')}
             </Button>
 
             <p className="text-muted text-center text-[11px] font-bold">
-              Scorul tău merge în toate ligile tale
+              {t('home.scoreCountsEverywhere')}
             </p>
           </div>
         )}
@@ -420,7 +406,7 @@ export default function LocaleHomePage() {
         </div>
       </Card>
 
-      {/* Prominent Action Button: Clasamente */}
+      {/* Prominent Action Button: Leaderboards */}
       <Link href={`/${locale}/leagues?tab=leaderboard`} className="block">
         <Button
           fullWidth
@@ -429,11 +415,11 @@ export default function LocaleHomePage() {
           className="h-12 font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] text-[#16131F]"
         >
           <Trophy size={20} weight="fill" className="text-[#16131F]" />
-          <span className="text-sm font-black">Clasamente</span>
+          <span className="text-sm font-black">{t('common.leaderboards')}</span>
         </Button>
       </Link>
 
-      {/* Two Equal Action Buttons: Creează ligă & Intră într-o ligă */}
+      {/* Two Equal Action Buttons: Create league & Join league */}
       <div className="grid grid-cols-2 gap-3">
         <Button
           fullWidth
@@ -443,7 +429,7 @@ export default function LocaleHomePage() {
           className="flex-col gap-1 py-3 h-auto"
         >
           <Plus size={20} weight="bold" />
-          <span className="text-xs font-extrabold">Creează ligă</span>
+          <span className="text-xs font-extrabold">{t('league.createBtn')}</span>
         </Button>
 
         <Button
@@ -454,11 +440,11 @@ export default function LocaleHomePage() {
           className="flex-col gap-1 py-3 h-auto"
         >
           <SignIn size={20} weight="bold" />
-          <span className="text-xs font-extrabold">Intră într-o ligă</span>
+          <span className="text-xs font-extrabold">{t('home.joinLeagueTile')}</span>
         </Button>
       </div>
 
-      {/* Non-first-time visitor sections: Ligile mele & Duelurile mele */}
+      {/* Non-first-time visitor sections: My leagues & My duels */}
       {!isFirstTimeVisitor && (
         <>
           {/* Slim account linking banner on days 2 and 3 if dismissed */}
@@ -466,10 +452,10 @@ export default function LocaleHomePage() {
             <div className="border-border-subtle bg-surface-2 flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 shadow-sm">
               <div className="min-w-0">
                 <p className="text-ink text-xs font-bold truncate">
-                  Salvează-ți streak-ul și locul în RonDuel World
+                  {t('account.saveTitle')}
                 </p>
                 <p className="text-muted text-[11px] truncate">
-                  Conectează contul pentru a nu pierde progresul.
+                  {t('account.saveBannerBody')}
                 </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -482,13 +468,13 @@ export default function LocaleHomePage() {
                   }}
                   className="text-xs font-extrabold px-2.5 py-1 min-h-8 h-8"
                 >
-                  Salvează
+                  {t('common.save')}
                 </Button>
                 <button
                   type="button"
                   onClick={handleDismissBanner}
                   className="text-muted hover:text-ink text-xs p-1 font-bold"
-                  aria-label="Închide"
+                  aria-label={t('common.close')}
                 >
                   ✕
                 </button>
@@ -496,7 +482,7 @@ export default function LocaleHomePage() {
             </div>
           )}
 
-          {/* Ligile mele */}
+          {/* My leagues */}
           <section className="space-y-3" aria-labelledby="my-leagues-heading">
             <div className="flex items-center justify-between gap-2">
               <h2 id="my-leagues-heading" className="font-display text-xl font-extrabold">
@@ -507,7 +493,7 @@ export default function LocaleHomePage() {
                 onClick={() => setCreateLeagueOpen(true)}
                 className="text-duel-strong text-xs font-bold underline"
               >
-                + Ligă nouă
+                {t('home.newLeague')}
               </button>
             </div>
 
@@ -522,17 +508,17 @@ export default function LocaleHomePage() {
                         RonDuel World 🌍
                       </p>
                       <p className="text-muted text-xs font-medium">
-                        {status.worldLeague.playedTodayCount} au jucat azi
+                        {t('common.playedTodayCount', { count: status.worldLeague.playedTodayCount })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
                     <span className="rd-tabular text-ink text-xs font-extrabold block">
                       {status.worldLeague.myRankToday
-                        ? `Locul #${status.worldLeague.myRankToday}`
-                        : 'Nejucat'}
+                        ? t('common.rankPlace', { rank: status.worldLeague.myRankToday })
+                        : t('home.notPlayed')}
                     </span>
-                    <span className="text-muted text-[10px] font-bold uppercase">Azi</span>
+                    <span className="text-muted text-[10px] font-bold uppercase">{t('nav.home')}</span>
                   </div>
                 </Card>
               </Link>
@@ -550,7 +536,7 @@ export default function LocaleHomePage() {
                           {lg.name}
                         </p>
                         <p className="text-muted text-xs font-medium">
-                          {lg.playedTodayCount}/{lg.memberCount} au jucat azi
+                          {t('common.playedTodayCount', { count: lg.playedTodayCount })}
                         </p>
                         {/* Member initials */}
                         {lg.initials && lg.initials.length > 0 && (
@@ -569,9 +555,9 @@ export default function LocaleHomePage() {
                     </div>
                     <div className="text-right shrink-0">
                       <span className="rd-tabular text-ink text-xs font-extrabold block">
-                        {lg.myRankToday ? `Locul #${lg.myRankToday}` : 'Nejucat'}
+                        {lg.myRankToday ? t('common.rankPlace', { rank: lg.myRankToday }) : t('home.notPlayed')}
                       </span>
-                      <span className="text-muted text-[10px] font-bold uppercase">Azi</span>
+                      <span className="text-muted text-[10px] font-bold uppercase">{t('nav.home')}</span>
                     </div>
                   </Card>
                 </Link>
@@ -579,31 +565,34 @@ export default function LocaleHomePage() {
             ) : (
               <Card variant="secondary" className="p-5 text-center space-y-2.5">
                 <p className="font-display text-base font-extrabold text-ink">
-                  Joacă cu prietenii tăi!
+                  {t('leagues.emptyTitle')}
                 </p>
                 <p className="text-muted text-xs font-medium leading-relaxed max-w-[340px] mx-auto">
-                  Creează o ligă pentru birou, familie sau gașcă. E gratuit până la 5 membri.
+                  {t('leagues.emptyBody', { max: 5 })}
                 </p>
                 <div className="pt-1">
                   <Button size="sm" variant="volt" onClick={() => setCreateLeagueOpen(true)}>
                     <Plus size={16} weight="bold" />
-                    Creează prima ta ligă
+                    {t('leagues.createFirst')}
                   </Button>
                 </div>
               </Card>
             )}
           </section>
 
-          {/* Duelurile mele */}
+          {/* My duels */}
           <section className="space-y-3" aria-labelledby="my-duels-heading">
             <div className="flex items-center justify-between gap-2">
               <h2 id="my-duels-heading" className="font-display text-xl font-extrabold">
-                Duelurile mele
+                {t('home.myDuels')}
               </h2>
               <span className="text-muted text-xs font-bold">
                 {status?.isPro
-                  ? 'Nelimitat (Pro)'
-                  : `${status?.monthlyDuelsCount ?? 0}/${status?.maxMonthlyDuels ?? 4} luna aceasta`}
+                  ? t('duels.unlimitedPro')
+                  : t('duels.monthlyUsageShort', {
+                      count: status?.monthlyDuelsCount ?? 0,
+                      max: status?.maxMonthlyDuels ?? 4,
+                    })}
               </span>
             </div>
 
@@ -615,15 +604,17 @@ export default function LocaleHomePage() {
                       <Sword size={22} weight="bold" className="text-duel-strong shrink-0" />
                       <div className="min-w-0">
                         <p className="font-display text-sm font-extrabold text-ink truncate">
-                          vs {d.opponentNickname}
+                          {t('common.versus', { name: d.opponentNickname })}
                         </p>
                         <p className="text-muted text-xs">
-                          {formatHoursLeft(d.timeLeftMs)}
+                          {t('common.hoursLeft', {
+                            hours: Math.max(1, Math.ceil(d.timeLeftMs / (1000 * 60 * 60))),
+                          })}
                         </p>
                       </div>
                     </div>
                     <Chip tone={d.myTurn ? 'volt' : 'neutral'} className="text-[11px] font-bold">
-                      {d.myTurn ? 'Rândul tău' : 'Așteaptă adversarul'}
+                      {d.myTurn ? t('duels.yourTurn') : t('duels.waitingOpponent')}
                     </Chip>
                   </Card>
                 </Link>
@@ -641,7 +632,7 @@ export default function LocaleHomePage() {
               onClick={() => void handleCreateDuel()}
             >
               <Sword size={18} weight="bold" />
-              Provoacă un prieten
+              {t('home.challengeFriend')}
             </Button>
           </section>
         </>

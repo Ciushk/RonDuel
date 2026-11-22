@@ -15,7 +15,6 @@ import { ScoreCountUp } from '@/components/result/ScoreCountUp';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { formatRomanianPlayers } from '@/lib/format';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface LeagueRankInfo {
@@ -72,7 +71,7 @@ export default function ResultPage() {
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
   const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
-  const [reportReason, setReportReason] = useState<'răspuns greșit' | 'întrebare ambiguă' | 'greșeală de limbă'>('răspuns greșit');
+  const [reportReason, setReportReason] = useState<'wrong_answer' | 'ambiguous' | 'language_error'>('wrong_answer');
   const [isReporting, setIsReporting] = useState(false);
 
   const [animated, setAnimated] = useState(false);
@@ -188,7 +187,7 @@ export default function ResultPage() {
 
     if (!resolvedPlayId || resolvedPlayId === '_shell') {
       setLoading(false);
-      setError('Identificatorul rundei nu este valid.');
+      setError(t('result.errorInvalidId'));
       return;
     }
 
@@ -211,7 +210,7 @@ export default function ResultPage() {
         { cache: 'no-store' },
       );
       if (!r.ok) {
-        throw new Error(`Status ${r.status}`);
+        throw new Error(t('result.errorStatus', { status: r.status }));
       }
       const res: ResultData = await r.json();
       if (res && typeof res.totalScore === 'number') {
@@ -263,13 +262,13 @@ export default function ResultPage() {
         }
         return;
       }
-      throw new Error('Datele scorului nu sunt valide.');
+      throw new Error(t('result.errorInvalidData'));
     } catch (err: any) {
       if (cached) {
         setData(cached);
         setError(null);
       } else {
-        setError(err?.message || 'Nu s-a putut încărca scorul.');
+        setError(err?.message || t('result.errorLoad'));
       }
     } finally {
       setLoading(false);
@@ -303,17 +302,20 @@ export default function ResultPage() {
     setIsAccountLinked(true);
     setShowSlimBanner(false);
     setIsLinkSheetOpen(false);
-    setToast('Cont salvat ✓');
+    setToast(t('result.accountSaved'));
     setTimeout(() => setToast(''), 3500);
   };
 
   const triggerShareWithLink = async (inviteUrl: string) => {
     if (!data) return;
+    const streakText = data.streakCurrent > 0 ? t('result.shareStreak', { count: data.streakCurrent }) : undefined;
+    const beatMeText = inviteUrl ? t('result.shareBeatMe', { url: inviteUrl }) : undefined;
     const cardText = buildShareCardText({
       roundNumber: data.roundNumber,
       totalScore: data.totalScore,
       emojiLine: data.emojiLine,
-      streak: data.streakCurrent,
+      streakText,
+      beatMeText,
       inviteUrl,
     });
 
@@ -417,12 +419,12 @@ export default function ResultPage() {
         }),
       });
       if (res.ok) {
-        setToast('Raportul a fost trimis. Mulțumim!');
+        setToast(t('result.reportSent'));
       } else {
-        setToast('Nu s-a putut trimite raportul.');
+        setToast(t('result.reportFailed'));
       }
     } catch {
-      setToast('Eroare de rețea.');
+      setToast(t('common.networkError'));
     } finally {
       setIsReporting(false);
       setReportingQuestionId(null);
@@ -434,7 +436,7 @@ export default function ResultPage() {
     return (
       <main className="text-muted mx-auto max-w-[480px] px-4 py-16 text-center font-bold space-y-3">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-volt border-t-transparent" />
-        <p>Se calculează scorul…</p>
+        <p>{t('result.calculating')}</p>
       </main>
     );
   }
@@ -448,19 +450,19 @@ export default function ResultPage() {
           </div>
           <div className="space-y-1">
             <h1 className="font-display text-xl font-extrabold text-ink">
-              Se procesează rezultatul…
+              {t('result.processing')}
             </h1>
             <p className="text-muted text-xs leading-relaxed max-w-[280px] mx-auto">
-              Runda ta a fost înregistrată. Apasă pe reîncearcă pentru a vizualiza scorul și clasamentul.
+              {t('result.savedRetryHint')}
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
             <Button variant="volt" fullWidth onClick={loadResult}>
-              Reîncearcă
+              {t('common.retry')}
             </Button>
             <Link href={`/${locale}`} className="block">
               <Button variant="secondary" fullWidth>
-                Înapoi acasă
+                {t('result.backHome')}
               </Button>
             </Link>
           </div>
@@ -480,17 +482,17 @@ export default function ResultPage() {
             <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
             <div className="space-y-0.5 min-w-0">
               <p className="font-display font-black text-xs text-ron-strong">
-                Salvează-ți scorul gratuit!
+                {t('result.saveScoreTitle')}
               </p>
               <p className="text-[11px] font-bold text-ink/80 leading-snug">
-                Statisticile și progresul tău se vor șterge automat după 1 săptămână dacă nu ai un cont gratuit.
+                {t('account.anonExpiry')}
               </p>
               <button
                 type="button"
                 onClick={() => setIsLinkSheetOpen(true)}
                 className="mt-1 inline-flex text-xs font-black text-ron-strong underline hover:text-ink cursor-pointer"
               >
-                Creează cont gratuit acum →
+                {t('result.createFreeAccount')}
               </button>
             </div>
           </div>
@@ -506,9 +508,9 @@ export default function ResultPage() {
         >
           <div className="flex items-center gap-2">
             <ShieldCheck size={20} weight="bold" className="text-duel-strong shrink-0" />
-            <span className="text-xs font-bold">Scorul tău nu e salvat încă. Salvează-l</span>
+            <span className="text-xs font-bold">{t('result.scoreNotSaved')}</span>
           </div>
-          <span className="text-duel-strong text-xs font-extrabold underline">Salvează</span>
+          <span className="text-duel-strong text-xs font-extrabold underline">{t('common.save')}</span>
         </button>
       )}
 
@@ -580,7 +582,7 @@ export default function ResultPage() {
         {/* League ranks breakdown */}
         <div className="border-border-subtle bg-surface-2 rounded-2xl border p-3.5 space-y-2 text-left">
           <p className="font-display text-muted text-xs font-extrabold uppercase tracking-wider">
-            Scorul tău a fost înregistrat în:
+            {t('result.scoreRecordedIn')}
           </p>
           <div className="space-y-2">
             {worldRank && (
@@ -596,8 +598,8 @@ export default function ResultPage() {
                   <span className="text-ink truncate">RonDuel World</span>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
-                  Locul #{worldRank.rank}{' '}
-                  <span className="text-muted font-medium">({formatRomanianPlayers(worldRank.totalMembers, locale)})</span>
+                  {t('common.rankPlace', { rank: worldRank.rank })}{' '}
+                  <span className="text-muted font-medium">({t('league.membersCount', { count: worldRank.totalMembers })})</span>
                 </span>
               </div>
             )}
@@ -616,15 +618,15 @@ export default function ResultPage() {
                   <span className="text-ink truncate">{lg.name}</span>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
-                  Locul #{lg.rank}{' '}
-                  <span className="text-muted font-medium">({formatRomanianPlayers(lg.totalMembers, locale)})</span>
+                  {t('common.rankPlace', { rank: lg.rank })}{' '}
+                  <span className="text-muted font-medium">({t('league.membersCount', { count: lg.totalMembers })})</span>
                 </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Primary action: Trimite pe grup */}
+        {/* Primary action: Share to group */}
         <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
           <ShareNetwork size={20} weight="bold" aria-hidden="true" />
           {t('result.shareCta')}
@@ -640,7 +642,7 @@ export default function ResultPage() {
           </Link>
         )}
 
-        {/* Secondary actions: Provoacă-ți prietenii & Ai un cod */}
+        {/* Secondary actions: Challenge friends & Have a code */}
         <div className="grid gap-2">
           <Button
             fullWidth
@@ -649,7 +651,7 @@ export default function ResultPage() {
             onClick={() => setIsCreateLeagueOpen(true)}
           >
             <Users size={18} weight="bold" aria-hidden="true" />
-            Provoacă-ți prietenii — creează-ți liga
+            {t('result.challengeCreateLeague')}
           </Button>
 
           <Button
@@ -658,7 +660,7 @@ export default function ResultPage() {
             variant="secondary"
             onClick={() => setIsJoinCodeOpen(true)}
           >
-            Ai un cod? Intră în liga lor
+            {t('result.haveCode')}
           </Button>
 
           <Button
@@ -677,7 +679,7 @@ export default function ResultPage() {
       <Sheet
         open={isSharePickerOpen}
         onClose={() => setIsSharePickerOpen(false)}
-        title="Alege liga pe care vrei s-o trimiți"
+        title={t('result.pickLeagueToShare')}
       >
         <div className="space-y-2">
           {privateLeagues.map((lg) => (
@@ -710,7 +712,7 @@ export default function ResultPage() {
               void triggerShareWithLink(url);
             }}
           >
-            Trimite link general (RonDuel)
+            {t('result.shareGeneralLink')}
           </Button>
         </div>
       </Sheet>
@@ -809,7 +811,7 @@ export default function ResultPage() {
                   onClick={() => setReportingQuestionId(item.questionId || `q_${item.index}`)}
                   className="text-muted hover:text-wrong text-[11px] font-bold underline cursor-pointer"
                 >
-                  Raportează întrebarea
+                  {t('result.reportQuestion')}
                 </button>
               </div>
             </Card>
@@ -821,17 +823,17 @@ export default function ResultPage() {
       <Sheet
         open={Boolean(reportingQuestionId)}
         onClose={() => setReportingQuestionId(null)}
-        title="Raportează întrebarea"
+        title={t('result.reportQuestion')}
       >
         <div className="space-y-3.5">
           <p className="text-xs text-muted font-medium">
-            Selectează motivul pentru care raportezi această întrebare:
+            {t('result.reportPrompt')}
           </p>
           <div className="space-y-2">
             {[
-              { id: 'răspuns greșit', label: 'Răspuns greșit' },
-              { id: 'întrebare ambiguă', label: 'Întrebare ambiguă' },
-              { id: 'greșeală de limbă', label: 'Greșeală de limbă' },
+              { id: 'wrong_answer', label: t('result.reportReasonWrongAnswer') },
+              { id: 'ambiguous', label: t('result.reportReasonAmbiguous') },
+              { id: 'language_error', label: t('result.reportReasonLanguage') },
             ].map((opt) => (
               <label
                 key={opt.id}
@@ -857,7 +859,7 @@ export default function ResultPage() {
               fullWidth
               onClick={() => setReportingQuestionId(null)}
             >
-              Anulează
+              {t('common.cancel')}
             </Button>
             <Button
               size="md"
@@ -866,7 +868,7 @@ export default function ResultPage() {
               disabled={isReporting}
               onClick={() => void submitQuestionReport()}
             >
-              {isReporting ? 'Se trimite…' : 'Trimite raportul'}
+              {isReporting ? t('common.sending') : t('result.reportSubmit')}
             </Button>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { Trophy } from '@phosphor-icons/react';
 import { sanitizeDisplayName } from '@ronduel/shared';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
 import { Avatar, Button, Chip } from '@/components/ui';
@@ -102,8 +103,10 @@ export function StickyUserRank({
   myScore,
   myNickname,
   myUid,
-  label = 'Locul tău:',
+  label,
 }: StickyUserRankProps) {
+  const t = useTranslations();
+  const rankLabel = label ?? t('common.yourRank');
   const [isInViewport, setIsInViewport] = useState(false);
 
   useEffect(() => {
@@ -141,7 +144,7 @@ export function StickyUserRank({
 
   return (
     <aside
-      aria-label="Poziția ta în clasament"
+      aria-label={t('a11y.yourPosition')}
       className="fixed bottom-20 left-0 right-0 z-30 px-4 pointer-events-none sm:bottom-6"
     >
       <div className="mx-auto max-w-[480px] pointer-events-auto">
@@ -170,14 +173,14 @@ export function StickyUserRank({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-sm truncate">{displayName}</span>
                 <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
-                  Tu
+                  {t('common.you')}
                 </Chip>
               </div>
               <p className="text-muted text-xs font-bold truncate">
-                {label} <span className="text-ink">#{myRank ?? '—'}</span>
+                {rankLabel} <span className="text-ink">#{myRank ?? '—'}</span>
                 {myScore != null && (
                   <span className="rd-tabular font-extrabold text-ron-strong ml-1.5">
-                    · {myScore.toLocaleString()} pct
+                    · {t('common.points', { points: myScore.toLocaleString() })}
                   </span>
                 )}
               </p>
@@ -189,7 +192,7 @@ export function StickyUserRank({
             variant={isInViewport ? 'secondary' : 'volt'}
             className="shrink-0 text-xs font-black h-8 px-2.5 shadow-sm"
           >
-            {isInViewport ? 'Ești aici 📍' : 'Locul meu 🎯'}
+            {isInViewport ? t('common.youAreHere') : t('common.jumpToMyRank')}
           </Button>
         </div>
       </div>

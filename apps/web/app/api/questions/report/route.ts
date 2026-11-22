@@ -5,7 +5,7 @@ import { reportQuestion } from '@/lib/server-store';
 
 const ReportSchema = z.object({
   questionId: z.string().min(1),
-  reason: z.enum(['răspuns greșit', 'întrebare ambiguă', 'greșeală de limbă']).or(z.string().min(1)),
+  reason: z.string().min(1),
   reporterUid: z.string().optional(),
 });
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Bad request' },
+      { error: err instanceof Error ? err.message : 'Bad request', code: 'BAD_REQUEST' },
       { status: 400 },
     );
   }

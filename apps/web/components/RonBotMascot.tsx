@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button, Chip } from '@/components/ui';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
+import { useTranslations } from 'next-intl';
 
 interface ChatMessage {
   id: string;
@@ -20,6 +21,7 @@ interface ChatMessage {
 }
 
 export function RonBotMascot() {
+  const t = useTranslations();
   const pathname = usePathname();
   const isOnAdminPage = pathname?.startsWith('/admin') ?? false;
   const isPlayPage = pathname?.includes('/play') ?? false;
@@ -38,11 +40,11 @@ export function RonBotMascot() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [interactionId, setInteractionId] = useState<string | undefined>(undefined);
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 'welcome',
       role: 'assistant',
-      text: 'Salut! Sunt RonBot ⚡! Mă uit după fiecare mișcare din arenă. Întreabă-mă orice: „Cum se joacă?”, „Cum se calculează scorul?”, „Ce înseamnă ⚡🟩🟥?”, „Care e statusul meu azi?” sau „Creează un duel”!',
+      text: t('ronbot.greeting'),
     },
   ]);
 
@@ -192,13 +194,13 @@ export function RonBotMascot() {
         {
           id: `a_${Date.now()}`,
           role: 'assistant',
-          text: data.reply ?? data.error ?? 'Hmm, ceva nu a mers. Încearcă din nou!',
+          text: data.reply ?? data.error ?? t('ronbot.errorGeneric'),
           actionLink: data.actionLink,
           badge:
             data.mode === 'gemini-3.8-flash'
               ? 'Gemini 3.8 Flash'
               : data.adminActionResult
-                ? 'Admin Co-Pilot'
+                ? t('ronbot.adminTitle')
                 : undefined,
         },
       ]);
@@ -208,7 +210,7 @@ export function RonBotMascot() {
         {
           id: `err_${Date.now()}`,
           role: 'assistant',
-          text: 'Nu am putut contacta serverul. Verifică conexiunea!',
+          text: t('ronbot.errorNetwork'),
         },
       ]);
     } finally {
@@ -216,20 +218,21 @@ export function RonBotMascot() {
     }
   };
 
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const suggestions = isOnAdminPage
     ? [
-        'Creează 2 întrebări despre Astronomie',
-        'Generează 2 întrebări de logică',
-        'Programează o rundă pentru 2026-12-18',
+        t('ronbot.adminSuggestAstronomy'),
+        t('ronbot.adminSuggestLogic'),
+        t('ronbot.adminSuggestSchedule', { date: tomorrow }),
       ]
     : [
-        'Cum se joacă?',
-        'Statusul meu de azi',
-        'Cum se calculează scorul?',
-        'Ce înseamnă ⚡🟩🟥?',
-        'Cum creez o ligă?',
-        'Creează un duel',
-        'Ce oferă RonDuel Pro?',
+        t('ronbot.suggestHowToPlay'),
+        t('ronbot.suggestMyStatus'),
+        t('ronbot.suggestScoring'),
+        t('ronbot.suggestEmojiMeaning'),
+        t('ronbot.suggestCreateLeague'),
+        t('ronbot.suggestCreateDuel'),
+        t('ronbot.suggestPro'),
       ];
 
   if (isPlayPage || !consentAccepted || !splashFinished) return null;
@@ -239,7 +242,7 @@ export function RonBotMascot() {
       {open && (
         <section
           role="dialog"
-          aria-label="RonBot AI Chat"
+          aria-label={t('ronbot.dialogLabel')}
           className="border-border bg-surface text-ink mb-1 flex h-[475px] w-[355px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-[24px] border-2 shadow-[var(--rd-shadow-sheet)] sm:w-[385px]"
         >
           {/* Header */}
@@ -253,14 +256,14 @@ export function RonBotMascot() {
                   <h2 className="font-display text-base font-extrabold">RonBot AI</h2>
                   {isOnAdminPage && (
                     <Chip tone="gold" className="px-1.5 py-0.5 text-[10px]">
-                      Admin Co-Pilot
+                      {t('ronbot.adminTitle')}
                     </Chip>
                   )}
                 </div>
                 <p className="text-muted text-[11px]">
                   {isOnAdminPage
-                    ? 'Creează întrebări & programează runde'
-                    : 'Ghidul tău complet pentru joc & reguli'}
+                    ? t('ronbot.adminSubtitle')
+                    : t('ronbot.subtitle')}
                 </p>
               </div>
             </div>
@@ -268,7 +271,7 @@ export function RonBotMascot() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Închide chatul RonBot"
+              aria-label={t('ronbot.close')}
               className="border-border-subtle bg-surface text-ink inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-[10px] border"
             >
               <X size={16} weight="bold" aria-hidden="true" />
@@ -309,7 +312,7 @@ export function RonBotMascot() {
                 </div>
               </div>
             ))}
-            {sending && <div className="text-muted text-xs font-bold">RonBot gândește ⚡…</div>}
+            {sending && <div className="text-muted text-xs font-bold">{t('ronbot.thinking')}</div>}
             <div ref={messagesEndRef} />
           </div>
 
@@ -341,10 +344,10 @@ export function RonBotMascot() {
               onChange={(e) => setInput(e.target.value)}
               placeholder={
                 isOnAdminPage
-                  ? 'Ex: Creează 2 întrebări despre Istorie...'
-                  : 'Ex: Cum se joacă? / Creează un duel...'
+                  ? t('ronbot.adminPlaceholder')
+                  : t('ronbot.placeholder')
               }
-              aria-label="Mesaj pentru RonBot"
+              aria-label={t('ronbot.inputLabel')}
               className="border-border bg-surface text-ink min-h-11 flex-1 rounded-[12px] border-2 px-3 text-xs font-medium"
             />
             <Button
@@ -352,7 +355,7 @@ export function RonBotMascot() {
               size="sm"
               variant="blue"
               disabled={sending || !input.trim()}
-              aria-label="Trimite mesajul"
+              aria-label={t('ronbot.send')}
             >
               <PaperPlaneRight size={18} weight="fill" aria-hidden="true" />
             </Button>
@@ -365,7 +368,7 @@ export function RonBotMascot() {
         ref={botRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Deschide asistentul RonBot AI"
+        aria-label={t('ronbot.open')}
         aria-expanded={open}
         className={[
           'rd-sticker rd-sticker-pressable bg-surface group relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-[20px] p-1 transition-transform duration-200',

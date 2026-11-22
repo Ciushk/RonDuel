@@ -73,12 +73,12 @@ export default function SettingsPage() {
             onChange={(e) => update({ theme: e.target.value as LocalSession['theme'] })}
             className="border-border-subtle bg-surface-2 text-ink min-h-11 rounded-[10px] border px-3 text-xs font-bold"
           >
-            <option value="light">Light (Cream Paper)</option>
-            <option value="dark">Dark (Ink Night)</option>
-            <option value="high-contrast">High Contrast</option>
-            <option value="midnight-court">Pro: Midnight Court</option>
-            <option value="clay-court">Pro: Clay Court</option>
-            <option value="neon-arcade">Pro: Neon Arcade</option>
+            <option value="light">{t('settings.themeLight')}</option>
+            <option value="dark">{t('settings.themeDark')}</option>
+            <option value="high-contrast">{t('settings.themeHighContrast')}</option>
+            <option value="midnight-court">{t('settings.themeProMidnight')}</option>
+            <option value="clay-court">{t('settings.themeProClay')}</option>
+            <option value="neon-arcade">{t('settings.themeProNeon')}</option>
           </select>
         </label>
 

@@ -164,9 +164,9 @@ export function generateInviteCode(randomFn: () => number = Math.random): string
 
 const LEAGUE_NAMES: Record<Locale, readonly string[]> = {
   en: ['Thursday Thunder', 'Coffee Duelists', 'Split Court Squad', 'Midnight Sparks', 'Brainy Bunch'],
-  ro: ['Fulgerul Zilei', 'Duelul de Cafea', 'Gașca de Aur', 'Minți Rapide', 'Liga Prietenilor'],
+  ro: ['Fulgerul Zilei', 'Duelul de Cafea', 'Ga\u0219ca de Aur', 'Min\u021bi Rapide', 'Liga Prietenilor'],
   es: ['Trueno Diario', 'Duelo de Café', 'Equipo Relámpago', 'Mentes Rápidas', 'Liga del Grupo'],
-  pt: ['Trovão Diário', 'Duelo do Café', 'Esquadrão Relâmpago', 'Mentes Rápidas', 'Liga da Galera'],
+  pt: ['Trovão Diário', 'Duelo do Café', 'Esquadrão Rel\u00e2mpago', 'Mentes Rápidas', 'Liga da Galera'],
   de: ['Donnerstag-Donner', 'Kaffee-Duellanten', 'Blitz-Team', 'Schnelle Köpfe', 'Freundesliga'],
   fr: ['Tonnerre du Jour', 'Duel Café', 'Équipe Éclair', 'Esprits Vifs', 'Ligue des Potes'],
   it: ['Tuono Quotidiano', 'Duello al Caffè', 'Squadra Lampo', 'Menti Rapide', 'Lega degli Amici'],
@@ -267,18 +267,22 @@ export interface ShareCardParams {
   roundNumber: number;
   totalScore: number;
   emojiLine: string;
-  streak: number;
-  inviteUrl: string;
+  streakText?: string;
+  beatMeText?: string;
+  streak?: number;
+  inviteUrl?: string;
 }
 
 export function buildShareCardText(params: ShareCardParams): string {
-  const scoreFormatted = params.totalScore.toLocaleString('en-US');
+  const scoreFormatted = params.totalScore.toLocaleString();
+  const streakLine = params.streakText ?? (params.streak ? `🔥 ${params.streak}` : '');
+  const beatMeLine = params.beatMeText ?? params.inviteUrl ?? '';
   const lines = [
     `RonDuel #${params.roundNumber} ⚔️ ${scoreFormatted}`,
     params.emojiLine,
-    `🔥 ${params.streak}-day streak`,
-    `Beat me → ${params.inviteUrl}`,
-  ];
+    streakLine,
+    beatMeLine,
+  ].filter(Boolean);
   return lines.join('\n');
 }
 

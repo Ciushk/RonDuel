@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
 import { loginWithGoogle } from '@/lib/firebase';
 import { formatYearlyPrice } from '@/lib/pricing';
 import { getBrowserTimeZone, getLocalSession, recordLeagueId, saveLocalSession } from '@/lib/session';
@@ -40,7 +41,9 @@ const COLOR_OPTIONS = [
 
 export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWizardProps) {
   const t = useTranslations('league');
+  const tRoot = useTranslations();
   const locale = useLocale() as Locale;
+
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -110,7 +113,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       try {
         const user = await loginWithGoogle();
         if (!user.email) {
-          setError('Contul Google nu are o adresă de email asociată.');
+          setError(tRoot('auth.errors.googleNoEmail'));
           setLoading(false);
           return;
         }
@@ -121,9 +124,9 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       } catch (err: unknown) {
         const authErr = err as { code?: string; message?: string };
         if (authErr?.code === 'auth/popup-closed-by-user') {
-          setError('Fereastra de conectare Google a fost închisă.');
+          setError(tRoot('auth.errors.googleClosed'));
         } else {
-          setError(authErr?.message || 'Autentificarea Google a eșuat.');
+          setError(tRoot('auth.errors.googleFailed'));
         }
         setLoading(false);
         return;
@@ -131,7 +134,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
     } else {
       targetEmail = emailInput.trim();
       if (!targetEmail) {
-        setError('Introdu o adresă de email validă');
+        setError(tRoot('account.invalidEmail'));
         setLoading(false);
         return;
       }
@@ -151,13 +154,14 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? 'Authentication failed');
+        setError(apiErrorMessage(tRoot, data, 'league.errorAuthFailed'));
         return;
       }
 
+      const finalUid = data.uid || data.existingUid || s.uid;
       saveLocalSession({
         ...s,
-        uid: data.uid || s.uid,
+        uid: finalUid,
         isAnonymous: false,
         email: data.email || targetEmail,
         nickname: data.nickname || targetNickname,
@@ -168,7 +172,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       setStep(2);
       trackEvent('league_name_step_viewed');
     } catch {
-      setError('Eroare de rețea. Te rugăm să reîncerci.');
+      setError(tRoot('common.networkErrorRetry'));
     } finally {
       setLoading(false);
     }
@@ -178,7 +182,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
   const handleProceedToTheme = async (plan: 'free' | 'pro_trial') => {
     const trimmed = name.trim();
     if (trimmed.length < 2 || trimmed.length > 30) {
-      setError('2–30 chars');
+      setError(t('errorNameLength'));
       return;
     }
 
@@ -238,7 +242,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       });
       const data = await res.json();
       if (!res.ok) {
-        const errMsg = data.error ?? 'Failed to create league';
+        const errMsg = apiErrorMessage(tRoot, data, 'league.errorCreateFailed');
         setError(errMsg);
         setToast(errMsg);
         setTimeout(() => setToast(''), 4000);
@@ -269,7 +273,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
       }
       setStep(4);
     } catch {
-      const netErr = 'Eroare de rețea. Te rugăm să reîncerci.';
+      const netErr = tRoot('common.networkErrorRetry');
       setError(netErr);
       setToast(netErr);
       setTimeout(() => setToast(''), 4000);
@@ -393,7 +397,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
                   <input
                     type="email"
                     required
-                    placeholder="tu@exemplu.ro"
+                    placeholder={tRoot('profile.emailPlaceholder')}
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="border-border bg-surface-2 text-ink w-full rounded-xl border-2 px-3.5 py-2.5 text-sm font-bold"
@@ -439,7 +443,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
                   size="sm"
                   type="button"
                   onClick={handleShuffleName}
-                  title="Randomize name"
+                  title={t('randomizeName')}
                 >
                   <ArrowClockwise size={18} weight="bold" aria-hidden="true" />
                 </Button>
@@ -494,7 +498,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
         {step === 3 && (
           <div className="space-y-4">
             <div>
-              <p className="text-muted mb-2 text-xs font-bold">Emoji</p>
+              <p className="text-muted mb-2 text-xs font-bold">{t('emojiLabel')}</p>
               <div className="grid grid-cols-4 gap-2">
                 {EMOJI_OPTIONS.map((emoji) => (
                   <button
@@ -514,7 +518,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
             </div>
 
             <div>
-              <p className="text-muted mb-2 text-xs font-bold">Stil & Culoare</p>
+              <p className="text-muted mb-2 text-xs font-bold">{t('styleColorLabel')}</p>
               <div className="grid grid-cols-3 gap-2">
                 {COLOR_OPTIONS.map((col) => {
                   const locked = col.pro && !isPro && chosenPlan !== 'pro_trial';
@@ -558,7 +562,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
                 disabled={loading}
                 onClick={() => void handleCreateLeague()}
               >
-                {loading ? 'Se creează…' : t('continueBtn')}
+                {loading ? tRoot('common.creating') : t('continueBtn')}
               </Button>
             </div>
           </div>

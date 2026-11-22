@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <button
                   type="button"
                   onClick={handleBack}
-                  aria-label="Pagina anterioară"
+                  aria-label={t('a11y.previousPage')}
                   className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all select-none"
                 >
                   <ArrowLeft size={18} weight="bold" />
@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
               <Link
                 href={`/${locale}`}
-                aria-label="RonDuel – acasă"
+                aria-label={t('a11y.homeLink')}
                 className="inline-flex items-center select-none"
               >
                 <Wordmark size="sm" iconSize={28} />
@@ -110,7 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={toggleTheme}
-                aria-label="Schimbă tema / Toggle theme"
+                aria-label={t('a11y.toggleTheme')}
                 className="border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all select-none"
               >
                 {session?.theme === 'dark' ? (
@@ -170,7 +170,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Cookie / Analytics Consent Banner */}
       {session?.analyticsConsent === 'unset' && !isPlayFocusMode && (
         <aside
-          aria-label="Cookie and analytics consent"
+          aria-label={t('consent.ariaLabel')}
           className="border-border bg-surface fixed inset-x-0 bottom-16 lg:bottom-0 z-40 max-h-[80px] border-t-2 px-4 py-2.5 shadow-[var(--rd-shadow-sheet)]"
         >
           <div className="mx-auto flex max-w-[480px] items-center justify-between gap-3">

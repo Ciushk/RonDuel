@@ -143,7 +143,7 @@ export function VersusCard({
               {leftPlayer.nickname}
             </p>
             <p className="font-mono text-2xl font-black text-white rd-tabular">
-              {leftPlayer.finishedAt ? `${leftPlayer.score ?? 0} pct` : '—'}
+              {leftPlayer.finishedAt ? t('common.points', { points: leftPlayer.score ?? 0 }) : '—'}
             </p>
           </div>
         </div>
@@ -198,7 +198,7 @@ export function VersusCard({
               {rightPlayer?.nickname ?? t('duel.openOpponent')}
             </p>
             <p className="font-mono text-2xl font-black text-white rd-tabular">
-              {rightPlayer?.finishedAt ? `${rightPlayer.score ?? 0} pct` : '—'}
+              {rightPlayer?.finishedAt ? t('common.points', { points: rightPlayer.score ?? 0 }) : '—'}
             </p>
           </div>
         </div>
@@ -260,9 +260,9 @@ export function VersusCard({
                     name:
                       winnerUid === challenger.uid
                         ? challenger.nickname
-                        : opponent?.nickname ?? 'Winner',
+                        : opponent?.nickname ?? t('duel.winnerBadge'),
                   })
-                : 'Duel egal'}
+                : t('duel.drawTitle')}
             </Chip>
           ) : status === 'expired' ? (
             <Chip tone="neutral">

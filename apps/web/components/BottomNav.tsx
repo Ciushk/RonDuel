@@ -76,7 +76,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
                 ? 'bg-gradient-to-br from-[#34D399] via-[#10B981] to-[#047857] shadow-[0_0_12px_2px_rgba(16,185,129,0.55)] ring-2 ring-emerald-400/50'
                 : 'bg-gradient-to-br from-[#FF7A70] via-[#FF3B30] to-[#DC2626] shadow-[0_0_12px_2px_rgba(255,59,48,0.6)] ring-2 ring-red-400/50 animate-[pulse_2.2s_ease-in-out_infinite]'
             } ${filled ? 'scale-110 ring-2 ring-[#16131F] dark:ring-white' : 'hover:scale-105'}`}
-            title={isPlayed ? 'Rundă finalizată' : 'Rundă disponibilă'}
+            title={isPlayed ? t('a11y.roundDone') : t('a11y.roundAvailable')}
           >
             {/* Sparkle glossy highlight */}
             <span
@@ -121,7 +121,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
       badge:
         turnCount > 0 ? (
           <span
-            aria-label={`${turnCount} dueluri la rândul tău`}
+            aria-label={t('nav.duelsYourTurnBadge', { count: turnCount })}
             className="absolute -top-1 -right-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-ron-strong px-1 text-[10px] font-black text-white shadow-sm"
           >
             {turnCount}
@@ -153,7 +153,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
   if (desktopSidebar) {
     return (
       <aside
-        aria-label="Navigare principală"
+        aria-label={t('a11y.mainNav')}
         className="hidden lg:flex fixed left-0 top-14 bottom-0 w-60 z-20 flex-col gap-2 p-4 border-r-2 border-border bg-surface overflow-y-auto"
       >
         <div className="flex flex-col gap-1.5">
@@ -185,7 +185,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
 
   return (
     <nav
-      aria-label="Navigare bară jos"
+      aria-label={t('a11y.bottomNav')}
       className="fixed inset-x-0 bottom-0 z-30 lg:hidden border-t-2 border-border bg-surface/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
     >
       <div className="mx-auto flex h-16 max-w-[480px] items-stretch justify-around px-2">

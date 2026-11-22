@@ -6,9 +6,9 @@ export async function GET(req: Request) {
 
   const copyByLocale: Record<string, { tagline: string; caption: string; cta: string }> = {
     ro: {
-      tagline: 'Trivia zilnic pentru grupul tău de prieteni',
-      caption: '6 întrebări · un minut · o singură încercare pe zi',
-      cta: 'Fă-ți ligă cu prietenii și vezi cine e cel mai tare',
+      tagline: 'Trivia zilnic pentru grupul t\u0103u de prieteni',
+      caption: '6 \u00eentreb\u0103ri \u00b7 un minut \u00b7 o singur\u0103 \u00eencercare pe zi',
+      cta: 'F\u0103-\u021bi lig\u0103 cu prietenii \u0219i vezi cine e cel mai tare',
     },
     en: {
       tagline: 'Daily trivia for your friend group',

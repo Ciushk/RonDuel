@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { AuthModal, type AuthMode } from '@/components/AuthModal';
 import { Button, Sheet } from '@/components/ui';
+import { apiErrorMessage } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
 import { loginWithGoogle } from '@/lib/firebase';
 import { getLocalSession, saveLocalSession } from '@/lib/session';
@@ -25,7 +26,7 @@ export function AccountLinkingSheet({
   streak,
   onLinked,
 }: AccountLinkingSheetProps) {
-  const t = useTranslations('result');
+  const t = useTranslations();
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export function AccountLinkingSheet({
     try {
       const user = await loginWithGoogle();
       if (!user.email) {
-        setError('Contul Google nu are o adresă de email asociată.');
+        setError(t('auth.errors.googleNoEmail'));
         setLoading(false);
         return;
       }
@@ -64,13 +65,14 @@ export function AccountLinkingSheet({
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? 'A apărut o eroare la salvarea contului');
+        setError(apiErrorMessage(t, data, 'account.saveError'));
         return;
       }
 
+      const finalUid = data.uid || data.existingUid || session.uid;
       saveLocalSession({
         ...session,
-        uid: data.uid || session.uid,
+        uid: finalUid,
         email: data.email || user.email,
         isAnonymous: false,
         authProvider: 'google',
@@ -78,16 +80,16 @@ export function AccountLinkingSheet({
       });
 
       trackEvent('account_link_completed', { method: 'google' });
-      trackEvent('account_linked', { provider: 'google', uid: data.uid || session.uid });
+      trackEvent('account_linked', { provider: 'google', uid: finalUid });
       setAccountExistsConfirm(null);
       onLinked();
       onClose();
     } catch (err: unknown) {
       const authErr = err as { code?: string; message?: string };
       if (authErr?.code === 'auth/popup-closed-by-user') {
-        setError('Fereastra de conectare Google a fost închisă.');
+        setError(t('auth.errors.googleClosed'));
       } else {
-        setError(authErr?.message || 'Autentificarea Google a eșuat.');
+        setError(t('auth.errors.googleFailed'));
       }
     } finally {
       setLoading(false);
@@ -103,7 +105,7 @@ export function AccountLinkingSheet({
     const finalEmail = targetEmail || email.trim();
 
     if (!finalEmail) {
-      setError('Introdu o adresă de email validă');
+      setError(t('account.invalidEmail'));
       return;
     }
 
@@ -124,7 +126,7 @@ export function AccountLinkingSheet({
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? 'A apărut o eroare la salvarea contului');
+        setError(apiErrorMessage(t, data, 'account.saveError'));
         return;
       }
 
@@ -152,7 +154,7 @@ export function AccountLinkingSheet({
       onLinked();
       onClose();
     } catch {
-      setError('Eroare de rețea. Te rugăm să încerci din nou.');
+      setError(t('common.networkErrorRetry'));
     } finally {
       setLoading(false);
     }
@@ -163,22 +165,19 @@ export function AccountLinkingSheet({
     onClose();
   };
 
-  const descriptionText =
-    'Contul tău e legat doar de acest browser. Conectează Google sau email ca să nu pierzi progresul și să apari în top 100 global.';
-
   return (
     <Sheet
       open={open}
       onClose={handleDismiss}
-      title="Salvează-ți streak-ul și locul în RonDuel World"
+      title={t('account.saveTitle')}
     >
       {accountExistsConfirm ? (
         <div className="space-y-4">
           <p className="text-sm font-bold text-ink">
-            Ai deja un cont. Vrei să aduci scorul de azi pe contul tău?
+            {t('account.mergeQuestion')}
           </p>
           <p className="text-muted text-xs font-medium">
-            Scorul tău de azi va fi salvat în cont dacă nu ai jucat deja pe el.
+            {t('account.mergeNote')}
           </p>
           {error && <p className="text-wrong text-xs font-bold">{error}</p>}
           <div className="flex flex-col gap-2 pt-2">
@@ -195,7 +194,7 @@ export function AccountLinkingSheet({
                 )
               }
             >
-              {loading ? 'Se conectează…' : 'Da, adu scorul pe cont'}
+              {loading ? t('auth.loggingIn') : t('account.mergeConfirm')}
             </Button>
             <Button
               variant="secondary"
@@ -204,20 +203,20 @@ export function AccountLinkingSheet({
               disabled={loading}
               onClick={() => setAccountExistsConfirm(null)}
             >
-              Renunță
+              {t('account.mergeDecline')}
             </Button>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
           <p className="text-muted text-sm font-medium leading-relaxed">
-            {descriptionText}
+            {t('account.anonWarning')}
           </p>
 
           <div className="rounded-xl border-2 border-ron-strong bg-ron/10 p-3 flex items-start gap-2.5">
             <span className="text-base shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
             <p className="text-xs font-bold text-ink leading-snug">
-              Statisticile și progresul tău se vor șterge automat după 1 săptămână dacă nu ai un cont gratuit!
+              {t('account.anonExpiry')}
             </p>
           </div>
 
@@ -235,7 +234,7 @@ export function AccountLinkingSheet({
                 }}
                 className="font-black text-xs h-11 shadow-sm"
               >
-                Loghează-te
+                {t('auth.loginButton')}
               </Button>
               <Button
                 variant="primary"
@@ -247,7 +246,7 @@ export function AccountLinkingSheet({
                 }}
                 className="font-black text-xs h-11 shadow-sm"
               >
-                Creează cont
+                {t('account.createAccountBtn')}
               </Button>
             </div>
 
@@ -260,7 +259,7 @@ export function AccountLinkingSheet({
               className="font-bold text-xs h-11 flex items-center justify-center gap-2"
             >
               <GoogleLogo size={20} weight="bold" aria-hidden="true" />
-              <span>Continuă cu Google</span>
+              <span>{t('auth.continueWithGoogle')}</span>
             </Button>
 
             <div className="flex items-center justify-between pt-1">
@@ -272,14 +271,14 @@ export function AccountLinkingSheet({
                 }}
                 className="text-xs font-bold text-muted hover:text-ink cursor-pointer hover:underline"
               >
-                Am uitat parola?
+                {t('auth.forgotPasswordLink')}
               </button>
               <button
                 type="button"
                 onClick={handleDismiss}
                 className="text-muted hover:text-ink text-xs font-bold underline underline-offset-4 cursor-pointer"
               >
-                Mai târziu
+                {t('account.later')}
               </button>
             </div>
           </div>

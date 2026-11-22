@@ -62,6 +62,12 @@ import {
 } from '../../apps/web/lib/server-store.js';
 import { generateLiveGeminiTemplates } from '../../apps/web/lib/ai-question-bank.js';
 import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
+import {
+  deleteUserFromFirestore,
+  getUserFromFirestore,
+  purgeExpiredAnonymousUsers,
+  syncUserToFirestore,
+} from './firestore-users.js';
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
 setGlobalOptions({ region: 'europe-west1' });
@@ -141,9 +147,11 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     if (method === 'POST' && pathname === '/game/finish') {
-      res.status(200).json(
-        finishRound(String(body.uid), String(body.playId), body.clientSummary as any),
-      );
+      const uid = String(body.uid);
+      const finishRes = finishRound(uid, String(body.playId), body.clientSummary as any);
+      const user = getOrCreateUser({ uid });
+      await syncUserToFirestore(user);
+      res.status(200).json(finishRes);
       return;
     }
 
@@ -151,7 +159,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     if (method === 'GET' && resultMatch) {
       const data = getPlayResult(decodeURIComponent(resultMatch[1]!));
       if (!data) {
-        res.status(404).json({ error: 'Result not found' });
+        res.status(404).json({ error: 'Result not found', code: 'RESULT_NOT_FOUND' });
         return;
       }
       res.status(200).json(data);
@@ -188,7 +196,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
         const uid = url.searchParams.get('uid') ?? undefined;
         const lg = getLeagueByCodeOrId(code, uid);
         if (!lg) {
-          res.status(404).json({ error: 'League not found' });
+          res.status(404).json({ error: 'League not found', code: 'LEAGUE_NOT_FOUND' });
           return;
         }
         res.status(200).json(lg);
@@ -203,7 +211,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json({ success: true, name: lg.name });
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -215,7 +223,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json(result);
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -230,7 +238,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json(result);
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -281,7 +289,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
       const locale: Locale = LOCALES.includes(rawLoc as Locale) ? (rawLoc as Locale) : 'en';
       const d = getDuelView(decodeURIComponent(duelGetMatch[1]!), locale);
       if (!d) {
-        res.status(404).json({ error: 'Duel not found' });
+        res.status(404).json({ error: 'Duel not found', code: 'DUEL_NOT_FOUND' });
         return;
       }
       res.status(200).json(d);
@@ -290,6 +298,11 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
 
     if (method === 'GET' && pathname === '/me/profile') {
       const uid = url.searchParams.get('uid') ?? 'anon';
+      const firestoreUser = await getUserFromFirestore(uid);
+      const user = getOrCreateUser({ uid });
+      if (!firestoreUser) {
+        await syncUserToFirestore(user);
+      }
       res.status(200).json(getUserProfile(uid));
       return;
     }
@@ -299,7 +312,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
         const uid = String(body.uid ?? '');
         const nickname = String(body.nickname ?? '');
         if (!uid || !nickname) {
-          res.status(400).json({ error: 'UID and nickname are required' });
+          res.status(400).json({ error: 'UID and nickname are required', code: 'BAD_REQUEST' });
           return;
         }
         if (body.checkOnly) {
@@ -307,21 +320,31 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           return;
         }
         const updated = changeUserNickname({ uid, newNickname: nickname });
+        const user = getOrCreateUser({ uid });
+        await syncUserToFirestore(user);
         res.status(200).json(updated);
       } catch (err: any) {
-        res.status(400).json({ error: err?.message || 'Eroare la schimbarea numelui' });
+        res.status(400).json({ error: err?.message || 'Nickname change failed', code: err?.code || 'BAD_REQUEST' });
       }
       return;
     }
 
     if (method === 'POST' && pathname === '/me/upgrade') {
-      res.status(200).json(
-        upgradeAccount({
-          uid: String(body.uid),
-          email: String(body.email),
-          provider: (body.provider as 'email_link' | 'google') ?? 'email_link',
-        }),
-      );
+      const oldUid = String(body.uid);
+      const result = upgradeAccount({
+        uid: oldUid,
+        email: String(body.email),
+        provider: (body.provider as 'email_link' | 'google' | 'password' | 'email_password') ?? 'email_link',
+        nickname: body.nickname ? String(body.nickname) : undefined,
+        confirmMerge: body.confirmMerge !== undefined ? Boolean(body.confirmMerge) : (body.provider === 'google'),
+      });
+      if (result.uid && result.uid !== oldUid) {
+        await deleteUserFromFirestore(oldUid);
+      }
+      const finalUid = result.uid || oldUid;
+      const targetUser = getOrCreateUser({ uid: finalUid });
+      await syncUserToFirestore(targetUser);
+      res.status(200).json(result);
       return;
     }
 
@@ -332,7 +355,9 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     if (method === 'POST' && pathname === '/me/delete') {
-      res.status(200).json(deleteUserData(String(body.uid)));
+      const uid = String(body.uid);
+      await deleteUserFromFirestore(uid);
+      res.status(200).json(deleteUserData(uid));
       return;
     }
 
@@ -342,6 +367,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
       if (user.isAnonymous) {
         res.status(403).json({
           error: 'Please upgrade your anonymous account before purchasing RonDuel Pro.',
+          code: 'FORBIDDEN',
         });
         return;
       }
@@ -373,14 +399,22 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
     }
 
     if (method === 'POST' && pathname === '/notify/prefs') {
-      res.status(200).json(
-        updateNotificationPrefs({
-          uid: String(body.uid),
-          pushEnabled: Boolean(body.pushEnabled),
-          emailEnabled: Boolean(body.emailEnabled),
-          reminderLocalTime: String(body.reminderLocalTime ?? '18:00'),
-        }),
-      );
+      const uid = String(body.uid);
+      const prefs = updateNotificationPrefs({
+        uid,
+        pushEnabled: Boolean(body.pushEnabled),
+        emailEnabled: Boolean(body.emailEnabled),
+        reminderLocalTime: String(body.reminderLocalTime ?? '18:00'),
+      });
+      const user = getOrCreateUser({ uid });
+      await syncUserToFirestore(user);
+      res.status(200).json(prefs);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/admin/cleanup-expired-users') {
+      const purged = await purgeExpiredAnonymousUsers();
+      res.status(200).json(purged);
       return;
     }
 
@@ -410,7 +444,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
       }
 
       if (!adminIdentity) {
-        res.status(403).json({ error: 'Forbidden: admin access required' });
+        res.status(403).json({ error: 'Forbidden: admin access required', code: 'FORBIDDEN' });
         return;
       }
 
@@ -445,7 +479,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
             ),
           });
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -466,7 +500,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json({ question: q });
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -482,7 +516,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
             }),
           );
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -495,11 +529,12 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
                 'es',
                 'pt',
                 'ro',
+                'ro',
               ],
             }),
           });
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -513,7 +548,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json({ league: lg });
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -526,7 +561,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json(r);
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -540,7 +575,7 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
           });
           res.status(200).json(r);
         } catch (e: any) {
-          res.status(400).json({ error: e.message });
+          res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }
         return;
       }
@@ -557,9 +592,12 @@ export const api = onRequest({ cors: true, memory: '256MiB' }, async (req, res) 
       return;
     }
 
-    res.status(404).json({ error: `Not found: ${method} ${pathname}` });
-  } catch (err) {
-    res.status(400).json({ error: err instanceof Error ? err.message : 'Bad request' });
+    res.status(404).json({ error: `Not found: ${method} ${pathname}`, code: 'BAD_REQUEST' });
+  } catch (err: any) {
+    res.status(400).json({
+      error: err instanceof Error ? err.message : 'Bad request',
+      code: err?.code || 'BAD_REQUEST',
+    });
   }
 });
 
@@ -629,4 +667,16 @@ export const dailyFallbackPromoter = onSchedule(
     promoteReserveRoundIfNeeded(dateStr);
   },
 );
+
+/**
+ * Scheduled Cloud Function (Cloud Scheduler, daily 04:00 Europe/Bucharest)
+ * Automatically purges anonymous users whose 7-day retention period has passed.
+ */
+export const cleanupExpiredAnonymousUsers = onSchedule(
+  { schedule: '0 4 * * *', timeZone: 'Europe/Bucharest' },
+  async () => {
+    await purgeExpiredAnonymousUsers();
+  },
+);
+
 

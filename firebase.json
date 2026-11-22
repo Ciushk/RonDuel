@@ -15,23 +15,8 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
-    "redirects": [
-      {
-        "source": "/legal/:doc",
-        "destination": "/ro/legal/:doc",
-        "type": 302
-      }
-    ],
+    "redirects": [],
     "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Cross-Origin-Opener-Policy",
-            "value": "same-origin-allow-popups"
-          }
-        ]
-      },
       {
         "source": "/api/**",
         "headers": [
@@ -465,6 +450,14 @@
       {
         "source": "/uk/duel/**",
         "destination": "/uk/duel/_shell.html"
+      },
+      {
+        "source": "/legal/**",
+        "destination": "/legal/_shell.html"
+      },
+      {
+        "source": "/l/**",
+        "destination": "/l/_shell.html"
       }
     ]
   },

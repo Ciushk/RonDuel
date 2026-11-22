@@ -6,7 +6,7 @@ export interface LocaleInfo {
 }
 
 export const ALL_LOCALES = [
-  { code: 'ro', flag: '🇷🇴', name: 'Română', suffix: 'RO' },
+  { code: 'ro', flag: '🇷🇴', name: 'Rom\u00e2n\u0103', suffix: 'RO' },
   { code: 'en', flag: '🇬🇧', name: 'English', suffix: 'EN' },
   { code: 'es', flag: '🇪🇸', name: 'Español', suffix: 'ES' },
   { code: 'pt', flag: '🇵🇹', name: 'Português', suffix: 'PT' },

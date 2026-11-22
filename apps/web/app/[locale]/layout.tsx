@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/AppShell';
+import { RonBotMascot } from '@/components/RonBotMascot';
 import { routing } from '@/i18n/routing';
 
 export function generateStaticParams() {
@@ -29,7 +30,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    manifest: '/manifest.json',
+    manifest: `/manifest-${resolvedLocale}.webmanifest`,
     alternates: {
       canonical: `https://ronduel.web.app/${resolvedLocale}`,
       languages: {
@@ -87,6 +88,7 @@ export default async function LocaleLayout({
         }}
       />
       <AppShell>{children}</AppShell>
+      <RonBotMascot />
     </NextIntlClientProvider>
   );
 }

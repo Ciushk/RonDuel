@@ -93,12 +93,13 @@ describe('invite code, share card, and weekly winner', () => {
       roundNumber: 142,
       totalScore: 1040,
       emojiLine: '⚡🟩⚡🟥🟩⚡',
-      streak: 12,
-      inviteUrl: 'https://ronduel.eu/l/K7Q2XM?r=u_ab12',
+      streakText: '🔥 12-day streak',
+      beatMeText: 'Beat me → https://ronduel.eu/l/K7Q2XM?r=u_ab12',
     });
     expect(text).toContain('RonDuel #142 ⚔️ 1,040');
     expect(text).toContain('⚡🟩⚡🟥🟩⚡');
     expect(text).toContain('🔥 12-day streak');
+    expect(text).toContain('Beat me → https://ronduel.eu/l/K7Q2XM?r=u_ab12');
   });
 
   it('breaks weekly winner ties by lower totalMs', () => {

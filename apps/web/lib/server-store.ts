@@ -88,6 +88,7 @@ export interface UserRecord {
     }
   >;
   createdAt: string;
+  expiresAt?: string | null;
 }
 
 export interface ResolvedRoundItem {
@@ -331,7 +332,7 @@ function loadStoreFromDisk(): StoreState | null {
   return null;
 }
 
-function getStore(): StoreState {
+export function getStore(): StoreState {
   if (!globalForStore.__ronduelStore) {
     const disk = loadStoreFromDisk();
     if (disk && disk.questions && Array.isArray(disk.questions)) {
@@ -448,6 +449,17 @@ function getStore(): StoreState {
   return s;
 }
 
+export class ApiError extends Error {
+  code: string;
+  status: number;
+  constructor(code: string, message: string, status = 400) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
 export const PRO_BOOTSTRAP_EMAILS = [
   'eu.andrei89@gmail.com',
   ...(process.env.PRO_BOOTSTRAP_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()),
@@ -461,6 +473,14 @@ const TOPICS_OF_DAY = [
   'Speed & Space 🚀',
 ];
 
+const TOPIC_KEYS: Record<string, string> = {
+  'World & Science 🌍': 'worldScience',
+  'History & Logic ⏳': 'historyLogic',
+  'Numbers & Nature 🔢': 'numbersNature',
+  'Culture & Mind 🎨': 'cultureMind',
+  'Speed & Space 🚀': 'speedSpace',
+};
+
 export function getRoundMeta(date: string) {
   const store = getStore();
   const scheduled = store.scheduledRounds[date];
@@ -468,7 +488,8 @@ export function getRoundMeta(date: string) {
   const roundNumber = scheduled?.roundNumber ?? computeRoundNumber(date, launchDate);
   const topicOfTheDay =
     scheduled?.topicOfTheDay ?? TOPICS_OF_DAY[(roundNumber - 1) % TOPICS_OF_DAY.length]!;
-  return { date, roundNumber, topicOfTheDay, itemCount: 6 };
+  const themeKey = TOPIC_KEYS[topicOfTheDay] ?? 'worldScience';
+  return { date, roundNumber, topicOfTheDay, themeKey, itemCount: 6 };
 }
 
 function resolveQuestionToItem(
@@ -628,6 +649,7 @@ export function getOrCreateUser(params: {
       },
       rivals: {},
       createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
     store.users[params.uid] = user;
   } else {
@@ -760,15 +782,14 @@ export function changeUserNickname(params: { uid: string; newNickname: string })
   const user = getOrCreateUser({ uid: params.uid });
   const check = validateNickname(params.newNickname);
   if (!check.ok) {
-    throw new Error(check.reason ? `Porecla nu este validă (${check.reason}).` : 'Porecla nu este validă.');
+    throw new ApiError('NICKNAME_INVALID', 'Invalid nickname', 400);
   }
   const validNick = check.value;
 
   // Uniqueness check
   const avail = checkNicknameAvailable(validNick, params.uid);
   if (!avail.available) {
-    const suggText = avail.suggestions.length > 0 ? ` Sugestii: ${avail.suggestions.join(', ')}` : '';
-    throw new Error(`Porecla „${validNick}” este deja luată.${suggText}`);
+    throw new ApiError('NICKNAME_TAKEN', 'Nickname already in use', 400);
   }
 
   // 30-day cooldown check
@@ -776,8 +797,7 @@ export function changeUserNickname(params: { uid: string; newNickname: string })
     const elapsedMs = Date.now() - new Date(user.lastNicknameChangeAt).getTime();
     const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
     if (elapsedMs < thirtyDaysMs) {
-      const daysLeft = Math.ceil((thirtyDaysMs - elapsedMs) / (24 * 60 * 60 * 1000));
-      throw new Error(`Îți poți schimba porecla o singură dată pe lună. Mai ai de așteptat ${daysLeft} ${daysLeft === 1 ? 'zi' : 'zile'}.`);
+      throw new ApiError('NICKNAME_CHANGE_COOLDOWN', 'Nickname change cooldown active', 400);
     }
   }
 
@@ -952,10 +972,10 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
       return {
         id: d.id,
         status: d.status,
-        challengerNickname: d.sides[d.challengerUid]?.nickname ?? 'Challenger',
+        challengerNickname: d.sides[d.challengerUid]?.nickname ?? '',
         opponentNickname: d.opponentUid
-          ? (d.sides[d.opponentUid]?.nickname ?? 'Adversar')
-          : 'Adversar liber',
+          ? (d.sides[d.opponentUid]?.nickname ?? '')
+          : '',
         myTurn: !d.sides[uid]?.finishedAt,
         timeLeftMs,
       };
@@ -1073,7 +1093,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     user.streakCurrent > 0;
 
   const freezeNotice = user.freezeUsedYesterday
-    ? `🧊 Ți-am folosit un scut ieri. Seria ta: ${user.streakCurrent} zile.`
+    ? `\uD83E\uCA8A \u021Ai-am folosit un scut ieri. Seria ta: ${user.streakCurrent} zile.`
     : null;
   if (user.freezeUsedYesterday) {
     user.freezeUsedYesterday = false;
@@ -1241,18 +1261,18 @@ export function submitAnswer(params: {
   const store = getStore();
   const play = store.plays[params.playId];
   if (!play || play.uid !== params.uid) {
-    throw new Error('Play not found');
+    throw new ApiError('PLAY_NOT_FOUND', 'Play not found', 404);
   }
   if (play.status === 'finished') {
-    throw new Error('Play already finished');
+    throw new ApiError('PLAY_ALREADY_FINISHED', 'Play already finished', 400);
   }
 
   const itemState = play.items.find((i) => i.index === params.index);
   if (!itemState) {
-    throw new Error('Item not served yet');
+    throw new ApiError('ITEM_NOT_SERVED', 'Item not served yet', 400);
   }
   if (itemState.answeredAt !== undefined) {
-    throw new Error('Item already answered');
+    throw new ApiError('ITEM_ALREADY_ANSWERED', 'Item already answered', 400);
   }
 
   const resolved = resolveRoundItems(play.date, play.locale);
@@ -1610,13 +1630,13 @@ export function createLeague(params: {
   const ownedCount = Object.values(store.leagues).filter((l) => l.ownerUid === params.uid).length;
   const maxOwned = user.pro.active ? PRO_LIMITS.maxOwnedLeagues : FREE_LIMITS.maxOwnedLeagues;
   if (ownedCount >= maxOwned) {
-    throw new Error('Ai folosit liga gratuită. Cu Pro creezi ligi nelimitate.');
+    throw new ApiError('LEAGUE_LIMIT_REACHED', 'Free league cap reached', 400);
   }
 
   const trimmedName = params.name?.trim();
   if (trimmedName !== undefined && trimmedName.length > 0) {
     if (trimmedName.length < 2 || trimmedName.length > 30) {
-      throw new Error('League name must be between 2 and 30 characters.');
+      throw new ApiError('LEAGUE_NAME_INVALID', 'League name must be between 2 and 30 characters.', 400);
     }
   }
 
@@ -1629,8 +1649,7 @@ export function createLeague(params: {
   const name = trimmedName || suggestLeagueName(params.locale);
   const nameCheck = checkLeagueNameAvailable(name);
   if (!nameCheck.available) {
-    const suggText = nameCheck.suggestions.length > 0 ? ` Sugestii: ${nameCheck.suggestions.join(', ')}` : '';
-    throw new Error(`Numele de ligă „${name}” este deja folosit.${suggText}`);
+    throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
 
   const isProLeague =
@@ -1854,18 +1873,17 @@ export function renameLeague(params: {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
-  if (!league) throw new Error('League not found');
+  if (!league) throw new ApiError('LEAGUE_NOT_FOUND', 'League not found', 404);
   if (!params.isAdmin && league.ownerUid !== params.actorUid) {
-    throw new Error('Only the league owner can rename the league');
+    throw new ApiError('LEAGUE_OWNER_ONLY', 'Only the league owner can rename the league', 403);
   }
   const trimmed = params.name.trim();
   if (trimmed.length < 2 || trimmed.length > 30) {
-    throw new Error('League name must be between 2 and 30 characters');
+    throw new ApiError('LEAGUE_NAME_INVALID', 'League name must be between 2 and 30 characters', 400);
   }
   const nameCheck = checkLeagueNameAvailable(trimmed, league.id);
   if (!nameCheck.available) {
-    const suggText = nameCheck.suggestions.length > 0 ? ` Sugestii: ${nameCheck.suggestions.join(', ')}` : '';
-    throw new Error(`Numele de ligă „${trimmed}” este deja folosit.${suggText}`);
+    throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
   league.name = trimmed;
   saveStoreToDisk(store);
@@ -1880,9 +1898,9 @@ export function deleteLeague(params: {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
-  if (!league) throw new Error('League not found');
+  if (!league) throw new ApiError('LEAGUE_NOT_FOUND', 'League not found', 404);
   if (!params.isAdmin && league.ownerUid !== params.actorUid) {
-    throw new Error('Only the league owner can delete the league');
+    throw new ApiError('LEAGUE_OWNER_ONLY', 'Only the league owner can delete the league', 403);
   }
   delete store.inviteCodes[league.inviteCode];
   for (const memberUid of Object.keys(league.members)) {
@@ -1904,12 +1922,12 @@ export function leaveOrRemoveLeagueMember(params: {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
-  if (!league) throw new Error('League not found');
+  if (!league) throw new ApiError('LEAGUE_NOT_FOUND', 'League not found', 404);
 
   const isSelf = params.targetUid === params.actorUid;
   const isOwner = league.ownerUid === params.actorUid;
   if (!isSelf && !isOwner && !params.isAdmin) {
-    throw new Error('Not authorized to remove this member');
+    throw new ApiError('FORBIDDEN', 'Not authorized to remove this member', 403);
   }
 
   delete league.members[params.targetUid];
@@ -1941,13 +1959,13 @@ export function regenerateLeagueInviteCode(params: {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
-  if (!league) throw new Error('League not found');
+  if (!league) throw new ApiError('LEAGUE_NOT_FOUND', 'League not found', 404);
   if (league.ownerUid !== params.actorUid) {
-    throw new Error('Only the league owner can regenerate the code');
+    throw new ApiError('LEAGUE_OWNER_ONLY', 'Only the league owner can regenerate the code', 403);
   }
   const user = store.users[params.actorUid];
   if (!user?.pro.active) {
-    throw new Error('Regenerating invite code is a Pro feature');
+    throw new ApiError('LEAGUE_PRO_FEATURE', 'Regenerating invite code is a Pro feature', 403);
   }
   delete store.inviteCodes[league.inviteCode];
   let newCode = generateInviteCode();
@@ -1967,13 +1985,13 @@ export function setLeaguePrivateApproval(params: {
   const store = getStore();
   const id = store.inviteCodes[params.codeOrId.toUpperCase()] ?? params.codeOrId;
   const league = store.leagues[id];
-  if (!league) throw new Error('League not found');
+  if (!league) throw new ApiError('LEAGUE_NOT_FOUND', 'League not found', 404);
   if (league.ownerUid !== params.actorUid) {
-    throw new Error('Only the league owner can manage approval');
+    throw new ApiError('LEAGUE_OWNER_ONLY', 'Only the league owner can manage approval', 403);
   }
   const user = store.users[params.actorUid];
   if (!user?.pro.active) {
-    throw new Error('Private approval is a Pro feature');
+    throw new ApiError('LEAGUE_PRO_FEATURE', 'Private approval is a Pro feature', 403);
   }
   league.privateApproval = params.enabled;
   return { success: true, privateApproval: league.privateApproval };
@@ -1987,22 +2005,22 @@ export function joinLeague(params: {
 }) {
   const store = getStore();
   const id = store.inviteCodes[params.inviteCode.toUpperCase()];
-  if (!id) throw new Error('Codul nu există');
+  if (!id) throw new ApiError('CODE_INVALID', 'Invalid invite code', 404);
   const league = store.leagues[id]!;
 
   const nickCheck = validateNickname(params.nickname);
   if (!nickCheck.ok) {
-    throw new Error(`Invalid nickname: ${nickCheck.reason}`);
+    throw new ApiError('NICKNAME_INVALID', `Invalid nickname: ${nickCheck.reason}`, 400);
   }
 
   const user = getOrCreateUser({ uid: params.uid, nickname: nickCheck.value, tz: params.tz });
   const privateCount = user.leagueIds.filter((lId) => lId !== 'lg_world').length;
   if (!league.members[params.uid] && !user.pro.active && privateCount >= FREE_LIMITS.maxJoinedLeagues) {
-    throw new Error('Ai atins limita de 10 ligi în versiunea gratuită. Treci la Pro pentru ligi nelimitate!');
+    throw new ApiError('LEAGUE_LIMIT_REACHED', 'Free league cap reached', 400);
   }
 
   if (!league.members[params.uid] && Object.keys(league.members).length >= league.maxMembers) {
-    throw new Error('Liga e plină. Cere-i adminului să treacă la Pro.');
+    throw new ApiError('LEAGUE_FULL', 'League is full', 400);
   }
 
   if (!league.members[params.uid]) {
@@ -2101,8 +2119,10 @@ export function createDuel(params: {
   }).length;
   const maxMonthly = user.pro.active ? PRO_LIMITS.maxMonthlyDuels : FREE_LIMITS.maxMonthlyDuels;
   if (monthlyCount >= maxMonthly) {
-    throw new Error(
+    throw new ApiError(
+      'FORBIDDEN',
       `Free tier monthly limit reached (${FREE_LIMITS.maxMonthlyDuels} duels/month). Upgrade to Pro for unlimited duels.`,
+      403,
     );
   }
 
@@ -2112,8 +2132,10 @@ export function createDuel(params: {
   ).length;
   const maxDuels = user.pro.active ? PRO_LIMITS.maxActiveDuels : FREE_LIMITS.maxActiveDuels;
   if (activeCount >= maxDuels) {
-    throw new Error(
+    throw new ApiError(
+      'FORBIDDEN',
       `Free tier limit reached (${FREE_LIMITS.maxActiveDuels} active duels). Upgrade to Pro for unlimited duels.`,
+      403,
     );
   }
 
@@ -2208,7 +2230,7 @@ export function getDuelView(duelId: string, locale: Locale = 'en') {
     opponentUid: duel.opponentUid,
     winnerUid: duel.winnerUid,
     walkover: duel.walkover,
-    walkoverNote: duel.walkover ? 'câștigat prin neprezentare' : undefined,
+    walkoverNote: duel.walkover ? 'c\u00e2\u0219tigat prin neprezentare' : undefined,
     rated: duel.rated ?? false,
     createdAt: duel.createdAt,
     sides: Object.fromEntries(
@@ -2253,7 +2275,7 @@ export function getUserDuels(uid: string) {
   const yourTurn: Array<{
     id: string;
     status: string;
-    isChallenger: boolean;
+    isDuelHost: boolean;
     myNickname: string;
     opponentNickname: string;
     opponentUid: string | null;
@@ -2270,7 +2292,7 @@ export function getUserDuels(uid: string) {
   const waiting: Array<{
     id: string;
     status: string;
-    isChallenger: boolean;
+    isDuelHost: boolean;
     myNickname: string;
     opponentNickname: string;
     opponentUid: string | null;
@@ -2287,7 +2309,7 @@ export function getUserDuels(uid: string) {
   const finished: Array<{
     id: string;
     status: string;
-    isChallenger: boolean;
+    isDuelHost: boolean;
     myNickname: string;
     opponentNickname: string;
     opponentUid: string | null;
@@ -2302,13 +2324,13 @@ export function getUserDuels(uid: string) {
   }> = [];
 
   for (const d of all) {
-    const isChallenger = d.challengerUid === uid;
-    const opponentUid = isChallenger ? d.opponentUid : d.challengerUid;
+    const isHost = d.challengerUid === uid;
+    const opponentUid = isHost ? d.opponentUid : d.challengerUid;
     const mySide = d.sides[uid];
     const oppSide = opponentUid ? d.sides[opponentUid] : null;
 
-    const oppNickname = oppSide?.nickname || (opponentUid ? 'Adversar' : 'În așteptare adversar');
-    const myNickname = mySide?.nickname || 'Tu';
+    const oppNickname = oppSide?.nickname || '';
+    const myNickname = mySide?.nickname || '';
     const createdAtMs = new Date(d.createdAt).getTime();
     const expiresAtMs = createdAtMs + 24 * 3600 * 1000;
     const timeLeftMs = Math.max(0, expiresAtMs - now);
@@ -2326,7 +2348,7 @@ export function getUserDuels(uid: string) {
     const summary = {
       id: d.id,
       status: d.status,
-      isChallenger,
+      isDuelHost: isHost,
       myNickname,
       opponentNickname: oppNickname,
       opponentUid,
@@ -2336,7 +2358,7 @@ export function getUserDuels(uid: string) {
       isWinner: d.winnerUid === uid,
       isTie: d.status === 'complete' && !d.winnerUid,
       walkover: d.walkover,
-      walkoverNote: d.walkover ? 'câștigat prin neprezentare' : undefined,
+      walkoverNote: d.walkover ? 'walkover' : undefined,
       rated: d.rated ?? false,
       h2h,
       myTurn: !mySide?.finishedAt,
@@ -2389,7 +2411,7 @@ export function startDuelSide(params: {
 }) {
   const store = getStore();
   const duel = store.duels[params.duelId];
-  if (!duel) throw new Error('Duel not found');
+  if (!duel) throw new ApiError('DUEL_NOT_FOUND', 'Duel not found', 404);
 
   const user = getOrCreateUser({
     uid: params.uid,
@@ -2402,7 +2424,7 @@ export function startDuelSide(params: {
   }
 
   if (params.uid !== duel.challengerUid && params.uid !== duel.opponentUid) {
-    throw new Error('This duel already has two players');
+    throw new ApiError('DUEL_FULL', 'This duel already has two players', 400);
   }
 
   if (!duel.sides[params.uid]) {
@@ -2451,13 +2473,13 @@ export function submitDuelAnswer(params: {
 }) {
   const store = getStore();
   const duel = store.duels[params.duelId];
-  if (!duel) throw new Error('Duel not found');
+  if (!duel) throw new ApiError('DUEL_NOT_FOUND', 'Duel not found', 404);
   const side = duel.sides[params.uid];
-  if (!side || side.finishedAt) throw new Error('Side not active');
+  if (!side || side.finishedAt) throw new ApiError('DUEL_INACTIVE', 'Side not active', 400);
 
   const itemState = side.items.find((i) => i.index === params.index);
   if (!itemState || itemState.answeredAt !== undefined) {
-    throw new Error('Invalid duel item state');
+    throw new ApiError('BAD_REQUEST', 'Invalid duel item state', 400);
   }
 
   const user = getOrCreateUser({ uid: params.uid });
@@ -2515,7 +2537,7 @@ export function submitDuelAnswer(params: {
 
     const challengerUser = store.users[duel.challengerUid];
     const opponentUser = duel.opponentUid ? store.users[duel.opponentUid] : undefined;
-    const isChallengerAuth = Boolean(
+    const isHostAuth = Boolean(
       challengerUser &&
         !challengerUser.isAnonymous &&
         challengerUser.authProvider &&
@@ -2527,7 +2549,7 @@ export function submitDuelAnswer(params: {
         opponentUser.authProvider &&
         opponentUser.authProvider !== 'anonymous',
     );
-    const isRated = isChallengerAuth && isOpponentAuth;
+    const isRated = isHostAuth && isOpponentAuth;
     duel.rated = isRated;
 
     if (outcome.status === 'complete' && duel.opponentUid) {
@@ -2681,11 +2703,12 @@ export function upgradeAccount(params: {
   );
 
   if (existingUser) {
-    if (!params.confirmMerge) {
+    const shouldMerge = Boolean(params.confirmMerge) || params.provider === 'google';
+    if (!shouldMerge) {
       return {
         accountExists: true as const,
         existingUid: existingUser.uid,
-        message: 'Contul există deja. Intră în el?',
+        message: 'Contul exist\u0103 deja. Intr\u0103 \u00een el?',
       };
     }
 
@@ -2731,6 +2754,7 @@ export function upgradeAccount(params: {
     existingUser.streakBest = Math.max(existingUser.streakBest, user.streakBest);
     existingUser.isAnonymous = false;
     existingUser.authProvider = params.provider;
+    existingUser.expiresAt = null;
 
     return {
       uid: existingUser.uid,
@@ -2749,6 +2773,7 @@ export function upgradeAccount(params: {
   user.isAnonymous = false;
   user.email = targetEmail;
   user.authProvider = params.provider;
+  user.expiresAt = null;
   if (PRO_BOOTSTRAP_EMAILS.includes(user.email)) {
     user.pro = {
       active: true,
@@ -3371,7 +3396,7 @@ export function deleteUserData(uid: string) {
 
 export function reportQuestion(params: {
   questionId: string;
-  reason: 'răspuns greșit' | 'întrebare ambiguă' | 'greșeală de limbă' | string;
+  reason: 'wrong_answer' | 'ambiguous' | 'language_error' | string;
   reporterUid?: string;
 }) {
   const store = getStore();

@@ -38,7 +38,6 @@ export function Wordmark({
       aria-label="RonDuel"
     >
       {showIcon && (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src="/brand/icon-192.png"
           alt=""

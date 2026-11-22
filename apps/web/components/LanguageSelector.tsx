@@ -1,7 +1,7 @@
 'use client';
 
 import { CaretDown, Check, MagnifyingGlass } from '@phosphor-icons/react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -19,6 +19,7 @@ export function LanguageSelector({
   className = '',
   showFullLabel = false,
 }: LanguageSelectorProps) {
+  const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
@@ -152,14 +153,14 @@ export function LanguageSelector({
                 setSearchQuery(e.target.value);
                 setFocusedIndex(-1);
               }}
-              placeholder="Caută o limbă…"
+              placeholder={t('settings.languageSearchPlaceholder')}
               className="w-full rounded-lg border-2 border-border bg-surface-2 py-1.5 pl-8 pr-2 text-xs font-bold text-ink placeholder:text-muted focus:border-volt focus:outline-none"
             />
           </div>
 
           <div className="max-h-60 overflow-y-auto space-y-0.5 pr-1">
             {filteredLanguages.length === 0 ? (
-              <p className="p-3 text-center text-xs font-bold text-muted">Nicio limbă găsită</p>
+              <p className="p-3 text-center text-xs font-bold text-muted">{t('settings.languageNoResults')}</p>
             ) : (
               filteredLanguages.map((item, idx) => {
                 const isSelected = item.code === locale;

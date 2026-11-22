@@ -41,7 +41,7 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export async function loginWithEmail(email: string, pass: string): Promise<User> {
   const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase Auth nu este inițializat.');
+  if (!auth) throw new Error('Firebase Auth is not initialized');
   const userCredential = await signInWithEmailAndPassword(auth, email.trim(), pass);
   return userCredential.user;
 }
@@ -52,14 +52,14 @@ export async function registerWithEmail(
   username: string,
 ): Promise<User> {
   const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase Auth nu este inițializat.');
+  if (!auth) throw new Error('Firebase Auth is not initialized');
   const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), pass);
   const trimmedName = username.trim();
   if (trimmedName) {
     try {
       await updateProfile(userCredential.user, { displayName: trimmedName });
     } catch {
-      // Ignorăm eroarea non-critică de profil
+      // Ignore non-critical profile error
     }
   }
   return userCredential.user;
@@ -67,14 +67,14 @@ export async function registerWithEmail(
 
 export async function loginWithGoogle(): Promise<User> {
   const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase Auth nu este inițializat.');
+  if (!auth) throw new Error('Firebase Auth is not initialized');
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {
   const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase Auth nu este inițializat.');
+  if (!auth) throw new Error('Firebase Auth is not initialized');
   await sendPasswordResetEmail(auth, email.trim());
 }
 

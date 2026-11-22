@@ -105,7 +105,7 @@ export default function LeaguePage() {
 
     if (!resolvedId || resolvedId === '_shell') {
       setLoading(false);
-      setError('Identificatorul ligii nu este valid.');
+      setError(t('league.errorInvalidId'));
       return;
     }
 
@@ -150,8 +150,8 @@ export default function LeaguePage() {
         } else {
           setError(
             err?.name === 'AbortError'
-              ? 'Timpul de încărcare a expirat. Te rugăm să reîncerci.'
-              : 'Liga nu există sau a fost ștearsă.',
+              ? t('league.errorTimeout')
+              : t('league.errorNotFound'),
           );
         }
       })
@@ -219,7 +219,7 @@ export default function LeaguePage() {
       body: JSON.stringify({ action: 'rename', actorUid: s.uid, name: newName.trim() }),
     });
     if (res.ok) {
-      setToast('League renamed');
+      setToast(t('league.renamedToast'));
       loadLeague();
     }
   };
@@ -236,7 +236,7 @@ export default function LeaguePage() {
         body: JSON.stringify({ action: 'regenerate_code', actorUid: s.uid }),
       });
       if (res.ok) {
-        setToast('Codul de invitație a fost actualizat');
+        setToast(t('league.codeRegeneratedToast'));
         loadLeague();
       }
     } finally {
@@ -260,7 +260,7 @@ export default function LeaguePage() {
         }),
       });
       if (res.ok) {
-        setToast(nextVal ? 'Aprobare privată activată' : 'Aprobare privată dezactivată');
+        setToast(nextVal ? t('league.privateApprovalOn') : t('league.privateApprovalOff'));
         loadLeague();
       }
     } finally {
@@ -284,7 +284,7 @@ export default function LeaguePage() {
         }),
       });
       if (res.ok) {
-        setToast('Membrul a fost eliminat');
+        setToast(t('league.memberRemovedToast'));
         loadLeague();
       }
     } finally {
@@ -338,7 +338,7 @@ export default function LeaguePage() {
     return (
       <main className="text-muted mx-auto max-w-[480px] px-4 py-16 text-center font-bold space-y-3">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-volt border-t-transparent" />
-        <p>Se încarcă liga…</p>
+        <p>{t('league.loading')}</p>
       </main>
     );
   }
@@ -352,19 +352,19 @@ export default function LeaguePage() {
           </div>
           <div className="space-y-1">
             <h1 className="font-display text-xl font-extrabold text-ink">
-              Liga nu există sau a fost ștearsă
+              {t('league.errorNotFound')}
             </h1>
             <p className="text-muted text-xs leading-relaxed max-w-[280px] mx-auto">
-              {error || 'Această ligă nu există sau a fost ștearsă.'}
+              {error || t('league.errorNotFound')}
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
             <Button variant="volt" fullWidth onClick={loadLeague}>
-              Reîncearcă
+              {t('common.retry')}
             </Button>
             <Link href={`/${locale}/leagues`} className="block">
               <Button variant="secondary" fullWidth>
-                Înapoi la ligi
+                {t('league.backToLeagues')}
               </Button>
             </Link>
           </div>
@@ -402,7 +402,7 @@ export default function LeaguePage() {
               {league.intlRank != null && !isWorldLeague && (
                 <p className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1">
                   <Trophy size={13} weight="fill" />
-                  Locul #{league.intlRank} mondial în topul ligilor
+                  {t('league.worldRankInLeagues', { rank: league.intlRank })}
                 </p>
               )}
             </div>
@@ -411,15 +411,13 @@ export default function LeaguePage() {
             <Chip tone={isWorldLeague ? 'volt' : isProLeague ? 'gold' : 'volt'}>
               <Trophy size={14} weight="fill" aria-hidden="true" />
               {isWorldLeague
-                ? 'Publică · Fără limită'
-                : league.maxMembers > 5
-                  ? `${league.memberCount}/200 jucători`
-                  : `${league.memberCount}/5 jucători`}
+                ? t('league.publicNoLimit')
+                : t('league.membersCount', { count: league.memberCount })}
             </Chip>
             {league.isOwner && !isWorldLeague && (
               <Link href={`/${locale}/league/${league.id}/admin`}>
                 <Button size="sm" variant="secondary" className="text-xs">
-                  Administrează
+                  {t('league.manageShort')}
                 </Button>
               </Link>
             )}
@@ -432,7 +430,7 @@ export default function LeaguePage() {
             <div className="flex items-center justify-between gap-2">
               <div>
                 <span className="text-muted block text-[10px] font-bold uppercase">
-                  Cod de invitație
+                  {t('league.inviteCodeLabel')}
                 </span>
                 <span className="rd-tabular text-ink text-base font-extrabold tracking-wider">
                   {league.inviteCode}
@@ -451,7 +449,7 @@ export default function LeaguePage() {
                   size="sm"
                   variant="secondary"
                   onClick={shareWhatsApp}
-                  aria-label="Share WhatsApp"
+                  aria-label={t('league.shareWhatsApp')}
                   className="px-2.5"
                 >
                   <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" aria-hidden="true" />
@@ -523,11 +521,11 @@ export default function LeaguePage() {
       {!isWorldLeague && league.isOwner && !isProLeague && league.memberCount >= 5 && (
         <Card variant="sticker" className="bg-volt text-ink border-2 border-border p-4 shadow-sm space-y-2">
           <p className="font-extrabold text-sm">
-            Liga ta e plină (5/5). Cu Pro intră până la 200 de prieteni.
+            {t('league.fullBannerFree', { count: league.memberCount, max: 5, proMax: 200 })}
           </p>
           <Link href={`/${locale}/pro`}>
             <Button size="sm" variant="primary">
-              Treci la Pro
+              {t('common.goPro')}
             </Button>
           </Link>
         </Card>
@@ -538,7 +536,7 @@ export default function LeaguePage() {
         <Card variant="sticker" className="space-y-2 p-4 text-center">
           <p className="font-display text-base font-extrabold">{t('league.aloneTitle')}</p>
           <p className="text-muted text-xs font-medium">
-            Ești singur aici. Trimite linkul pe grup ca să înceapă duelul.
+            {t('league.aloneSubtitle')}
           </p>
           <Button size="sm" variant="volt" fullWidth onClick={() => void shareNative()}>
             <ShareNetwork size={16} weight="bold" aria-hidden="true" />
@@ -560,17 +558,19 @@ export default function LeaguePage() {
             <span className="text-2xl shrink-0" aria-hidden="true">🎯</span>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
-                Runda de azi
+                {t('common.todayRound')}
               </span>
               <p className="text-sm font-extrabold text-ink truncate">
-                Ai jucat azi: <span className="rd-tabular text-ron-strong">{league.viewerScoreToday != null ? `${league.viewerScoreToday.toLocaleString()} pct` : 'Finalizată'}</span>
-                {league.viewerRankToday ? ` (Locul #${league.viewerRankToday})` : ''}
+                {league.viewerScoreToday != null
+                  ? t('league.playedTodayScore', { points: league.viewerScoreToday.toLocaleString() })
+                  : t('league.roundFinished')}
+                {league.viewerRankToday ? ` ${t('league.rankSuffix', { rank: league.viewerRankToday })}` : ''}
               </p>
             </div>
           </div>
           <Link href={`/${locale}/play`}>
             <Button size="sm" variant="secondary" className="shrink-0 text-xs font-bold">
-              Vezi scor
+              {t('league.viewScore')}
             </Button>
           </Link>
         </Card>
@@ -580,16 +580,16 @@ export default function LeaguePage() {
             <span className="text-2xl shrink-0" aria-hidden="true">⚡</span>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
-                Runda de azi
+                {t('common.todayRound')}
               </span>
               <p className="text-sm font-extrabold text-ink">
-                Nu ai jucat runda de azi
+                {t('league.notPlayedToday')}
               </p>
             </div>
           </div>
           <Link href={`/${locale}/play?returnTo=${encodeURIComponent(`/league/${league.id}`)}`}>
             <Button size="sm" variant="primary" className="shrink-0 font-bold">
-              Joacă runda de azi
+              {t('brand.playToday')}
             </Button>
           </Link>
         </Card>
@@ -607,8 +607,8 @@ export default function LeaguePage() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Caută după nume de utilizator…"
-          aria-label="Caută jucător după nume"
+          placeholder={t('league.searchPlaceholder')}
+          aria-label={t('a11y.searchPlayer')}
           className="w-full rounded-xl border-2 border-border bg-surface pl-10 pr-9 py-2.5 text-sm font-bold text-ink placeholder:text-muted placeholder:font-normal focus:outline-none focus:border-volt-strong focus:ring-2 focus:ring-volt-strong/50 shadow-sm"
         />
         {searchQuery && (
@@ -645,7 +645,7 @@ export default function LeaguePage() {
       </div>
 
       {tab === 'today' && (
-        <section aria-label="Clasament astăzi" className="space-y-2.5">
+        <section aria-label={t('a11y.leaderboardToday')} className="space-y-2.5">
           {!league.viewerFinishedToday && (
             <div className="bg-surface-2 text-muted flex items-center gap-2 rounded-xl border-2 border-border p-3 text-xs font-bold">
               <Lock size={16} weight="bold" aria-hidden="true" />
@@ -656,7 +656,7 @@ export default function LeaguePage() {
           {filteredTodayScores.length === 0 ? (
             <Card variant="subtle" className="p-8 text-center">
               <p className="text-muted text-sm font-bold">
-                {searchQuery ? `Niciun jucător găsit pentru „${searchQuery}”` : t('league.empty')}
+                {searchQuery ? t('league.searchNoResults', { query: searchQuery }) : t('league.empty')}
               </p>
             </Card>
           ) : (
@@ -681,7 +681,7 @@ export default function LeaguePage() {
                         </p>
                         {isMe && (
                           <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
-                            Tu
+                            {t('common.you')}
                           </Chip>
                         )}
                       </div>
@@ -690,7 +690,7 @@ export default function LeaguePage() {
                   </div>
                   <div className="text-right shrink-0">
                     <span className="rd-tabular text-lg font-black text-ink block">
-                      {row.score !== null ? `${row.score.toLocaleString()} pct` : '—'}
+                      {row.score !== null ? t('common.points', { points: row.score.toLocaleString() }) : '—'}
                     </span>
                     {row.totalMs !== null && row.totalMs > 0 && (
                       <span className="text-muted text-[11px] font-bold block">
@@ -706,11 +706,11 @@ export default function LeaguePage() {
       )}
 
       {tab === 'alltime' && (
-        <section aria-label="Clasament all-time" className="space-y-2.5">
+        <section aria-label={t('a11y.leaderboardAllTime')} className="space-y-2.5">
           {filteredAllTime.length === 0 ? (
             <Card variant="subtle" className="p-8 text-center">
               <p className="text-muted text-sm font-bold">
-                {searchQuery ? `Niciun jucător găsit pentru „${searchQuery}”` : 'Niciun jucător'}
+                {searchQuery ? t('league.searchNoResults', { query: searchQuery }) : t('league.noPlayers')}
               </p>
             </Card>
           ) : (
@@ -735,12 +735,12 @@ export default function LeaguePage() {
                         </p>
                         {isMe && (
                           <Chip tone="volt" className="text-[10px] py-0 px-1 font-black">
-                            Tu
+                            {t('common.you')}
                           </Chip>
                         )}
                       </div>
                       <p className="text-muted text-xs font-bold">
-                        {row.roundsPlayed} {row.roundsPlayed === 1 ? 'rundă' : 'runde'}
+                        {t('league.roundsCount', { count: row.roundsPlayed })}
                         {row.joinedAt && ` · ${t('league.joinedOn', { date: formatDate(row.joinedAt) })}`}
                       </p>
                     </div>
@@ -749,10 +749,7 @@ export default function LeaguePage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right">
                       <span className="rd-tabular text-lg font-black text-ink block">
-                        {row.allTimeScore.toLocaleString()}
-                      </span>
-                      <span className="text-muted text-[10px] font-extrabold uppercase tracking-wider block">
-                        puncte
+                        {t('common.points', { points: row.allTimeScore.toLocaleString() })}
                       </span>
                     </div>
 
@@ -761,7 +758,7 @@ export default function LeaguePage() {
                         type="button"
                         onClick={() => void handleRemoveMember(row.uid)}
                         title={t('league.removeMember')}
-                        aria-label={`Elimină ${row.nickname}`}
+                        aria-label={t('league.removeMemberAria', { name: row.nickname })}
                         className="text-wrong hover:opacity-80 p-1.5 cursor-pointer ml-1"
                       >
                         <Trash size={16} weight="bold" aria-hidden="true" />
@@ -784,7 +781,7 @@ export default function LeaguePage() {
             ?.nickname || sessionNickname
         }
         myUid={sessionUid}
-        label={isWorldLeague ? 'Locul tău mondial:' : 'Locul tău în ligă:'}
+        label={isWorldLeague ? t('common.yourWorldRank') : t('league.yourLeagueRank')}
       />
     </main>
   );

@@ -124,8 +124,7 @@ export default function manifest(): ExtendedManifest {
   return {
     name: 'RonDuel',
     short_name: 'RonDuel',
-    description:
-      '6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.',
+    description: 'Daily trivia with your friends',
     start_url: '/?source=pwa',
     display: 'standalone',
     background_color: '#FFF7EC',
@@ -171,14 +170,14 @@ export default function manifest(): ExtendedManifest {
     apple_touch_startup_image: APPLE_STARTUP_IMAGES,
     shortcuts: [
       {
-        name: 'Joacă runda de azi',
-        short_name: 'Joacă',
-        url: '/ro/play',
+        name: "Play today's round",
+        short_name: 'Play',
+        url: '/en/play',
       },
       {
-        name: 'Ligile mele',
-        short_name: 'Ligi',
-        url: '/ro',
+        name: 'My leagues',
+        short_name: 'Leagues',
+        url: '/en/leagues',
       },
     ],
   };

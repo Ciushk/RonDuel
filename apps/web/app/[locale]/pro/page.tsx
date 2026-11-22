@@ -8,7 +8,7 @@ import {
   Sword,
   UsersThree,
 } from '@phosphor-icons/react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -17,6 +17,7 @@ import { getLocalSession } from '@/lib/session';
 
 export default function ProPaywallPage() {
   const t = useTranslations();
+  const format = useFormatter();
   const locale = useLocale();
 
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
@@ -51,7 +52,7 @@ export default function ProPaywallPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error ?? 'Checkout error');
+      setError(data.error ?? t('pro.checkoutError'));
       return;
     }
     if (data.pro?.active) {
@@ -99,20 +100,23 @@ export default function ProPaywallPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2" role="group" aria-label="Billing interval">
+        <div className="grid grid-cols-2 gap-2 pt-2" role="group" aria-label={t('pro.billingIntervalLabel')}>
           <Button
             size="sm"
             variant={plan === 'monthly' ? 'primary' : 'secondary'}
             onClick={() => setPlan('monthly')}
           >
-            {t('pro.monthly')}
+            {t('pro.monthly', { price: format.number(4.99, { style: 'currency', currency: 'EUR' }) })}
           </Button>
           <Button
             size="sm"
             variant={plan === 'yearly' ? 'volt' : 'secondary'}
             onClick={() => setPlan('yearly')}
           >
-            {t('pro.yearly')}
+            {t('pro.yearly', {
+              price: format.number(39.99, { style: 'currency', currency: 'EUR' }),
+              percent: 33,
+            })}
           </Button>
         </div>
 

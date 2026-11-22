@@ -14,6 +14,8 @@ import {
   RULES_RO_VERSION,
 } from '@/lib/legal-markdown';
 
+const SHOW_DRAFT_NOTES = false;
+
 function loadRegulamentMarkdown(locale: string): string {
   let filePath = path.join(process.cwd(), 'content', 'legal', locale, 'regulament.md');
   if (!fs.existsSync(filePath)) {
@@ -23,9 +25,14 @@ function loadRegulamentMarkdown(locale: string): string {
     filePath = path.join(process.cwd(), 'content', 'legal', 'ro', 'regulament.md');
   }
   const raw = fs.readFileSync(filePath, 'utf8');
-  return raw
+  let clean = raw
     .replace(/\[DATA\]/g, RULES_RO_VERSION.lastUpdated)
     .replace(/Versiunea: 1\.0/g, `Versiunea: ${RULES_RO_VERSION.version}`);
+
+  if (!SHOW_DRAFT_NOTES) {
+    clean = clean.replace(/\s*\[(TO BE CONFIRMED|DE CONFIRMAT|POR CONFIRMAR)[^\]]*\]/gi, '');
+  }
+  return clean;
 }
 
 export function generateStaticParams() {
@@ -46,17 +53,20 @@ export async function generateMetadata({
   const md = loadRegulamentMarkdown(locale);
   const isDraft = hasLegalPlaceholders(md);
 
-  const title = locale === 'ro' ? 'Regulamentul jocului | RonDuel' : t('rules.metaTitle');
-  const description =
-    locale === 'ro'
-      ? 'Cum funcționează RonDuel: runda zilnică, calculul punctelor, egalități, ligi, dueluri, serii, trișat și ce include Pro. Fără premii, fără jocuri de noroc.'
-      : t('rules.metaDescription');
+  const title = t('rules.metaTitle');
+  const description = t('rules.metaDescription');
 
   return {
     title,
     description,
     alternates: {
-      canonical: `https://ronduel.eu/${locale}/regulament`,
+      canonical: `https://ronduel.web.app/${locale}/regulament`,
+      languages: {
+        ...Object.fromEntries(
+          routing.locales.map((code) => [code, `https://ronduel.web.app/${code}/regulament`]),
+        ),
+        'x-default': 'https://ronduel.web.app/ro/regulament',
+      },
     },
     robots: isDraft ? { index: false, follow: false } : { index: true, follow: true },
   };

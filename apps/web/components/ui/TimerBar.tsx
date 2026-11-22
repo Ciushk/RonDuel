@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { cn } from '@/lib/cn';
 
 export interface TimerBarProps {
@@ -10,6 +12,7 @@ export interface TimerBarProps {
 }
 
 export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarProps) {
+  const t = useTranslations();
   const clamped = Math.max(0, Math.min(limitMs, remainingMs));
   const pct = limitMs > 0 ? (clamped / limitMs) * 100 : 0;
   const secondsLeft = Math.ceil(clamped / 1000);
@@ -18,7 +21,7 @@ export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarPro
   return (
     <div className={cn('w-full space-y-1', className)}>
       <div className="flex items-center justify-between text-xs font-bold">
-        <span className="text-muted">{label || 'Time left'}</span>
+        <span className="text-muted">{label || t('play.timeLeft')}</span>
         <span
           className={cn('rd-tabular text-sm font-bold', isUrgent ? 'text-ron-strong' : 'text-ink')}
         >
@@ -27,7 +30,7 @@ export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarPro
       </div>
       <div
         role="progressbar"
-        aria-label="Time remaining"
+        aria-label={t('a11y.timeRemaining')}
         aria-valuemin={0}
         aria-valuemax={Math.ceil(limitMs / 1000)}
         aria-valuenow={secondsLeft}

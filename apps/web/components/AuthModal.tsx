@@ -184,7 +184,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
     try {
       const user = await loginWithGoogle();
       if (!user.email) {
-        setError('Contul Google nu are o adresă de email asociată.');
+        setError(t('errors.googleNoEmail'));
         setLoading(false);
         return;
       }
@@ -192,7 +192,7 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
       const userNick = user.displayName || session.nickname;
 
       const upgraded = await syncBackend(session.uid, user.email, userNick, 'google');
-      const finalUid = upgraded?.uid || user.uid;
+      const finalUid = upgraded?.uid || upgraded?.existingUid || user.uid;
       const finalEmail = upgraded?.email || user.email;
       const finalNick = upgraded?.nickname || userNick;
 

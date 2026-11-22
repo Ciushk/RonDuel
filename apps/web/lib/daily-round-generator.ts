@@ -59,16 +59,16 @@ const ROUND_BLUEPRINT: Array<{
 ];
 
 const THEME_IDEAS = [
-  'Explorarea Spațială',
-  'Misterele Istoriei Europene',
-  'Arhitectură și Minuni ale Lumii',
-  'Invenții Care Au Schimbat Lumea',
-  'Mări, Oceane și Adâncuri',
-  'Călătorie prin Literatură',
-  'Recorduri și Fenomene ale Naturii',
-  'Muzică și Mari Compozitori',
-  'Fizică Cuantică și Tehnologii ale Viitorului',
-  'Capitale și Geografie Fascinantă',
+  'Space Exploration',
+  'Mysteries of European History',
+  'Architecture & World Wonders',
+  'Inventions That Changed the World',
+  'Seas, Oceans & the Deep',
+  'Journey Through World Literature',
+  'Records & Phenomena of Nature',
+  'Music & Great Composers',
+  'Quantum Physics & Future Tech',
+  'Capitals & Fascinating Geography',
 ];
 
 function getGenAIClient(): GoogleGenAI | null {
@@ -225,7 +225,7 @@ Question type: "${params.type}" (mcq, order, odd, or logic).
 Difficulty: ${params.difficulty} of 3 (1=easy, 2=medium, 3=hard).
 Topic/Category: "${topic}".
 Important formatting rules:
-- Provide content in multiple languages: en (English), ro (Romanian with strict comma-below diacritics: ș, ț, ă, â, î), es (Spanish), pt (Portuguese), de (German), fr (French), it (Italian).
+- Provide content in multiple languages: en (English), ro (Romanian with strict comma-below diacritics: \u0219, \u021b, \u0103, \u00e2, \u00ee), es (Spanish), pt (Portuguese), de (German), fr (French), it (Italian).
 - Prompt must be concise: maximum 140 characters.
 - Each option must be concise: maximum 40 characters.
 - Must have exactly 4 options.
@@ -441,7 +441,7 @@ Important rules:
 - Each of the 4 options must be concise: maximum 40 characters.
 - Maintain the exact same options order and meaning.
 - Explanation must be 1-2 concise sentences.
-- Romanian (ro) must use strict comma-below diacritics: ș, ț, ă, â, î.
+- Romanian (ro) must use strict comma-below diacritics: \u0219, \u021b, \u0103, \u00e2, \u00ee.
 
 Source Question (type: "${item.type}"):
 Prompt: "${base.prompt}"
