@@ -681,7 +681,8 @@
     "newLeague": "+ Nieuwe competitie",
     "notPlayed": "Niet gespeeld",
     "myDuels": "Mijn duels",
-    "challengeFriend": "Daag een vriend uit"
+    "challengeFriend": "Daag een vriend uit",
+    "freezeNotice": "Je hebt gisteren een streakschild gebruikt. Je reeks: {days, plural, one {# dag} other {# dagen}}."
   },
   "account": {
     "saveTitle": "Behoud je reeks en je plek in RonDuel World",
