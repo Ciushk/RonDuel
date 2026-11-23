@@ -140,6 +140,22 @@ export default function DuelsPage() {
     setTimeout(() => setToast(''), 3000);
   };
 
+  const handleInviteFriends = async () => {
+    const session = getLocalSession();
+    const url = `${window.location.origin}/${locale}?r=${encodeURIComponent(session.uid)}`;
+    const text = t('retention.inviteShareText', { url });
+    trackEvent('invite_shared', { source: 'duels_empty' });
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch {}
+    }
+    await navigator.clipboard.writeText(text).catch(() => {});
+    setToast(t('result.copied'));
+    setTimeout(() => setToast(''), 3000);
+  };
+
   const yourTurn = duelsData?.yourTurn ?? [];
   const waiting = duelsData?.waiting ?? [];
   const finished = duelsData?.finished ?? [];
@@ -210,9 +226,13 @@ export default function DuelsPage() {
               {t('duels.emptyBody')}
             </p>
           </div>
-          <div className="pt-2 flex justify-center">
+          <div className="pt-2 flex flex-col justify-center gap-2 sm:flex-row">
             <Button size="sm" variant="volt" onClick={handleCreateDuel}>
               {t('duels.startNew')}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => void handleInviteFriends()}>
+              <ShareNetwork size={16} weight="bold" aria-hidden="true" />
+              {t('retention.inviteFriends')}
             </Button>
           </div>
         </Card>
