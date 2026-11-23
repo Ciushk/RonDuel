@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {серія # день} few {серія # дні} many {серія # днів} other {серія # дня}}",
     "shareBeatMe": "Переверши мене → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Наступний раунд",
+    "countdownAria": "Наступний раунд відкриється приблизно через {time} (години:хвилини)",
+    "tomorrowTeaser": "Тема завтра: {theme}",
+    "milestoneReached": "Серія з {days} днів досягнута!",
+    "streakToMilestone": "{days, plural, one {ще # день} other {ще # днів}} до вашої серії з {milestone} днів",
+    "streakProgressAria": "Прогрес до серії з {milestone} днів",
+    "inviteCta": "Запроси 2 друзів і дізнайся, хто сьогодні переможе",
+    "inviteFriends": "Запросити друзів",
+    "inviteShareText": "Зіграємо сьогоднішній раунд RonDuel разом і дізнаємося, хто переможе: {url}"
+  },
   "league": {
     "joinTitle": "Вас запрошено до {name}",
     "joinCta": "Приєднатися та грати сьогоднішній раунд",
