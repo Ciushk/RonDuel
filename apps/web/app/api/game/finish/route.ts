@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { apiErrorResponse } from '@/lib/api-route';
 import { finishRound } from '@/lib/server-store';
 
 const FinishSchema = z.object({
@@ -30,9 +31,6 @@ export async function POST(req: Request) {
     const result = finishRound(body.uid, body.playId, body.clientSummary);
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Bad request' },
-      { status: 400 },
-    );
+    return apiErrorResponse(err);
   }
 }
