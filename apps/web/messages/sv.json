@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {# dags svit} other {# dagars svit}}",
     "shareBeatMe": "Slå mig → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Nästa omgång",
+    "countdownAria": "Nästa omgång låses upp om cirka {time} (timmar:minuter)",
+    "tomorrowTeaser": "Morgondagens tema: {theme}",
+    "milestoneReached": "{days} dagars svit uppnådd!",
+    "streakToMilestone": "{days, plural, one {# dag till} other {# dagar till}} din {milestone}-dagars svit",
+    "streakProgressAria": "Framsteg mot en {milestone}-dagars svit",
+    "inviteCta": "Bjud in 2 vänner och se vem som vinner i dag",
+    "inviteFriends": "Bjud in vänner",
+    "inviteShareText": "Spela dagens RonDuel-omgång med mig och se vem som vinner: {url}"
+  },
   "league": {
     "joinTitle": "Du är inbjuden till {name}",
     "joinCta": "Gå med & spela dagens omgång",
