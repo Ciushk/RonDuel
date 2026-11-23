@@ -681,7 +681,8 @@
     "newLeague": "+ Нова лига",
     "notPlayed": "Не е изигран",
     "myDuels": "Моите дуели",
-    "challengeFriend": "Предизвикай приятел"
+    "challengeFriend": "Предизвикай приятел",
+    "freezeNotice": "Вчера използва щит за поредицата си. Твоята поредица: {days, plural, one {# ден} other {# дни}}."
   },
   "account": {
     "saveTitle": "Запази серията си и мястото си в RonDuel World",
