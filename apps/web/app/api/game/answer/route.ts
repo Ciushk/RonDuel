@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { apiErrorResponse } from '@/lib/api-route';
 import { submitAnswer } from '@/lib/server-store';
 
 const AnswerSchema = z.object({
@@ -16,9 +17,6 @@ export async function POST(req: Request) {
     const result = submitAnswer(body);
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Bad request' },
-      { status: 400 },
-    );
+    return apiErrorResponse(err);
   }
 }
