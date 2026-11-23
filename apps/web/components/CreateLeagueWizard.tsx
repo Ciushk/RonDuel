@@ -84,12 +84,12 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
 
     const tz = getBrowserTimeZone();
     fetch(
-      `/api/today?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&locale=${locale}`,
+      `/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&leagues=`,
     )
       .then((r) => r.json())
       .then((data) => {
         if (data.ownedLeaguesCount !== undefined) setOwnedCount(data.ownedLeaguesCount);
-        if (data.pro?.active) setIsPro(true);
+        if (data.isPro) setIsPro(true);
         if (data.played) setHasPlayedToday(true);
       })
       .catch(() => {});

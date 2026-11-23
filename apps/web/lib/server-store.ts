@@ -768,6 +768,15 @@ export function getOrCreateUser(params: {
     };
   }
 
+  // Keep owned leagues in sync with Pro status (upgrade maxMembers when Pro becomes active).
+  if (user.pro?.active) {
+    for (const league of Object.values(store.leagues)) {
+      if (league.ownerUid === user.uid && league.maxMembers < PRO_LIMITS.maxMembersPerLeague) {
+        league.maxMembers = PRO_LIMITS.maxMembersPerLeague;
+      }
+    }
+  }
+
   return user;
 }
 
@@ -1744,7 +1753,8 @@ export function createLeague(params: {
     throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
 
-  const isProLeague = params.plan === 'pro_trial' || (params.plan === 'pro' && user.pro.active);
+  const isProLeague =
+    user.pro.active || params.plan === 'pro_trial' || params.plan === 'pro';
   const maxMembers = isProLeague ? PRO_LIMITS.maxMembersPerLeague : FREE_LIMITS.maxMembersPerLeague;
 
   const league: LeagueRecord = {

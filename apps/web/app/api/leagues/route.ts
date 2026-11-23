@@ -11,7 +11,7 @@ const CreateLeagueSchema = z.object({
   locale: z.enum(LOCALES).default('en'),
   themeEmoji: z.string().optional(),
   themeColor: z.string().optional(),
-  plan: z.enum(['free', 'pro_trial']).optional(),
+  plan: z.enum(['free', 'pro_trial', 'pro']).optional(),
 });
 
 export async function POST(req: Request) {

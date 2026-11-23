@@ -227,11 +227,17 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
 
     if (method === 'POST' && pathname === '/leagues') {
+      const planRaw = body.plan ? String(body.plan) : undefined;
+      const plan =
+        planRaw === 'free' || planRaw === 'pro_trial' || planRaw === 'pro'
+          ? (planRaw as 'free' | 'pro_trial' | 'pro')
+          : undefined;
       const lg = createLeague({
         uid: String(body.uid),
         name: body.name ? String(body.name) : undefined,
         tz: String(body.tz ?? 'UTC'),
         locale: (body.locale as Locale) ?? 'en',
+        plan,
       });
       res.status(200).json({ leagueId: lg.id, name: lg.name, inviteCode: lg.inviteCode });
       return;

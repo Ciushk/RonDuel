@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
-import { getLocalSession } from '@/lib/session';
+import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface LeagueMember {
   uid: string;
@@ -107,7 +107,7 @@ export default function LeagueAdminPage() {
         setLoading(false);
       });
 
-    fetch(`/api/today?uid=${encodeURIComponent(s.uid)}`)
+    fetch(`/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(getBrowserTimeZone())}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.isPro) setIsPro(true);
