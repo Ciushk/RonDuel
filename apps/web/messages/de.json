@@ -681,7 +681,8 @@
     "newLeague": "+ Neue Liga",
     "notPlayed": "Nicht gespielt",
     "myDuels": "Meine Duelle",
-    "challengeFriend": "Einen Freund herausfordern"
+    "challengeFriend": "Einen Freund herausfordern",
+    "freezeNotice": "Du hast gestern einen Streak-Schutz verwendet. Dein Streak: {days, plural, one {# Tag} other {# Tage}}."
   },
   "account": {
     "saveTitle": "Sichere deine Serie und deinen Platz in RonDuel World",
