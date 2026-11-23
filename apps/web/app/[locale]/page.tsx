@@ -27,6 +27,7 @@ import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
 
@@ -71,6 +72,8 @@ interface TodayStatus {
   streakAtRisk?: boolean;
   freezeNotice?: string | null;
   isPro?: boolean;
+  nickname?: string;
+  ageConfirmed16?: boolean;
   finishedPlaysCount?: number;
   ownedLeaguesCount?: number;
   maxOwnedLeagues?: number;
@@ -82,6 +85,11 @@ interface TodayStatus {
   worldLeague?: LeagueItem | null;
   privateLeagues?: LeagueItem[];
   hasFullFreeLeague?: boolean;
+}
+
+// Nickname the API generates for players who never picked one (see getOrCreateUser).
+function isAutoNickname(nickname: string): boolean {
+  return /^Player_[A-Za-z0-9]{2,8}$/.test(nickname);
 }
 
 function getSecondsUntilMidnight(): number {
@@ -115,6 +123,21 @@ export default function LocaleHomePage() {
   const [countdown, setCountdown] = useState<string>('');
   const [duelError, setDuelError] = useState('');
 
+  // The account is the source of truth: a nickname confirmed earlier (here or on another device)
+  // is adopted instead of asking the player to pick one again after signing in.
+  const applyServerProfile = (data: TodayStatus) => {
+    const session = getLocalSession();
+    if (session.nickname && session.ageConfirmed16) return;
+    const serverNickname = (data.nickname ?? '').trim();
+    if (!serverNickname || isAutoNickname(serverNickname)) return;
+    if (data.ageConfirmed16 === false) return;
+    saveLocalSession({
+      ...session,
+      nickname: session.nickname || serverNickname,
+      ageConfirmed16: true,
+    });
+  };
+
   const loadStatus = () => {
     const session = getLocalSession();
     const tz = getBrowserTimeZone();
@@ -122,6 +145,7 @@ export default function LocaleHomePage() {
       .then((r) => r.json())
       .then((data: TodayStatus) => {
         setStatus(data);
+        applyServerProfile(data);
         if (data.freezeNotice) {
           setToast(data.freezeNotice);
           setTimeout(() => setToast(''), 4000);
@@ -144,11 +168,16 @@ export default function LocaleHomePage() {
   };
 
   useEffect(() => {
-    const session = getLocalSession();
-    setNickname(
-      session.nickname || generateReadableNickname(locale),
-    );
-    loadStatus();
+    let cancelled = false;
+    void syncSessionWithSignedInUser().finally(() => {
+      if (cancelled) return;
+      const session = getLocalSession();
+      setNickname(session.nickname || generateReadableNickname(locale));
+      loadStatus();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [locale]);
 
   // Countdown timer to midnight
@@ -209,9 +238,17 @@ export default function LocaleHomePage() {
       return;
     }
     const session = getLocalSession();
-    if (!session.nickname || !session.ageConfirmed16) {
+    const serverNickname = (status?.nickname ?? '').trim();
+    const confirmedElsewhere =
+      Boolean(serverNickname) &&
+      !isAutoNickname(serverNickname) &&
+      status?.ageConfirmed16 !== false;
+    if ((!session.nickname || !session.ageConfirmed16) && !confirmedElsewhere) {
       setNickSheetOpen(true);
       return;
+    }
+    if (!session.nickname || !session.ageConfirmed16) {
+      saveLocalSession({ ...session, nickname: serverNickname, ageConfirmed16: true });
     }
     router.push(`/${locale}/play`);
   };

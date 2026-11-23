@@ -2,12 +2,13 @@
 
 import {
   ensureAnonymousAuth,
+  getSignedInUid,
   linkAnonymousWithEmail,
   linkAnonymousWithGoogle,
   registerWithEmail,
   updateProfile,
 } from '@/lib/firebase';
-import { getLocalSession, saveLocalSession } from '@/lib/session';
+import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
 export interface SavedAccount {
   uid: string;
@@ -148,4 +149,33 @@ export async function linkSessionWithPassword(params: {
   };
   persistSavedAccount(saved);
   return saved;
+}
+
+/**
+ * Keeps the local session on the account Firebase Auth restored, so signing in (or coming back on
+ * another browser) continues the same profile instead of starting a new guest.
+ */
+export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
+  const authUid = await getSignedInUid();
+  const session = getLocalSession();
+  if (!authUid || authUid === session.uid) return session;
+  // Only a guest session is adopted; a signed-in local account keeps its own uid.
+  if (!session.isAnonymous || session.email) return session;
+  try {
+    await fetch('/api/me/adopt-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromUid: session.uid, toUid: authUid }),
+    });
+  } catch {
+    return session;
+  }
+  const next: LocalSession = {
+    ...session,
+    uid: authUid,
+    isAnonymous: false,
+    expiresAt: undefined,
+  };
+  saveLocalSession(next);
+  return next;
 }

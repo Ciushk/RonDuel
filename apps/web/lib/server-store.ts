@@ -1162,6 +1162,8 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     isAnonymous: user.isAnonymous,
     authProvider: user.authProvider,
     email: user.email,
+    nickname: user.nickname,
+    ageConfirmed16: user.ageConfirmed16,
     finishedPlaysCount,
     ownedLeaguesCount,
     maxOwnedLeagues,

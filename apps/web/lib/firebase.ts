@@ -184,4 +184,28 @@ export async function logoutUser(): Promise<void> {
   await signOut(auth);
 }
 
+/**
+ * Uid of the signed-in account Firebase Auth already restored, if any.
+ * Guests resolve to null, and so does Auth that does not answer in time.
+ */
+export function getSignedInUid(): Promise<string | null> {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    let settled = false;
+    let stop: (() => void) | null = null;
+    const finish = (uid: string | null) => {
+      if (settled) return;
+      settled = true;
+      if (stop) stop();
+      resolve(uid);
+    };
+    const timer = setTimeout(() => finish(null), 4000);
+    stop = onAuthStateChanged(auth, (user) => {
+      clearTimeout(timer);
+      finish(user && !user.isAnonymous ? user.uid : null);
+    });
+  });
+}
+
 export { onAuthStateChanged, updateProfile, type User };
