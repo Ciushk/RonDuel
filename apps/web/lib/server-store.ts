@@ -714,17 +714,34 @@ export function getOrCreateUser(params: {
     user.leagueIds.unshift('lg_world');
   }
   const world = store.leagues['lg_world'];
-  if (world && !world.members[user.uid]) {
-    world.members[user.uid] = {
-      uid: user.uid,
-      nickname: user.nickname,
-      role: 'member',
-      joinedAt: user.createdAt,
-      allTimeScore: 0,
-      roundsPlayed: 0,
-      weeklyWins: 0,
-      bestStreak: 0,
-    };
+  if (world) {
+    if (!world.members[user.uid]) {
+      world.members[user.uid] = {
+        uid: user.uid,
+        nickname: user.nickname,
+        role: 'member',
+        joinedAt: user.createdAt,
+        allTimeScore: 0,
+        roundsPlayed: 0,
+        weeklyWins: 0,
+        bestStreak: 0,
+      };
+    } else {
+      // Keep league member nickname in sync with the (possibly updated) user nickname
+      world.members[user.uid]!.nickname = user.nickname;
+    }
+  }
+  // Cascade current nickname to every league the user belongs to (member + day entries),
+  // so stale nicknames (e.g. "Player_xxxx" from before onboarding) never linger.
+  for (const lid of user.leagueIds) {
+    const lg = store.leagues[lid];
+    if (!lg) continue;
+    if (lg.members[user.uid]) lg.members[user.uid]!.nickname = user.nickname;
+    if (lg.days) {
+      for (const d of Object.keys(lg.days)) {
+        if (lg.days[d]?.[user.uid]) lg.days[d]![user.uid]!.nickname = user.nickname;
+      }
+    }
   }
   if (!user.country) {
     const tz = user.tz || 'UTC';
@@ -852,11 +869,15 @@ export function changeUserNickname(params: { uid: string; newNickname: string })
   user.lastNicknameChangeAt = new Date().toISOString();
   markUserDirty(user.uid);
 
-  // Cascade to leagues where user is a member
+  // Cascade to leagues where user is a member (member + day entries)
   for (const leagueId of user.leagueIds) {
     const lg = store.leagues[leagueId];
-    if (lg && lg.members[params.uid]) {
-      lg.members[params.uid]!.nickname = validNick;
+    if (!lg) continue;
+    if (lg.members[params.uid]) lg.members[params.uid]!.nickname = validNick;
+    if (lg.days) {
+      for (const d of Object.keys(lg.days)) {
+        if (lg.days[d]?.[params.uid]) lg.days[d]![params.uid]!.nickname = validNick;
+      }
     }
   }
 
@@ -891,7 +912,7 @@ export function getGlobalPlayersLeaderboard(dateStr?: string, viewerUid?: string
   const today = rawToday.map((entry, idx) => ({
     rank: idx + 1,
     uid: entry.uid,
-    nickname: sanitizeDisplayName(entry.nickname, entry.uid),
+    nickname: sanitizeDisplayName(store.users[entry.uid]?.nickname || entry.nickname, entry.uid),
     score: entry.score,
     totalMs: entry.totalMs,
     emojiLine: entry.emojiLine || '',
@@ -913,7 +934,7 @@ export function getGlobalPlayersLeaderboard(dateStr?: string, viewerUid?: string
   const allTime = rawAllTime.map((member, idx) => ({
     rank: idx + 1,
     uid: member.uid,
-    nickname: sanitizeDisplayName(member.nickname, member.uid),
+    nickname: sanitizeDisplayName(store.users[member.uid]?.nickname || member.nickname, member.uid),
     allTimeScore: member.allTimeScore,
     roundsPlayed: member.roundsPlayed,
     isCurrentUser: Boolean(viewerUid && member.uid === viewerUid),
@@ -1499,6 +1520,7 @@ export function finishRound(
         if (!league) continue;
         const member = league.members[uid];
         if (!member) continue;
+        member.nickname = user.nickname;
         member.allTimeScore += play.totalScore;
         member.roundsPlayed += 1;
         member.bestStreak = Math.max(member.bestStreak, user.streakBest);
@@ -1507,7 +1529,7 @@ export function finishRound(
         if (!league.days[play.date]) league.days[play.date] = {};
         league.days[play.date]![uid] = {
           uid,
-          nickname: member.nickname,
+          nickname: user.nickname,
           score: play.totalScore,
           totalMs: play.totalMs,
           emojiLine: play.emojiLine,
@@ -1856,7 +1878,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const todayScores = filteredToday.map((entry, idx) => ({
     rank: idx + 1,
     uid: entry.uid,
-    nickname: sanitizeDisplayName(entry.nickname, entry.uid),
+    nickname: sanitizeDisplayName(store.users[entry.uid]?.nickname || entry.nickname, entry.uid),
     score: viewerFinishedToday || !isWorld ? entry.score : null,
     totalMs: viewerFinishedToday || !isWorld ? entry.totalMs : null,
     emojiLine: viewerFinishedToday || !isWorld ? entry.emojiLine : null,
@@ -1886,7 +1908,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const allTime = allTimeMembers.map((member, idx) => ({
     rank: idx + 1,
     uid: member.uid,
-    nickname: sanitizeDisplayName(member.nickname, member.uid),
+    nickname: sanitizeDisplayName(store.users[member.uid]?.nickname || member.nickname, member.uid),
     allTimeScore: member.allTimeScore,
     roundsPlayed: member.roundsPlayed,
     joinedAt: member.joinedAt,
@@ -2877,6 +2899,17 @@ export function upgradeAccount(params: {
   const provider = normalizeAuthProvider(params.provider);
   if (params.nickname?.trim()) {
     user.nickname = params.nickname.trim();
+    // Cascade nickname to leagues
+    for (const lid of user.leagueIds) {
+      const lg = store.leagues[lid];
+      if (!lg) continue;
+      if (lg.members[params.uid]) lg.members[params.uid]!.nickname = user.nickname;
+      if (lg.days) {
+        for (const d of Object.keys(lg.days)) {
+          if (lg.days[d]?.[params.uid]) lg.days[d]![params.uid]!.nickname = user.nickname;
+        }
+      }
+    }
   }
 
   const namedTarget = params.targetUid ? store.users[params.targetUid] : undefined;
