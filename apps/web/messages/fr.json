@@ -681,7 +681,8 @@
     "newLeague": "+ Nouvelle ligue",
     "notPlayed": "Non joué",
     "myDuels": "Mes duels",
-    "challengeFriend": "Défier un ami"
+    "challengeFriend": "Défier un ami",
+    "freezeNotice": "Vous avez utilisé un bouclier de série hier. Votre série : {days, plural, one {# jour} other {# jours}}."
   },
   "account": {
     "saveTitle": "Sauvegarde ta série et ta place dans RonDuel World",

@@ -70,7 +70,7 @@ interface TodayStatus {
   streakBest: number;
   freezes?: number;
   streakAtRisk?: boolean;
-  freezeNotice?: string | null;
+  freezeUsedYesterday?: boolean;
   isPro?: boolean;
   nickname?: string;
   ageConfirmed16?: boolean;
@@ -146,8 +146,8 @@ export default function LocaleHomePage() {
       .then((data: TodayStatus) => {
         setStatus(data);
         applyServerProfile(data);
-        if (data.freezeNotice) {
-          setToast(data.freezeNotice);
+        if (data.freezeUsedYesterday) {
+          setToast(t('home.freezeNotice', { days: data.streakCurrent ?? 0 }));
           setTimeout(() => setToast(''), 4000);
         }
         try {

@@ -681,7 +681,8 @@
     "newLeague": "+ Nuova lega",
     "notPlayed": "Non giocato",
     "myDuels": "I miei duelli",
-    "challengeFriend": "Sfida un amico"
+    "challengeFriend": "Sfida un amico",
+    "freezeNotice": "Ieri hai usato uno scudo salva-serie. La tua serie: {days, plural, one {# giorno} other {# giorni}}."
   },
   "account": {
     "saveTitle": "Salva la tua serie e la tua posizione in RonDuel World",

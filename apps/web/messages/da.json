@@ -681,7 +681,8 @@
     "newLeague": "+ Ny liga",
     "notPlayed": "Ikke spillet",
     "myDuels": "Mine dueller",
-    "challengeFriend": "Udfordr en ven"
+    "challengeFriend": "Udfordr en ven",
+    "freezeNotice": "Du brugte et streak-skjold i går. Din streak: {days, plural, one {# dag} other {# dage}}."
   },
   "account": {
     "saveTitle": "Gem din stime og din plads i RonDuel World",

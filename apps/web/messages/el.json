@@ -681,7 +681,8 @@
     "newLeague": "+ Νέα λίγκα",
     "notPlayed": "Δεν παίχτηκε",
     "myDuels": "Οι μονομαχίες μου",
-    "challengeFriend": "Προκάλεσε έναν φίλο"
+    "challengeFriend": "Προκάλεσε έναν φίλο",
+    "freezeNotice": "Χθες χρησιμοποίησες ασπίδα σερί. Το σερί σου: {days, plural, one {# ημέρα} other {# ημέρες}}."
   },
   "account": {
     "saveTitle": "Αποθήκευσε το σερί σου και τη θέση σου στο RonDuel World",

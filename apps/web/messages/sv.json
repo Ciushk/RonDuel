@@ -681,7 +681,8 @@
     "newLeague": "+ Ny liga",
     "notPlayed": "Inte spelat",
     "myDuels": "Mina dueller",
-    "challengeFriend": "Utmana en vän"
+    "challengeFriend": "Utmana en vän",
+    "freezeNotice": "Du använde ett svitskydd igår. Din svit: {days, plural, one {# dag} other {# dagar}}."
   },
   "account": {
     "saveTitle": "Spara din svit och din plats i RonDuel World",

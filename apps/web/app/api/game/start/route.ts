@@ -2,6 +2,7 @@ import { LOCALES, type Locale } from '@ronduel/shared';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { apiErrorResponse } from '@/lib/api-route';
 import { startRound } from '@/lib/server-store';
 
 const StartSchema = z.object({
@@ -29,9 +30,6 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(result);
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Bad request' },
-      { status: 400 },
-    );
+    return apiErrorResponse(err);
   }
 }

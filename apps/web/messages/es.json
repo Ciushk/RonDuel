@@ -681,7 +681,8 @@
     "newLeague": "+ Nueva liga",
     "notPlayed": "No jugado",
     "myDuels": "Mis duelos",
-    "challengeFriend": "Desafiar a un amigo"
+    "challengeFriend": "Desafiar a un amigo",
+    "freezeNotice": "Ayer usaste un escudo de racha. Tu racha: {days, plural, one {# día} other {# días}}."
   },
   "account": {
     "saveTitle": "Guarda tu racha y tu puesto en RonDuel World",

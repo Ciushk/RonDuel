@@ -681,7 +681,8 @@
     "newLeague": "+ Nova liga",
     "notPlayed": "Nije odigrano",
     "myDuels": "Moji dvoboji",
-    "challengeFriend": "Izazovi prijatelja"
+    "challengeFriend": "Izazovi prijatelja",
+    "freezeNotice": "Jučer si iskoristio/la štit za niz. Tvoj niz: {days, plural, one {# dan} other {# dana}}."
   },
   "account": {
     "saveTitle": "Spremi svoj niz i svoje mjesto u RonDuel Worldu",

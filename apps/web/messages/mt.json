@@ -681,7 +681,8 @@
     "newLeague": "+ Kampjonat ġdid",
     "notPlayed": "Mhux milgħub",
     "myDuels": "Id-dwellijiet tiegħi",
-    "challengeFriend": "Sfida lil ħabib"
+    "challengeFriend": "Sfida lil ħabib",
+    "freezeNotice": "Użajt tarka tas-sensiela lbieraħ. Is-sensiela tiegħek: {days, plural, one {ġurnata #} other {# ijiem}}."
   },
   "account": {
     "saveTitle": "Salva s-serje tiegħek u l-post tiegħek f'RonDuel World",

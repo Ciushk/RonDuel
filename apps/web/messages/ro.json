@@ -681,7 +681,8 @@
     "newLeague": "+ Ligă nouă",
     "notPlayed": "Nejucat",
     "myDuels": "Duelurile mele",
-    "challengeFriend": "Provoacă un prieten"
+    "challengeFriend": "Provoacă un prieten",
+    "freezeNotice": "Ai folosit un scut ieri. Seria ta: {days, plural, one {# zi} few {# zile} other {# de zile}}."
   },
   "account": {
     "saveTitle": "Salvează-ți seria și locul în RonDuel World",

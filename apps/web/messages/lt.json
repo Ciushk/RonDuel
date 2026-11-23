@@ -681,7 +681,8 @@
     "newLeague": "+ Nauja lyga",
     "notPlayed": "Nesužaista",
     "myDuels": "Mano dvikovos",
-    "challengeFriend": "Mesti iššūkį draugui"
+    "challengeFriend": "Mesti iššūkį draugui",
+    "freezeNotice": "Vakar panaudojai serijos apsaugą. Tavo serija: {days, plural, one {# diena} other {# dienų}}."
   },
   "account": {
     "saveTitle": "Išsaugok savo seriją ir vietą RonDuel World",

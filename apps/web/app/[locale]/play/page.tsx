@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Card, Chip, TimerBar, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface ClientItem {
@@ -49,25 +50,42 @@ export default function PlayPage() {
   const [submitting, setSubmitting] = useState(false);
   const [todayInfo, setTodayInfo] = useState<{ roundNumber: number; theme: string } | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const [answerError, setAnswerError] = useState<string | null>(null);
+  const [roundError, setRoundError] = useState<string | null>(null);
 
   const deadlineRef = useRef<number>(0);
   const clientAnswersRef = useRef<Array<{ index: number; points: number; emoji: string }>>([]);
+  const streakRef = useRef<{ current: number; best: number }>({ current: 0, best: 0 });
 
-  const beginRound = useCallback(async () => {
-    clientAnswersRef.current = [];
+  const beginRound = useCallback(async (resync = false) => {
+    if (!resync) clientAnswersRef.current = [];
     const session = getLocalSession();
-    const res = await fetch('/api/game/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uid: session.uid,
-        tz: getBrowserTimeZone(),
-        locale,
-        nickname: session.nickname || undefined,
-        relaxedTimer: session.relaxedTimer,
-      }),
-    });
-    const data = await res.json();
+    setRoundError(null);
+    let data: any;
+    try {
+      const res = await fetch('/api/game/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: session.uid,
+          tz: getBrowserTimeZone(),
+          locale,
+          nickname: session.nickname || undefined,
+          relaxedTimer: session.relaxedTimer,
+        }),
+      });
+      data = await res.json().catch(() => null);
+      // 409 carries { alreadyFinished: true, playId }, handled below.
+      if (!data || (!data.alreadyFinished && (!res.ok || !data.playId || !data.item))) {
+        setRoundError(apiErrorMessage(t, data, 'common.networkErrorRetry'));
+        setPhase('ready');
+        return;
+      }
+    } catch {
+      setRoundError(t('common.networkErrorRetry'));
+      setPhase('ready');
+      return;
+    }
     const returnTo = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnTo') : null;
     if (data.alreadyFinished && data.playId) {
       router.replace(
@@ -83,9 +101,14 @@ export default function PlayPage() {
     setOrderList(data.item.options);
     setRemainingMs(data.remainingMs);
     deadlineRef.current = Date.now() + data.remainingMs;
+    setFeedback(null);
+    setSelectedChoice(null);
+    setLockedIndex(null);
+    setIsFastAnswer(false);
+    setAnswerError(null);
     setPhase('playing');
     trackEvent('round_started', { play_id: data.playId });
-  }, [locale, router]);
+  }, [locale, router, t]);
 
   useEffect(() => {
     const session = getLocalSession();
@@ -93,6 +116,9 @@ export default function PlayPage() {
     fetch(`/api/game/status?uid=${encodeURIComponent(session.uid)}&tz=${encodeURIComponent(tz)}`)
       .then((r) => r.json())
       .then((d) => {
+        if (typeof d.streakCurrent === 'number') {
+          streakRef.current = { current: d.streakCurrent, best: d.streakBest ?? d.streakCurrent };
+        }
         if (d.roundNumber) {
           setTodayInfo({ roundNumber: d.roundNumber, theme: d.topicOfTheDay || d.theme });
         }
@@ -134,17 +160,44 @@ export default function PlayPage() {
       setIsFastAnswer(isFast);
 
       const session = getLocalSession();
-      const res = await fetch('/api/game/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: session.uid,
-          playId,
-          index: item.index,
-          choice,
-        }),
-      });
-      const data: AnswerFeedback = await res.json();
+      setAnswerError(null);
+      let data: AnswerFeedback;
+      try {
+        const res = await fetch('/api/game/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: session.uid,
+            playId,
+            index: item.index,
+            choice,
+          }),
+        });
+        const body = await res.json().catch(() => null);
+        if (!res.ok || !body || typeof body.correct !== 'boolean') {
+          const code = body?.code;
+          if (
+            code === 'ITEM_ALREADY_ANSWERED' ||
+            code === 'ITEM_NOT_SERVED' ||
+            code === 'PLAY_NOT_FOUND' ||
+            code === 'PLAY_ALREADY_FINISHED'
+          ) {
+            // Server state differs from ours (lost response, restarted server): re-sync.
+            setSubmitting(false);
+            await beginRound(true);
+            return;
+          }
+          throw new Error(apiErrorMessage(t, body, 'common.networkErrorRetry'));
+        }
+        data = body as AnswerFeedback;
+      } catch (err) {
+        // Unlock the question so the player can tap again; never end the round on an error.
+        setSubmitting(false);
+        setSelectedChoice(null);
+        setLockedIndex(null);
+        setAnswerError(err instanceof Error && err.message ? err.message : t('common.networkErrorRetry'));
+        return;
+      }
       setFeedback(data);
       setSubmitting(false);
 
@@ -197,8 +250,8 @@ export default function PlayPage() {
                   totalScore,
                   totalMs: 0,
                   emojiLine,
-                  streakCurrent: 1,
-                  streakBest: 1,
+                  streakCurrent: streakRef.current.current + 1,
+                  streakBest: Math.max(streakRef.current.best, streakRef.current.current + 1),
                   review: [],
                   leagueRanks: [],
                   primaryLeague: null,
@@ -213,11 +266,20 @@ export default function PlayPage() {
             round_number: todayInfo?.roundNumber,
           });
 
-          await fetch('/api/game/finish', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
-          }).catch(() => {});
+          // Retry a few times: if finish never reaches the server the result page has no data.
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+              const finishRes = await fetch('/api/game/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
+              });
+              if (finishRes.ok) break;
+            } catch {
+              // network error, retry below
+            }
+            await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+          }
 
           const returnTo =
             typeof window !== 'undefined'
@@ -231,7 +293,7 @@ export default function PlayPage() {
         }
       }, 1500);
     },
-    [item, playId, submitting, feedback, locale, router, todayInfo?.roundNumber, t],
+    [item, playId, submitting, feedback, locale, router, todayInfo?.roundNumber, t, beginRound],
   );
 
   // Item countdown tick
@@ -281,6 +343,11 @@ export default function PlayPage() {
             )}
             <h1 className="font-display text-3xl font-extrabold">{t('play.readyTitle')}</h1>
             <p className="text-muted text-sm">{t('play.readySubtitle')}</p>
+            {roundError && (
+              <p role="alert" className="text-wrong text-sm font-bold">
+                {roundError}
+              </p>
+            )}
             <Button
               fullWidth
               size="lg"
@@ -502,6 +569,12 @@ export default function PlayPage() {
           </div>
         )}
       </Card>
+
+      {answerError && (
+        <p role="alert" className="text-wrong text-center text-sm font-bold">
+          {answerError}
+        </p>
+      )}
 
       <div className="min-h-10 text-center">
         {feedback && (

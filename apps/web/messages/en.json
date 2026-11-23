@@ -681,7 +681,8 @@
     "newLeague": "+ New league",
     "notPlayed": "Not played",
     "myDuels": "My duels",
-    "challengeFriend": "Challenge a friend"
+    "challengeFriend": "Challenge a friend",
+    "freezeNotice": "You used a streak shield yesterday. Your streak: {days, plural, one {# day} other {# days}}."
   },
   "account": {
     "saveTitle": "Save your streak and your spot in RonDuel World",
