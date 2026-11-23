@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {#-daagse streak} other {#-daagse streak}}",
     "shareBeatMe": "Versla mij maar eens → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Volgende ronde",
+    "countdownAria": "De volgende ronde is over ongeveer {time} beschikbaar (uren:minuten)",
+    "tomorrowTeaser": "Thema van morgen: {theme}",
+    "milestoneReached": "Reeks van {days} dagen behaald!",
+    "streakToMilestone": "{days, plural, one {dag te gaan} other {dagen te gaan}} tot je reeks van {milestone} dagen",
+    "streakProgressAria": "Voortgang naar een reeks van {milestone} dagen",
+    "inviteCta": "Nodig 2 vrienden uit en kijk wie er vandaag wint",
+    "inviteFriends": "Vrienden uitnodigen",
+    "inviteShareText": "Speel de RonDuel-ronde van vandaag met me en kijk wie er wint: {url}"
+  },
   "league": {
     "joinTitle": "Je bent uitgenodigd voor {name}",
     "joinCta": "Meedoen & speel vandaag",
