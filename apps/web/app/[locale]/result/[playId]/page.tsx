@@ -11,10 +11,12 @@ import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { EmojiTiles } from '@/components/result/EmojiTiles';
+import { ResultTile, tileKindFromEmoji } from '@/components/result/ResultTile';
 import { ScoreCountUp } from '@/components/result/ScoreCountUp';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { stripEmoji } from '@/lib/strip-emoji';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface LeagueRankInfo {
@@ -557,16 +559,27 @@ export default function ResultPage() {
           else if (correctCount === 5) cheerKey = 'result.cheer5';
           else if (correctCount >= 3) cheerKey = 'result.cheer3_4';
           else if (correctCount >= 1) cheerKey = 'result.cheer1_2';
-          return <p className="text-muted text-sm font-bold">{t(cheerKey)}</p>;
+          return <p className="text-muted text-sm font-bold">{stripEmoji(t(cheerKey))}</p>;
         })()}
 
         {/* Emoji Tiles with legend */}
         {showTiles && (
           <div className="space-y-1.5">
             <EmojiTiles emojiLine={data.emojiLine} animated={animated} />
-            <p className="text-muted text-xs font-medium tracking-normal">
-              {t('result.emojiLegend')}
-            </p>
+            <ul className="text-muted flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium">
+              <li className="inline-flex items-center gap-1.5">
+                <ResultTile kind="fast" size="sm" />
+                {t('polish.legendFast')}
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ResultTile kind="correct" size="sm" />
+                {t('polish.legendCorrect')}
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <ResultTile kind="wrong" size="sm" />
+                {t('polish.legendWrong')}
+              </li>
+            </ul>
           </div>
         )}
 
@@ -777,8 +790,18 @@ export default function ResultPage() {
             <Card key={item.index} variant="subtle" className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-bold">{item.prompt}</span>
-                <span className="rd-tabular shrink-0 text-sm font-bold">
-                  {item.emoji} +{item.points}
+                <span className="rd-tabular inline-flex shrink-0 items-center gap-1.5 text-sm font-bold">
+                  <ResultTile kind={tileKindFromEmoji(item.emoji)} size="sm" />
+                  <span className="sr-only">
+                    {t(
+                      item.emoji === '⚡'
+                        ? 'polish.legendFast'
+                        : item.emoji === '🟩'
+                          ? 'polish.legendCorrect'
+                          : 'polish.legendWrong',
+                    )}
+                  </span>
+                  +{item.points}
                 </span>
               </div>
 
