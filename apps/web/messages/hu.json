@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {# napos sorozat} other {# napos sorozat}}",
     "shareBeatMe": "Győzz le engem → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Következő forduló",
+    "countdownAria": "A következő forduló körülbelül {time} múlva nyílik meg (óra:perc)",
+    "tomorrowTeaser": "Holnap témája: {theme}",
+    "milestoneReached": "Megvan a {days} napos sorozat!",
+    "streakToMilestone": "{days, plural, one {Még # nap} other {Még # nap}} a {milestone} napos sorozatig",
+    "streakProgressAria": "Haladás a {milestone} napos sorozat felé",
+    "inviteCta": "Hívj meg 2 barátot, és nézzétek meg, ki nyer ma",
+    "inviteFriends": "Barátok meghívása",
+    "inviteShareText": "Játssz velem a mai RonDuel-fordulóban, és nézzük meg, ki nyer: {url}"
+  },
   "league": {
     "joinTitle": "Meghívást kaptál a következő ligába: {name}",
     "joinCta": "Csatlakozás és mai forduló indítása",
