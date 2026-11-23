@@ -681,7 +681,8 @@
     "newLeague": "+ Uusi liiga",
     "notPlayed": "Ei pelattu",
     "myDuels": "Kaksintaisteluni",
-    "challengeFriend": "Haasta ystävä"
+    "challengeFriend": "Haasta ystävä",
+    "freezeNotice": "Käytit eilen putkisuojaa. Putkesi: {days, plural, one {# päivä} other {# päivää}}."
   },
   "account": {
     "saveTitle": "Tallenna voittoputkesi ja paikkasi RonDuel Worldissa",
