@@ -681,7 +681,8 @@
     "newLeague": "+ Jauna līga",
     "notPlayed": "Nav spēlēts",
     "myDuels": "Manas divcīņas",
-    "challengeFriend": "Izaicināt draugu"
+    "challengeFriend": "Izaicināt draugu",
+    "freezeNotice": "Vakar izmantoji sērijas vairogu. Tava sērija: {days, plural, one {# diena} other {# dienas}}."
   },
   "account": {
     "saveTitle": "Saglabā savu sēriju un vietu RonDuel World",
