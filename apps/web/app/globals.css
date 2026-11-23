@@ -546,6 +546,21 @@ html[data-theme='dark'] {
   animation: rd-flame-bump 420ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+@keyframes rd-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.rd-slide-in {
+  animation: rd-slide-in 260ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
 @keyframes rd-row-slide {
   0% {
     opacity: 0;
