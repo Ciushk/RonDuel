@@ -681,7 +681,8 @@
     "newLeague": "+ Sraith nua",
     "notPlayed": "Gan imirt",
     "myDuels": "Mo chomhraic",
-    "challengeFriend": "Tabhair dúshlán do chara"
+    "challengeFriend": "Tabhair dúshlán do chara",
+    "freezeNotice": "D'úsáid tú sciath sraithe inné. Do shraith: {days, plural, one {# lá} other {# lá}}."
   },
   "account": {
     "saveTitle": "Sábháil do stéig agus d'áit i RonDuel World",
