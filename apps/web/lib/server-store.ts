@@ -1168,9 +1168,8 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     (user.freezes ?? 0) === 0 &&
     user.streakCurrent > 0;
 
-  const freezeNotice = user.freezeUsedYesterday
-    ? `\uD83E\uCA8A \u021Ai-am folosit un scut ieri. Seria ta: ${user.streakCurrent} zile.`
-    : null;
+  // The client builds the (translated) message from this flag and streakCurrent.
+  const freezeUsedYesterday = Boolean(user.freezeUsedYesterday);
   if (user.freezeUsedYesterday) {
     user.freezeUsedYesterday = false;
   }
@@ -1187,7 +1186,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     streakBest: user.streakBest,
     freezes: user.freezes ?? 0,
     streakAtRisk,
-    freezeNotice,
+    freezeUsedYesterday,
     isPro: user.pro.active,
     isAnonymous: user.isAnonymous,
     authProvider: user.authProvider,
