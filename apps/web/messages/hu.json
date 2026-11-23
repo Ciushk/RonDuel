@@ -681,7 +681,8 @@
     "newLeague": "+ Új liga",
     "notPlayed": "Nem játszott",
     "myDuels": "Párbajaim",
-    "challengeFriend": "Hívd ki egy barátodat"
+    "challengeFriend": "Hívd ki egy barátodat",
+    "freezeNotice": "Tegnap használtál egy sorozatvédőt. A sorozatod: {days, plural, one {# nap} other {# nap}}."
   },
   "account": {
     "saveTitle": "Mentsd el a sorozatodat és a helyedet a RonDuel Worldben",
