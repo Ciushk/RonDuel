@@ -681,7 +681,8 @@
     "newLeague": "+ Nova liga",
     "notPlayed": "Não jogado",
     "myDuels": "Os meus duelos",
-    "challengeFriend": "Desafiar um amigo"
+    "challengeFriend": "Desafiar um amigo",
+    "freezeNotice": "Usaste um escudo de sequência ontem. A tua sequência: {days, plural, one {# dia} other {# dias}}."
   },
   "account": {
     "saveTitle": "Salva a tua sequência e o teu lugar no RonDuel World",
