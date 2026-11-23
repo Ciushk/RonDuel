@@ -27,6 +27,7 @@ import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { stripEmoji } from '@/lib/strip-emoji';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
@@ -371,9 +372,11 @@ export default function LocaleHomePage() {
             <>
               <Chip tone="volt">{t('brand.roundBadge', { number: status.roundNumber })}</Chip>
               <Chip tone="neutral">
-                {status.themeKey
-                  ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
-                  : t('themes.worldScience')}
+                {stripEmoji(
+                  status.themeKey
+                    ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
+                    : t('themes.worldScience'),
+                )}
               </Chip>
             </>
           ) : (
