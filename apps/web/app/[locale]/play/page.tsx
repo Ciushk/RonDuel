@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Chip, TimerBar, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { stripEmoji } from '@/lib/strip-emoji';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface ClientItem {
@@ -51,6 +52,9 @@ export default function PlayPage() {
   const [todayInfo, setTodayInfo] = useState<{ roundNumber: number; theme: string } | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const [answerError, setAnswerError] = useState<string | null>(null);
+  // Per-question outcome for the segmented progress bar, and the current fast-answer combo.
+  const [outcomes, setOutcomes] = useState<Array<'fast' | 'correct' | 'wrong'>>([]);
+  const [combo, setCombo] = useState(0);
   const [roundError, setRoundError] = useState<string | null>(null);
 
   const deadlineRef = useRef<number>(0);
@@ -58,7 +62,11 @@ export default function PlayPage() {
   const streakRef = useRef<{ current: number; best: number }>({ current: 0, best: 0 });
 
   const beginRound = useCallback(async (resync = false) => {
-    if (!resync) clientAnswersRef.current = [];
+    if (!resync) {
+      clientAnswersRef.current = [];
+      setOutcomes([]);
+      setCombo(0);
+    }
     const session = getLocalSession();
     setRoundError(null);
     let data: any;
@@ -200,6 +208,8 @@ export default function PlayPage() {
       }
       setFeedback(data);
       setSubmitting(false);
+      setOutcomes((prev) => [...prev, data.correct ? (data.emoji === '⚡' ? 'fast' : 'correct') : 'wrong']);
+      setCombo((c) => (data.correct && data.emoji === '⚡' ? c + 1 : 0));
 
       const announcement = data.timedOut
         ? t('play.srTimeout')
@@ -337,7 +347,7 @@ export default function PlayPage() {
             {todayInfo && (
               <div className="flex justify-center">
                 <Chip tone="volt">
-                  {t('brand.roundBadge', { number: todayInfo.roundNumber })} · {todayInfo.theme}
+                  {t('brand.roundBadge', { number: todayInfo.roundNumber })} · {stripEmoji(todayInfo.theme)}
                 </Chip>
               </div>
             )}
@@ -386,7 +396,7 @@ export default function PlayPage() {
                 {t('brand.roundBadge', { number: todayInfo.roundNumber })}
               </span>
               <span className="font-display text-ink text-xl font-extrabold">
-                {todayInfo.theme}
+                {stripEmoji(todayInfo.theme)}
               </span>
             </div>
           )}
@@ -419,14 +429,29 @@ export default function PlayPage() {
         aria-valuemin={0}
         aria-valuemax={totalItems}
         aria-valuenow={Math.min(totalItems, item.index + (feedback ? 1 : 0))}
-        className="bg-surface-2 border-border-subtle h-2 w-full overflow-hidden rounded-full border"
+        className="flex w-full items-center gap-1.5"
       >
-        <div
-          className="rd-seam h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${Math.min(100, ((item.index + (feedback ? 1 : 0)) / Math.max(1, totalItems)) * 100)}%`,
-          }}
-        />
+        {Array.from({ length: Math.max(1, totalItems) }, (_, i) => {
+          const outcome = outcomes[i];
+          const isCurrent = i === item.index && !feedback;
+          return (
+            <span
+              key={i}
+              className={[
+                'border-border-subtle h-2.5 flex-1 rounded-full border transition-colors duration-300',
+                outcome === 'fast'
+                  ? 'bg-volt border-border'
+                  : outcome === 'correct'
+                    ? 'bg-correct border-border'
+                    : outcome === 'wrong'
+                      ? 'bg-wrong border-border'
+                      : isCurrent
+                        ? 'bg-duel border-border'
+                        : 'bg-surface-2',
+              ].join(' ')}
+            />
+          );
+        })}
       </div>
 
       <div className="flex items-center justify-between gap-2">
@@ -447,7 +472,7 @@ export default function PlayPage() {
         label={t('play.timeLeft')}
       />
 
-      <Card className="space-y-5">
+      <Card key={item.index} className="rd-slide-in space-y-5">
         <h1 className="font-display text-2xl font-extrabold leading-snug">{item.prompt}</h1>
 
         {item.type === 'order' ? (
@@ -578,7 +603,7 @@ export default function PlayPage() {
 
       <div className="min-h-10 text-center">
         {feedback && (
-          <div className="inline-flex items-center gap-2">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2">
             <Chip tone={feedback.correct ? 'volt' : 'wrong'}>
               {feedback.correct && <Lightning size={14} weight="fill" aria-hidden="true" />}
               {feedback.timedOut
@@ -587,6 +612,12 @@ export default function PlayPage() {
                   ? `${t('play.correct')} +${feedback.points}${isFastAnswer ? ` · ${t('play.fastBonus')}` : ''}`
                   : t('play.wrong')}
             </Chip>
+            {feedback.correct && combo >= 2 && (
+              <Chip tone="blue" className="rd-pop-in font-black">
+                <Lightning size={14} weight="fill" aria-hidden="true" />
+                {t('polish.combo', { count: combo })}
+              </Chip>
+            )}
           </div>
         )}
       </div>
