@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {σερί # ημέρας} other {σερί # ημερών}}",
     "shareBeatMe": "Νίκησέ με αν μπορείς → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Επόμενος γύρος",
+    "countdownAria": "Ο επόμενος γύρος ξεκλειδώνει σε περίπου {time} (ώρες:λεπτά)",
+    "tomorrowTeaser": "Το αυριανό θέμα: {theme}",
+    "milestoneReached": "Συμπλήρωσες σερί {days} ημερών!",
+    "streakToMilestone": "{days, plural, one {ακόμη # ημέρα} other {ακόμη # ημέρες}} για να φτάσεις σε σερί {milestone} ημερών",
+    "streakProgressAria": "Πρόοδος προς σερί {milestone} ημερών",
+    "inviteCta": "Κάλεσε 2 φίλους και δες ποιος θα κερδίσει σήμερα",
+    "inviteFriends": "Κάλεσε φίλους",
+    "inviteShareText": "Παίξε μαζί μου τον σημερινό γύρο του RonDuel και δες ποιος θα κερδίσει: {url}"
+  },
   "league": {
     "joinTitle": "Έχεις πρόσκληση στο {name}",
     "joinCta": "Μπες & παίξε τον σημερινό γύρο",
