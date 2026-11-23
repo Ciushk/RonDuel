@@ -681,7 +681,8 @@
     "newLeague": "+ Nowa liga",
     "notPlayed": "Nierozegrane",
     "myDuels": "Moje pojedynki",
-    "challengeFriend": "Wyzwij znajomego"
+    "challengeFriend": "Wyzwij znajomego",
+    "freezeNotice": "Wczoraj użyto osłony serii. Twoja seria: {days, plural, one {# dzień} other {# dni}}."
   },
   "account": {
     "saveTitle": "Zapisz swoją serię i miejsce w RonDuel World",
