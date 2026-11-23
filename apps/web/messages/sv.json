@@ -681,7 +681,9 @@
     "newLeague": "+ Ny liga",
     "notPlayed": "Inte spelat",
     "myDuels": "Mina dueller",
-    "challengeFriend": "Utmana en vän"
+    "challengeFriend": "Utmana en vän",
+    "duelAnytime": "Men du kan alltid ta en duell med en vän.",
+    "createDuel": "Skapa en duell"
   },
   "account": {
     "saveTitle": "Spara din svit och din plats i RonDuel World",

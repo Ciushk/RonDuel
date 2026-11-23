@@ -681,7 +681,9 @@
     "newLeague": "+ Нова лига",
     "notPlayed": "Не е изигран",
     "myDuels": "Моите дуели",
-    "challengeFriend": "Предизвикай приятел"
+    "challengeFriend": "Предизвикай приятел",
+    "duelAnytime": "Но винаги можеш да имаш дуел с приятел.",
+    "createDuel": "Създай дуел"
   },
   "account": {
     "saveTitle": "Запази серията си и мястото си в RonDuel World",

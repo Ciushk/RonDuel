@@ -681,7 +681,9 @@
     "newLeague": "+ Uusi liiga",
     "notPlayed": "Ei pelattu",
     "myDuels": "Kaksintaisteluni",
-    "challengeFriend": "Haasta ystävä"
+    "challengeFriend": "Haasta ystävä",
+    "duelAnytime": "Mutta voit aina käydä kaksintaistelun ystävän kanssa.",
+    "createDuel": "Luo kaksintaistelu"
   },
   "account": {
     "saveTitle": "Tallenna voittoputkesi ja paikkasi RonDuel Worldissa",

@@ -681,7 +681,9 @@
     "newLeague": "+ Sraith nua",
     "notPlayed": "Gan imirt",
     "myDuels": "Mo chomhraic",
-    "challengeFriend": "Tabhair dúshlán do chara"
+    "challengeFriend": "Tabhair dúshlán do chara",
+    "duelAnytime": "Ach is féidir leat comhrac a dhéanamh le cara am ar bith.",
+    "createDuel": "Cruthaigh comhrac"
   },
   "account": {
     "saveTitle": "Sábháil do stéig agus d'áit i RonDuel World",

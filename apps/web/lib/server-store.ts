@@ -980,6 +980,7 @@ export function getLeagueLeaderboard(dateStr?: string) {
         id: l.id,
         name: l.name,
         themeEmoji: l.themeEmoji || '🏆',
+        themeColor: l.themeColor || 'default',
         memberCount,
         maxMembers: l.maxMembers,
         playedTodayCount,
@@ -1152,6 +1153,8 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
       myNickname: user.nickname,
       intlRank,
       intlTotalPoints,
+      themeEmoji: l.themeEmoji || '🏆',
+      themeColor: l.themeColor || 'default',
       initials,
     };
   });
@@ -1753,8 +1756,7 @@ export function createLeague(params: {
     throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
 
-  const isProLeague =
-    user.pro.active || params.plan === 'pro_trial' || params.plan === 'pro';
+  const isProLeague = user.pro.active || params.plan === 'pro_trial' || params.plan === 'pro';
   const maxMembers = isProLeague ? PRO_LIMITS.maxMembersPerLeague : FREE_LIMITS.maxMembersPerLeague;
 
   const league: LeagueRecord = {

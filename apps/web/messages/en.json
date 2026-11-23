@@ -681,7 +681,9 @@
     "newLeague": "+ New league",
     "notPlayed": "Not played",
     "myDuels": "My duels",
-    "challengeFriend": "Challenge a friend"
+    "challengeFriend": "Challenge a friend",
+    "duelAnytime": "But you can always play a duel with a friend.",
+    "createDuel": "Create a duel"
   },
   "account": {
     "saveTitle": "Save your streak and your spot in RonDuel World",

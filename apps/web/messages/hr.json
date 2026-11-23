@@ -681,7 +681,9 @@
     "newLeague": "+ Nova liga",
     "notPlayed": "Nije odigrano",
     "myDuels": "Moji dvoboji",
-    "challengeFriend": "Izazovi prijatelja"
+    "challengeFriend": "Izazovi prijatelja",
+    "duelAnytime": "Ali uvijek možeš imati dvoboj s prijateljem.",
+    "createDuel": "Stvori dvoboj"
   },
   "account": {
     "saveTitle": "Spremi svoj niz i svoje mjesto u RonDuel Worldu",

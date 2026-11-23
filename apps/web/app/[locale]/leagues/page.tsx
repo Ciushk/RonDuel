@@ -16,6 +16,7 @@ import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip } from '@/components/ui';
+import { getLeagueTheme } from '@/lib/league-theme';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface GlobalPlayerItem {
@@ -60,6 +61,7 @@ interface LeagueLeaderboardItem {
   id: string;
   name: string;
   themeEmoji?: string;
+  themeColor?: string;
   memberCount: number;
   maxMembers?: number;
   playedTodayCount: number;
@@ -654,7 +656,15 @@ export default function LeaguesPage() {
                           <RankBadge rank={rankNum} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="shrink-0 text-lg">{item.themeEmoji || '🏆'}</span>
+                              <span
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg"
+                                style={{
+                                  backgroundColor: `${getLeagueTheme(item.themeColor).hex}22`,
+                                }}
+                                aria-hidden="true"
+                              >
+                                {item.themeEmoji || '🏆'}
+                              </span>
                               <span className="font-display truncate text-sm font-black">
                                 {item.name}
                               </span>

@@ -681,7 +681,9 @@
     "newLeague": "+ Nuova lega",
     "notPlayed": "Non giocato",
     "myDuels": "I miei duelli",
-    "challengeFriend": "Sfida un amico"
+    "challengeFriend": "Sfida un amico",
+    "duelAnytime": "Ma puoi sempre fare un duello con un amico.",
+    "createDuel": "Crea un duello"
   },
   "account": {
     "saveTitle": "Salva la tua serie e la tua posizione in RonDuel World",

@@ -681,7 +681,9 @@
     "newLeague": "+ Nueva liga",
     "notPlayed": "No jugado",
     "myDuels": "Mis duelos",
-    "challengeFriend": "Desafiar a un amigo"
+    "challengeFriend": "Desafiar a un amigo",
+    "duelAnytime": "Pero siempre puedes tener un duelo con un amigo.",
+    "createDuel": "Crear un duelo"
   },
   "account": {
     "saveTitle": "Guarda tu racha y tu puesto en RonDuel World",

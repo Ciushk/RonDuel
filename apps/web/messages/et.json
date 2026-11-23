@@ -681,7 +681,9 @@
     "newLeague": "+ Uus liiga",
     "notPlayed": "Mängimata",
     "myDuels": "Minu duellid",
-    "challengeFriend": "Esita sõbrale väljakutse"
+    "challengeFriend": "Esita sõbrale väljakutse",
+    "duelAnytime": "Aga saad alati sõbraga duelli pidada.",
+    "createDuel": "Loo duell"
   },
   "account": {
     "saveTitle": "Salvesta oma seeria ja koht RonDuel Worldis",

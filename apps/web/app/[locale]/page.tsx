@@ -27,6 +27,7 @@ import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { getLeagueTheme } from '@/lib/league-theme';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
@@ -50,6 +51,8 @@ interface LeagueItem {
   isFull?: boolean;
   playedTodayCount: number;
   myRankToday?: number | null;
+  themeEmoji?: string;
+  themeColor?: string;
   initials?: string[];
 }
 
@@ -201,7 +204,8 @@ export default function LocaleHomePage() {
     if (!status) return;
     const session = getLocalSession();
     const primary = status.privateLeagues?.[0] || status.worldLeague;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
     const inviteUrl = primary?.inviteCode
       ? `${origin}/${locale}/l/${primary.inviteCode}?r=${session.uid}`
       : `${origin}/${locale}`;
@@ -216,7 +220,10 @@ export default function LocaleHomePage() {
 
     trackEvent('league_invite_shared', {
       league_id: primary?.id ?? 'lg_world',
-      channel: typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? 'native_share' : 'clipboard',
+      channel:
+        typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+          ? 'native_share'
+          : 'clipboard',
     });
 
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -315,16 +322,17 @@ export default function LocaleHomePage() {
 
       {/* Streak at risk warning banner */}
       {status?.streakAtRisk && (
-        <Card variant="sticker" className="border-2 border-ron-strong bg-ron/20 p-3.5 shadow-sm space-y-1">
-          <div className="flex items-center gap-2.5 text-ink">
+        <Card
+          variant="sticker"
+          className="border-ron-strong bg-ron/20 space-y-1 border-2 p-3.5 shadow-sm"
+        >
+          <div className="text-ink flex items-center gap-2.5">
             <span className="text-xl">⚠️</span>
             <div className="space-y-0.5">
-              <p className="font-display font-black text-xs text-ron-strong">
+              <p className="font-display text-ron-strong text-xs font-black">
                 {t('home.streakAtRiskTitle', { days: status.streakCurrent })}
               </p>
-              <p className="text-[11px] font-bold text-ink/80">
-                {t('home.streakAtRiskBody')}
-              </p>
+              <p className="text-ink/80 text-[11px] font-bold">{t('home.streakAtRiskBody')}</p>
             </div>
           </div>
         </Card>
@@ -344,16 +352,15 @@ export default function LocaleHomePage() {
 
       {/* 5/5 Full Banner for Free League Owner */}
       {status?.hasFullFreeLeague && (
-        <Card variant="sticker" className="bg-volt text-ink border-2 border-border p-4 shadow-sm space-y-2">
+        <Card
+          variant="sticker"
+          className="bg-volt text-ink border-border space-y-2 border-2 p-4 shadow-sm"
+        >
           <div className="flex items-start gap-2.5">
-            <Crown size={22} weight="fill" className="text-ron-strong shrink-0 mt-0.5" />
+            <Crown size={22} weight="fill" className="text-ron-strong mt-0.5 shrink-0" />
             <div className="space-y-1">
-              <p className="font-extrabold text-sm leading-snug">
-                {t('common.leagueFullBanner')}
-              </p>
-              <p className="text-xs font-medium text-ink/80">
-                {t('common.leagueFullBannerBody')}
-              </p>
+              <p className="text-sm font-extrabold leading-snug">{t('common.leagueFullBanner')}</p>
+              <p className="text-ink/80 text-xs font-medium">{t('common.leagueFullBannerBody')}</p>
             </div>
           </div>
           <Link href={`/${locale}/pro`} className="block pt-1">
@@ -378,15 +385,21 @@ export default function LocaleHomePage() {
             </>
           ) : (
             <>
-              <span className="bg-surface-2 h-7 w-24 animate-pulse rounded-full" aria-hidden="true" />
-              <span className="bg-surface-2 h-7 w-28 animate-pulse rounded-full" aria-hidden="true" />
+              <span
+                className="bg-surface-2 h-7 w-24 animate-pulse rounded-full"
+                aria-hidden="true"
+              />
+              <span
+                className="bg-surface-2 h-7 w-28 animate-pulse rounded-full"
+                aria-hidden="true"
+              />
             </>
           )}
         </div>
 
         {status?.played ? (
-          <div className="space-y-3 text-center py-2">
-            <h2 className="font-display text-xl font-extrabold text-ink">
+          <div className="space-y-3 py-2 text-center">
+            <h2 className="font-display text-ink text-xl font-extrabold">
               {t('home.playedToday')}
             </h2>
             <p className="rd-tabular font-display text-ink text-5xl font-extrabold">
@@ -397,12 +410,21 @@ export default function LocaleHomePage() {
                 {status.emojiLine}
               </p>
             )}
-            <div className="text-muted flex items-center justify-center gap-1.5 text-xs font-bold pt-1">
+            <div className="text-muted flex items-center justify-center gap-1.5 pt-1 text-xs font-bold">
               <Clock size={16} weight="bold" />
               <span>{t('home.nextRoundIn', { time: countdown })}</span>
             </div>
 
-            <div className="pt-2 space-y-2">
+            <div className="border-border-subtle bg-surface-2 space-y-2.5 rounded-2xl border p-3.5">
+              <p className="text-muted text-xs font-bold leading-snug">{t('home.duelAnytime')}</p>
+              <Button fullWidth size="lg" variant="blue" onClick={() => void handleCreateDuel()}>
+                <Sword size={20} weight="bold" aria-hidden="true" />
+                {t('home.createDuel')}
+              </Button>
+              {duelError && <p className="text-wrong text-xs font-bold">{duelError}</p>}
+            </div>
+
+            <div className="space-y-2 pt-2">
               <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
                 <ShareNetwork size={20} weight="bold" aria-hidden="true" />
                 {t('result.shareCta')}
@@ -410,7 +432,7 @@ export default function LocaleHomePage() {
               {status.playId && (
                 <Link
                   href={`/${locale}/result/${encodeURIComponent(status.playId)}`}
-                  className="text-muted hover:text-ink block text-xs font-bold underline py-1"
+                  className="text-muted hover:text-ink block py-1 text-xs font-bold underline"
                 >
                   {t('home.viewDetailedResult')}
                 </Link>
@@ -420,7 +442,7 @@ export default function LocaleHomePage() {
         ) : (
           <div className="space-y-3">
             <div className="space-y-1">
-              <h2 className="font-display text-2xl font-extrabold text-ink">
+              <h2 className="font-display text-ink text-2xl font-extrabold">
                 {status?.inProgress ? t('brand.continueRound') : t('common.todayRound')}
               </h2>
               <p className="text-muted text-xs font-medium">{t('home.roundMeta')}</p>
@@ -441,7 +463,7 @@ export default function LocaleHomePage() {
           </div>
         )}
 
-        <div className="flex justify-center pt-1 border-t border-border-subtle">
+        <div className="border-border-subtle flex justify-center border-t pt-1">
           <Link
             href={`/${locale}/regulament`}
             data-testid="hero-rules-link"
@@ -458,7 +480,7 @@ export default function LocaleHomePage() {
           fullWidth
           size="md"
           variant="volt"
-          className="h-12 font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] text-[#16131F]"
+          className="flex h-12 items-center justify-center gap-2 font-black text-[#16131F] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
         >
           <Trophy size={20} weight="fill" className="text-[#16131F]" />
           <span className="text-sm font-black">{t('common.leaderboards')}</span>
@@ -472,7 +494,7 @@ export default function LocaleHomePage() {
           size="md"
           variant="primary"
           onClick={() => setCreateLeagueOpen(true)}
-          className="flex-col gap-1 py-3 h-auto"
+          className="h-auto flex-col gap-1 py-3"
         >
           <Plus size={20} weight="bold" />
           <span className="text-xs font-extrabold">{t('league.createBtn')}</span>
@@ -483,7 +505,7 @@ export default function LocaleHomePage() {
           size="md"
           variant="secondary"
           onClick={() => setJoinCodeOpen(true)}
-          className="flex-col gap-1 py-3 h-auto"
+          className="h-auto flex-col gap-1 py-3"
         >
           <SignIn size={20} weight="bold" />
           <span className="text-xs font-extrabold">{t('home.joinLeagueTile')}</span>
@@ -497,14 +519,10 @@ export default function LocaleHomePage() {
           {showSlimBanner && (
             <div className="border-border-subtle bg-surface-2 flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 shadow-sm">
               <div className="min-w-0">
-                <p className="text-ink text-xs font-bold truncate">
-                  {t('account.saveTitle')}
-                </p>
-                <p className="text-muted text-[11px] truncate">
-                  {t('account.saveBannerBody')}
-                </p>
+                <p className="text-ink truncate text-xs font-bold">{t('account.saveTitle')}</p>
+                <p className="text-muted truncate text-[11px]">{t('account.saveBannerBody')}</p>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Button
                   size="sm"
                   variant="volt"
@@ -512,14 +530,14 @@ export default function LocaleHomePage() {
                     setIsLinkSheetOpen(true);
                     trackEvent('account_link_prompt_shown', { trigger: 'banner' });
                   }}
-                  className="text-xs font-extrabold px-2.5 py-1 min-h-8 h-8"
+                  className="h-8 min-h-8 px-2.5 py-1 text-xs font-extrabold"
                 >
                   {t('common.save')}
                 </Button>
                 <button
                   type="button"
                   onClick={handleDismissBanner}
-                  className="text-muted hover:text-ink text-xs p-1 font-bold"
+                  className="text-muted hover:text-ink p-1 text-xs font-bold"
                   aria-label={t('common.close')}
                 >
                   ✕
@@ -546,25 +564,36 @@ export default function LocaleHomePage() {
             {/* RonDuel World first */}
             {status?.worldLeague && (
               <Link href={`/${locale}/league/lg_world`} className="block">
-                <Card variant="subtle" className="flex items-center justify-between gap-3 p-4 hover:border-border transition">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <GlobeHemisphereWest size={28} weight="bold" className="text-duel-strong shrink-0" />
+                <Card
+                  variant="subtle"
+                  className="hover:border-border flex items-center justify-between gap-3 p-4 transition"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <GlobeHemisphereWest
+                      size={28}
+                      weight="bold"
+                      className="text-duel-strong shrink-0"
+                    />
                     <div className="min-w-0">
-                      <p className="font-display text-base font-extrabold text-ink truncate">
+                      <p className="font-display text-ink truncate text-base font-extrabold">
                         RonDuel World 🌍
                       </p>
                       <p className="text-muted text-xs font-medium">
-                        {t('common.playedTodayCount', { count: status.worldLeague.playedTodayCount })}
+                        {t('common.playedTodayCount', {
+                          count: status.worldLeague.playedTodayCount,
+                        })}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="rd-tabular text-ink text-xs font-extrabold block">
+                  <div className="shrink-0 text-right">
+                    <span className="rd-tabular text-ink block text-xs font-extrabold">
                       {status.worldLeague.myRankToday
                         ? t('common.rankPlace', { rank: status.worldLeague.myRankToday })
                         : t('home.notPlayed')}
                     </span>
-                    <span className="text-muted text-[10px] font-bold uppercase">{t('nav.home')}</span>
+                    <span className="text-muted text-[10px] font-bold uppercase">
+                      {t('nav.home')}
+                    </span>
                   </div>
                 </Card>
               </Link>
@@ -574,11 +603,22 @@ export default function LocaleHomePage() {
             {status?.privateLeagues && status.privateLeagues.length > 0 ? (
               status.privateLeagues.map((lg) => (
                 <Link key={lg.id} href={`/${locale}/league/${lg.id}`} className="block">
-                  <Card variant="subtle" className="flex items-center justify-between gap-3 p-4 hover:border-border transition">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Trophy size={26} weight="fill" className="text-volt-strong shrink-0" />
+                  <Card
+                    variant="subtle"
+                    className="hover:border-border flex items-center justify-between gap-3 p-4 transition"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xl"
+                        style={{
+                          backgroundColor: `${getLeagueTheme(lg.themeColor).hex}22`,
+                        }}
+                        aria-hidden="true"
+                      >
+                        {lg.themeEmoji || '🏆'}
+                      </span>
                       <div className="min-w-0">
-                        <p className="font-display text-base font-extrabold text-ink truncate">
+                        <p className="font-display text-ink truncate text-base font-extrabold">
                           {lg.name}
                         </p>
                         <p className="text-muted text-xs font-medium">
@@ -599,21 +639,25 @@ export default function LocaleHomePage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="rd-tabular text-ink text-xs font-extrabold block">
-                        {lg.myRankToday ? t('common.rankPlace', { rank: lg.myRankToday }) : t('home.notPlayed')}
+                    <div className="shrink-0 text-right">
+                      <span className="rd-tabular text-ink block text-xs font-extrabold">
+                        {lg.myRankToday
+                          ? t('common.rankPlace', { rank: lg.myRankToday })
+                          : t('home.notPlayed')}
                       </span>
-                      <span className="text-muted text-[10px] font-bold uppercase">{t('nav.home')}</span>
+                      <span className="text-muted text-[10px] font-bold uppercase">
+                        {t('nav.home')}
+                      </span>
                     </div>
                   </Card>
                 </Link>
               ))
             ) : (
-              <Card variant="secondary" className="p-5 text-center space-y-2.5">
-                <p className="font-display text-base font-extrabold text-ink">
+              <Card variant="secondary" className="space-y-2.5 p-5 text-center">
+                <p className="font-display text-ink text-base font-extrabold">
                   {t('leagues.emptyTitle')}
                 </p>
-                <p className="text-muted text-xs font-medium leading-relaxed max-w-[340px] mx-auto">
+                <p className="text-muted mx-auto max-w-[340px] text-xs font-medium leading-relaxed">
                   {t('leagues.emptyBody', { max: 5 })}
                 </p>
                 <div className="pt-1">
@@ -642,41 +686,37 @@ export default function LocaleHomePage() {
               </span>
             </div>
 
-            {status?.activeDuels && status.activeDuels.length > 0 ? (
-              status.activeDuels.map((d) => (
-                <Link key={d.id} href={`/${locale}/duel/${d.id}`} className="block">
-                  <Card variant="subtle" className="flex items-center justify-between gap-3 p-3.5 hover:border-border transition">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Sword size={22} weight="bold" className="text-duel-strong shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-display text-sm font-extrabold text-ink truncate">
-                          {t('common.versus', { name: d.opponentNickname })}
-                        </p>
-                        <p className="text-muted text-xs">
-                          {t('common.hoursLeft', {
-                            hours: Math.max(1, Math.ceil(d.timeLeftMs / (1000 * 60 * 60))),
-                          })}
-                        </p>
+            {status?.activeDuels && status.activeDuels.length > 0
+              ? status.activeDuels.map((d) => (
+                  <Link key={d.id} href={`/${locale}/duel/${d.id}`} className="block">
+                    <Card
+                      variant="subtle"
+                      className="hover:border-border flex items-center justify-between gap-3 p-3.5 transition"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Sword size={22} weight="bold" className="text-duel-strong shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-display text-ink truncate text-sm font-extrabold">
+                            {t('common.versus', { name: d.opponentNickname })}
+                          </p>
+                          <p className="text-muted text-xs">
+                            {t('common.hoursLeft', {
+                              hours: Math.max(1, Math.ceil(d.timeLeftMs / (1000 * 60 * 60))),
+                            })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <Chip tone={d.myTurn ? 'volt' : 'neutral'} className="text-[11px] font-bold">
-                      {d.myTurn ? t('duels.yourTurn') : t('duels.waitingOpponent')}
-                    </Chip>
-                  </Card>
-                </Link>
-              ))
-            ) : null}
+                      <Chip tone={d.myTurn ? 'volt' : 'neutral'} className="text-[11px] font-bold">
+                        {d.myTurn ? t('duels.yourTurn') : t('duels.waitingOpponent')}
+                      </Chip>
+                    </Card>
+                  </Link>
+                ))
+              : null}
 
-            {duelError && (
-              <p className="text-wrong text-xs font-bold">{duelError}</p>
-            )}
+            {duelError && <p className="text-wrong text-xs font-bold">{duelError}</p>}
 
-            <Button
-              fullWidth
-              size="md"
-              variant="secondary"
-              onClick={() => void handleCreateDuel()}
-            >
+            <Button fullWidth size="md" variant="secondary" onClick={() => void handleCreateDuel()}>
               <Sword size={18} weight="bold" />
               {t('home.challengeFriend')}
             </Button>

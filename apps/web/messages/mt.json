@@ -681,7 +681,9 @@
     "newLeague": "+ Kampjonat ġdid",
     "notPlayed": "Mhux milgħub",
     "myDuels": "Id-dwellijiet tiegħi",
-    "challengeFriend": "Sfida lil ħabib"
+    "challengeFriend": "Sfida lil ħabib",
+    "duelAnytime": "Imma tista' dejjem tagħmel dwell ma' ħabib.",
+    "createDuel": "Oħloq dwell"
   },
   "account": {
     "saveTitle": "Salva s-serje tiegħek u l-post tiegħek f'RonDuel World",

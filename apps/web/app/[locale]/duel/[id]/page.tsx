@@ -5,6 +5,7 @@ import {
   ArrowUp,
   CheckCircle,
   Copy,
+  Lightning,
   Sword,
   Trophy,
   XCircle,
@@ -79,8 +80,12 @@ export default function DuelPage() {
     correct: boolean;
     points: number;
     correctIndex?: number;
+    timedOut?: boolean;
   } | null>(null);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+  const [lockedIndex, setLockedIndex] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [isFastAnswer, setIsFastAnswer] = useState(false);
   const [toast, setToast] = useState('');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isRematching, setIsRematching] = useState(false);
@@ -104,7 +109,8 @@ export default function DuelPage() {
   const handleRematch = async () => {
     if (!duel || isRematching) return;
     const s = getLocalSession();
-    const opponent = duel.sides.challenger?.uid === s.uid ? duel.sides.opponent : duel.sides.challenger;
+    const opponent =
+      duel.sides.challenger?.uid === s.uid ? duel.sides.opponent : duel.sides.challenger;
     setIsRematching(true);
     try {
       const res = await fetch('/api/duels', {
@@ -157,8 +163,18 @@ export default function DuelPage() {
 
   const submitTurnAnswer = useCallback(
     async (choice: number | string[] | null) => {
-      if (!item || feedback) return;
-      if (typeof choice === 'number') setSelectedChoice(choice);
+      if (!item || feedback || submitting) return;
+      if (typeof choice === 'number') {
+        setSelectedChoice(choice);
+        setLockedIndex(choice);
+        vibrate(15);
+      }
+      setSubmitting(true);
+
+      const currentRemaining = Math.max(0, deadlineRef.current - Date.now());
+      const isFast = item.limitMs > 0 && currentRemaining >= item.limitMs * 0.67;
+      setIsFastAnswer(isFast);
+
       const s = getLocalSession();
       const res = await fetch(`/api/duels/${encodeURIComponent(duelId)}/answer`, {
         method: 'POST',
@@ -175,7 +191,9 @@ export default function DuelPage() {
         correct: Boolean(data.correct),
         points: data.points ?? 0,
         correctIndex: data.correctIndex,
+        timedOut: Boolean(data.timedOut),
       });
+      setSubmitting(false);
       vibrate(data.correct ? 20 : [40, 30, 40]);
 
       setTimeout(() => {
@@ -186,15 +204,19 @@ export default function DuelPage() {
           deadlineRef.current = Date.now() + data.next.limitMs;
           setFeedback(null);
           setSelectedChoice(null);
+          setLockedIndex(null);
+          setIsFastAnswer(false);
         } else {
           setPlaying(false);
           setItem(null);
           setFeedback(null);
+          setLockedIndex(null);
+          setIsFastAnswer(false);
           loadDuel();
         }
       }, 900);
     },
-    [item, feedback, duelId, locale, loadDuel],
+    [item, feedback, submitting, duelId, locale, loadDuel],
   );
 
   useEffect(() => {
@@ -227,14 +249,29 @@ export default function DuelPage() {
 
   if (!duel) {
     return (
-      <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">{t('common.loading')}</main>
+      <main className="text-muted mx-auto max-w-[480px] px-4 py-12 text-center">
+        {t('common.loading')}
+      </main>
     );
   }
 
   if (playing && item) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-[480px] flex-col gap-5 px-4 py-6">
-        <div className="rd-seam h-1.5 w-full rounded-full" aria-hidden="true" />
+        <div
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={totalItems}
+          aria-valuenow={Math.min(totalItems, item.index + (feedback ? 1 : 0))}
+          className="bg-surface-2 border-border-subtle h-2 w-full overflow-hidden rounded-full border"
+        >
+          <div
+            className="rd-seam h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${Math.min(100, ((item.index + (feedback ? 1 : 0)) / Math.max(1, totalItems)) * 100)}%`,
+            }}
+          />
+        </div>
         <div className="flex items-center justify-between">
           <Chip tone="volt" className="rd-tabular">
             {t('play.itemCounter', { current: item.index + 1, total: totalItems })}
@@ -282,7 +319,7 @@ export default function DuelPage() {
                 fullWidth
                 size="lg"
                 variant="blue"
-                disabled={Boolean(feedback)}
+                disabled={Boolean(feedback) || submitting}
                 onClick={() => void submitTurnAnswer(orderList)}
               >
                 {t('play.submitOrder')}
@@ -291,25 +328,71 @@ export default function DuelPage() {
           ) : (
             <div className="grid gap-3">
               {item.options.map((opt, idx) => {
+                const isLocked = submitting && lockedIndex === idx;
+                const isDimmed = submitting && lockedIndex !== null && lockedIndex !== idx;
+                const isSelected = selectedChoice === idx;
                 const isCorrectChoice = feedback && feedback.correctIndex === idx;
-                const isWrongSelected = feedback && !feedback.correct && selectedChoice === idx;
+                const isWrongSelected = feedback && !feedback.correct && isSelected;
+                const isCorrectAnswerRevealed = feedback && !feedback.correct && isCorrectChoice;
+
                 return (
                   <button
                     key={opt}
                     type="button"
-                    disabled={Boolean(feedback)}
+                    disabled={Boolean(feedback) || submitting}
+                    aria-pressed={lockedIndex === idx}
                     onClick={() => void submitTurnAnswer(idx)}
                     className={[
-                      'rd-sticker rd-sticker-pressable flex min-h-14 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 py-3 text-left text-base font-bold',
-                      isCorrectChoice
-                        ? 'bg-correct text-[#16131F]'
+                      'rd-sticker rd-sticker-pressable relative flex min-h-14 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 py-3 text-left text-base font-bold transition-all',
+                      isLocked ? 'rd-locked' : '',
+                      isDimmed ? 'pointer-events-none opacity-60' : '',
+                      isCorrectChoice && isSelected
+                        ? 'bg-correct rd-pop text-[#16131F]'
                         : isWrongSelected
-                          ? 'bg-wrong text-[var(--rd-on-wrong)]'
-                          : 'bg-surface text-ink',
+                          ? 'bg-wrong rd-shake text-[var(--rd-on-wrong)]'
+                          : isCorrectAnswerRevealed
+                            ? 'border-correct-text bg-correct/20 text-ink animate-in fade-in border-2 duration-300'
+                            : 'bg-surface text-ink hover:bg-surface-2',
                     ].join(' ')}
                   >
-                    <span>{opt}</span>
-                    {isCorrectChoice && <CheckCircle size={22} weight="fill" aria-hidden="true" />}
+                    <span className="flex-1 pr-3">{opt}</span>
+
+                    {feedback && feedback.correct && isSelected && (
+                      <span className="rd-float-up bg-volt pointer-events-none absolute -top-3 right-3 z-30 inline-flex items-center gap-1 rounded-full border-2 border-[#16131F] px-2.5 py-0.5 text-xs font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
+                        +{feedback.points}
+                      </span>
+                    )}
+
+                    {isCorrectChoice && (
+                      <div className="relative inline-flex items-center justify-center">
+                        <CheckCircle
+                          size={22}
+                          weight="fill"
+                          className={
+                            isCorrectAnswerRevealed
+                              ? 'text-correct-text rd-pop-icon'
+                              : 'rd-pop-icon'
+                          }
+                          aria-hidden="true"
+                        />
+                        {feedback?.correct && isSelected && isFastAnswer && (
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                          >
+                            <span className="rd-ray-ring border-volt absolute h-6 w-6 rounded-full border-2" />
+                            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+                              <span
+                                key={deg}
+                                className="rd-ray bg-volt absolute h-3.5 w-1 rounded-full"
+                                style={{ '--r': `${deg}deg` } as React.CSSProperties}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {isWrongSelected && <XCircle size={22} weight="fill" aria-hidden="true" />}
                   </button>
                 );
@@ -317,6 +400,21 @@ export default function DuelPage() {
             </div>
           )}
         </Card>
+
+        <div className="min-h-10 text-center">
+          {feedback && (
+            <div className="inline-flex items-center gap-2">
+              <Chip tone={feedback.correct ? 'volt' : 'wrong'}>
+                {feedback.correct && <Lightning size={14} weight="fill" aria-hidden="true" />}
+                {feedback.timedOut
+                  ? t('play.timedOut')
+                  : feedback.correct
+                    ? `${t('play.correct')} +${feedback.points}${isFastAnswer ? ` · ${t('play.fastBonus')}` : ''}`
+                    : t('play.wrong')}
+              </Chip>
+            </div>
+          )}
+        </div>
       </main>
     );
   }
@@ -356,7 +454,9 @@ export default function DuelPage() {
       {/* Versus Card */}
       <VersusCard
         duelId={duel.id}
-        challenger={challenger ?? { uid: duel.challengerUid, nickname: t('duel.challengerFallback') }}
+        challenger={
+          challenger ?? { uid: duel.challengerUid, nickname: t('duel.challengerFallback') }
+        }
         opponent={opponent}
         myUid={myUid}
         winnerUid={duel.winnerUid}
@@ -390,8 +490,11 @@ export default function DuelPage() {
 
       {/* Anonymous Warning Banner */}
       {duel.status === 'complete' && isAnonymous && (
-        <Card variant="sticker" className="border-2 border-border bg-surface-2 p-3.5 space-y-2 text-left">
-          <p className="text-xs font-extrabold text-ink leading-snug">
+        <Card
+          variant="sticker"
+          className="border-border bg-surface-2 space-y-2 border-2 p-3.5 text-left"
+        >
+          <p className="text-ink text-xs font-extrabold leading-snug">
             {t('duel.signInToKeepRecord')}
           </p>
           <div className="flex gap-2">

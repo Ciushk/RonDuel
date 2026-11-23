@@ -681,7 +681,9 @@
     "newLeague": "+ Nová liga",
     "notPlayed": "Neodohrané",
     "myDuels": "Moje duely",
-    "challengeFriend": "Vyzvi priateľa"
+    "challengeFriend": "Vyzvi priateľa",
+    "duelAnytime": "Ale vždy môžeš mať duel s priateľom.",
+    "createDuel": "Vytvoriť duel"
   },
   "account": {
     "saveTitle": "Ulož si svoju sériu a miesto v RonDuel World",

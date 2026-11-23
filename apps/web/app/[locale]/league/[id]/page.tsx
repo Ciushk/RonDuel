@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { getLeagueTheme } from '@/lib/league-theme';
 import { getLocalSession } from '@/lib/session';
 
 interface LeagueMemberRow {
@@ -374,6 +375,7 @@ export default function LeaguePage() {
 
   const isProLeague = league.maxMembers > 5 && !league.isWorld;
   const isWorldLeague = Boolean(league.isWorld || league.id === 'lg_world');
+  const theme = getLeagueTheme(league.themeColor);
 
   // Filtered rows by username search query
   const q = searchQuery.trim().toLowerCase();
@@ -391,8 +393,17 @@ export default function LeaguePage() {
       <Card className="min-w-0 space-y-3">
         <div className="min-w-0 space-y-2">
           <div className="min-w-0 space-y-1">
+            <span
+              className="mb-1 block h-1.5 w-14 rounded-full"
+              style={{ backgroundColor: theme.hex }}
+              aria-hidden="true"
+            />
             <h1 className="font-display text-ink flex items-start gap-2 text-2xl font-extrabold">
-              <span className="shrink-0 text-2xl" aria-hidden="true">
+              <span
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-2xl"
+                style={{ backgroundColor: `${theme.hex}22` }}
+                aria-hidden="true"
+              >
                 {league.themeEmoji ?? (isWorldLeague ? '🌍' : '🏆')}
               </span>
               <span

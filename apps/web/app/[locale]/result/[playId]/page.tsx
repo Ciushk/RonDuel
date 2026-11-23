@@ -1,6 +1,15 @@
 'use client';
 
-import { CheckCircle, Flame, GlobeHemisphereWest, ShareNetwork, ShieldCheck, Sword, Trophy, Users } from '@phosphor-icons/react';
+import {
+  CheckCircle,
+  Flame,
+  GlobeHemisphereWest,
+  ShareNetwork,
+  ShieldCheck,
+  Sword,
+  Trophy,
+  Users,
+} from '@phosphor-icons/react';
 import { buildShareCardText } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -71,7 +80,9 @@ export default function ResultPage() {
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
   const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
-  const [reportReason, setReportReason] = useState<'wrong_answer' | 'ambiguous' | 'language_error'>('wrong_answer');
+  const [reportReason, setReportReason] = useState<'wrong_answer' | 'ambiguous' | 'language_error'>(
+    'wrong_answer',
+  );
   const [isReporting, setIsReporting] = useState(false);
 
   const [animated, setAnimated] = useState(false);
@@ -281,6 +292,19 @@ export default function ResultPage() {
     loadResult();
   }, [rawPlayId]);
 
+  // After the score is shown, go back to the home screen, which switches to the
+  // "already played today" state with the live countdown to the next round.
+  useEffect(() => {
+    if (!data || returnTo || typeof window === 'undefined') return;
+    const key = `rd_result_auto_home_${data.playId}`;
+    if (sessionStorage.getItem(key)) return;
+    const timer = setTimeout(() => {
+      sessionStorage.setItem(key, '1');
+      router.replace(`/${locale}`);
+    }, 10_000);
+    return () => clearTimeout(timer);
+  }, [data, locale, returnTo, router]);
+
   const handleLinkDismissed = () => {
     setIsLinkSheetOpen(false);
     if (!data) return;
@@ -310,7 +334,8 @@ export default function ResultPage() {
 
   const triggerShareWithLink = async (inviteUrl: string) => {
     if (!data) return;
-    const streakText = data.streakCurrent > 0 ? t('result.shareStreak', { count: data.streakCurrent }) : undefined;
+    const streakText =
+      data.streakCurrent > 0 ? t('result.shareStreak', { count: data.streakCurrent }) : undefined;
     const beatMeText = inviteUrl ? t('result.shareBeatMe', { url: inviteUrl }) : undefined;
     const cardText = buildShareCardText({
       roundNumber: data.roundNumber,
@@ -342,9 +367,7 @@ export default function ResultPage() {
 
   const privateLeagues = (data?.leagueRanks ?? []).filter((l) => !l.isWorld);
   const primaryLeague =
-    createdLeague ||
-    (privateLeagues.length > 0 ? privateLeagues[0] : null) ||
-    data?.primaryLeague;
+    createdLeague || (privateLeagues.length > 0 ? privateLeagues[0] : null) || data?.primaryLeague;
 
   const handleShareClick = async () => {
     if (!data) return;
@@ -436,8 +459,8 @@ export default function ResultPage() {
 
   if (loading && !data) {
     return (
-      <main className="text-muted mx-auto max-w-[480px] px-4 py-16 text-center font-bold space-y-3">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-volt border-t-transparent" />
+      <main className="text-muted mx-auto max-w-[480px] space-y-3 px-4 py-16 text-center font-bold">
+        <div className="border-volt mx-auto h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
         <p>{t('result.calculating')}</p>
       </main>
     );
@@ -446,19 +469,19 @@ export default function ResultPage() {
   if (error || !data || typeof data.totalScore !== 'number') {
     return (
       <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-12 text-center">
-        <Card variant="sticker" className="p-6 space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 border-2 border-border text-2xl shadow-sm">
+        <Card variant="sticker" className="space-y-4 p-6">
+          <div className="bg-surface-2 border-border mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm">
             🎯
           </div>
           <div className="space-y-1">
-            <h1 className="font-display text-xl font-extrabold text-ink">
+            <h1 className="font-display text-ink text-xl font-extrabold">
               {t('result.processing')}
             </h1>
-            <p className="text-muted text-xs leading-relaxed max-w-[280px] mx-auto">
+            <p className="text-muted mx-auto max-w-[280px] text-xs leading-relaxed">
               {t('result.savedRetryHint')}
             </p>
           </div>
-          <div className="pt-2 flex flex-col gap-2">
+          <div className="flex flex-col gap-2 pt-2">
             <Button variant="volt" fullWidth onClick={loadResult}>
               {t('common.retry')}
             </Button>
@@ -479,20 +502,25 @@ export default function ResultPage() {
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
       {/* Warning banner for unlinked anonymous users */}
       {!isAccountLinked && !showSlimBanner && (
-        <Card variant="sticker" className="border-2 border-ron-strong bg-ron/10 p-3.5 shadow-sm text-left space-y-1">
+        <Card
+          variant="sticker"
+          className="border-ron-strong bg-ron/10 space-y-1 border-2 p-3.5 text-left shadow-sm"
+        >
           <div className="flex items-start gap-2.5">
-            <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">⚠️</span>
-            <div className="space-y-0.5 min-w-0">
-              <p className="font-display font-black text-xs text-ron-strong">
+            <span className="mt-0.5 shrink-0 text-xl" aria-hidden="true">
+              ⚠️
+            </span>
+            <div className="min-w-0 space-y-0.5">
+              <p className="font-display text-ron-strong text-xs font-black">
                 {t('result.saveScoreTitle')}
               </p>
-              <p className="text-[11px] font-bold text-ink/80 leading-snug">
+              <p className="text-ink/80 text-[11px] font-bold leading-snug">
                 {t('account.anonExpiry')}
               </p>
               <button
                 type="button"
                 onClick={() => setIsLinkSheetOpen(true)}
-                className="mt-1 inline-flex text-xs font-black text-ron-strong underline hover:text-ink cursor-pointer"
+                className="text-ron-strong hover:text-ink mt-1 inline-flex cursor-pointer text-xs font-black underline"
               >
                 {t('result.createFreeAccount')}
               </button>
@@ -512,7 +540,9 @@ export default function ResultPage() {
             <ShieldCheck size={20} weight="bold" className="text-duel-strong shrink-0" />
             <span className="text-xs font-bold">{t('result.scoreNotSaved')}</span>
           </div>
-          <span className="text-duel-strong text-xs font-extrabold underline">{t('common.save')}</span>
+          <span className="text-duel-strong text-xs font-extrabold underline">
+            {t('common.save')}
+          </span>
         </button>
       )}
 
@@ -539,10 +569,10 @@ export default function ResultPage() {
           <ScoreCountUp score={data.totalScore} animated={animated} />
           <Chip tone="neutral" className="rd-tabular text-sm font-bold">
             {t('result.correctCount', {
-              correct:
-                data.review.filter(
-                  (r) => r.correct || (r.points && r.points > 0) || r.emoji === '🟩' || r.emoji === '⚡',
-                ).length,
+              correct: data.review.filter(
+                (r) =>
+                  r.correct || (r.points && r.points > 0) || r.emoji === '🟩' || r.emoji === '⚡',
+              ).length,
               total: 6,
             })}
           </Chip>
@@ -582,7 +612,7 @@ export default function ResultPage() {
         </div>
 
         {/* League ranks breakdown */}
-        <div className="border-border-subtle bg-surface-2 rounded-2xl border p-3.5 space-y-2 text-left">
+        <div className="border-border-subtle bg-surface-2 space-y-2 rounded-2xl border p-3.5 text-left">
           <p className="font-display text-muted text-xs font-extrabold uppercase tracking-wider">
             {t('result.scoreRecordedIn')}
           </p>
@@ -595,13 +625,19 @@ export default function ResultPage() {
                   animated && showRows ? 'rd-row-slide' : '',
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <GlobeHemisphereWest size={16} weight="bold" className="text-duel-strong shrink-0" />
+                <div className="flex min-w-0 items-center gap-2">
+                  <GlobeHemisphereWest
+                    size={16}
+                    weight="bold"
+                    className="text-duel-strong shrink-0"
+                  />
                   <span className="text-ink truncate">RonDuel World</span>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
                   {t('common.rankPlace', { rank: worldRank.rank })}{' '}
-                  <span className="text-muted font-medium">({t('league.membersCount', { count: worldRank.totalMembers })})</span>
+                  <span className="text-muted font-medium">
+                    ({t('league.membersCount', { count: worldRank.totalMembers })})
+                  </span>
                 </span>
               </div>
             )}
@@ -609,19 +645,27 @@ export default function ResultPage() {
             {privateLeagues.map((lg, idx) => (
               <div
                 key={lg.id}
-                style={animated ? ({ animationDelay: `${(idx + (worldRank ? 1 : 0)) * 80}ms` } as React.CSSProperties) : undefined}
+                style={
+                  animated
+                    ? ({
+                        animationDelay: `${(idx + (worldRank ? 1 : 0)) * 80}ms`,
+                      } as React.CSSProperties)
+                    : undefined
+                }
                 className={cn(
                   'flex items-center justify-between gap-2 text-xs font-bold',
                   animated && showRows ? 'rd-row-slide' : '',
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
                   <Trophy size={16} weight="fill" className="text-volt-strong shrink-0" />
                   <span className="text-ink truncate">{lg.name}</span>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
                   {t('common.rankPlace', { rank: lg.rank })}{' '}
-                  <span className="text-muted font-medium">({t('league.membersCount', { count: lg.totalMembers })})</span>
+                  <span className="text-muted font-medium">
+                    ({t('league.membersCount', { count: lg.totalMembers })})
+                  </span>
                 </span>
               </div>
             ))}
@@ -656,21 +700,11 @@ export default function ResultPage() {
             {t('result.challengeCreateLeague')}
           </Button>
 
-          <Button
-            fullWidth
-            size="sm"
-            variant="secondary"
-            onClick={() => setIsJoinCodeOpen(true)}
-          >
+          <Button fullWidth size="sm" variant="secondary" onClick={() => setIsJoinCodeOpen(true)}>
             {t('result.haveCode')}
           </Button>
 
-          <Button
-            fullWidth
-            size="sm"
-            variant="secondary"
-            onClick={() => void handleCreateDuel()}
-          >
+          <Button fullWidth size="sm" variant="secondary" onClick={() => void handleCreateDuel()}>
             <Sword size={16} weight="bold" aria-hidden="true" />
             {t('result.challengeFriend')}
           </Button>
@@ -741,10 +775,7 @@ export default function ResultPage() {
       />
 
       {/* Join League by Code */}
-      <JoinByCodeDialog
-        open={isJoinCodeOpen}
-        onClose={() => setIsJoinCodeOpen(false)}
-      />
+      <JoinByCodeDialog open={isJoinCodeOpen} onClose={() => setIsJoinCodeOpen(false)} />
 
       {toast && (
         <div className="flex justify-center">
@@ -769,9 +800,9 @@ export default function ResultPage() {
         {data.review.map((item) => {
           const isCorrect = Boolean(
             item.correct ||
-              (item.points && item.points > 0) ||
-              item.emoji === '🟩' ||
-              item.emoji === '⚡',
+            (item.points && item.points > 0) ||
+            item.emoji === '🟩' ||
+            item.emoji === '⚡',
           );
           return (
             <Card key={item.index} variant="subtle" className="space-y-2">
@@ -782,24 +813,30 @@ export default function ResultPage() {
                 </span>
               </div>
 
-              <div className="space-y-1 text-xs sm:text-sm font-bold">
+              <div className="space-y-1 text-xs font-bold sm:text-sm">
                 {isCorrect ? (
-                  <div className="flex items-center gap-1.5 text-correct-text">
-                    <span className="text-base" aria-hidden="true">✓</span>
+                  <div className="text-correct-text flex items-center gap-1.5">
+                    <span className="text-base" aria-hidden="true">
+                      ✓
+                    </span>
                     <span>{item.correctAnswer}</span>
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-1.5 text-wrong">
-                      <span className="text-base" aria-hidden="true">✗</span>
+                    <div className="text-wrong flex items-center gap-1.5">
+                      <span className="text-base" aria-hidden="true">
+                        ✗
+                      </span>
                       <span>
                         {t('result.yourAnswer', {
                           answer: item.userAnswer || (item.timedOut ? t('play.timedOut') : '—'),
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-correct-text">
-                      <span className="text-base" aria-hidden="true">✓</span>
+                    <div className="text-correct-text flex items-center gap-1.5">
+                      <span className="text-base" aria-hidden="true">
+                        ✓
+                      </span>
                       <span>{item.correctAnswer}</span>
                     </div>
                   </>
@@ -811,7 +848,7 @@ export default function ResultPage() {
                 <button
                   type="button"
                   onClick={() => setReportingQuestionId(item.questionId || `q_${item.index}`)}
-                  className="text-muted hover:text-wrong text-[11px] font-bold underline cursor-pointer"
+                  className="text-muted hover:text-wrong cursor-pointer text-[11px] font-bold underline"
                 >
                   {t('result.reportQuestion')}
                 </button>
@@ -828,9 +865,7 @@ export default function ResultPage() {
         title={t('result.reportQuestion')}
       >
         <div className="space-y-3.5">
-          <p className="text-xs text-muted font-medium">
-            {t('result.reportPrompt')}
-          </p>
+          <p className="text-muted text-xs font-medium">{t('result.reportPrompt')}</p>
           <div className="space-y-2">
             {[
               { id: 'wrong_answer', label: t('result.reportReasonWrongAnswer') },
@@ -839,7 +874,7 @@ export default function ResultPage() {
             ].map((opt) => (
               <label
                 key={opt.id}
-                className="flex items-center gap-2.5 p-3 rounded-xl border-2 border-border bg-surface-2 cursor-pointer font-bold text-sm text-ink hover:bg-surface"
+                className="border-border bg-surface-2 text-ink hover:bg-surface flex cursor-pointer items-center gap-2.5 rounded-xl border-2 p-3 text-sm font-bold"
               >
                 <input
                   type="radio"
@@ -847,14 +882,14 @@ export default function ResultPage() {
                   value={opt.id}
                   checked={reportReason === opt.id}
                   onChange={() => setReportReason(opt.id as any)}
-                  className="h-4 w-4 accent-ron-strong"
+                  className="accent-ron-strong h-4 w-4"
                 />
                 <span>{opt.label}</span>
               </label>
             ))}
           </div>
 
-          <div className="pt-2 flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button
               size="md"
               variant="secondary"

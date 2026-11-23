@@ -681,7 +681,9 @@
     "newLeague": "+ Neue Liga",
     "notPlayed": "Nicht gespielt",
     "myDuels": "Meine Duelle",
-    "challengeFriend": "Einen Freund herausfordern"
+    "challengeFriend": "Einen Freund herausfordern",
+    "duelAnytime": "Aber du kannst jederzeit ein Duell mit einem Freund spielen.",
+    "createDuel": "Duell erstellen"
   },
   "account": {
     "saveTitle": "Sichere deine Serie und deinen Platz in RonDuel World",

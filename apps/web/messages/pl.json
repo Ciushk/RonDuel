@@ -681,7 +681,9 @@
     "newLeague": "+ Nowa liga",
     "notPlayed": "Nierozegrane",
     "myDuels": "Moje pojedynki",
-    "challengeFriend": "Wyzwij znajomego"
+    "challengeFriend": "Wyzwij znajomego",
+    "duelAnytime": "Ale zawsze możesz stoczyć pojedynek z przyjacielem.",
+    "createDuel": "Utwórz pojedynek"
   },
   "account": {
     "saveTitle": "Zapisz swoją serię i miejsce w RonDuel World",

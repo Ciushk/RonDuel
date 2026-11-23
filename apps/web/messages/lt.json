@@ -681,7 +681,9 @@
     "newLeague": "+ Nauja lyga",
     "notPlayed": "Nesužaista",
     "myDuels": "Mano dvikovos",
-    "challengeFriend": "Mesti iššūkį draugui"
+    "challengeFriend": "Mesti iššūkį draugui",
+    "duelAnytime": "Bet visada gali surengti dvikovą su draugu.",
+    "createDuel": "Sukurti dvikovą"
   },
   "account": {
     "saveTitle": "Išsaugok savo seriją ir vietą RonDuel World",

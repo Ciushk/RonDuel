@@ -681,7 +681,9 @@
     "newLeague": "+ Nieuwe competitie",
     "notPlayed": "Niet gespeeld",
     "myDuels": "Mijn duels",
-    "challengeFriend": "Daag een vriend uit"
+    "challengeFriend": "Daag een vriend uit",
+    "duelAnytime": "Maar je kunt altijd een duel met een vriend doen.",
+    "createDuel": "Duel maken"
   },
   "account": {
     "saveTitle": "Behoud je reeks en je plek in RonDuel World",

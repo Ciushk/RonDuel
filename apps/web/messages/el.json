@@ -681,7 +681,9 @@
     "newLeague": "+ Νέα λίγκα",
     "notPlayed": "Δεν παίχτηκε",
     "myDuels": "Οι μονομαχίες μου",
-    "challengeFriend": "Προκάλεσε έναν φίλο"
+    "challengeFriend": "Προκάλεσε έναν φίλο",
+    "duelAnytime": "Αλλά μπορείς πάντα να κάνεις μονομαχία με έναν φίλο.",
+    "createDuel": "Δημιούργησε μονομαχία"
   },
   "account": {
     "saveTitle": "Αποθήκευσε το σερί σου και τη θέση σου στο RonDuel World",

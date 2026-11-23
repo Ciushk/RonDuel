@@ -681,7 +681,9 @@
     "newLeague": "+ Ligă nouă",
     "notPlayed": "Nejucat",
     "myDuels": "Duelurile mele",
-    "challengeFriend": "Provoacă un prieten"
+    "challengeFriend": "Provoacă un prieten",
+    "duelAnytime": "Dar poți oricând să ai un duel cu un prieten.",
+    "createDuel": "Creează un duel"
   },
   "account": {
     "saveTitle": "Salvează-ți seria și locul în RonDuel World",

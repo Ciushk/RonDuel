@@ -237,9 +237,17 @@ export const api = onRequest(apiOptions, async (req, res) => {
         name: body.name ? String(body.name) : undefined,
         tz: String(body.tz ?? 'UTC'),
         locale: (body.locale as Locale) ?? 'en',
+        themeEmoji: body.themeEmoji ? String(body.themeEmoji) : undefined,
+        themeColor: body.themeColor ? String(body.themeColor) : undefined,
         plan,
       });
-      res.status(200).json({ leagueId: lg.id, name: lg.name, inviteCode: lg.inviteCode });
+      res.status(200).json({
+        leagueId: lg.id,
+        name: lg.name,
+        inviteCode: lg.inviteCode,
+        themeEmoji: lg.themeEmoji,
+        themeColor: lg.themeColor,
+      });
       return;
     }
 
@@ -390,12 +398,10 @@ export const api = onRequest(apiOptions, async (req, res) => {
         await syncUserToFirestore(user);
         res.status(200).json(updated);
       } catch (err: any) {
-        res
-          .status(400)
-          .json({
-            error: err?.message || 'Nickname change failed',
-            code: err?.code || 'BAD_REQUEST',
-          });
+        res.status(400).json({
+          error: err?.message || 'Nickname change failed',
+          code: err?.code || 'BAD_REQUEST',
+        });
       }
       return;
     }

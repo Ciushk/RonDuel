@@ -681,7 +681,9 @@
     "newLeague": "+ Jauna līga",
     "notPlayed": "Nav spēlēts",
     "myDuels": "Manas divcīņas",
-    "challengeFriend": "Izaicināt draugu"
+    "challengeFriend": "Izaicināt draugu",
+    "duelAnytime": "Bet tu vienmēr vari sarīkot divcīņu ar draugu.",
+    "createDuel": "Izveidot divcīņu"
   },
   "account": {
     "saveTitle": "Saglabā savu sēriju un vietu RonDuel World",

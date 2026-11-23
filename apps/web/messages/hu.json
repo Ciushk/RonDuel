@@ -681,7 +681,9 @@
     "newLeague": "+ Új liga",
     "notPlayed": "Nem játszott",
     "myDuels": "Párbajaim",
-    "challengeFriend": "Hívd ki egy barátodat"
+    "challengeFriend": "Hívd ki egy barátodat",
+    "duelAnytime": "De mindig játszhatsz párbajt egy barátoddal.",
+    "createDuel": "Párbaj létrehozása"
   },
   "account": {
     "saveTitle": "Mentsd el a sorozatodat és a helyedet a RonDuel Worldben",

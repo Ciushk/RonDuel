@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { getLeagueTheme } from '@/lib/league-theme';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface LeagueMember {
@@ -107,7 +108,9 @@ export default function LeagueAdminPage() {
         setLoading(false);
       });
 
-    fetch(`/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(getBrowserTimeZone())}`)
+    fetch(
+      `/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(getBrowserTimeZone())}`,
+    )
       .then((r) => r.json())
       .then((d) => {
         if (d.isPro) setIsPro(true);
@@ -122,7 +125,8 @@ export default function LeagueAdminPage() {
 
   const getInviteLink = () => {
     if (!league) return '';
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'https://ronduel.web.app';
     return `${origin}/${locale}/l/${league.inviteCode}?r=${sessionUid}`;
   };
 
@@ -318,6 +322,7 @@ export default function LeagueAdminPage() {
   }
 
   const isFullFreeLeague = !isPro && league.memberCount >= 5;
+  const theme = getLeagueTheme(league.themeColor);
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
@@ -336,7 +341,11 @@ export default function LeagueAdminPage() {
       <Card className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-2xl" aria-hidden="true">
+            <span
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-2xl"
+              style={{ backgroundColor: `${theme.hex}22` }}
+              aria-hidden="true"
+            >
               {league.themeEmoji ?? '🏆'}
             </span>
             <h1 className="font-display text-xl font-extrabold">{league.name}</h1>
@@ -351,7 +360,11 @@ export default function LeagueAdminPage() {
         {/* 5/5 Full Banner for Free League Owner (§14) */}
         {isFullFreeLeague && (
           <div className="border-border bg-volt flex flex-col gap-2 rounded-xl border-2 p-3 text-xs font-bold text-[#16131F]">
-            <p>{t('leagueFullOwnerBanner', { default: 'Liga ta e plină (5/5). Cu Pro intră până la 200 de prieteni.' })}</p>
+            <p>
+              {t('leagueFullOwnerBanner', {
+                default: 'Liga ta e plină (5/5). Cu Pro intră până la 200 de prieteni.',
+              })}
+            </p>
             <Button
               size="sm"
               variant="primary"
@@ -428,7 +441,10 @@ export default function LeagueAdminPage() {
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-base font-extrabold">
-            {t('membersTitle', { count: league.memberCount, default: `Membrii ligii (${league.memberCount})` })}
+            {t('membersTitle', {
+              count: league.memberCount,
+              default: `Membrii ligii (${league.memberCount})`,
+            })}
           </h2>
           <UsersThree size={20} weight="bold" className="text-muted" aria-hidden="true" />
         </div>
@@ -442,7 +458,7 @@ export default function LeagueAdminPage() {
                   <div className="flex items-center gap-2">
                     <p className="truncate text-sm font-bold">{member.nickname}</p>
                     {isOwnerMember && (
-                      <Chip tone="gold" className="text-[10px] py-0 px-1.5">
+                      <Chip tone="gold" className="px-1.5 py-0 text-[10px]">
                         {t('roleOwner', { default: 'Proprietar' })}
                       </Chip>
                     )}

@@ -681,7 +681,9 @@
     "newLeague": "+ Ny liga",
     "notPlayed": "Ikke spillet",
     "myDuels": "Mine dueller",
-    "challengeFriend": "Udfordr en ven"
+    "challengeFriend": "Udfordr en ven",
+    "duelAnytime": "Men du kan altid tage en duel med en ven.",
+    "createDuel": "Opret en duel"
   },
   "account": {
     "saveTitle": "Gem din stime og din plads i RonDuel World",
