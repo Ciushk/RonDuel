@@ -681,7 +681,8 @@
     "newLeague": "+ Nová liga",
     "notPlayed": "Neodohrané",
     "myDuels": "Moje duely",
-    "challengeFriend": "Vyzvi priateľa"
+    "challengeFriend": "Vyzvi priateľa",
+    "freezeNotice": "Včera ste použili štít série. Vaša séria: {days, plural, one {# deň} other {# dní}}."
   },
   "account": {
     "saveTitle": "Ulož si svoju sériu a miesto v RonDuel World",
