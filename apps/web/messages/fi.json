@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {# päivän putki} other {# päivän putki}}",
     "shareBeatMe": "Voita minut → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Seuraava kierros",
+    "countdownAria": "Seuraava kierros avautuu noin {time} kuluttua (tunnit:minuutit)",
+    "tomorrowTeaser": "Huomisen teema: {theme}",
+    "milestoneReached": "{days} päivän putki saavutettu!",
+    "streakToMilestone": "{days, plural, one {# päivä jäljellä} other {# päivää jäljellä}} {milestone} päivän putkeen",
+    "streakProgressAria": "Edistyminen kohti {milestone} päivän putkea",
+    "inviteCta": "Kutsu 2 kaveria ja katso, kuka voittaa tänään",
+    "inviteFriends": "Kutsu kavereita",
+    "inviteShareText": "Pelaa tämän päivän RonDuel-kierros kanssani ja katso, kuka voittaa: {url}"
+  },
   "league": {
     "joinTitle": "Sinut on kutsuttu liigaan {name}",
     "joinCta": "Liity ja pelaa päivän kierros",

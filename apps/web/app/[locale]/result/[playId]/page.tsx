@@ -11,11 +11,13 @@ import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { EmojiTiles } from '@/components/result/EmojiTiles';
+import { NextRoundCard } from '@/components/result/NextRoundCard';
 import { ScoreCountUp } from '@/components/result/ScoreCountUp';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
+import { isStreakMilestone } from '@/lib/streak-milestones';
 
 interface LeagueRankInfo {
   id: string;
@@ -36,6 +38,7 @@ interface ResultData {
   streakCurrent: number;
   streakBest: number;
   finishedPlaysCount?: number;
+  tomorrow?: { roundNumber: number; topicOfTheDay?: string; themeKey?: string };
   review: Array<{
     index: number;
     questionId?: string;
@@ -133,7 +136,7 @@ export default function ResultPage() {
     }, 650);
 
     const confettiTimer = setTimeout(async () => {
-      if (personalBest || isRankOne) {
+      if (personalBest || isRankOne || isStreakMilestone(data.streakCurrent)) {
         try {
           const confetti = (await import('canvas-confetti')).default;
           confetti({
@@ -575,11 +578,25 @@ export default function ResultPage() {
           <Flame
             size={18}
             weight="fill"
-            className={cn('text-ron-strong', flameBumping && animated ? 'rd-flame-bump' : '')}
+            className={cn(
+              'text-ron-strong',
+              flameBumping && animated
+                ? 'rd-flame-bump'
+                : data.streakCurrent > 0
+                  ? 'rd-flame-flicker'
+                  : '',
+            )}
             aria-hidden="true"
           />
           <span>{t('result.streak', { days: data.streakCurrent })}</span>
         </div>
+
+        {/* Come back tomorrow: countdown, teaser and streak milestones */}
+        <NextRoundCard
+          streak={data.streakCurrent}
+          tomorrowThemeKey={data.tomorrow?.themeKey}
+          tomorrowTopic={data.tomorrow?.topicOfTheDay}
+        />
 
         {/* League ranks breakdown */}
         <div className="border-border-subtle bg-surface-2 rounded-2xl border p-3.5 space-y-2 text-left">
@@ -628,51 +645,38 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Primary action: Share to group */}
+        {/* Primary action: invite friends (the score only gets interesting with company) */}
         <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
           <ShareNetwork size={20} weight="bold" aria-hidden="true" />
-          {t('result.shareCta')}
+          {t('retention.inviteCta')}
         </Button>
 
-        {(primaryLeague || returnTo) && (
-          <Link
-            href={returnTo || `/${locale}/league/${primaryLeague?.id}`}
-            className="rd-sticker rd-sticker-pressable bg-duel-strong inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] px-5 text-base font-bold text-[var(--rd-on-blue)]"
-          >
-            <Trophy size={18} weight="fill" aria-hidden="true" />
-            {t('result.openLeague')} {primaryLeague?.name ? `(${primaryLeague.name})` : ''}
-          </Link>
-        )}
-
-        {/* Secondary actions: Challenge friends & Have a code */}
+        {/* Secondary actions */}
         <div className="grid gap-2">
-          <Button
-            fullWidth
-            size="md"
-            variant="secondary"
-            onClick={() => setIsCreateLeagueOpen(true)}
-          >
-            <Users size={18} weight="bold" aria-hidden="true" />
+          {(primaryLeague || returnTo) && (
+            <Link
+              href={returnTo || `/${locale}/league/${primaryLeague?.id}`}
+              className="rd-sticker rd-sticker-pressable bg-surface text-ink inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] px-5 text-base font-bold"
+            >
+              <Trophy size={18} weight="fill" aria-hidden="true" />
+              {t('result.openLeague')} {primaryLeague?.name ? `(${primaryLeague.name})` : ''}
+            </Link>
+          )}
+
+          <Button fullWidth size="md" variant="secondary" onClick={() => void handleCreateDuel()}>
+            <Sword size={18} weight="bold" aria-hidden="true" />
+            {t('result.challengeFriend')}
+          </Button>
+        </div>
+
+        {/* Tertiary actions: text-style, so the invite stays the one obvious button */}
+        <div className="flex flex-wrap items-center justify-center gap-x-2">
+          <Button size="sm" variant="ghost" onClick={() => setIsCreateLeagueOpen(true)}>
+            <Users size={16} weight="bold" aria-hidden="true" />
             {t('result.challengeCreateLeague')}
           </Button>
-
-          <Button
-            fullWidth
-            size="sm"
-            variant="secondary"
-            onClick={() => setIsJoinCodeOpen(true)}
-          >
+          <Button size="sm" variant="ghost" onClick={() => setIsJoinCodeOpen(true)}>
             {t('result.haveCode')}
-          </Button>
-
-          <Button
-            fullWidth
-            size="sm"
-            variant="secondary"
-            onClick={() => void handleCreateDuel()}
-          >
-            <Sword size={16} weight="bold" aria-hidden="true" />
-            {t('result.challengeFriend')}
           </Button>
         </div>
       </Card>

@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {niz # dneva} few {niz # dni} many {niz # dni} other {niz # dni}}",
     "shareBeatMe": "Premagaj me → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Naslednji krog",
+    "countdownAria": "Naslednji krog bo na voljo čez približno {time} (ure:minute)",
+    "tomorrowTeaser": "Jutrišnja tema: {theme}",
+    "milestoneReached": "Dosežen niz {days} dni!",
+    "streakToMilestone": "{days, plural, one {še # dan} other {še # dni}} do niza {milestone} dni",
+    "streakProgressAria": "Napredek do niza {milestone} dni",
+    "inviteCta": "Povabi 2 prijatelja in preveri, kdo bo danes zmagal",
+    "inviteFriends": "Povabi prijatelje",
+    "inviteShareText": "Igraj današnji krog igre RonDuel z mano in preveri, kdo bo zmagal: {url}"
+  },
   "league": {
     "joinTitle": "Povabljen si v ligo {name}",
     "joinCta": "Pridruži se in igraj današnji krog",

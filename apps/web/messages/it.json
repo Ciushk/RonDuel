@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {serie di # giorno} other {serie di # giorni}}",
     "shareBeatMe": "Batti il mio punteggio → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Prossima manche",
+    "countdownAria": "La prossima manche si sblocca tra circa {time} (ore:minuti)",
+    "tomorrowTeaser": "Il tema di domani: {theme}",
+    "milestoneReached": "Serie di {days} giorni raggiunta!",
+    "streakToMilestone": "Ancora {days, plural, one {# giorno} other {# giorni}} per raggiungere la tua serie di {milestone} giorni",
+    "streakProgressAria": "Progresso verso una serie di {milestone} giorni",
+    "inviteCta": "Invita 2 amici e scopri chi vince oggi",
+    "inviteFriends": "Invita amici",
+    "inviteShareText": "Gioca con me alla manche di RonDuel di oggi e scopri chi vince: {url}"
+  },
   "league": {
     "joinTitle": "Sei stato invitato in {name}",
     "joinCta": "Entra e gioca la manche di oggi",

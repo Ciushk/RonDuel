@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {# dienos serija} few {# dienų serija} many {# dienų serija} other {# dienų serija}}",
     "shareBeatMe": "Nugalėk mane → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Kitas raundas",
+    "countdownAria": "Kitas raundas bus atrakintas maždaug po {time} (valandos:minutės)",
+    "tomorrowTeaser": "Rytojaus tema: {theme}",
+    "milestoneReached": "Pasiekta {days} dienų serija!",
+    "streakToMilestone": "{days, plural, one {Dar # diena} other {Dar # dienų}} iki tavo {milestone} dienų serijos",
+    "streakProgressAria": "Pažanga siekiant {milestone} dienų serijos",
+    "inviteCta": "Pakviesk 2 draugus ir sužinok, kas šiandien laimės",
+    "inviteFriends": "Pakviesk draugus",
+    "inviteShareText": "Žaisk šiandienos „RonDuel“ raundą su manimi ir sužinok, kas laimės: {url}"
+  },
   "league": {
     "joinTitle": "Esate pakviesti į {name}",
     "joinCta": "Prisijungti ir žaisti šios dienos raundą",

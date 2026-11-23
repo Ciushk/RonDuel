@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {série # dne} few {série # dní} many {série # dní} other {série # dne}}",
     "shareBeatMe": "Poraž mě → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Další kolo",
+    "countdownAria": "Další kolo se odemkne přibližně za {time} (hodiny:minuty)",
+    "tomorrowTeaser": "Zítřejší téma: {theme}",
+    "milestoneReached": "Dosáhli jste série {days} dní!",
+    "streakToMilestone": "K dosažení série {milestone} dní {days, plural, one {zbývá ještě # den} other {zbývá ještě # dní}}",
+    "streakProgressAria": "Postup k sérii {milestone} dní",
+    "inviteCta": "Pozvi 2 přátele a zjisti, kdo dnes vyhraje",
+    "inviteFriends": "Pozvat přátele",
+    "inviteShareText": "Zahraj si se mnou dnešní kolo RonDuelu a zjisti, kdo vyhraje: {url}"
+  },
   "league": {
     "joinTitle": "Máš pozvánku do ligy {name}",
     "joinCta": "Připojit se a hrát dnešní kolo",

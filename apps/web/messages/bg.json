@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {серия от # ден} other {серия от # дни}}",
     "shareBeatMe": "Победи ме → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Следващ рунд",
+    "countdownAria": "Следващият рунд се отключва след около {time} (часове:минути)",
+    "tomorrowTeaser": "Утрешната тема: {theme}",
+    "milestoneReached": "Постигна серия от {days} дни!",
+    "streakToMilestone": "{days, plural, one {още # ден} other {още # дни}} до серията ти от {milestone} дни",
+    "streakProgressAria": "Напредък към серия от {milestone} дни",
+    "inviteCta": "Покани 2 приятели и виж кой ще спечели днес",
+    "inviteFriends": "Покани приятели",
+    "inviteShareText": "Играй днешния рунд на RonDuel с мен и виж кой ще спечели: {url}"
+  },
   "league": {
     "joinTitle": "Имаш покана за {name}",
     "joinCta": "Присъедини се и играй днешния рунд",

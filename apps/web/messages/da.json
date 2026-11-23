@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {# dags stime} other {# dages stime}}",
     "shareBeatMe": "Slå mig → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Næste runde",
+    "countdownAria": "Næste runde låses op om cirka {time} (timer:minutter)",
+    "tomorrowTeaser": "Temaet i morgen: {theme}",
+    "milestoneReached": "Du har nået en streak på {days} dage!",
+    "streakToMilestone": "{days, plural, one {# dag} other {# dage}} til din streak på {milestone} dage",
+    "streakProgressAria": "Fremskridt mod en streak på {milestone} dage",
+    "inviteCta": "Invitér 2 venner, og se, hvem der vinder i dag",
+    "inviteFriends": "Invitér venner",
+    "inviteShareText": "Spil dagens RonDuel-runde med mig, og se, hvem der vinder: {url}"
+  },
   "league": {
     "joinTitle": "Du er inviteret til {name}",
     "joinCta": "Deltag og spil dagens runde",

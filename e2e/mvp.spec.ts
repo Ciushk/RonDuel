@@ -53,7 +53,7 @@ test.describe('Phase 1 MVP core loop', () => {
     await expect(page.getByText('Your score')).toBeVisible();
 
     // Share creates a league automatically
-    await page.getByRole('button', { name: 'Share to your group' }).click();
+    await page.getByRole('button', { name: 'Invite 2 friends and see who wins today' }).click();
     await expect(page.getByRole('link', { name: /Open league leaderboard/i })).toBeVisible({
       timeout: 5_000,
     });

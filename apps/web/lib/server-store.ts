@@ -499,6 +499,20 @@ export function getRoundMeta(date: string) {
   return { date, roundNumber, topicOfTheDay, themeKey, itemCount: 6 };
 }
 
+/** Teaser for the next round: its number and (when it is one of the known themes) the i18n key. */
+export function getTomorrowTeaser(date: string) {
+  const next = new Date(`${date}T12:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  const nextDate = next.toISOString().slice(0, 10);
+  const meta = getRoundMeta(nextDate);
+  return {
+    date: nextDate,
+    roundNumber: meta.roundNumber,
+    topicOfTheDay: meta.topicOfTheDay,
+    themeKey: TOPIC_KEYS[meta.topicOfTheDay],
+  };
+}
+
 function resolveQuestionToItem(
   q: StoredQuestion,
   index: number,
@@ -1565,6 +1579,7 @@ export function finishRound(
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
     finishedPlaysCount,
+    tomorrow: getTomorrowTeaser(play.date),
     review: resolved.map((r, idx) => {
       const itemState = play.items.find((i) => i.index === idx);
       const isCorrect = itemState

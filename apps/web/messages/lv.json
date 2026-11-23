@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, zero {# dienu sērija} one {# dienas sērija} other {# dienu sērija}}",
     "shareBeatMe": "Pārspēj mani → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Nākamā kārta",
+    "countdownAria": "Nākamā kārta būs pieejama pēc aptuveni {time} (stundas:minūtes)",
+    "tomorrowTeaser": "Rītdienas tēma: {theme}",
+    "milestoneReached": "Sasniegta {days} dienu sērija!",
+    "streakToMilestone": "Līdz {milestone} dienu sērijai vēl {days, plural, one {# diena} other {# dienas}}",
+    "streakProgressAria": "Progress ceļā uz {milestone} dienu sēriju",
+    "inviteCta": "Uzaicini 2 draugus un noskaidro, kurš šodien uzvarēs",
+    "inviteFriends": "Uzaicināt draugus",
+    "inviteShareText": "Spēlē šodienas RonDuel kārtu kopā ar mani un noskaidro, kurš uzvarēs: {url}"
+  },
   "league": {
     "joinTitle": "Tu esi uzaicināts uz {name}",
     "joinCta": "Pievienoties un spēlēt šodienas kārtu",

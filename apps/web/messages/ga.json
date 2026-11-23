@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {stéig # lá} two {stéig # lá} few {stéig # lá} many {stéig # lá} other {stéig # lá}}",
     "shareBeatMe": "Buaigh orm → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "An chéad bhabhta eile",
+    "countdownAria": "Díghlasálfar an chéad bhabhta eile i gceann tuairim is {time} (uaireanta:nóiméid)",
+    "tomorrowTeaser": "Téama an lae amárach: {theme}",
+    "milestoneReached": "Tá sraith {days} lá bainte amach agat!",
+    "streakToMilestone": "{days, plural, one {# lá eile} other {# lá eile}} go dtí do shraith {milestone} lá",
+    "streakProgressAria": "Dul chun cinn i dtreo sraith {milestone} lá",
+    "inviteCta": "Tabhair cuireadh do 2 chara agus féach cé a bhuafaidh inniu",
+    "inviteFriends": "Tabhair cuireadh do chairde",
+    "inviteShareText": "Imir babhta RonDuel an lae inniu liom agus féach cé a bhuafaidh: {url}"
+  },
   "league": {
     "joinTitle": "Tugadh cuireadh duit chuig {name}",
     "joinCta": "Glac páirt & imir babhta an lae inniu",

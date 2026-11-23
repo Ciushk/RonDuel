@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {serie de # zi} few {serie de # zile} other {serie de # de zile}}",
     "shareBeatMe": "Bate-mă dacă poți → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Runda următoare",
+    "countdownAria": "Runda următoare se deblochează peste aproximativ {time} (ore:minute)",
+    "tomorrowTeaser": "Tema de mâine: {theme}",
+    "milestoneReached": "Serie de {days} zile atinsă!",
+    "streakToMilestone": "{days, plural, one {Încă # zi} few {Încă # zile} other {Încă # de zile}} până la seria de {milestone} zile",
+    "streakProgressAria": "Progres spre o serie de {milestone} zile",
+    "inviteCta": "Invită 2 prieteni și vezi cine câștigă azi",
+    "inviteFriends": "Invită prieteni",
+    "inviteShareText": "Joacă runda de azi din RonDuel cu mine și vezi cine câștigă: {url}"
+  },
   "league": {
     "joinTitle": "Ești invitat în {name}",
     "joinCta": "Intră și joacă runda de azi",

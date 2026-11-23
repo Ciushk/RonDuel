@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {serje ta' jum #} two {serje ta' jumejn} few {serje ta' # ijiem} many {serje ta' #-il jum} other {serje ta' # jum}}",
     "shareBeatMe": "Għelibni → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Ir-rawnd li jmiss",
+    "countdownAria": "Ir-rawnd li jmiss jinfetaħ f’madwar {time} (sigħat:minuti)",
+    "tomorrowTeaser": "It-tema ta’ għada: {theme}",
+    "milestoneReached": "Wasalt għal sensiela ta’ {days} jum!",
+    "streakToMilestone": "{days, plural, one {# jum ieħor} other {# ijiem oħra}} għas-sensiela tiegħek ta’ {milestone} jum",
+    "streakProgressAria": "Progress lejn sensiela ta’ {milestone} jum",
+    "inviteCta": "Stieden 2 ħbieb u ara min jirbaħ illum",
+    "inviteFriends": "Stieden lill-ħbieb",
+    "inviteShareText": "Ilgħab ir-rawnd ta’ RonDuel tal-lum miegħi u ara min jirbaħ: {url}"
+  },
   "league": {
     "joinTitle": "Int mistieden għal {name}",
     "joinCta": "Ingħaqad & ilgħab ir-rawnd tal-lum",
