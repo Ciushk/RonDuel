@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 
+import { ResultTile, tileKindFromEmoji } from './ResultTile';
+
 export interface EmojiTilesProps {
+  /** Stored result line made of ⚡ 🟩 🟥; it is only parsed here, never rendered as text. */
   emojiLine: string;
   animated?: boolean;
 }
@@ -10,9 +13,8 @@ export interface EmojiTilesProps {
 export function EmojiTiles({ emojiLine, animated = false }: EmojiTilesProps) {
   const t = useTranslations();
 
-  // Split into emojis preserving unicode glyphs
-  const tiles = Array.from(emojiLine || '');
-  const correctCount = tiles.filter((e) => e === '🟩' || e === '⚡').length;
+  const tiles = Array.from(emojiLine || '').filter((e) => e === '⚡' || e === '🟩' || e === '🟥');
+  const correctCount = tiles.filter((e) => e !== '🟥').length;
   const totalCount = tiles.length;
 
   return (
@@ -21,31 +23,14 @@ export function EmojiTiles({ emojiLine, animated = false }: EmojiTilesProps) {
       aria-label={t('result.tilesLabel', { correct: correctCount, total: totalCount })}
       className="flex flex-wrap items-center justify-center gap-2 py-1"
     >
-      {tiles.map((emoji, idx) => {
-        const isLightning = emoji === '⚡';
-        const isGreen = emoji === '🟩';
-        const isRed = emoji === '🟥';
-
-        return (
-          <div
-            key={idx}
-            style={animated ? ({ animationDelay: `${idx * 80}ms` } as React.CSSProperties) : undefined}
-            className={[
-              'relative flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border-2 border-border text-xl font-bold select-none rd-sticker',
-              isGreen
-                ? 'bg-correct text-[#16131F]'
-                : isLightning
-                  ? 'bg-volt text-[#16131F]'
-                  : isRed
-                    ? 'bg-wrong text-[var(--rd-on-wrong)]'
-                    : 'bg-surface text-ink',
-              animated ? 'rd-tile-pop' : '',
-            ].join(' ')}
-          >
-            {emoji}
-          </div>
-        );
-      })}
+      {tiles.map((emoji, idx) => (
+        <ResultTile
+          key={idx}
+          kind={tileKindFromEmoji(emoji)}
+          className={animated ? 'rd-tile-pop' : undefined}
+          style={animated ? { animationDelay: `${idx * 80}ms` } : undefined}
+        />
+      ))}
     </div>
   );
 }
