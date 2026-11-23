@@ -108,6 +108,17 @@
     "shareStreak": "🔥 {count, plural, one {#-päevane seeria} other {#-päevane seeria}}",
     "shareBeatMe": "Mängi mind üle → {url}"
   },
+  "retention": {
+    "nextRoundLabel": "Järgmine voor",
+    "countdownAria": "Järgmine voor avaneb umbes {time} pärast (tunnid:minutid)",
+    "tomorrowTeaser": "Homme on teemaks: {theme}",
+    "milestoneReached": "{days}-päevane seeria saavutatud!",
+    "streakToMilestone": "{days, plural, one {# päev veel} other {# päeva veel}} sinu {milestone}-päevase seeriani",
+    "streakProgressAria": "Edusammud {milestone}-päevase seeria suunas",
+    "inviteCta": "Kutsu 2 sõpra ja vaata, kes täna võidab",
+    "inviteFriends": "Kutsu sõpru",
+    "inviteShareText": "Mängi minuga tänast RonDueli vooru ja vaata, kes võidab: {url}"
+  },
   "league": {
     "joinTitle": "Sind on kutsutud liigasse {name}",
     "joinCta": "Liitu ja mängi tänast vooru",
