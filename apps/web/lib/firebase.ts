@@ -184,28 +184,39 @@ export async function logoutUser(): Promise<void> {
   await signOut(auth);
 }
 
+export interface SignedInAccount {
+  uid: string;
+  email: string | null;
+}
+
 /**
- * Uid of the signed-in account Firebase Auth already restored, if any.
- * Guests resolve to null, and so does Auth that does not answer in time.
+ * Account Firebase Auth restored. Anonymous guests and a hung Auth restore resolve to null.
+ * Waits for authStateReady so the first null callback during persistence load is not treated
+ * as "signed out".
  */
-export function getSignedInUid(): Promise<string | null> {
+export async function getSignedInAccount(): Promise<SignedInAccount | null> {
   const auth = getFirebaseAuth();
-  if (!auth) return Promise.resolve(null);
-  return new Promise((resolve) => {
-    let settled = false;
-    let stop: (() => void) | null = null;
-    const finish = (uid: string | null) => {
-      if (settled) return;
-      settled = true;
-      if (stop) stop();
-      resolve(uid);
-    };
-    const timer = setTimeout(() => finish(null), 4000);
-    stop = onAuthStateChanged(auth, (user) => {
-      clearTimeout(timer);
-      finish(user && !user.isAnonymous ? user.uid : null);
-    });
-  });
+  if (!auth) return null;
+  try {
+    if (typeof auth.authStateReady === 'function') {
+      await Promise.race([
+        auth.authStateReady(),
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, 4000);
+        }),
+      ]);
+    }
+  } catch {
+    return null;
+  }
+  const user = auth.currentUser;
+  if (!user || user.isAnonymous) return null;
+  return { uid: user.uid, email: user.email };
+}
+
+export async function getSignedInUid(): Promise<string | null> {
+  const account = await getSignedInAccount();
+  return account?.uid ?? null;
 }
 
 export { onAuthStateChanged, updateProfile, type User };

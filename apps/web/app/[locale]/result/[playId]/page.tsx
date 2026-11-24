@@ -296,6 +296,7 @@ export default function ResultPage() {
   // "already played today" state with the live countdown to the next round.
   useEffect(() => {
     if (!data || returnTo || typeof window === 'undefined') return;
+    if (isLinkSheetOpen || isSharePickerOpen || isCreateLeagueOpen || isJoinCodeOpen) return;
     const key = `rd_result_auto_home_${data.playId}`;
     if (sessionStorage.getItem(key)) return;
     const timer = setTimeout(() => {
@@ -303,7 +304,16 @@ export default function ResultPage() {
       router.replace(`/${locale}`);
     }, 10_000);
     return () => clearTimeout(timer);
-  }, [data, locale, returnTo, router]);
+  }, [
+    data,
+    locale,
+    returnTo,
+    router,
+    isLinkSheetOpen,
+    isSharePickerOpen,
+    isCreateLeagueOpen,
+    isJoinCodeOpen,
+  ]);
 
   const handleLinkDismissed = () => {
     setIsLinkSheetOpen(false);

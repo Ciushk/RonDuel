@@ -28,6 +28,7 @@ import {
 import { pickCuratedTemplates, type GeneratedDraftTemplate } from './ai-question-bank';
 import { planAccountMerge, normalizeAuthProvider, type MergeUser } from './account-merge';
 import { anonExpiresAtIso } from './anon-retention';
+import { normalizeLeagueThemeColor } from './league-theme';
 import {
   type DailyRoundRecord,
   type GeneratedQuestionItem,
@@ -632,6 +633,31 @@ export function consumeDirtyUsers(): UserRecord[] {
   return users;
 }
 
+/** Write the current nickname onto league members and day scores when it actually changed. */
+export function syncNicknameToLeagues(uid: string, nickname: string): boolean {
+  const store = getStore();
+  const user = store.users[uid];
+  const leagueIds = user?.leagueIds ?? [];
+  let changed = false;
+  for (const lid of leagueIds) {
+    const league = store.leagues[lid];
+    if (!league) continue;
+    const member = league.members[uid];
+    if (member && member.nickname !== nickname) {
+      member.nickname = nickname;
+      changed = true;
+    }
+    for (const day of Object.values(league.days ?? {})) {
+      const entry = day[uid];
+      if (entry && entry.nickname !== nickname) {
+        entry.nickname = nickname;
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
 export function getOrCreateUser(params: {
   uid: string;
   nickname?: string;
@@ -714,35 +740,19 @@ export function getOrCreateUser(params: {
     user.leagueIds.unshift('lg_world');
   }
   const world = store.leagues['lg_world'];
-  if (world) {
-    if (!world.members[user.uid]) {
-      world.members[user.uid] = {
-        uid: user.uid,
-        nickname: user.nickname,
-        role: 'member',
-        joinedAt: user.createdAt,
-        allTimeScore: 0,
-        roundsPlayed: 0,
-        weeklyWins: 0,
-        bestStreak: 0,
-      };
-    } else {
-      // Keep league member nickname in sync with the (possibly updated) user nickname
-      world.members[user.uid]!.nickname = user.nickname;
-    }
+  if (world && !world.members[user.uid]) {
+    world.members[user.uid] = {
+      uid: user.uid,
+      nickname: user.nickname,
+      role: 'member',
+      joinedAt: user.createdAt,
+      allTimeScore: 0,
+      roundsPlayed: 0,
+      weeklyWins: 0,
+      bestStreak: 0,
+    };
   }
-  // Cascade current nickname to every league the user belongs to (member + day entries),
-  // so stale nicknames (e.g. "Player_xxxx" from before onboarding) never linger.
-  for (const lid of user.leagueIds) {
-    const lg = store.leagues[lid];
-    if (!lg) continue;
-    if (lg.members[user.uid]) lg.members[user.uid]!.nickname = user.nickname;
-    if (lg.days) {
-      for (const d of Object.keys(lg.days)) {
-        if (lg.days[d]?.[user.uid]) lg.days[d]![user.uid]!.nickname = user.nickname;
-      }
-    }
-  }
+  syncNicknameToLeagues(user.uid, user.nickname);
   if (!user.country) {
     const tz = user.tz || 'UTC';
     if (tz.includes('Bucharest') || tz.includes('Chisinau')) user.country = 'RO';
@@ -877,18 +887,7 @@ export function changeUserNickname(params: { uid: string; newNickname: string })
   user.nickname = validNick;
   user.lastNicknameChangeAt = new Date().toISOString();
   markUserDirty(user.uid);
-
-  // Cascade to leagues where user is a member (member + day entries)
-  for (const leagueId of user.leagueIds) {
-    const lg = store.leagues[leagueId];
-    if (!lg) continue;
-    if (lg.members[params.uid]) lg.members[params.uid]!.nickname = validNick;
-    if (lg.days) {
-      for (const d of Object.keys(lg.days)) {
-        if (lg.days[d]?.[params.uid]) lg.days[d]![params.uid]!.nickname = validNick;
-      }
-    }
-  }
+  syncNicknameToLeagues(params.uid, validNick);
 
   saveStoreToDisk(store);
   return { success: true, nickname: validNick, lastNicknameChangeAt: user.lastNicknameChangeAt };
@@ -1756,7 +1755,8 @@ export function createLeague(params: {
     throw new ApiError('LEAGUE_NAME_TAKEN', 'League name is already taken', 400);
   }
 
-  const isProLeague = user.pro.active || params.plan === 'pro_trial' || params.plan === 'pro';
+  // Client `plan: 'pro'` is not enough. Only an active Pro/trial on the user record raises the cap.
+  const isProLeague = Boolean(user.pro?.active);
   const maxMembers = isProLeague ? PRO_LIMITS.maxMembersPerLeague : FREE_LIMITS.maxMembersPerLeague;
 
   const league: LeagueRecord = {
@@ -1767,7 +1767,7 @@ export function createLeague(params: {
     tz: params.tz,
     maxMembers,
     themeEmoji: params.themeEmoji || '🏆',
-    themeColor: params.themeColor || 'default',
+    themeColor: normalizeLeagueThemeColor(params.themeColor),
     members: {
       [params.uid]: {
         uid: params.uid,
@@ -2911,17 +2911,7 @@ export function upgradeAccount(params: {
   const provider = normalizeAuthProvider(params.provider);
   if (params.nickname?.trim()) {
     user.nickname = params.nickname.trim();
-    // Cascade nickname to leagues
-    for (const lid of user.leagueIds) {
-      const lg = store.leagues[lid];
-      if (!lg) continue;
-      if (lg.members[params.uid]) lg.members[params.uid]!.nickname = user.nickname;
-      if (lg.days) {
-        for (const d of Object.keys(lg.days)) {
-          if (lg.days[d]?.[params.uid]) lg.days[d]![params.uid]!.nickname = user.nickname;
-        }
-      }
-    }
+    syncNicknameToLeagues(params.uid, user.nickname);
   }
 
   const namedTarget = params.targetUid ? store.users[params.targetUid] : undefined;

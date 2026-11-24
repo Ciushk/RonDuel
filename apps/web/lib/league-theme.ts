@@ -16,6 +16,12 @@ export function getLeagueTheme(color?: string | null): LeagueTheme {
   return (color && LEAGUE_THEMES[color]) || LEAGUE_THEMES.default!;
 }
 
+/** Keep only known theme ids. Anything else becomes `default`. */
+export function normalizeLeagueThemeColor(color?: string | null): string {
+  if (color && Object.prototype.hasOwnProperty.call(LEAGUE_THEMES, color)) return color;
+  return 'default';
+}
+
 /** Soft tint of the league colour, e.g. leagueThemeTint(color, '22') for ~13% alpha. */
 export function leagueThemeTint(color: string | null | undefined, alpha: string): string {
   return `${getLeagueTheme(color).hex}${alpha}`;

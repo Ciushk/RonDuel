@@ -30,6 +30,7 @@ import { apiErrorMessage } from '@/lib/api-error';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
+import { serverProfileToApply } from '@/lib/onboarding-profile';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
 
 interface ActiveDuel {
@@ -90,11 +91,6 @@ interface TodayStatus {
   hasFullFreeLeague?: boolean;
 }
 
-// Nickname the API generates for players who never picked one (see getOrCreateUser).
-function isAutoNickname(nickname: string): boolean {
-  return /^Player_[A-Za-z0-9]{2,8}$/.test(nickname);
-}
-
 function getSecondsUntilMidnight(): number {
   const now = new Date();
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
@@ -130,15 +126,14 @@ export default function LocaleHomePage() {
   // is adopted instead of asking the player to pick one again after signing in.
   const applyServerProfile = (data: TodayStatus) => {
     const session = getLocalSession();
-    if (session.nickname && session.ageConfirmed16) return;
-    const serverNickname = (data.nickname ?? '').trim();
-    if (!serverNickname || isAutoNickname(serverNickname)) return;
-    if (data.ageConfirmed16 === false) return;
-    saveLocalSession({
-      ...session,
-      nickname: session.nickname || serverNickname,
-      ageConfirmed16: true,
+    const next = serverProfileToApply({
+      sessionNickname: session.nickname,
+      sessionAgeConfirmed: Boolean(session.ageConfirmed16),
+      serverNickname: data.nickname,
+      serverAgeConfirmed: data.ageConfirmed16,
     });
+    if (!next) return;
+    saveLocalSession({ ...session, ...next });
   };
 
   const loadStatus = () => {
@@ -245,17 +240,18 @@ export default function LocaleHomePage() {
       return;
     }
     const session = getLocalSession();
-    const serverNickname = (status?.nickname ?? '').trim();
-    const confirmedElsewhere =
-      Boolean(serverNickname) &&
-      !isAutoNickname(serverNickname) &&
-      status?.ageConfirmed16 !== false;
-    if ((!session.nickname || !session.ageConfirmed16) && !confirmedElsewhere) {
+    const adopted = serverProfileToApply({
+      sessionNickname: session.nickname,
+      sessionAgeConfirmed: Boolean(session.ageConfirmed16),
+      serverNickname: status?.nickname,
+      serverAgeConfirmed: status?.ageConfirmed16,
+    });
+    if ((!session.nickname || !session.ageConfirmed16) && !adopted) {
       setNickSheetOpen(true);
       return;
     }
-    if (!session.nickname || !session.ageConfirmed16) {
-      saveLocalSession({ ...session, nickname: serverNickname, ageConfirmed16: true });
+    if (adopted) {
+      saveLocalSession({ ...getLocalSession(), ...adopted });
     }
     router.push(`/${locale}/play`);
   };

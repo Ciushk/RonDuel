@@ -2,7 +2,7 @@
 
 import {
   ensureAnonymousAuth,
-  getSignedInUid,
+  getSignedInAccount,
   linkAnonymousWithEmail,
   linkAnonymousWithGoogle,
   registerWithEmail,
@@ -156,26 +156,89 @@ export async function linkSessionWithPassword(params: {
  * another browser) continues the same profile instead of starting a new guest.
  */
 export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
-  const authUid = await getSignedInUid();
+  const account = await getSignedInAccount();
   const session = getLocalSession();
-  if (!authUid || authUid === session.uid) return session;
+  if (!account || account.uid === session.uid) return session;
   // Only a guest session is adopted; a signed-in local account keeps its own uid.
-  if (!session.isAnonymous || session.email) return session;
+  if (session.isAnonymous === false || session.email) return session;
+
+  let adopted: { uid?: string; moved?: boolean } | null = null;
   try {
-    await fetch('/api/me/adopt-auth', {
+    const res = await fetch('/api/me/adopt-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fromUid: session.uid, toUid: authUid }),
+      body: JSON.stringify({ fromUid: session.uid, toUid: account.uid }),
     });
+    if (!res.ok) return session;
+    adopted = (await res.json().catch(() => null)) as { uid?: string; moved?: boolean } | null;
   } catch {
     return session;
   }
-  const next: LocalSession = {
-    ...session,
-    uid: authUid,
-    isAnonymous: false,
-    expiresAt: undefined,
-  };
-  saveLocalSession(next);
-  return next;
+
+  if (adopted?.moved) {
+    const next: LocalSession = {
+      ...session,
+      uid: account.uid,
+      email: account.email ?? undefined,
+      isAnonymous: !account.email,
+      authProvider: account.email ? 'google.com' : session.authProvider,
+      expiresAt: account.email ? undefined : session.expiresAt,
+    };
+    saveLocalSession(next);
+    return next;
+  }
+
+  // The signed-in account already exists. Merge the guest into it instead of
+  // dropping the guest uid (and its plays) when the request fails.
+  if (adopted?.uid === account.uid && account.email) {
+    try {
+      const upgrade = await fetch('/api/me/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: session.uid,
+          targetUid: account.uid,
+          email: account.email,
+          nickname: session.nickname || undefined,
+          provider: 'google.com',
+          confirmMerge: true,
+        }),
+      });
+      if (!upgrade.ok) return session;
+      const data = (await upgrade.json().catch(() => ({}))) as {
+        uid?: string;
+        email?: string;
+        nickname?: string;
+      };
+      const next: LocalSession = {
+        ...session,
+        uid: data.uid || account.uid,
+        email: data.email || account.email,
+        nickname: data.nickname || session.nickname,
+        isAnonymous: false,
+        authProvider: 'google.com',
+        expiresAt: undefined,
+      };
+      saveLocalSession(next);
+      return next;
+    } catch {
+      return session;
+    }
+  }
+
+  // Nothing on the server belonged to this guest. Follow the restored account.
+  if (adopted?.uid === session.uid) {
+    const next: LocalSession = {
+      ...session,
+      uid: account.uid,
+      email: account.email ?? undefined,
+      isAnonymous: !account.email,
+      authProvider: account.email ? 'google.com' : session.authProvider,
+      expiresAt: account.email ? undefined : session.expiresAt,
+    };
+    saveLocalSession(next);
+    return next;
+  }
+
+  return session;
 }
