@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { useFeatureFlag } from '@/lib/feature-flags';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { getLocalSession } from '@/lib/session';
 
@@ -70,6 +71,7 @@ export default function LeaguePage() {
   const locale = useLocale();
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const townEnabled = useFeatureFlag('town_enabled');
 
   const [league, setLeague] = useState<LeagueView | null>(null);
   const [loading, setLoading] = useState(true);
@@ -752,17 +754,29 @@ export default function LeaguePage() {
                       {row.emojiLine && <p className="text-xs tracking-tight">{row.emojiLine}</p>}
                     </div>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <span className="rd-tabular text-ink block text-lg font-black">
-                      {row.score !== null
-                        ? t('common.points', { points: row.score.toLocaleString() })
-                        : '—'}
-                    </span>
-                    {row.totalMs !== null && row.totalMs > 0 && (
-                      <span className="text-muted block text-[11px] font-bold">
-                        {(row.totalMs / 1000).toFixed(1)}s
-                      </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {townEnabled && !isMe && (
+                      <Link
+                        href={`/${locale}/town?visit=${encodeURIComponent(row.uid)}`}
+                        title={t('town.visit.title', { name: row.nickname })}
+                        className="border-border bg-surface hover:border-volt hover:bg-surface-2 flex h-8 w-8 items-center justify-center rounded-xl border-2 text-sm transition-colors"
+                        aria-label={t('town.visit.title', { name: row.nickname })}
+                      >
+                        🏡
+                      </Link>
                     )}
+                    <div className="text-right">
+                      <span className="rd-tabular text-ink block text-lg font-black">
+                        {row.score !== null
+                          ? t('common.points', { points: row.score.toLocaleString() })
+                          : '—'}
+                      </span>
+                      {row.totalMs !== null && row.totalMs > 0 && (
+                        <span className="text-muted block text-[11px] font-bold">
+                          {(row.totalMs / 1000).toFixed(1)}s
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -819,6 +833,16 @@ export default function LeaguePage() {
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
+                    {townEnabled && !isMe && (
+                      <Link
+                        href={`/${locale}/town?visit=${encodeURIComponent(row.uid)}`}
+                        title={t('town.visit.title', { name: row.nickname })}
+                        className="border-border bg-surface hover:border-volt hover:bg-surface-2 flex h-8 w-8 items-center justify-center rounded-xl border-2 text-sm transition-colors"
+                        aria-label={t('town.visit.title', { name: row.nickname })}
+                      >
+                        🏡
+                      </Link>
+                    )}
                     <div className="text-right">
                       <span className="rd-tabular text-ink block text-lg font-black">
                         {t('common.points', { points: row.allTimeScore.toLocaleString() })}

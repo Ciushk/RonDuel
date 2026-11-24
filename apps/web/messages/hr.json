@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Postavke",
-    "duelsYourTurnBadge": "{count, plural, one {# dvoboj čeka na tvoj potez} few {# dvoboja čekaju na tvoj potez} many {# dvoboja čeka na tvoj potez} other {# dvoboja čeka na tvoj potez}}"
+    "duelsYourTurnBadge": "{count, plural, one {# dvoboj čeka na tvoj potez} few {# dvoboja čekaju na tvoj potez} many {# dvoboja čeka na tvoj potez} other {# dvoboja čeka na tvoj potez}}",
+    "town": "Grad"
   },
   "onboarding": {
     "pickNickname": "Odaberi svoj nadimak",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Provjeri jesi li točno unio kod ili zatraži novu poveznicu od osobe koja te pozvala.",
     "leaderboardTitleCount": "Ljestvica lige ({count})",
     "nicknamePlaceholder": "npr. Alex99",
-    "joining": "Pridruživanje…"
+    "joining": "Pridruživanje…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court dvoboj",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Nisam mogao zakazati rundu za {date}: {error}.",
     "replyAdminDrafts": "Stvorio sam {count} novih pitanja tipa {type} o „{topic}” ({ids}).",
     "replyAdminPanel": "Možeš ih provjeriti u admin ploči.",
-    "openAdmin": "Otvori admin"
+    "openAdmin": "Otvori admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Dnevni kviz s prijateljima",
@@ -784,5 +787,235 @@
     "description": "Dnevni kviz s prijateljima",
     "shortcutPlay": "Odigraj današnju rundu",
     "shortcutLeagues": "Moje lige"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Gradi",
+      "shop": "Trgovina",
+      "orders": "Narudžbe",
+      "inventory": "Spremište",
+      "stats": "Mještani",
+      "friends": "Prijatelji",
+      "coins": "Novčići",
+      "help": "Pomoć",
+      "toggle": "Alatna traka"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Raz. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Potrebno je više stambenog prostora",
+      "limitedByServices": "Potrebno je više usluga (škola, bolnica...)",
+      "gateTownHall": "Gradska vijećnica potrebna za Raz2 (maks 9 mještana)",
+      "gateHospital": "Bolnica potrebna za Raz4",
+      "gatePoliceFire": "Policija i Vatrogasci potrebni za Raz5",
+      "arrivalIn": "Sljedeći mještanin: {time}",
+      "maxCapacity": "Grad je na maksimalnom kapacitetu"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Početna Kuća",
+        "desc": "Ugodan dom za vaša prva 2 mještanina."
+      },
+      "cottage": {
+        "name": "Koliba",
+        "desc": "Dom za 2 mještanina."
+      },
+      "house": {
+        "name": "Obiteljska Kuća",
+        "desc": "Prostrana kuća za 4 mještanina."
+      },
+      "apartment": {
+        "name": "Stambena Zgrada",
+        "desc": "Višekatnica za 10 mještana."
+      },
+      "villa": {
+        "name": "Vila",
+        "desc": "Raskošan posjed za 6 mještana."
+      },
+      "shop": {
+        "name": "Seoska Trgovina",
+        "desc": "Opskrbljuje namirnicama i podržava 6 mještana."
+      },
+      "town_hall": {
+        "name": "Gradska Vijećnica",
+        "desc": "Središte za 8 mještana. Otključava Raz2."
+      },
+      "park": {
+        "name": "Gradski Park",
+        "desc": "Zelena oaza za 4 mještanina."
+      },
+      "bakery": {
+        "name": "Pekarnica",
+        "desc": "Svježi kruh za 6 mještana."
+      },
+      "school": {
+        "name": "Škola",
+        "desc": "Obrazovni centar za 10 mještana."
+      },
+      "police_station": {
+        "name": "Policijska Postaja",
+        "desc": "Čuva red za 10 mještana. Uvjet za Raz5."
+      },
+      "fire_station": {
+        "name": "Vatrogasni Dom",
+        "desc": "Štiti grad za 10 mještana. Uvjet za Raz5."
+      },
+      "hospital": {
+        "name": "Bolnica",
+        "desc": "Zdravstvena skrb za 12 mještana. Uvjet za Raz4."
+      },
+      "farm_plot": {
+        "name": "Parcela za Uzgoj",
+        "desc": "Plodna zemlja za sadnju usjeva."
+      },
+      "road": {
+        "name": "Kaldrmisana Cesta",
+        "desc": "Uređena staza za šetnju mještana."
+      },
+      "fence": {
+        "name": "Drvena Ograda",
+        "desc": "Lijepa drvena ograda."
+      },
+      "tree": {
+        "name": "Drvo Hlapa",
+        "desc": "Zeleno drvo za ljepši grad."
+      },
+      "bench": {
+        "name": "Klupa u Parku",
+        "desc": "Mjesto za odmor mještana."
+      },
+      "fountain": {
+        "name": "Kamena Fontana",
+        "desc": "Fontana na gradskom trgu."
+      },
+      "golden_fountain": {
+        "name": "Zlatna Fontana",
+        "desc": "Prestižna fontana za Pro igrače."
+      },
+      "windmill": {
+        "name": "Vjetrenjača",
+        "desc": "Rustikalni spomenik za niz od 7 dana."
+      },
+      "clock_tower": {
+        "name": "Toranj sa Satom",
+        "desc": "Klasični spomenik za niz od 30 dana."
+      },
+      "ronduel_statue": {
+        "name": "Kip RonDuel",
+        "desc": "Veličanstveni kip za niz od 100 dana."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Zob",
+        "desc": "Otporna žitarica. Raste 4 sata."
+      },
+      "wheat": {
+        "name": "Pšenica",
+        "desc": "Zlatni klasovi. Raste 8 sati."
+      },
+      "carrots": {
+        "name": "Mrkva",
+        "desc": "Slatki korijen. Raste 12 sati."
+      },
+      "sunflower": {
+        "name": "Suncokret",
+        "desc": "Sjajni cvjetovi. Raste 24 sata."
+      },
+      "pumpkin": {
+        "name": "Bundeva",
+        "desc": "Divovski plod. Raste 48 sati."
+      }
+    },
+    "orders": {
+      "title": "Dnevne Narudžbe",
+      "locked": "Odigraj današnju rundu za otključavanje narudžbi",
+      "completed": "Isporučeno",
+      "deliver": "Isporuči Narudžbu",
+      "missingItems": "Nedostaju usjevi",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Žitarice za Pekara",
+        "market_stall": "Svježa Košarica s Tržnice",
+        "soup_kitchen": "Zalihe za Pučku Kuhinju",
+        "autumn_festival": "Gozba Jesenskog Festivala",
+        "village_pantry": "Punjenje Seoske Ostave"
+      }
+    },
+    "shop": {
+      "title": "Katalog Grada",
+      "tabHousing": "Stanovanje",
+      "tabServices": "Usluge",
+      "tabFarm": "Farma",
+      "tabDecor": "Dekoracija",
+      "priceCoins": "{coins} novčića",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} mjesta",
+      "serviceValue": "+{count} podrška",
+      "unlockLevel": "Otključava se na Raz{level}",
+      "proOnly": "Samo za Pro",
+      "streakOnly": "Zahtijeva niz od {days} dana",
+      "buy": "Gradi",
+      "insufficientFunds": "Nedovoljno RonCoins novčića",
+      "maxCountReached": "Dosegnut je maksimum"
+    },
+    "tiles": {
+      "emptyPlot": "Prazna Parcela",
+      "plantAction": "Posadi",
+      "harvestAction": "Požanji",
+      "growing": "Raste (preostalo {time})",
+      "ready": "Spremno za žetvu!",
+      "move": "Premjesti",
+      "remove": "Ukloni (Povrat {coins} novčića)",
+      "starterCannotRemove": "Početna kuća se ne može ukloniti"
+    },
+    "tutorial": {
+      "step1Title": "Posadi Zob",
+      "step1Desc": "Dodirni praznu parcelu i posadi prva sjemena.",
+      "step2Title": "Izgradi Kolibu",
+      "step2Desc": "Otvori izbornik gradnje i postavi kolibu za nove mještane.",
+      "step3Title": "Ispuni Narudžbe",
+      "step3Desc": "Isporuči urode kako bi zaradio dodatne novčiće.",
+      "skip": "Preskoči",
+      "next": "Dalje",
+      "finish": "Jasno!"
+    },
+    "coinStore": {
+      "title": "RonCoins Trgovina",
+      "subtitle": "Kozmetička poboljšanja. Ne utječe na kviz niti na poredak.",
+      "monthlyCapNotice": "Preostalo ovog mjeseca: {remaining} € od {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins novčići se ne mogu zamijeniti za stvarni novac.",
+      "buyPack": "Kupi paket za {price}",
+      "termsLink": "Uvjeti za novčiće"
+    },
+    "transfer": {
+      "title": "Prijenos RonCoins",
+      "desc": "Podijeli novčiće iz kviza s prijateljima iz lige.",
+      "amountLabel": "Iznos za slanje",
+      "recipientLabel": "Prijatelj iz lige",
+      "send": "Pošalji novčiće",
+      "dailyCapNotice": "Dnevni limit: danas preostaje još {remaining} novčića"
+    },
+    "visit": {
+      "title": "Grad igrača {name}",
+      "like": "Lajkaj grad",
+      "liked": "Lajkano ({count})",
+      "water": "Zalij usjev (-30m)",
+      "waterUsed": "Zaliveno ({count}/{max})",
+      "readOnlyNotice": "Pregled grada prijatelja (samo za gledanje)"
+    },
+    "postRoundCta": "Osvojio si {coins, plural, one {# RonCoin} few {# RonCoina} other {# RonCoins}} — idi graditi!",
+    "goBuild": "U Grad",
+    "plurals": {
+      "villagers": "{count, plural, one {# mještanin} few {# mještana} other {# mještana}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoina} other {# RonCoins}}",
+      "plots": "{count, plural, one {# parcela} few {# parcele} other {# parcela}}",
+      "hours": "{count, plural, one {# sat} few {# sata} other {# sati}}",
+      "minutes": "{count, plural, one {# minuta} few {# minute} other {# minuta}}",
+      "days": "{count, plural, one {# dan} few {# dana} other {# dana}}"
+    }
   }
 }

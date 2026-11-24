@@ -85,9 +85,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       data-theme="light"
       className={`${bricolage.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-bg text-ink min-h-dvh antialiased">
-        {children}
-      </body>
+      <body className="bg-bg text-ink min-h-dvh antialiased">{children}</body>
     </html>
   );
 }

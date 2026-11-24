@@ -1,9 +1,32 @@
 import { z } from 'zod';
 
 export const LOCALES = [
-  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
-  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
-  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+  'ro',
+  'en',
+  'es',
+  'pt',
+  'de',
+  'fr',
+  'it',
+  'nl',
+  'pl',
+  'bg',
+  'cs',
+  'da',
+  'el',
+  'et',
+  'fi',
+  'ga',
+  'hr',
+  'hu',
+  'lt',
+  'lv',
+  'mt',
+  'nb',
+  'sk',
+  'sl',
+  'sv',
+  'uk',
 ] as const;
 export type Locale = (typeof LOCALES)[number];
 

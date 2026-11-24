@@ -14,7 +14,8 @@
     "profile": "Profiili",
     "pro": "Pro",
     "settings": "Asetukset",
-    "duelsYourTurnBadge": "{count, plural, one {# kaksintaistelu odottaa siirtoasi} other {# kaksintaistelua odottaa siirtoasi}}"
+    "duelsYourTurnBadge": "{count, plural, one {# kaksintaistelu odottaa siirtoasi} other {# kaksintaistelua odottaa siirtoasi}}",
+    "town": "Kylä"
   },
   "onboarding": {
     "pickNickname": "Valitse nimimerkkisi",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Tarkista, että kirjoitit koodin oikein, tai pyydä kutsujalta uusi linkki.",
     "leaderboardTitleCount": "Liigan tulostaulukko ({count})",
     "nicknamePlaceholder": "esim. Alex99",
-    "joining": "Liitytään…"
+    "joining": "Liitytään…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court -kaksinkamppailu",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Kierrosta päivälle {date} ei voitu ajastaa: {error}.",
     "replyAdminDrafts": "Loin {count} uutta {type}-kysymystä aiheesta „{topic}” ({ids}).",
     "replyAdminPanel": "Voit tarkistaa ne ylläpitopaneelissa.",
-    "openAdmin": "Avaa ylläpito"
+    "openAdmin": "Avaa ylläpito",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Päivittäinen tietovisa ystäviesi kanssa",
@@ -784,5 +787,235 @@
     "description": "Päivittäinen tietovisa ystäviesi kanssa",
     "shortcutPlay": "Pelaa päivän kierros",
     "shortcutLeagues": "Omat liigat"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Rakenna",
+      "shop": "Kauppa",
+      "orders": "Tilaukset",
+      "inventory": "Varasto",
+      "stats": "Asukkaat",
+      "friends": "Ystävät",
+      "coins": "Kolikot",
+      "help": "Ohjeet",
+      "toggle": "Valikkopalkki"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Taso {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Tarvitaan lisää asuntoja",
+      "limitedByServices": "Tarvitaan lisää palveluita (koulu, sairaala...)",
+      "gateTownHall": "Kunnantalo vaaditaan tasolle 2 (enintään 9 asukasta)",
+      "gateHospital": "Sairaala vaaditaan tasolle 4",
+      "gatePoliceFire": "Poliisi ja Paloasema vaaditaan tasolle 5",
+      "arrivalIn": "Seuraava asukas: {time}",
+      "maxCapacity": "Kylä on saavuttanut täyden kapasiteetin"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Aloitustalo",
+        "desc": "Kotoisa koti kahdelle ensimmäiselle asukkaallesi."
+      },
+      "cottage": {
+        "name": "Mökki",
+        "desc": "Mukava asunto kahdelle asukkaalle."
+      },
+      "house": {
+        "name": "Omakotitalo",
+        "desc": "Tilava perhekoti neljälle asukkaalle."
+      },
+      "apartment": {
+        "name": "Kerrostalo",
+        "desc": "Monikerroksinen asunto 10 asukkaalle."
+      },
+      "villa": {
+        "name": "Huvila",
+        "desc": "Arvokas kartano kuudelle asukkaalle."
+      },
+      "shop": {
+        "name": "Kyläkauppa",
+        "desc": "Tarjoaa tarvikkeita ja tukee kuutta asukasta."
+      },
+      "town_hall": {
+        "name": "Kunnantalo",
+        "desc": "Keskus, joka tukee kahdeksaa asukasta. Avaa tason 2."
+      },
+      "park": {
+        "name": "Kyläpuisto",
+        "desc": "Vihreä keidas neljälle asukkaalle."
+      },
+      "bakery": {
+        "name": "Leipomo",
+        "desc": "Tuoretta leipää ja tukea kuudelle asukkaalle."
+      },
+      "school": {
+        "name": "Koulu",
+        "desc": "Oppimiskeskus kymmenelle asukkaalle."
+      },
+      "police_station": {
+        "name": "Poliisiasema",
+        "desc": "Pitää järjestystä 10 asukkaalle. Vaaditaan tasolle 5."
+      },
+      "fire_station": {
+        "name": "Paloasema",
+        "desc": "Turvaa kylää 10 asukkaalle. Vaaditaan tasolle 5."
+      },
+      "hospital": {
+        "name": "Sairaala",
+        "desc": "Terveydenhuoltoa 12 asukkaalle. Vaaditaan tasolle 4."
+      },
+      "farm_plot": {
+        "name": "Viljelypalsta",
+        "desc": "Hedelmällistä maata luomusadon viljelyyn."
+      },
+      "road": {
+        "name": "Mukulankivikatu",
+        "desc": "Kivetty kävelytie kyläläisten kulkea."
+      },
+      "fence": {
+        "name": "Puupensasaita",
+        "desc": "Kaunis puuaita palstojen rajaukseen."
+      },
+      "tree": {
+        "name": "Varjopuu",
+        "desc": "Lehtipuu tuomassa luonnon kauneutta."
+      },
+      "bench": {
+        "name": "Puistonpenkki",
+        "desc": "Lepopaikka kylän kulkijoille."
+      },
+      "fountain": {
+        "name": "Kivisuihkulähde",
+        "desc": "Keskusaukion suihkulähde."
+      },
+      "golden_fountain": {
+        "name": "Kultainen Suihkulähde",
+        "desc": "Loistelias erikoissuihkulähde Pro-pelaajille."
+      },
+      "windmill": {
+        "name": "Tuulimylly",
+        "desc": "Perinteikäs maamerkki 7 päivän putkella."
+      },
+      "clock_tower": {
+        "name": "Kellotorni",
+        "desc": "Klassinen maamerkki 30 päivän putkella."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel-Patsas",
+        "desc": "Upea monumentti 100 päivän putkella."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Kaura",
+        "desc": "Kestävä viljakasvi. Kasvaa 4 tunnissa."
+      },
+      "wheat": {
+        "name": "Vehnä",
+        "desc": "Kultaiset tähkät. Kasvaa 8 tunnissa."
+      },
+      "carrots": {
+        "name": "Porkkanat",
+        "desc": "Makeat juurekset. Kasvaa 12 tunnissa."
+      },
+      "sunflower": {
+        "name": "Auringonkukka",
+        "desc": "Loistavat kukinnot. Kasvaa 24 tunnissa."
+      },
+      "pumpkin": {
+        "name": "Kurpitsa",
+        "desc": "Valtava jättisato. Kasvaa 48 tunnissa."
+      }
+    },
+    "orders": {
+      "title": "Päivittäiset Tilaukset",
+      "locked": "Pelaa päivän kierros avataksesi tilaukset",
+      "completed": "Toimitettu",
+      "deliver": "Toimita Tilaus",
+      "missingItems": "Satoa puuttuu",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Viljaa Leipurille",
+        "market_stall": "Tuore Torikassi",
+        "soup_kitchen": "Ainekset Yhteiskeittiöön",
+        "autumn_festival": "Syysjuhlan Pitoateria",
+        "village_pantry": "Kylän Ruokakomeron Täydennys"
+      }
+    },
+    "shop": {
+      "title": "Kylän Luettelo",
+      "tabHousing": "Asunnot",
+      "tabServices": "Palvelut",
+      "tabFarm": "Maatila",
+      "tabDecor": "Sisustus",
+      "priceCoins": "{coins} kolikkoa",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} asukasta",
+      "serviceValue": "+{count} tukea",
+      "unlockLevel": "Avautuu tasolla {level}",
+      "proOnly": "Vain Pro-pelaajille",
+      "streakOnly": "Vaatii {days} päivän putken",
+      "buy": "Rakenna",
+      "insufficientFunds": "Ei tarpeeksi RonCoins-kolikoita",
+      "maxCountReached": "Enimmäismäärä saavutettu"
+    },
+    "tiles": {
+      "emptyPlot": "Tyhjä Palsta",
+      "plantAction": "Kylvä Siemeniä",
+      "harvestAction": "Korjaa Sato",
+      "growing": "Kasvaa ({time} jäljellä)",
+      "ready": "Valmis korjattavaksi!",
+      "move": "Siirrä",
+      "remove": "Poista (Palauttaa {coins} kolikkoa)",
+      "starterCannotRemove": "Aloitustaloa ei voi poistaa"
+    },
+    "tutorial": {
+      "step1Title": "Kylvä Kauraa",
+      "step1Desc": "Napauta tyhjää palstaa kylvääksesi ensimmäiset siemenet.",
+      "step2Title": "Rakenna Mökki",
+      "step2Desc": "Avaa rakennusvalikko ja pystytä mökki uusille asukkaille.",
+      "step3Title": "Täytä Tilauksia",
+      "step3Desc": "Toimita korjattu sato tilauksiin ansaitaksesi lisää kolikoita.",
+      "skip": "Ohita",
+      "next": "Seuraava",
+      "finish": "Selvä!"
+    },
+    "coinStore": {
+      "title": "RonCoins-Kauppa",
+      "subtitle": "Kosmeettisia parannuksia. Ei vaikuta tietovisaan tai sijoituksiin.",
+      "monthlyCapNotice": "Jäljellä tässä kuussa: {remaining} € / {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins-kolikoita ei voi vaihtaa oikeaksi rahaksi.",
+      "buyPack": "Osta paketti hintaan {price}",
+      "termsLink": "Kolikkoehdot"
+    },
+    "transfer": {
+      "title": "Siirrä RonCoins-kolikoita",
+      "desc": "Jaa ansaitsemiasi kolikoita liigan ystävien kanssa.",
+      "amountLabel": "Lähetettävä määrä",
+      "recipientLabel": "Ystävä liigassasi",
+      "send": "Lähetä kolikoita",
+      "dailyCapNotice": "Päiväraja: {remaining} kolikkoa jäljellä tänään"
+    },
+    "visit": {
+      "title": "Pelaajan {name} kylä",
+      "like": "Tykkää kylästä",
+      "liked": "Tykätty ({count})",
+      "water": "Kastele satoa (-30min)",
+      "waterUsed": "Kasteltu ({count}/{max})",
+      "readOnlyNotice": "Vierailet ystävän kylässä (katselutila)"
+    },
+    "postRoundCta": "Ansaitsit {coins, plural, one {# RonCoinin} other {# RonCoins-kolikkoa}} — rakenna kylääsi!",
+    "goBuild": "Mene kylään",
+    "plurals": {
+      "villagers": "{count, plural, one {# asukas} other {# asukasta}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# palsta} other {# palstaa}}",
+      "hours": "{count, plural, one {# tunti} other {# tuntia}}",
+      "minutes": "{count, plural, one {# minuutti} other {# minuuttia}}",
+      "days": "{count, plural, one {# päivä} other {# päivää}}"
+    }
   }
 }

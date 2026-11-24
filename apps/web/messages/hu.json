@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Beállítások",
-    "duelsYourTurnBadge": "{count, plural, one {# párbaj vár a lépésedre} other {# párbaj vár a lépésedre}}"
+    "duelsYourTurnBadge": "{count, plural, one {# párbaj vár a lépésedre} other {# párbaj vár a lépésedre}}",
+    "town": "Város"
   },
   "onboarding": {
     "pickNickname": "Válaszd ki a beceneved",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Ellenőrizd, hogy helyesen adtad-e meg a kódot, vagy kérj új linket a meghívó személytől.",
     "leaderboardTitleCount": "Liga ranglista ({count})",
     "nicknamePlaceholder": "pl. Alex99",
-    "joining": "Csatlakozás…"
+    "joining": "Csatlakozás…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court párbaj",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "A(z) {date} köre nem ütemezhető: {error}.",
     "replyAdminDrafts": "{count} új {type} típusú kérdés készült erről: „{topic}” ({ids}).",
     "replyAdminPanel": "Az adminfelületen ellenőrizheted őket.",
-    "openAdmin": "Admin megnyitása"
+    "openAdmin": "Admin megnyitása",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Napi kvíz a barátaiddal",
@@ -784,5 +787,235 @@
     "description": "Napi kvíz a barátaiddal",
     "shortcutPlay": "Mai forduló lejátszása",
     "shortcutLeagues": "Ligáim"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Építés",
+      "shop": "Bolt",
+      "orders": "Rendelések",
+      "inventory": "Raktár",
+      "stats": "Lakosok",
+      "friends": "Barátok",
+      "coins": "Érmék",
+      "help": "Súgó",
+      "toggle": "Eszköztár"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "{level}. szint"
+    },
+    "growth": {
+      "limitedByHousing": "Több lakóhelyre van szükség",
+      "limitedByServices": "Több szolgáltatásra van szükség (iskola, kórház...)",
+      "gateTownHall": "Városháza szükséges a 2. szinthez (max. 9 lakos)",
+      "gateHospital": "Kórház szükséges a 4. szinthez",
+      "gatePoliceFire": "Rendőrség és Tűzoltóság szükséges az 5. szinthez",
+      "arrivalIn": "Következő lakos: {time}",
+      "maxCapacity": "A város elérte a maximális kapacitást"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Kezdőház",
+        "desc": "Kényelmes otthon az első 2 lakosodnak."
+      },
+      "cottage": {
+        "name": "Házikó",
+        "desc": "Otthon 2 lakosnak."
+      },
+      "house": {
+        "name": "Családi Ház",
+        "desc": "Tágas otthon 4 lakosnak."
+      },
+      "apartment": {
+        "name": "Bérház",
+        "desc": "Többszintes lakóépület 10 lakosnak."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Elegáns birtok 6 lakosnak."
+      },
+      "shop": {
+        "name": "Falusi Bolt",
+        "desc": "Árukat biztosít és 6 lakost támogat."
+      },
+      "town_hall": {
+        "name": "Városháza",
+        "desc": "Központ 8 lakos támogatására. Feloldja a 2. szintet."
+      },
+      "park": {
+        "name": "Városi Park",
+        "desc": "Zöld oázis 4 lakosnak."
+      },
+      "bakery": {
+        "name": "Pékség",
+        "desc": "Friss kenyér 6 lakosnak."
+      },
+      "school": {
+        "name": "Iskola",
+        "desc": "Oktatási központ 10 lakosnak."
+      },
+      "police_station": {
+        "name": "Rendőrőrs",
+        "desc": "Biztonság 10 lakosnak. Szükséges az 5. szinthez."
+      },
+      "fire_station": {
+        "name": "Tűzoltóság",
+        "desc": "Védelem 10 lakosnak. Szükséges az 5. szinthez."
+      },
+      "hospital": {
+        "name": "Kórház",
+        "desc": "Egészségügyi ellátás 12 lakosnak. Szükséges a 4. szinthez."
+      },
+      "farm_plot": {
+        "name": "Termőföld",
+        "desc": "Termékeny talaj növények termesztésére."
+      },
+      "road": {
+        "name": "Macskaköves Út",
+        "desc": "Burkolt sétány a lakosoknak."
+      },
+      "fence": {
+        "name": "Fakerítés",
+        "desc": "Díszes fakerítés."
+      },
+      "tree": {
+        "name": "Árnyas Fa",
+        "desc": "Lombos fa a város szépségéért."
+      },
+      "bench": {
+        "name": "Parki Pad",
+        "desc": "Pihenőhely a lakosoknak."
+      },
+      "fountain": {
+        "name": "Kőkút",
+        "desc": "Frissítő szökőkút a főtéren."
+      },
+      "golden_fountain": {
+        "name": "Arany Szökőkút",
+        "desc": "Presztízs szökőkút Pro játékosoknak."
+      },
+      "windmill": {
+        "name": "Szélmalom",
+        "desc": "Hagyományos emlékmű 7 napos sorozatért."
+      },
+      "clock_tower": {
+        "name": "Óratorony",
+        "desc": "Klasszikus emlékmű 30 napos sorozatért."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel Szobor",
+        "desc": "Fenséges szobor 100 napos sorozatért."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Zab",
+        "desc": "Ellenálló gabona. 4 óra alatt nő meg."
+      },
+      "wheat": {
+        "name": "Búza",
+        "desc": "Aranyló kalászok. 8 óra alatt nő meg."
+      },
+      "carrots": {
+        "name": "Sárgarépa",
+        "desc": "Édes gyökérzöldség. 12 óra alatt nő meg."
+      },
+      "sunflower": {
+        "name": "Napraforgó",
+        "desc": "Ragyogó virágok. 24 óra alatt nő meg."
+      },
+      "pumpkin": {
+        "name": "Tök",
+        "desc": "Hatalmas termés. 48 óra alatt nő meg."
+      }
+    },
+    "orders": {
+      "title": "Napi Rendelések",
+      "locked": "Játssz a mai fordulóban a rendelések feloldásához",
+      "completed": "Kiszállítva",
+      "deliver": "Rendelés Kiszállítása",
+      "missingItems": "Hiányzó termények",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Gabona a Péknek",
+        "market_stall": "Friss Piaci Kosár",
+        "soup_kitchen": "Ellátmány a Népkonyhának",
+        "autumn_festival": "Őszi Fesztiváli Lakoma",
+        "village_pantry": "Kamrafeltöltés"
+      }
+    },
+    "shop": {
+      "title": "Városi Katalógus",
+      "tabHousing": "Lakóhelyek",
+      "tabServices": "Szolgáltatások",
+      "tabFarm": "Gazdaság",
+      "tabDecor": "Dekoráció",
+      "priceCoins": "{coins} érme",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} lakóhely",
+      "serviceValue": "+{count} támogatás",
+      "unlockLevel": "Feloldás a(z) {level}. szinten",
+      "proOnly": "Csak Pro tagoknak",
+      "streakOnly": "{days} napos sorozat szükséges",
+      "buy": "Építés",
+      "insufficientFunds": "Nincs elég RonCoins érméd",
+      "maxCountReached": "Elérted a maximumot"
+    },
+    "tiles": {
+      "emptyPlot": "Szabad Termőföld",
+      "plantAction": "Vetés",
+      "harvestAction": "Betakarítás",
+      "growing": "Növekszik (még {time})",
+      "ready": "Betakarításra kész!",
+      "move": "Áthelyezés",
+      "remove": "Eltávolítás ({coins} érme visszajár)",
+      "starterCannotRemove": "A kezdőház nem távolítható el"
+    },
+    "tutorial": {
+      "step1Title": "Vess Zabot",
+      "step1Desc": "Koppints egy szabad földre és vesd el az első magokat.",
+      "step2Title": "Építs Házikót",
+      "step2Desc": "Nyisd meg az építés menüt és helyezz le egy házikót új lakosoknak.",
+      "step3Title": "Teljesíts Rendeléseket",
+      "step3Desc": "Szállíts be terményeket a rendelésekhez extra érmékért.",
+      "skip": "Kihagyás",
+      "next": "Tovább",
+      "finish": "Értem!"
+    },
+    "coinStore": {
+      "title": "RonCoins Bolt",
+      "subtitle": "Kozmetikai bővítések. Nem befolyásolja a kvízt vagy a ranglistát.",
+      "monthlyCapNotice": "E havi keret: {remaining} € a {max} €-ból",
+      "nonCompetitiveDisclaimer": "A RonCoins nem váltható valódi pénzre.",
+      "buyPack": "Csomag vásárlása ({price})",
+      "termsLink": "Érmék feltételei"
+    },
+    "transfer": {
+      "title": "RonCoins Átutalása",
+      "desc": "Oszd meg kvízen szerzett érméidet ligatársaiddal.",
+      "amountLabel": "Küldendő összeg",
+      "recipientLabel": "Barát a ligádból",
+      "send": "Érmék küldése",
+      "dailyCapNotice": "Napi limit: még {remaining} érme maradt ma"
+    },
+    "visit": {
+      "title": "{name} városa",
+      "like": "Város kedvelése",
+      "liked": "Kedvelve ({count})",
+      "water": "Növény öntözése (-30p)",
+      "waterUsed": "Öntözve ({count}/{max})",
+      "readOnlyNotice": "Barát városának megtekintése (csak nézet)"
+    },
+    "postRoundCta": "Szereztél {coins, plural, one {# RonCoint} other {# RonCoint}} — menj és építkezz!",
+    "goBuild": "A Városba",
+    "plurals": {
+      "villagers": "{count, plural, one {# lakos} other {# lakos}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoin}}",
+      "plots": "{count, plural, one {# föld} other {# föld}}",
+      "hours": "{count, plural, one {# óra} other {# óra}}",
+      "minutes": "{count, plural, one {# perc} other {# perc}}",
+      "days": "{count, plural, one {# nap} other {# nap}}"
+    }
   }
 }

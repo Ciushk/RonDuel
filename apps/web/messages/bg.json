@@ -14,7 +14,8 @@
     "profile": "Профил",
     "pro": "Pro",
     "settings": "Настройки",
-    "duelsYourTurnBadge": "{count, plural, one {# дуел очаква твоя ход} other {# дуела очакват твоя ход}}"
+    "duelsYourTurnBadge": "{count, plural, one {# дуел очаква твоя ход} other {# дуела очакват твоя ход}}",
+    "town": "Град"
   },
   "onboarding": {
     "pickNickname": "Избери си псевдоним",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Провери дали кодът е въведен правилно, или поискай нов линк от този, който те е поканил.",
     "leaderboardTitleCount": "Класиране на лигата ({count})",
     "nicknamePlaceholder": "напр. Alex99",
-    "joining": "Присъединяване…"
+    "joining": "Присъединяване…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Дуел 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Не успях да насроча рунда за {date}: {error}.",
     "replyAdminDrafts": "Създадох {count} нови въпроса от тип {type} за „{topic}“ ({ids}).",
     "replyAdminPanel": "Можеш да ги прегледаш в админ панела.",
-    "openAdmin": "Отвори админ"
+    "openAdmin": "Отвори админ",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Ежедневна викторина с приятели",
@@ -784,5 +787,235 @@
     "description": "Ежедневна викторина с приятели",
     "shortcutPlay": "Изиграй днешния рунд",
     "shortcutLeagues": "Моите лиги"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Строеж",
+      "shop": "Магазин",
+      "orders": "Поръчки",
+      "inventory": "Склад",
+      "stats": "Жители",
+      "friends": "Приятели",
+      "coins": "Монети",
+      "help": "Помощ",
+      "toggle": "Лента с инструменти"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Ниво {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Необходими са още жилища",
+      "limitedByServices": "Необходими са още услуги (училище, болница...)",
+      "gateTownHall": "Кметството е нужно за Ниво 2 (макс 9 жители)",
+      "gateHospital": "Болницата е нужна за Ниво 4",
+      "gatePoliceFire": "Полицията и Пожарната са нужни за Ниво 5",
+      "arrivalIn": "Следващ жител: {time}",
+      "maxCapacity": "Градът достигна максимален капацитет"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Начална Къща",
+        "desc": "Уютен дом за първите ти 2 жители."
+      },
+      "cottage": {
+        "name": "Къщурка",
+        "desc": "Жилище за 2 жители."
+      },
+      "house": {
+        "name": "Къща",
+        "desc": "Просторен семеен дом за 4 жители."
+      },
+      "apartment": {
+        "name": "Жилищен Блок",
+        "desc": "Многоетажна сграда за 10 жители."
+      },
+      "villa": {
+        "name": "Вила",
+        "desc": "Изискано имение за 6 жители."
+      },
+      "shop": {
+        "name": "Селски Магазин",
+        "desc": "Снабдява със стоки и поддържа 6 жители."
+      },
+      "town_hall": {
+        "name": "Кметство",
+        "desc": "Градски център за 8 жители. Отключва Ниво 2."
+      },
+      "park": {
+        "name": "Градски Парк",
+        "desc": "Зелен кът за 4 жители."
+      },
+      "bakery": {
+        "name": "Пекарна",
+        "desc": "Пресни печива за 6 жители."
+      },
+      "school": {
+        "name": "Училище",
+        "desc": "Образователен център за 10 жители."
+      },
+      "police_station": {
+        "name": "Полицейски Участък",
+        "desc": "Осигурява ред за 10 жители. Нужно за Ниво 5."
+      },
+      "fire_station": {
+        "name": "Пожарна Служба",
+        "desc": "Пази града за 10 жители. Нужно за Ниво 5."
+      },
+      "hospital": {
+        "name": "Болница",
+        "desc": "Здравеопазване за 12 жители. Нужно за Ниво 4."
+      },
+      "farm_plot": {
+        "name": "Земеделски Парцел",
+        "desc": "Плодородна земя за отглеждане на реколта."
+      },
+      "road": {
+        "name": "Павиран Път",
+        "desc": "Улица за разходка на жителите."
+      },
+      "fence": {
+        "name": "Дървена Ограда",
+        "desc": "Красива ограда от летви."
+      },
+      "tree": {
+        "name": "Сенчесто Дърво",
+        "desc": "Зелено дърво за свежест."
+      },
+      "bench": {
+        "name": "Пейка в Парка",
+        "desc": "Място за почивка на жителите."
+      },
+      "fountain": {
+        "name": "Каменен Фонтан",
+        "desc": "Красив фонтан за площада."
+      },
+      "golden_fountain": {
+        "name": "Златен Фонтан",
+        "desc": "Престижен фонтан за Pro играчи."
+      },
+      "windmill": {
+        "name": "Вятърна Мелница",
+        "desc": "Рустикален паметник за серия от 7 дни."
+      },
+      "clock_tower": {
+        "name": "Часовникова Кула",
+        "desc": "Класически паметник за серия от 30 дни."
+      },
+      "ronduel_statue": {
+        "name": "Статуя RonDuel",
+        "desc": "Величествена статуя за серия от 100 дни."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Овес",
+        "desc": "Издръжливо зърно. Расте за 4 часа."
+      },
+      "wheat": {
+        "name": "Пшеница",
+        "desc": "Златни класове. Расте за 8 часа."
+      },
+      "carrots": {
+        "name": "Моркови",
+        "desc": "Сладки кореноплодни. Растат за 12 часа."
+      },
+      "sunflower": {
+        "name": "Слънчоглед",
+        "desc": "Ярки цветове. Расте за 24 часа."
+      },
+      "pumpkin": {
+        "name": "Тиква",
+        "desc": "Гигантска реколта. Расте за 48 часа."
+      }
+    },
+    "orders": {
+      "title": "Дневни Поръчки",
+      "locked": "Изиграй днешния рунд, за да отключиш поръчките",
+      "completed": "Доставено",
+      "deliver": "Достави Поръчка",
+      "missingItems": "Липсват земеделски продукти",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Зърно за Пекаря",
+        "market_stall": "Прясна Кошница от Пазара",
+        "soup_kitchen": "Продукти за Трапезарията",
+        "autumn_festival": "Празнично Угощение",
+        "village_pantry": "Зареждане на Килера"
+      }
+    },
+    "shop": {
+      "title": "Градски Каталог",
+      "tabHousing": "Жилища",
+      "tabServices": "Услуги",
+      "tabFarm": "Ферма",
+      "tabDecor": "Декор",
+      "priceCoins": "{coins} монети",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} жилища",
+      "serviceValue": "+{count} поддръжка",
+      "unlockLevel": "Отключва се на Ниво {level}",
+      "proOnly": "Само за Pro",
+      "streakOnly": "Изисква серия от {days} дни",
+      "buy": "Построй",
+      "insufficientFunds": "Няма достатъчно RonCoins",
+      "maxCountReached": "Достигнат е лимитът"
+    },
+    "tiles": {
+      "emptyPlot": "Свободен Парцел",
+      "plantAction": "Засей",
+      "harvestAction": "Ожъни",
+      "growing": "Расте (остават {time})",
+      "ready": "Готово за жътва!",
+      "move": "Премести",
+      "remove": "Премахни (Връща {coins} монети)",
+      "starterCannotRemove": "Началната къща не може да бъде премахната"
+    },
+    "tutorial": {
+      "step1Title": "Засей Овес",
+      "step1Desc": "Докосни празен парцел, за да засееш първите си семена.",
+      "step2Title": "Построй Къщурка",
+      "step2Desc": "Отвори менюто за строеж и постави къщурка за нови жители.",
+      "step3Title": "Изпълнявай Поръчки",
+      "step3Desc": "Предавай реколта за поръчки и печели допълнителни монети.",
+      "skip": "Пропусни",
+      "next": "Напред",
+      "finish": "Ясно!"
+    },
+    "coinStore": {
+      "title": "Магазин за RonCoins",
+      "subtitle": "Козметични подобрения за града. Не влияе на състезателната игра.",
+      "monthlyCapNotice": "Остават за този месец: {remaining} € от {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins не могат да се обменят за истински пари.",
+      "buyPack": "Купи пакет за {price}",
+      "termsLink": "Условия за монетите"
+    },
+    "transfer": {
+      "title": "Прехвърли RonCoins",
+      "desc": "Сподели спечелени от викторината монети с приятели от лигата.",
+      "amountLabel": "Сума за изпращане",
+      "recipientLabel": "Приятел от лигата",
+      "send": "Изпрати монети",
+      "dailyCapNotice": "Дневен лимит: остават {remaining} монети днес"
+    },
+    "visit": {
+      "title": "Градът на {name}",
+      "like": "Харесай града",
+      "liked": "Харесано ({count})",
+      "water": "Полей растение (-30мин)",
+      "waterUsed": "Полято ({count}/{max})",
+      "readOnlyNotice": "Посещение на приятел (режим за преглед)"
+    },
+    "postRoundCta": "Спечели {coins, plural, one {# RonCoin} other {# RonCoins}} — отиди да строиш!",
+    "goBuild": "Към Града",
+    "plurals": {
+      "villagers": "{count, plural, one {# жител} other {# жители}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# парцел} other {# парцела}}",
+      "hours": "{count, plural, one {# час} other {# часа}}",
+      "minutes": "{count, plural, one {# минута} other {# минути}}",
+      "days": "{count, plural, one {# ден} other {# дни}}"
+    }
   }
 }

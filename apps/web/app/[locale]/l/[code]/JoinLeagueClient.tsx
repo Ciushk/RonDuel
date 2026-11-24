@@ -11,7 +11,12 @@ import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
 import { loginWithGoogle } from '@/lib/firebase';
 import { generateReadableNickname } from '@/lib/format';
-import { getBrowserTimeZone, getLocalSession, recordLeagueId, saveLocalSession } from '@/lib/session';
+import {
+  getBrowserTimeZone,
+  getLocalSession,
+  recordLeagueId,
+  saveLocalSession,
+} from '@/lib/session';
 
 interface LeagueMemberRow {
   uid: string;
@@ -79,7 +84,11 @@ export function JoinLeagueClient({
     setResolvedCode(cleanCode);
 
     const s = getLocalSession();
-    setNickname(s.nickname && !s.nickname.startsWith('Player_') ? s.nickname : generateReadableNickname(locale));
+    setNickname(
+      s.nickname && !s.nickname.startsWith('Player_')
+        ? s.nickname
+        : generateReadableNickname(locale),
+    );
 
     trackEvent('league_preview_viewed', { code: cleanCode, source: 'invite_link' });
 
@@ -146,7 +155,9 @@ export function JoinLeagueClient({
       const session = getLocalSession();
 
       // Check room before joining
-      const verifyRes = await fetch(`/api/leagues/${encodeURIComponent(resolvedCode)}?uid=${encodeURIComponent(session.uid)}`);
+      const verifyRes = await fetch(
+        `/api/leagues/${encodeURIComponent(resolvedCode)}?uid=${encodeURIComponent(session.uid)}`,
+      );
       const verifyData = await verifyRes.json();
       if (verifyData.memberCount >= verifyData.maxMembers && !verifyData.isMember) {
         setJoinError(t('full', { count: verifyData.memberCount, max: verifyData.maxMembers }));
@@ -205,7 +216,9 @@ export function JoinLeagueClient({
         if (data.playedToday) {
           router.push(`/${locale}/league/${league.id}`);
         } else {
-          router.push(`/${locale}/play?returnTo=${encodeURIComponent(`/${locale}/league/${league.id}`)}`);
+          router.push(
+            `/${locale}/play?returnTo=${encodeURIComponent(`/${locale}/league/${league.id}`)}`,
+          );
         }
       }, 700);
     } catch {
@@ -266,7 +279,7 @@ export function JoinLeagueClient({
   if (loading) {
     return (
       <main className="mx-auto flex max-w-[480px] flex-col items-center justify-center px-4 py-16 text-center">
-        <div className="rd-seam h-2 w-24 rounded-full mb-4 animate-pulse" />
+        <div className="rd-seam mb-4 h-2 w-24 animate-pulse rounded-full" />
         <p className="text-muted text-sm font-bold">{t('loading')}</p>
       </main>
     );
@@ -278,9 +291,7 @@ export function JoinLeagueClient({
         <Card className="space-y-4 p-6">
           <p className="text-4xl">⚠️</p>
           <h1 className="font-display text-2xl font-extrabold">{t('invalidCode')}</h1>
-          <p className="text-muted text-sm">
-            {t('invalidCodeHint')}
-          </p>
+          <p className="text-muted text-sm">{t('invalidCodeHint')}</p>
           <Button fullWidth size="lg" variant="primary" onClick={() => router.push(`/${locale}`)}>
             {t('back')}
           </Button>
@@ -296,13 +307,16 @@ export function JoinLeagueClient({
   return (
     <div className="relative min-h-[calc(100dvh-64px)] pb-12">
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-30 border-b-2 border-border bg-surface/95 backdrop-blur px-4 py-3 shadow-sm">
+      <div className="border-border bg-surface/95 sticky top-0 z-30 border-b-2 px-4 py-3 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-[480px] items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-2xl shrink-0" aria-hidden="true">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-2xl" aria-hidden="true">
               {league.themeEmoji ?? '🏆'}
             </span>
-            <span className="font-display truncate text-lg font-extrabold text-ink" title={league.name}>
+            <span
+              className="font-display text-ink truncate text-lg font-extrabold"
+              title={league.name}
+            >
               {league.name}
             </span>
           </div>
@@ -357,22 +371,22 @@ export function JoinLeagueClient({
 
         {/* Players Table Card */}
         <Card className="space-y-3 overflow-hidden p-0">
-          <div className="border-b border-border-subtle bg-surface-2 px-4 py-2.5">
-            <h2 className="font-display text-sm font-extrabold uppercase tracking-wider text-muted">
+          <div className="border-border-subtle bg-surface-2 border-b px-4 py-2.5">
+            <h2 className="font-display text-muted text-sm font-extrabold uppercase tracking-wider">
               {t('leaderboardTitleCount', { count: displayMembers.length })}
             </h2>
           </div>
 
-          <div className="divide-y divide-border-subtle px-4">
+          <div className="divide-border-subtle divide-y px-4">
             {displayMembers.map((member, idx) => (
-              <div key={member.uid} className="flex items-center justify-between py-3 gap-3">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={member.uid} className="flex items-center justify-between gap-3 py-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <span className="rd-tabular text-muted w-6 text-sm font-extrabold">
                     #{idx + 1}
                   </span>
                   <Avatar nickname={member.nickname} size="sm" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-ink" title={member.nickname}>
+                    <p className="text-ink truncate text-sm font-bold" title={member.nickname}>
                       {member.nickname}
                     </p>
                     {member.joinedAt && (
@@ -383,12 +397,12 @@ export function JoinLeagueClient({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-right shrink-0">
+                <div className="flex shrink-0 items-center gap-4 text-right">
                   <div>
                     <span className="text-muted block text-[10px] font-bold uppercase">
                       {t('todayPoints')}
                     </span>
-                    <span className="rd-tabular text-xs font-extrabold text-ink">
+                    <span className="rd-tabular text-ink text-xs font-extrabold">
                       {league.viewerFinishedToday
                         ? member.scoreToday !== null && member.scoreToday !== undefined
                           ? member.scoreToday
@@ -401,7 +415,7 @@ export function JoinLeagueClient({
                     <span className="text-muted block text-[10px] font-bold uppercase">
                       {t('totalPoints')}
                     </span>
-                    <span className="rd-tabular text-sm font-extrabold text-duel-strong">
+                    <span className="rd-tabular text-duel-strong text-sm font-extrabold">
                       {member.allTimeScore.toLocaleString()}
                     </span>
                   </div>
@@ -429,7 +443,7 @@ export function JoinLeagueClient({
       >
         <form onSubmit={handleJoin} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="join-nick-input" className="block text-sm font-bold text-ink">
+            <label htmlFor="join-nick-input" className="text-ink block text-sm font-bold">
               {tCommon('onboarding.nicknameLabel')}
             </label>
             <input
@@ -445,7 +459,7 @@ export function JoinLeagueClient({
             />
           </div>
 
-          <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-ink min-h-11">
+          <label className="text-ink flex min-h-11 cursor-pointer items-center gap-3 text-sm font-bold">
             <input
               type="checkbox"
               required
@@ -457,9 +471,9 @@ export function JoinLeagueClient({
           </label>
 
           {/* 4-bullet explanation block */}
-          <div className="border-border-subtle bg-surface-2 rounded-2xl border p-3.5 space-y-2 text-xs">
-            <p className="font-extrabold text-ink">{t('explanationTitle')}</p>
-            <ul className="text-muted space-y-1 list-disc pl-4 font-medium leading-relaxed">
+          <div className="border-border-subtle bg-surface-2 space-y-2 rounded-2xl border p-3.5 text-xs">
+            <p className="text-ink font-extrabold">{t('explanationTitle')}</p>
+            <ul className="text-muted list-disc space-y-1 pl-4 font-medium leading-relaxed">
               <li>{t('explanationBullet1', { name: league.name })}</li>
               <li>{t('explanationBullet2')}</li>
               <li>{t('explanationBullet3')}</li>
@@ -467,9 +481,7 @@ export function JoinLeagueClient({
             </ul>
           </div>
 
-          {joinError && (
-            <p className="text-wrong text-xs font-bold">{joinError}</p>
-          )}
+          {joinError && <p className="text-wrong text-xs font-bold">{joinError}</p>}
 
           <Button
             type="submit"
@@ -482,7 +494,7 @@ export function JoinLeagueClient({
           </Button>
 
           {/* Optional links */}
-          <div className="border-border-subtle border-t pt-3 flex flex-col items-center gap-2 text-xs">
+          <div className="border-border-subtle flex flex-col items-center gap-2 border-t pt-3 text-xs">
             <button
               type="button"
               onClick={() => void handleOAuthConnect('google')}

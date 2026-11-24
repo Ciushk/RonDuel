@@ -119,7 +119,9 @@ export function SplashScreen() {
     const session = getLocalSession();
     const tz = getBrowserTimeZone();
     const isReturningAuth = Boolean(
-      !session.isAnonymous || session.email || (session.authProvider && session.authProvider !== 'anonymous')
+      !session.isAnonymous ||
+      session.email ||
+      (session.authProvider && session.authProvider !== 'anonymous'),
     );
     setIsSignedInUser(isReturningAuth);
 
@@ -206,10 +208,7 @@ export function SplashScreen() {
           onClose={() => setWizardOpen(false)}
           onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
         />
-        <JoinByCodeDialog
-          open={joinDialogOpen}
-          onClose={() => setJoinDialogOpen(false)}
-        />
+        <JoinByCodeDialog open={joinDialogOpen} onClose={() => setJoinDialogOpen(false)} />
       </>
     );
   }
@@ -327,7 +326,7 @@ export function SplashScreen() {
         aria-modal="true"
         aria-label="RonDuel"
         onClick={handleTapAnywhere}
-        className={`rd-splash-overlay bg-bg text-ink fixed inset-0 z-50 flex flex-col items-center justify-center px-6 text-center select-none ${
+        className={`rd-splash-overlay bg-bg text-ink fixed inset-0 z-50 flex select-none flex-col items-center justify-center px-6 text-center ${
           fading ? 'pointer-events-none opacity-0' : 'opacity-100'
         }`}
       >
@@ -339,7 +338,7 @@ export function SplashScreen() {
                 ? 'translate-y-0 scale-100'
                 : step === 1
                   ? 'translate-y-0 scale-95'
-                  : '-translate-y-6 sm:-translate-y-8 scale-100'
+                  : '-translate-y-6 scale-100 sm:-translate-y-8'
             }`}
           >
             <div className="rd-splash-logo flex flex-col items-center gap-2">
@@ -349,12 +348,12 @@ export function SplashScreen() {
 
           {/* Tagline & round chip (Step 2 & 3 or signed in) */}
           <div
-            className={`mt-4 flex flex-col items-center gap-2.5 transition-all duration-400 ease-out ${
+            className={`duration-400 mt-4 flex flex-col items-center gap-2.5 transition-all ease-out ${
               isSignedInUser
-                ? 'opacity-100 translate-y-0'
+                ? 'translate-y-0 opacity-100'
                 : step >= 2
-                  ? 'opacity-100 translate-y-0'
-                  : 'pointer-events-none opacity-0 translate-y-2'
+                  ? 'translate-y-0 opacity-100'
+                  : 'pointer-events-none translate-y-2 opacity-0'
             }`}
           >
             <p data-testid="splash-tagline" className="text-muted text-base font-medium">
@@ -383,10 +382,10 @@ export function SplashScreen() {
           {/* Staggered buttons in Step 3 for new/anonymous users */}
           {!isSignedInUser && (
             <div
-              className={`mt-8 flex w-full flex-col items-stretch gap-3 transition-all duration-400 ease-out ${
+              className={`duration-400 mt-8 flex w-full flex-col items-stretch gap-3 transition-all ease-out ${
                 step === 3
-                  ? 'opacity-100 translate-y-0'
-                  : 'pointer-events-none opacity-0 translate-y-6'
+                  ? 'translate-y-0 opacity-100'
+                  : 'pointer-events-none translate-y-6 opacity-0'
               }`}
             >
               <Button
@@ -399,19 +398,14 @@ export function SplashScreen() {
                 {t('createLeague')}
               </Button>
 
-              <Button
-                size="lg"
-                variant="secondary"
-                fullWidth
-                onClick={handleJoinLeague}
-              >
+              <Button size="lg" variant="secondary" fullWidth onClick={handleJoinLeague}>
                 {t('joinLeague')}
               </Button>
 
               <button
                 type="button"
                 onClick={handlePlayPublic}
-                className="text-muted hover:text-ink mt-1 text-xs font-bold underline underline-offset-4 cursor-pointer py-1.5"
+                className="text-muted hover:text-ink mt-1 cursor-pointer py-1.5 text-xs font-bold underline underline-offset-4"
               >
                 {t('playWithoutLeague')}
               </button>
@@ -425,10 +419,7 @@ export function SplashScreen() {
         onClose={() => setWizardOpen(false)}
         onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
       />
-      <JoinByCodeDialog
-        open={joinDialogOpen}
-        onClose={() => setJoinDialogOpen(false)}
-      />
+      <JoinByCodeDialog open={joinDialogOpen} onClose={() => setJoinDialogOpen(false)} />
     </>
   );
 }

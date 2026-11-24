@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Indstillinger",
-    "duelsYourTurnBadge": "{count, plural, one {# duel venter på dit træk} other {# dueller venter på dit træk}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel venter på dit træk} other {# dueller venter på dit træk}}",
+    "town": "By"
   },
   "onboarding": {
     "pickNickname": "Vælg dit kaldenavn",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Tjek at du indtastede koden korrekt, eller bed personen der inviterede dig om et nyt link.",
     "leaderboardTitleCount": "Ligarangliste ({count})",
     "nicknamePlaceholder": "f.eks. Alex99",
-    "joining": "Tilmelder…"
+    "joining": "Tilmelder…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Duel",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Kunne ikke planlægge runden til {date}: {error}.",
     "replyAdminDrafts": "Oprettede {count} nye spørgsmål af typen {type} om „{topic}” ({ids}).",
     "replyAdminPanel": "Du kan gennemgå dem i adminpanelet.",
-    "openAdmin": "Åbn admin"
+    "openAdmin": "Åbn admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Daglig trivia med dine venner",
@@ -784,5 +787,235 @@
     "description": "Daglig trivia med dine venner",
     "shortcutPlay": "Spil dagens runde",
     "shortcutLeagues": "Mine ligaer"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Byg",
+      "shop": "Butik",
+      "orders": "Ordrer",
+      "inventory": "Lager",
+      "stats": "Beboere",
+      "friends": "Venner",
+      "coins": "Mønter",
+      "help": "Hjælp",
+      "toggle": "Skift værktøjslinje"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Niv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Mangler boliger",
+      "limitedByServices": "Mangler faciliteter (skole, hospital...)",
+      "gateTownHall": "Rådhus påkrævet for Niv2 (maks 9 beboere)",
+      "gateHospital": "Hospital påkrævet for Niv4",
+      "gatePoliceFire": "Politi og Brandvæsen påkrævet for Niv5",
+      "arrivalIn": "Næste ankomst: {time}",
+      "maxCapacity": "Byen er på maksimal kapacitet"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Starthus",
+        "desc": "Hyggeligt hjem til dine første 2 beboere."
+      },
+      "cottage": {
+        "name": "Hytte",
+        "desc": "Hus til 2 beboere."
+      },
+      "house": {
+        "name": "Hus",
+        "desc": "Rummeligt familiehjem til 4 beboere."
+      },
+      "apartment": {
+        "name": "Etageejendom",
+        "desc": "Beboelsesejendom til 10 beboere."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Forret landsted til 6 beboere."
+      },
+      "shop": {
+        "name": "Købmand",
+        "desc": "Forsyner byen og understøtter 6 beboere."
+      },
+      "town_hall": {
+        "name": "Rådhus",
+        "desc": "Byens hjerte, understøtter 8 beboere. Låser op for Niv2."
+      },
+      "park": {
+        "name": "Bypark",
+        "desc": "Grønt åndehul, understøtter 4 beboere."
+      },
+      "bakery": {
+        "name": "Bageri",
+        "desc": "Friskbagt brød, understøtter 6 beboere."
+      },
+      "school": {
+        "name": "Skole",
+        "desc": "Uddannelsessted for 10 beboere."
+      },
+      "police_station": {
+        "name": "Politistation",
+        "desc": "Skaber tryghed for 10 beboere. Påkrævet for Niv5."
+      },
+      "fire_station": {
+        "name": "Brandstation",
+        "desc": "Beskytter byen for 10 beboere. Påkrævet for Niv5."
+      },
+      "hospital": {
+        "name": "Hospital",
+        "desc": "Sundhedspleje for 12 beboere. Påkrævet for Niv4."
+      },
+      "farm_plot": {
+        "name": "Dyrkningslod",
+        "desc": "Frugtbar jord til at dyrke afgrøder."
+      },
+      "road": {
+        "name": "Brolagt Vej",
+        "desc": "Sti til byens gående beboere."
+      },
+      "fence": {
+        "name": "Stakit",
+        "desc": "Flot trækant omkring lodder."
+      },
+      "tree": {
+        "name": "Skyggetræ",
+        "desc": "Grønt løvtræ til forskønnelse."
+      },
+      "bench": {
+        "name": "Parkbænk",
+        "desc": "Hvileplads for beboerne."
+      },
+      "fountain": {
+        "name": "Stenfontæne",
+        "desc": "Fontæne til byens torv."
+      },
+      "golden_fountain": {
+        "name": "Gylden Fontæne",
+        "desc": "Eksklusiv prestigefontæne for Pro-spillere."
+      },
+      "windmill": {
+        "name": "Vindmølle",
+        "desc": "Rustik mølle ved 7 dages stime."
+      },
+      "clock_tower": {
+        "name": "Klokketårn",
+        "desc": "Klassisk monument ved 30 dages stime."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel-Statue",
+        "desc": "Storslået statue ved 100 dages stime."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Havre",
+        "desc": "Hårdfør kornart. Gror på 4 timer."
+      },
+      "wheat": {
+        "name": "Hvede",
+        "desc": "Gyldne aks. Gror på 8 timer."
+      },
+      "carrots": {
+        "name": "Gulerødder",
+        "desc": "Søde rødder. Gror på 12 timer."
+      },
+      "sunflower": {
+        "name": "Solsikke",
+        "desc": "Strålende blomster. Gror på 24 timer."
+      },
+      "pumpkin": {
+        "name": "Græskar",
+        "desc": "Kæmpe afgrøde. Gror på 48 timer."
+      }
+    },
+    "orders": {
+      "title": "Daglige Ordrer",
+      "locked": "Spil dagens runde for at låse op for ordrer",
+      "completed": "Leveret",
+      "deliver": "Lever Ordre",
+      "missingItems": "Mangler afgrøder",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Korn til Bageren",
+        "market_stall": "Frisk Markedsbundt",
+        "soup_kitchen": "Forråd til Suppekøkkenet",
+        "autumn_festival": "Høstfestens Festmåltid",
+        "village_pantry": "Opfyldning af Spisekammer"
+      }
+    },
+    "shop": {
+      "title": "Bykatalog",
+      "tabHousing": "Bolig",
+      "tabServices": "Faciliteter",
+      "tabFarm": "Gård",
+      "tabDecor": "Dekor",
+      "priceCoins": "{coins} mønter",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} bolig",
+      "serviceValue": "+{count} støtte",
+      "unlockLevel": "Låses op på Niv{level}",
+      "proOnly": "Kun for Pro",
+      "streakOnly": "Kræver {days} dages stime",
+      "buy": "Byg",
+      "insufficientFunds": "Ikke nok RonCoins",
+      "maxCountReached": "Maksimum antal nået"
+    },
+    "tiles": {
+      "emptyPlot": "Tomt Jordlod",
+      "plantAction": "Så Frø",
+      "harvestAction": "Høst",
+      "growing": "Gror ({time} tilbage)",
+      "ready": "Klar til høst!",
+      "move": "Flyt",
+      "remove": "Fjern ({coins} mønter retur)",
+      "starterCannotRemove": "Starthuset kan ikke fjernes"
+    },
+    "tutorial": {
+      "step1Title": "Så Havre",
+      "step1Desc": "Tryk på et tomt jordlod for at så dine første afgrøder.",
+      "step2Title": "Byg en Hytte",
+      "step2Desc": "Åbn byggemenuen for at opføre en hytte til nye beboere.",
+      "step3Title": "Opfyld Ordrer",
+      "step3Desc": "Lever høstede afgrøder for at opfylde ordrer og optjene mønter.",
+      "skip": "Spring over",
+      "next": "Næste",
+      "finish": "Forstået!"
+    },
+    "coinStore": {
+      "title": "RonCoins-Butik",
+      "subtitle": "Kosmetiske udvidelser. Påvirker aldrig spil eller stillinger.",
+      "monthlyCapNotice": "Tilbage denne måned: {remaining} € af {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins kan ikke veksles til rigtige penge.",
+      "buyPack": "Køb pakke til {price}",
+      "termsLink": "Møntvilkår"
+    },
+    "transfer": {
+      "title": "Overfør RonCoins",
+      "desc": "Del optjente mønter med venner i din liga.",
+      "amountLabel": "Beløb",
+      "recipientLabel": "Ven i din liga",
+      "send": "Send mønter",
+      "dailyCapNotice": "Dagsgrænse: {remaining} mønter tilbage i dag"
+    },
+    "visit": {
+      "title": "{name}s by",
+      "like": "Synes godt om",
+      "liked": "Syntes godt om ({count})",
+      "water": "Vand afgrøde (-30m)",
+      "waterUsed": "Vandet ({count}/{max})",
+      "readOnlyNotice": "Besøger en vens by (skrivebeskyttet)"
+    },
+    "postRoundCta": "Du optjente {coins, plural, one {# RonCoin} other {# RonCoins}} — gå i gang med at bygge!",
+    "goBuild": "Gå til byen",
+    "plurals": {
+      "villagers": "{count, plural, one {# beboer} other {# beboere}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# jordlod} other {# jordlodder}}",
+      "hours": "{count, plural, one {# time} other {# timer}}",
+      "minutes": "{count, plural, one {# minut} other {# minutter}}",
+      "days": "{count, plural, one {# dag} other {# dage}}"
+    }
   }
 }

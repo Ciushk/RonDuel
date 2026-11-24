@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Clock,
-  Crown,
-  Play,
-  Plus,
-  ShareNetwork,
-  Sword,
-  Trophy,
-  User,
-} from '@phosphor-icons/react';
+import { Clock, Crown, Play, Plus, ShareNetwork, Sword, Trophy, User } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -150,7 +141,7 @@ export default function DuelsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-ink">{t('nav.duels')}</h1>
+          <h1 className="font-display text-ink text-2xl font-extrabold">{t('nav.duels')}</h1>
           <p className="text-muted text-xs font-bold">
             {duelsData?.isPro
               ? t('duels.unlimitedProLong')
@@ -174,14 +165,15 @@ export default function DuelsPage() {
 
       {/* Error or Limit Banner */}
       {error && (
-        <Card variant="sticker" className="bg-volt text-ink border-2 border-border p-4 shadow-sm space-y-2">
+        <Card
+          variant="sticker"
+          className="bg-volt text-ink border-border space-y-2 border-2 p-4 shadow-sm"
+        >
           <div className="flex items-start gap-2.5">
-            <Crown size={22} weight="fill" className="text-ron-strong shrink-0 mt-0.5" />
+            <Crown size={22} weight="fill" className="text-ron-strong mt-0.5 shrink-0" />
             <div className="space-y-1">
-              <p className="font-extrabold text-sm leading-snug">{error}</p>
-              <p className="text-xs font-medium text-ink/80">
-                {t('duels.proUpsell')}
-              </p>
+              <p className="text-sm font-extrabold leading-snug">{error}</p>
+              <p className="text-ink/80 text-xs font-medium">{t('duels.proUpsell')}</p>
             </div>
           </div>
           <Link href={`/${locale}/pro`} className="block pt-1">
@@ -200,17 +192,15 @@ export default function DuelsPage() {
 
       {/* Empty State */}
       {totalDuels === 0 && !loading && (
-        <Card className="p-6 text-center space-y-3 border-2 border-dashed border-border bg-surface-2/60">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-surface border-2 border-border text-2xl shadow-sm">
+        <Card className="border-border bg-surface-2/60 space-y-3 border-2 border-dashed p-6 text-center">
+          <div className="bg-surface border-border mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm">
             <Sword size={24} weight="bold" className="text-volt-strong dark:text-volt" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-display font-black text-base text-ink">{t('duels.emptyTitle')}</h3>
-            <p className="text-muted text-xs max-w-[280px] mx-auto">
-              {t('duels.emptyBody')}
-            </p>
+            <h3 className="font-display text-ink text-base font-black">{t('duels.emptyTitle')}</h3>
+            <p className="text-muted mx-auto max-w-[280px] text-xs">{t('duels.emptyBody')}</p>
           </div>
-          <div className="pt-2 flex justify-center">
+          <div className="flex justify-center pt-2">
             <Button size="sm" variant="volt" onClick={handleCreateDuel}>
               {t('duels.startNew')}
             </Button>
@@ -222,8 +212,8 @@ export default function DuelsPage() {
       {yourTurn.length > 0 && (
         <section className="space-y-2.5">
           <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-ron-strong animate-pulse" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-ron-strong">
+            <span className="bg-ron-strong flex h-2.5 w-2.5 animate-pulse rounded-full" />
+            <h2 className="text-ron-strong text-xs font-black uppercase tracking-wider">
               {t('duels.sectionYourTurn', { count: yourTurn.length })}
             </h2>
           </div>
@@ -231,21 +221,21 @@ export default function DuelsPage() {
             {yourTurn.map((duel) => (
               <div
                 key={duel.id}
-                className="border-2 border-ron-strong bg-surface rounded-2xl p-4 shadow-[var(--rd-shadow-key)] flex items-center justify-between gap-3"
+                className="border-ron-strong bg-surface flex items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)]"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
-                    <p className="font-display font-extrabold text-sm truncate">
+                    <p className="font-display truncate text-sm font-extrabold">
                       {t('common.versus', { name: duel.opponentNickname })}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                      <span className="text-muted font-bold flex items-center gap-1">
+                      <span className="text-muted flex items-center gap-1 font-bold">
                         <Clock size={12} weight="bold" />
                         {formatHoursLeft(duel.timeLeftMs, t)}
                       </span>
                       {duel.h2h && (
-                        <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
+                        <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
                           H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
                         </span>
                       )}
@@ -258,7 +248,11 @@ export default function DuelsPage() {
                   </div>
                 </div>
                 <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
-                  <Button size="sm" variant="volt" className="shrink-0 font-black text-xs h-10 px-3">
+                  <Button
+                    size="sm"
+                    variant="volt"
+                    className="h-10 shrink-0 px-3 text-xs font-black"
+                  >
                     <Play size={14} weight="fill" />
                     <span>{t('common.playNow')}</span>
                   </Button>
@@ -272,27 +266,28 @@ export default function DuelsPage() {
       {/* 2. Waiting for opponent */}
       {waiting.length > 0 && (
         <section className="space-y-2.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+          <h2 className="text-muted text-xs font-bold uppercase tracking-wider">
             {t('duels.sectionWaiting', { count: waiting.length })}
           </h2>
           <div className="space-y-2">
             {waiting.map((duel) => (
               <div
                 key={duel.id}
-                className="border-2 border-border bg-surface rounded-2xl p-4 shadow-[var(--rd-shadow-key)] flex items-center justify-between gap-3"
+                className="border-border bg-surface flex items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)]"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
-                    <p className="font-display font-extrabold text-sm truncate">
+                    <p className="font-display truncate text-sm font-extrabold">
                       {t('common.versus', { name: duel.opponentNickname })}
                     </p>
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                    <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
                       <span>
-                        {t('duels.yourScore', { score: duel.myScore ?? 0 })} · {formatHoursLeft(duel.timeLeftMs, t)}
+                        {t('duels.yourScore', { score: duel.myScore ?? 0 })} ·{' '}
+                        {formatHoursLeft(duel.timeLeftMs, t)}
                       </span>
                       {duel.h2h && (
-                        <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
+                        <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
                           H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
                         </span>
                       )}
@@ -304,7 +299,7 @@ export default function DuelsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <Button
                     size="sm"
                     variant="secondary"
@@ -328,7 +323,7 @@ export default function DuelsPage() {
       {/* 3. Finalizate */}
       {finished.length > 0 && (
         <section className="space-y-2.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+          <h2 className="text-muted text-xs font-bold uppercase tracking-wider">
             {t('duels.sectionFinished', { count: finished.length })}
           </h2>
           <div className="space-y-2">
@@ -336,20 +331,21 @@ export default function DuelsPage() {
               <Link
                 key={duel.id}
                 href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}
-                className="border-2 border-border bg-surface text-ink hover:border-border-subtle active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-between gap-3 rounded-2xl p-4 shadow-[var(--rd-shadow-key)] transition-all select-none"
+                className="border-border bg-surface text-ink hover:border-border-subtle flex select-none items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                   <Avatar nickname={duel.opponentNickname} size="md" />
                   <div className="min-w-0">
-                    <p className="font-display font-extrabold text-sm truncate">
+                    <p className="font-display truncate text-sm font-extrabold">
                       {t('common.versus', { name: duel.opponentNickname })}
                     </p>
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                    <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
                       <span>
-                        {duel.myScore} - {duel.opponentScore} {t('common.points', { points: '' }).trim()}
+                        {duel.myScore} - {duel.opponentScore}{' '}
+                        {t('common.points', { points: '' }).trim()}
                       </span>
                       {duel.h2h && (
-                        <span className="border border-border bg-surface-2 text-ink px-1.5 py-0.2 rounded text-[10px] font-black">
+                        <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
                           H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
                         </span>
                       )}
@@ -360,7 +356,7 @@ export default function DuelsPage() {
                       )}
                     </div>
                     {duel.walkover && (
-                      <p className="text-[11px] font-bold text-ron-strong mt-0.5">
+                      <p className="text-ron-strong mt-0.5 text-[11px] font-bold">
                         {duel.walkoverNote || t('duels.walkoverBadge')}
                       </p>
                     )}
@@ -368,15 +364,15 @@ export default function DuelsPage() {
                 </div>
                 <div className="shrink-0 text-right">
                   {duel.isWinner ? (
-                    <Chip tone="volt" className="font-black text-xs">
+                    <Chip tone="volt" className="text-xs font-black">
                       {duel.walkover ? t('duels.walkoverBadge') : t('duels.won')}
                     </Chip>
                   ) : duel.isTie ? (
-                    <Chip tone="neutral" className="font-bold text-xs">
+                    <Chip tone="neutral" className="text-xs font-bold">
                       {t('duels.draw')}
                     </Chip>
                   ) : (
-                    <Chip tone="neutral" className="text-muted font-bold text-xs">
+                    <Chip tone="neutral" className="text-muted text-xs font-bold">
                       {t('duels.lost')}
                     </Chip>
                   )}

@@ -6,9 +6,32 @@ const messagesDir = path.join(rootDir, 'apps/web/messages');
 const seedFile = path.join(rootDir, 'apps/web/content/seed/questions.en.json');
 
 const LOCALES = [
-  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
-  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
-  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+  'ro',
+  'en',
+  'es',
+  'pt',
+  'de',
+  'fr',
+  'it',
+  'nl',
+  'pl',
+  'bg',
+  'cs',
+  'da',
+  'el',
+  'et',
+  'fi',
+  'ga',
+  'hr',
+  'hu',
+  'lt',
+  'lv',
+  'mt',
+  'nb',
+  'sk',
+  'sl',
+  'sv',
+  'uk',
 ];
 
 console.log('--- Checking i18n message files ---');
@@ -59,7 +82,10 @@ for (const loc of LOCALES) {
 
   const missingKeys = enKeyList.filter((k) => !(k in locFlat));
   if (missingKeys.length > 0) {
-    console.error(`ERROR: [${loc}] is missing ${missingKeys.length} keys:`, missingKeys.slice(0, 5));
+    console.error(
+      `ERROR: [${loc}] is missing ${missingKeys.length} keys:`,
+      missingKeys.slice(0, 5),
+    );
     hasError = true;
   }
 

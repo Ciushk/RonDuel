@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Einstellungen",
-    "duelsYourTurnBadge": "{count, plural, one {# Duell wartet auf deinen Zug} other {# Duelle warten auf deinen Zug}}"
+    "duelsYourTurnBadge": "{count, plural, one {# Duell wartet auf deinen Zug} other {# Duelle warten auf deinen Zug}}",
+    "town": "Stadt"
   },
   "onboarding": {
     "pickNickname": "Wähle deinen Spitznamen",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Prüfe, ob du den Code richtig eingegeben hast, oder frage die Person, die dich eingeladen hat, nach einem neuen Link.",
     "leaderboardTitleCount": "Ligen-Bestenliste ({count})",
     "nicknamePlaceholder": "z. B. Alex99",
-    "joining": "Beitritt läuft…"
+    "joining": "Beitritt läuft…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court Duell",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Die Runde für {date} konnte nicht geplant werden: {error}.",
     "replyAdminDrafts": "{count} neue Fragen vom Typ {type} zum Thema „{topic}“ erstellt ({ids}).",
     "replyAdminPanel": "Du kannst sie im Admin-Bereich prüfen.",
-    "openAdmin": "Admin öffnen"
+    "openAdmin": "Admin öffnen",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Tägliche Trivia mit deinen Freunden",
@@ -784,5 +787,235 @@
     "description": "Tägliche Trivia mit deinen Freunden",
     "shortcutPlay": "Heutige Runde spielen",
     "shortcutLeagues": "Meine Ligen"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Bauen",
+      "shop": "Laden",
+      "orders": "Aufträge",
+      "inventory": "Lager",
+      "stats": "Bewohner",
+      "friends": "Freunde",
+      "coins": "Münzen",
+      "help": "Hilfe",
+      "toggle": "Menüleiste"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Stufe {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Mehr Wohnraum benötigt",
+      "limitedByServices": "Mehr Einrichtungen benötigt (Schule, Krankenhaus...)",
+      "gateTownHall": "Rathaus benötigt für Stufe 2 (max. 9 Bewohner)",
+      "gateHospital": "Krankenhaus benötigt für Stufe 4",
+      "gatePoliceFire": "Polizei & Feuerwehr benötigt für Stufe 5",
+      "arrivalIn": "Nächster Bewohner: {time}",
+      "maxCapacity": "Stadt hat maximale Kapazität erreicht"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Starthaus",
+        "desc": "Gemütliches Heim für deine ersten 2 Bewohner."
+      },
+      "cottage": {
+        "name": "Häuschen",
+        "desc": "Wohnraum für 2 Bewohner."
+      },
+      "house": {
+        "name": "Wohnhaus",
+        "desc": "Geräumiges Familienhaus für 4 Bewohner."
+      },
+      "apartment": {
+        "name": "Apartmenthaus",
+        "desc": "Mehrstöckiges Wohnhaus für 10 Bewohner."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Elegantes Anwesen für 6 Bewohner."
+      },
+      "shop": {
+        "name": "Dorfladen",
+        "desc": "Versorgt Bürger und unterstützt 6 Bewohner."
+      },
+      "town_hall": {
+        "name": "Rathaus",
+        "desc": "Stadtzentrum für 8 Bewohner. Schaltet Stufe 2 frei."
+      },
+      "park": {
+        "name": "Park",
+        "desc": "Grüne Oase für 4 Bewohner."
+      },
+      "bakery": {
+        "name": "Bäckerei",
+        "desc": "Frisches Brot für 6 Bewohner."
+      },
+      "school": {
+        "name": "Schule",
+        "desc": "Bildungsstätte für 10 Bewohner."
+      },
+      "police_station": {
+        "name": "Polizeiwache",
+        "desc": "Gewährleistet Sicherheit für 10 Bewohner. Erforderlich für Stufe 5."
+      },
+      "fire_station": {
+        "name": "Feuerwache",
+        "desc": "Schützt die Stadt für 10 Bewohner. Erforderlich für Stufe 5."
+      },
+      "hospital": {
+        "name": "Krankenhaus",
+        "desc": "Medizinische Versorgung für 12 Bewohner. Erforderlich für Stufe 4."
+      },
+      "farm_plot": {
+        "name": "Ackerbeet",
+        "desc": "Fruchtbarer Boden für den Anbau von Feldfrüchten."
+      },
+      "road": {
+        "name": "Pflasterstraße",
+        "desc": "Befestigter Weg zum Spazieren für Bewohner."
+      },
+      "fence": {
+        "name": "Holzzaun",
+        "desc": "Dekorativer Zaun zur Abgrenzung."
+      },
+      "tree": {
+        "name": "Schattiger Baum",
+        "desc": "Laubbaum für natürliche Schönheit."
+      },
+      "bench": {
+        "name": "Parkbank",
+        "desc": "Rastplatz für umherziehende Dorfbewohner."
+      },
+      "fountain": {
+        "name": "Steinbrunnen",
+        "desc": "Erfrischender Springbrunnen für das Stadtzentrum."
+      },
+      "golden_fountain": {
+        "name": "Goldener Brunnen",
+        "desc": "Exklusiver Prestigebrunnen für Pro-Spieler."
+      },
+      "windmill": {
+        "name": "Windmühle",
+        "desc": "Rustikales Denkmal für eine 7-Tage-Serie."
+      },
+      "clock_tower": {
+        "name": "Uhrturm",
+        "desc": "Klassisches Monument für eine 30-Tage-Serie."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel-Statue",
+        "desc": "Prächtiges Denkmal für eine 100-Tage-Serie."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Hafer",
+        "desc": "Widerstandsfähiges Getreide. Wächst in 4 Stunden."
+      },
+      "wheat": {
+        "name": "Weizen",
+        "desc": "Goldene Ähren. Wächst in 8 Stunden."
+      },
+      "carrots": {
+        "name": "Karotten",
+        "desc": "Süße Wurzeln. Wachsen in 12 Stunden."
+      },
+      "sunflower": {
+        "name": "Sonnenblume",
+        "desc": "Leuchtende Blüten. Wächst in 24 Stunden."
+      },
+      "pumpkin": {
+        "name": "Kürbis",
+        "desc": "Prachtvoller Riese. Wächst in 48 Stunden."
+      }
+    },
+    "orders": {
+      "title": "Tagesaufträge",
+      "locked": "Spiele die heutige Quizrunde, um Aufträge freizuschalten",
+      "completed": "Geliefert",
+      "deliver": "Auftrag liefern",
+      "missingItems": "Fehlende Erntegüter",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Getreidelieferung für Bäcker",
+        "market_stall": "Frische Marktkiste",
+        "soup_kitchen": "Vorräte für die Suppenküche",
+        "autumn_festival": "Herbstfest-Schmaus",
+        "village_pantry": "Vorratskammer auffüllen"
+      }
+    },
+    "shop": {
+      "title": "Stadt-Katalog",
+      "tabHousing": "Wohnen",
+      "tabServices": "Dienste",
+      "tabFarm": "Bauernhof",
+      "tabDecor": "Deko",
+      "priceCoins": "{coins} Münzen",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} Wohnraum",
+      "serviceValue": "+{count} Dienste",
+      "unlockLevel": "Freigeschaltet ab Stufe {level}",
+      "proOnly": "Exklusiv für Pro",
+      "streakOnly": "Erfordert {days}-Tage-Serie",
+      "buy": "Bauen",
+      "insufficientFunds": "Nicht genügend RonCoins",
+      "maxCountReached": "Maximale Anzahl erreicht"
+    },
+    "tiles": {
+      "emptyPlot": "Leeres Feld",
+      "plantAction": "Aussaat",
+      "harvestAction": "Ernten",
+      "growing": "Wächst (noch {time})",
+      "ready": "Erntereif!",
+      "move": "Verschieben",
+      "remove": "Entfernen ({coins} Münzen Rückerstattung)",
+      "starterCannotRemove": "Starthaus kann nicht entfernt werden"
+    },
+    "tutorial": {
+      "step1Title": "Hafer anbauen",
+      "step1Desc": "Tippe auf ein Feld, um erste Samen zu pflanzen.",
+      "step2Title": "Häuschen bauen",
+      "step2Desc": "Öffne das Baumenü und baue ein Häuschen für neue Bewohner.",
+      "step3Title": "Aufträge erfüllen",
+      "step3Desc": "Liefere Ernten ab, um Aufträge zu erfüllen und Münzen zu verdienen.",
+      "skip": "Überspringen",
+      "next": "Weiter",
+      "finish": "Verstanden!"
+    },
+    "coinStore": {
+      "title": "RonCoins-Laden",
+      "subtitle": "Kosmetische Stadterweiterungen. Beeinflusst niemals Quiz-Ergebnisse.",
+      "monthlyCapNotice": "Verbleibend in diesem Monat: {remaining} € von {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins können nicht in echtes Geld ausgezahlt werden.",
+      "buyPack": "Paket für {price} holen",
+      "termsLink": "Münzbedingungen"
+    },
+    "transfer": {
+      "title": "RonCoins übertragen",
+      "desc": "Teile Quizmünzen mit Freunden aus deiner Liga.",
+      "amountLabel": "Betrag",
+      "recipientLabel": "Freund in deiner Liga",
+      "send": "Münzen senden",
+      "dailyCapNotice": "Tageslimit: noch {remaining} Münzen heute"
+    },
+    "visit": {
+      "title": "Stadt von {name}",
+      "like": "Stadt loben",
+      "liked": "Gefällt dir ({count})",
+      "water": "Pflanze gießen (-30m)",
+      "waterUsed": "Gegossen ({count}/{max})",
+      "readOnlyNotice": "Stadt eines Freundes ansehen (Besuchermodus)"
+    },
+    "postRoundCta": "Du hast {coins, plural, one {# RonCoin} other {# RonCoins}} verdient — baue deine Stadt aus!",
+    "goBuild": "Zur Stadt",
+    "plurals": {
+      "villagers": "{count, plural, one {# Bewohner} other {# Bewohner}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# Feld} other {# Felder}}",
+      "hours": "{count, plural, one {# Stunde} other {# Stunden}}",
+      "minutes": "{count, plural, one {# Minute} other {# Minuten}}",
+      "days": "{count, plural, one {# Tag} other {# Tage}}"
+    }
   }
 }

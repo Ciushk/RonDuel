@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Ustawienia",
-    "duelsYourTurnBadge": "{count, plural, one {# pojedynek czeka na Twój ruch} few {# pojedynki czekają na Twój ruch} many {# pojedynków czeka na Twój ruch} other {# pojedynku czeka na Twój ruch}}"
+    "duelsYourTurnBadge": "{count, plural, one {# pojedynek czeka na Twój ruch} few {# pojedynki czekają na Twój ruch} many {# pojedynków czeka na Twój ruch} other {# pojedynku czeka na Twój ruch}}",
+    "town": "Miasto"
   },
   "onboarding": {
     "pickNickname": "Wybierz swój pseudonim",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Sprawdź, czy kod został wpisany poprawnie, lub poproś osobę, która Cię zaprosiła, o nowy link.",
     "leaderboardTitleCount": "Ranking ligi ({count})",
     "nicknamePlaceholder": "np. Alex99",
-    "joining": "Dołączanie…"
+    "joining": "Dołączanie…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Pojedynek 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Nie udało się zaplanować rundy na {date}: {error}.",
     "replyAdminDrafts": "Utworzono {count} nowych pytań typu {type} o „{topic}” ({ids}).",
     "replyAdminPanel": "Możesz je sprawdzić w panelu admina.",
-    "openAdmin": "Otwórz admin"
+    "openAdmin": "Otwórz admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Codzienny quiz ze znajomymi",
@@ -784,5 +787,235 @@
     "description": "Codzienny quiz ze znajomymi",
     "shortcutPlay": "Zagraj w dzisiejszą rundę",
     "shortcutLeagues": "Moje ligi"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Buduj",
+      "shop": "Sklep",
+      "orders": "Zlecenia",
+      "inventory": "Magazyn",
+      "stats": "Mieszkańcy",
+      "friends": "Znajomi",
+      "coins": "Monety",
+      "help": "Pomoc",
+      "toggle": "Pasek narzędzi"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Poz. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Potrzeba więcej mieszkań",
+      "limitedByServices": "Potrzeba więcej usług (szkoła, szpital...)",
+      "gateTownHall": "Ratusz wymagany do Poz2 (maks 9 mieszkańców)",
+      "gateHospital": "Szpital wymagany do Poz4",
+      "gatePoliceFire": "Policja i Straż Pożarna wymagane do Poz5",
+      "arrivalIn": "Kolejny mieszkaniec: {time}",
+      "maxCapacity": "Miasto osiągnęło maksymalną pojemność"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Dom Początkowy",
+        "desc": "Przytulny dom dla pierwszych 2 mieszkańców."
+      },
+      "cottage": {
+        "name": "Chata",
+        "desc": "Wygodne lokum dla 2 mieszkańców."
+      },
+      "house": {
+        "name": "Dom",
+        "desc": "Przestronny dom rodzinny dla 4 mieszkańców."
+      },
+      "apartment": {
+        "name": "Kamienica",
+        "desc": "Wielopiętrowy budynek mieszkalny dla 10 mieszkańców."
+      },
+      "villa": {
+        "name": "Willa",
+        "desc": "Elegancka posiadłość dla 6 mieszkańców."
+      },
+      "shop": {
+        "name": "Sklepik Wiejski",
+        "desc": "Zaopatrzenie dla 6 mieszkańców."
+      },
+      "town_hall": {
+        "name": "Ratusz",
+        "desc": "Centrum wspierające 8 mieszkańców. Odblokowuje Poz2."
+      },
+      "park": {
+        "name": "Park Miejski",
+        "desc": "Zielona oaza wspierająca 4 mieszkańców."
+      },
+      "bakery": {
+        "name": "Piekarnia",
+        "desc": "Świeży chleb wspierający 6 mieszkańców."
+      },
+      "school": {
+        "name": "Szkoła",
+        "desc": "Placówka edukacyjna dla 10 mieszkańców."
+      },
+      "police_station": {
+        "name": "Posterunek Policji",
+        "desc": "Dba o porządek dla 10 mieszkańców. Wymóg Poz5."
+      },
+      "fire_station": {
+        "name": "Remiza Strażacka",
+        "desc": "Chroni miasto dla 10 mieszkańców. Wymóg Poz5."
+      },
+      "hospital": {
+        "name": "Szpital",
+        "desc": "Opieka medyczna dla 12 mieszkańców. Wymóg Poz4."
+      },
+      "farm_plot": {
+        "name": "Grządka Uprawna",
+        "desc": "Żyzna gleba pod uprawę warzyw i zbóż."
+      },
+      "road": {
+        "name": "Brukowana Droga",
+        "desc": "Brukowa ścieżka dla spacerujących mieszkańców."
+      },
+      "fence": {
+        "name": "Drewniany Płot",
+        "desc": "Urocze drewniane ogrodzenie."
+      },
+      "tree": {
+        "name": "Cieniste Drzewo",
+        "desc": "Zielone drzewo dodające miastu uroku."
+      },
+      "bench": {
+        "name": "Ławka Parkowa",
+        "desc": "Miejsce odpoczynku dla mieszkańców."
+      },
+      "fountain": {
+        "name": "Kamienna Fontanna",
+        "desc": "Fontanna w centralnym punkcie miasta."
+      },
+      "golden_fountain": {
+        "name": "Złota Fontanna",
+        "desc": "Prestiżowa fontanna dla graczy Pro."
+      },
+      "windmill": {
+        "name": "Wiatrak",
+        "desc": "Rustykalny zabytek za 7 dni serii."
+      },
+      "clock_tower": {
+        "name": "Wieża Zegarowa",
+        "desc": "Klasyczny monument za 30 dni serii."
+      },
+      "ronduel_statue": {
+        "name": "Posąg RonDuel",
+        "desc": "Wspaniały posąg za 100 dni serii."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Owies",
+        "desc": "Wytrzymałe zboże. Rośnie w 4 godziny."
+      },
+      "wheat": {
+        "name": "Pszenica",
+        "desc": "Złote kłosy. Rośnie w 8 godzin."
+      },
+      "carrots": {
+        "name": "Marchew",
+        "desc": "Słodkie korzenie. Rośnie w 12 godzin."
+      },
+      "sunflower": {
+        "name": "Słonecznik",
+        "desc": "Promienne kwiaty. Rośnie w 24 godziny."
+      },
+      "pumpkin": {
+        "name": "Dynia",
+        "desc": "Olbrzymi plon. Rośnie w 48 godzin."
+      }
+    },
+    "orders": {
+      "title": "Zlecenia Miejskie",
+      "locked": "Zagraj dzisiejszą rundę, aby odblokować zlecenia",
+      "completed": "Dostarczono",
+      "deliver": "Dostarcz Zlecenie",
+      "missingItems": "Brak wymaganych plonów",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Zboże dla Piekarza",
+        "market_stall": "Świeży Koszyk Targowy",
+        "soup_kitchen": "Zaopatrzenie Stołówki",
+        "autumn_festival": "Uczta Festiwalu Jesieni",
+        "village_pantry": "Uzupełnienie Spiżarni"
+      }
+    },
+    "shop": {
+      "title": "Katalog Miejski",
+      "tabHousing": "Mieszkania",
+      "tabServices": "Usługi",
+      "tabFarm": "Farma",
+      "tabDecor": "Dekoracje",
+      "priceCoins": "{coins} monet",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} miejsc",
+      "serviceValue": "+{count} wsparcia",
+      "unlockLevel": "Odblokowane na Poz{level}",
+      "proOnly": "Tylko w Pro",
+      "streakOnly": "Wymaga {days} dni serii",
+      "buy": "Buduj",
+      "insufficientFunds": "Za mało RonCoins",
+      "maxCountReached": "Osiągnięto limit"
+    },
+    "tiles": {
+      "emptyPlot": "Pusta Grządka",
+      "plantAction": "Zasiej",
+      "harvestAction": "Zbierz Plony",
+      "growing": "Rośnie (zostało {time})",
+      "ready": "Gotowe do zbioru!",
+      "move": "Przesuń",
+      "remove": "Usuń (Zwrot {coins} monet)",
+      "starterCannotRemove": "Domu początkowego nie można usunąć"
+    },
+    "tutorial": {
+      "step1Title": "Zasiej Owies",
+      "step1Desc": "Dotknij pustej grządki, by zasiać pierwsze nasiona.",
+      "step2Title": "Zbuduj Chatę",
+      "step2Desc": "Otwórz menu budowy i postaw chatę dla nowych mieszkańców.",
+      "step3Title": "Realizuj Zlecenia",
+      "step3Desc": "Dostarczaj plony, by zarabiać dodatkowe monety.",
+      "skip": "Pomiń",
+      "next": "Dalej",
+      "finish": "Zrozumiałem!"
+    },
+    "coinStore": {
+      "title": "Sklep RonCoins",
+      "subtitle": "Kosmetyczne ulepszenia miasta. Nie wpływają na wyniki quizu.",
+      "monthlyCapNotice": "Pozostało w tym miesiącu: {remaining} € z {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins nie mają wartości w prawdziwych pieniądzach.",
+      "buyPack": "Kup pakiet za {price}",
+      "termsLink": "Regulamin monet"
+    },
+    "transfer": {
+      "title": "Przelej RonCoins",
+      "desc": "Podziel się monetami z quizu ze znajomymi z ligi.",
+      "amountLabel": "Kwota",
+      "recipientLabel": "Znajomy z ligi",
+      "send": "Wyślij monety",
+      "dailyCapNotice": "Limit dzienny: zostało {remaining} monet dzisiaj"
+    },
+    "visit": {
+      "title": "Miasto gracza {name}",
+      "like": "Polub miasto",
+      "liked": "Polubiono ({count})",
+      "water": "Podlej uprawę (-30m)",
+      "waterUsed": "Podlano ({count}/{max})",
+      "readOnlyNotice": "Odwiedzasz miasto znajomego (tryb podglądu)"
+    },
+    "postRoundCta": "Zdobyłeś {coins, plural, one {# RonCoin} few {# RonCoiny} many {# RonCoinów} other {# RonCoina}} — idź budować!",
+    "goBuild": "Do Miasta",
+    "plurals": {
+      "villagers": "{count, plural, one {# mieszkaniec} few {# mieszkańców} many {# mieszkańców} other {# mieszkańca}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoiny} many {# RonCoinów} other {# RonCoina}}",
+      "plots": "{count, plural, one {# grządka} few {# grządki} many {# grządek} other {# grządki}}",
+      "hours": "{count, plural, one {# godzina} few {# godziny} many {# godzin} other {# godziny}}",
+      "minutes": "{count, plural, one {# minuta} few {# minuty} many {# minut} other {# minuty}}",
+      "days": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}"
+    }
   }
 }

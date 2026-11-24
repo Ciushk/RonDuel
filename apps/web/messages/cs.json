@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Nastavení",
-    "duelsYourTurnBadge": "{count, plural, one {# duel čeká na tvůj tah} few {# duely čekají na tvůj tah} many {# duelů čeká na tvůj tah} other {# duelu čeká na tvůj tah}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel čeká na tvůj tah} few {# duely čekají na tvůj tah} many {# duelů čeká na tvůj tah} other {# duelu čeká na tvůj tah}}",
+    "town": "Město"
   },
   "onboarding": {
     "pickNickname": "Zvol si přezdívku",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Zkontroluj, zda jsi kód zadal správně, nebo požádej toho, kdo tě pozval, o nový odkaz.",
     "leaderboardTitleCount": "Žebříček ligy ({count})",
     "nicknamePlaceholder": "např. Alex99",
-    "joining": "Připojování…"
+    "joining": "Připojování…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Souboj 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Kolo na {date} se nepodařilo naplánovat: {error}.",
     "replyAdminDrafts": "Vytvořeno {count} nových otázek typu {type} o „{topic}“ ({ids}).",
     "replyAdminPanel": "Můžeš je zkontrolovat v admin panelu.",
-    "openAdmin": "Otevřít admin"
+    "openAdmin": "Otevřít admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Denní kvíz s přáteli",
@@ -784,5 +787,235 @@
     "description": "Denní kvíz s přáteli",
     "shortcutPlay": "Zahraj si dnešní kolo",
     "shortcutLeagues": "Moje ligy"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Stavět",
+      "shop": "Obchod",
+      "orders": "Objednávky",
+      "inventory": "Sklad",
+      "stats": "Obyvatelé",
+      "friends": "Přátelé",
+      "coins": "Mince",
+      "help": "Nápověda",
+      "toggle": "Panel"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Úr. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Potřeba více obydlí",
+      "limitedByServices": "Potřeba více služeb (škola, nemocnice...)",
+      "gateTownHall": "Radnice vyžadována pro Úr2 (max 9 obyvatel)",
+      "gateHospital": "Nemocnice vyžadována pro Úr4",
+      "gatePoliceFire": "Policie a Hasiči vyžadováni pro Úr5",
+      "arrivalIn": "Další obyvatel: {time}",
+      "maxCapacity": "Město dosáhlo maximální kapacity"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Počáteční Domek",
+        "desc": "Útulný domov pro tvé první 2 obyvatele."
+      },
+      "cottage": {
+        "name": "Chalupa",
+        "desc": "Bydlení pro 2 obyvatele."
+      },
+      "house": {
+        "name": "Dům",
+        "desc": "Prostorný rodinný dům pro 4 obyvatele."
+      },
+      "apartment": {
+        "name": "Bytový Dům",
+        "desc": "Vícepatrová budova pro 10 obyvatel."
+      },
+      "villa": {
+        "name": "Vila",
+        "desc": "Elegantní sídlo pro 6 obyvatel."
+      },
+      "shop": {
+        "name": "Vesnický Obchod",
+        "desc": "Zásobování pro 6 obyvatel."
+      },
+      "town_hall": {
+        "name": "Radnice",
+        "desc": "Centrum pro 8 obyvatel. Odemkne Úr2."
+      },
+      "park": {
+        "name": "Městský Park",
+        "desc": "Zelené místo pro 4 obyvatele."
+      },
+      "bakery": {
+        "name": "Pekařství",
+        "desc": "Čerstvé pečivo pro 6 obyvatel."
+      },
+      "school": {
+        "name": "Škola",
+        "desc": "Vzdělávací centrum pro 10 obyvatel."
+      },
+      "police_station": {
+        "name": "Policejní Stanice",
+        "desc": "Bezpečnost pro 10 obyvatel. Požadavek Úr5."
+      },
+      "fire_station": {
+        "name": "Hasičská Zbrojnice",
+        "desc": "Ochrana města pro 10 obyvatel. Požadavek Úr5."
+      },
+      "hospital": {
+        "name": "Nemocnice",
+        "desc": "Péče o zdraví pro 12 obyvatel. Požadavek Úr4."
+      },
+      "farm_plot": {
+        "name": "Pole",
+        "desc": "Úrodná půda pro pěstování plodin."
+      },
+      "road": {
+        "name": "Dlážděná Cesta",
+        "desc": "Chodník pro procházky obyvatel."
+      },
+      "fence": {
+        "name": "Dřevěný Plot",
+        "desc": "Dekorativní oplocení."
+      },
+      "tree": {
+        "name": "Stinný Strom",
+        "desc": "Vzrostlý strom pro krásu města."
+      },
+      "bench": {
+        "name": "Lavička",
+        "desc": "Odpočívadlo pro obyvatele."
+      },
+      "fountain": {
+        "name": "Kamenná Fontána",
+        "desc": "Fontána v centru města."
+      },
+      "golden_fountain": {
+        "name": "Zlatá Fontána",
+        "desc": "Exkluzivní fontána pro hráče Pro."
+      },
+      "windmill": {
+        "name": "Větrný Mlýn",
+        "desc": "Rustikální památka za sérii 7 dní."
+      },
+      "clock_tower": {
+        "name": "Hodinová Věž",
+        "desc": "Klasický monument za sérii 30 dní."
+      },
+      "ronduel_statue": {
+        "name": "Socha RonDuel",
+        "desc": "Velkolepá socha za sérii 100 dní."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Oves",
+        "desc": "Odolné obilí. Roste 4 hodiny."
+      },
+      "wheat": {
+        "name": "Pšenice",
+        "desc": "Zlaté klasy. Roste 8 hodin."
+      },
+      "carrots": {
+        "name": "Mrkev",
+        "desc": "Sladká zelenina. Roste 12 hodin."
+      },
+      "sunflower": {
+        "name": "Slunečnice",
+        "desc": "Zářivé květy. Roste 24 hodin."
+      },
+      "pumpkin": {
+        "name": "Dýně",
+        "desc": "Obří úroda. Roste 48 hodin."
+      }
+    },
+    "orders": {
+      "title": "Denní Objednávky",
+      "locked": "Zahraj dnešní kolo a odemkni objednávky",
+      "completed": "Doručeno",
+      "deliver": "Doručit",
+      "missingItems": "Chybí plodiny",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Obilí pro Pekaře",
+        "market_stall": "Čerstvý Tržní Košík",
+        "soup_kitchen": "Zásoby pro Jídelnu",
+        "autumn_festival": "Podzimní Hostina",
+        "village_pantry": "Doplnění Spíže"
+      }
+    },
+    "shop": {
+      "title": "Katalog Města",
+      "tabHousing": "Bydlení",
+      "tabServices": "Služby",
+      "tabFarm": "Farma",
+      "tabDecor": "Dekorace",
+      "priceCoins": "{coins} mincí",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} obyvatel",
+      "serviceValue": "+{count} podpora",
+      "unlockLevel": "Odemčeno na Úr{level}",
+      "proOnly": "Pouze Pro",
+      "streakOnly": "Vyžaduje sérii {days} dní",
+      "buy": "Stavět",
+      "insufficientFunds": "Nedostatek RonCoins",
+      "maxCountReached": "Dosaženo maxima"
+    },
+    "tiles": {
+      "emptyPlot": "Prázdné Pole",
+      "plantAction": "Zasít",
+      "harvestAction": "Sklidit",
+      "growing": "Roste (zbývá {time})",
+      "ready": "Připraveno ke sklizni!",
+      "move": "Přesunout",
+      "remove": "Odstranit (Vrátí {coins} mincí)",
+      "starterCannotRemove": "Počáteční domek nelze odstranit"
+    },
+    "tutorial": {
+      "step1Title": "Zasít Oves",
+      "step1Desc": "Klepni na prázdné pole a zasej první plodiny.",
+      "step2Title": "Postavit Chalupu",
+      "step2Desc": "Otevři nabídku stavby a postav chalupu pro nové obyvatele.",
+      "step3Title": "Plnit Objednávky",
+      "step3Desc": "Doruč sklizené plodiny a získej další mince.",
+      "skip": "Přeskočit",
+      "next": "Další",
+      "finish": "Rozumím!"
+    },
+    "coinStore": {
+      "title": "Obchod RonCoins",
+      "subtitle": "Kosmetická vylepšení. Nemají vliv na kvíz ani žebříčky.",
+      "monthlyCapNotice": "Tento měsíc zbývá: {remaining} € z {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins nelze směnit za skutečné peníze.",
+      "buyPack": "Koupit balíček za {price}",
+      "termsLink": "Podmínky mincí"
+    },
+    "transfer": {
+      "title": "Převod RonCoins",
+      "desc": "Sdílej mince z kvízu s přáteli ze své ligy.",
+      "amountLabel": "Částka",
+      "recipientLabel": "Přítel z ligy",
+      "send": "Odeslat mince",
+      "dailyCapNotice": "Denní limit: dnes zbývá {remaining} mincí"
+    },
+    "visit": {
+      "title": "Město hráče {name}",
+      "like": "To se mi líbí",
+      "liked": "Líbí se ({count})",
+      "water": "Zalít plodinu (-30m)",
+      "waterUsed": "Zalito ({count}/{max})",
+      "readOnlyNotice": "Návštěva města přítele (pouze prohlížení)"
+    },
+    "postRoundCta": "Získal jsi {coins, plural, one {# RonCoin} few {# RonCoiny} other {# RonCoins}} — jdi stavět!",
+    "goBuild": "Do Města",
+    "plurals": {
+      "villagers": "{count, plural, one {# obyvatel} few {# obyvatelé} other {# obyvatel}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoiny} other {# RonCoins}}",
+      "plots": "{count, plural, one {# pole} few {# pole} other {# polí}}",
+      "hours": "{count, plural, one {# hodina} few {# hodiny} other {# hodin}}",
+      "minutes": "{count, plural, one {# minuta} few {# minuty} other {# minut}}",
+      "days": "{count, plural, one {# den} few {# dny} other {# dní}}"
+    }
   }
 }

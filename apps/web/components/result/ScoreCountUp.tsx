@@ -52,9 +52,7 @@ export function ScoreCountUp({ score, animated = false, onComplete }: ScoreCount
   return (
     <div className="relative inline-block">
       {/* Screen reader full announcement from frame 0 */}
-      <span className="sr-only">
-        {t('result.srScore', { score: score.toLocaleString() })}
-      </span>
+      <span className="sr-only">{t('result.srScore', { score: score.toLocaleString() })}</span>
 
       {/* Visual digits */}
       <span

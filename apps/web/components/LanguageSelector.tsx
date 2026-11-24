@@ -119,7 +119,7 @@ export function LanguageSelector({
           setIsOpen((prev) => !prev);
           setFocusedIndex(filteredLanguages.findIndex((l) => l.code === locale));
         }}
-        className={`border-2 border-border bg-surface-2 text-ink hover:bg-surface active:translate-x-[2px] active:translate-y-[2px] active:shadow-none inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] font-display text-xs font-black transition-all select-none ${
+        className={`border-border bg-surface-2 text-ink hover:bg-surface font-display inline-flex h-10 cursor-pointer select-none items-center justify-center gap-1.5 rounded-[10px] border-2 text-xs font-black shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
           showFullLabel ? 'min-w-[120px] px-3' : 'w-10 min-w-10 px-1'
         }`}
       >
@@ -136,14 +136,14 @@ export function LanguageSelector({
         <div
           role="listbox"
           aria-labelledby="rd-language-trigger"
-          className="border-2 border-border bg-surface absolute right-0 top-full mt-2 w-64 rounded-xl p-2 shadow-[4px_4px_0px_0px_var(--border-color,#16131F)] z-50 focus:outline-none"
+          className="border-border bg-surface absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border-2 p-2 shadow-[4px_4px_0px_0px_var(--border-color,#16131F)] focus:outline-none"
         >
           {/* Search Input when > 8 languages */}
           <div className="relative mb-2">
             <MagnifyingGlass
               size={14}
               weight="bold"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+              className="text-muted absolute left-2.5 top-1/2 -translate-y-1/2"
             />
             <input
               ref={searchInputRef}
@@ -154,13 +154,15 @@ export function LanguageSelector({
                 setFocusedIndex(-1);
               }}
               placeholder={t('settings.languageSearchPlaceholder')}
-              className="w-full rounded-lg border-2 border-border bg-surface-2 py-1.5 pl-8 pr-2 text-xs font-bold text-ink placeholder:text-muted focus:border-volt focus:outline-none"
+              className="border-border bg-surface-2 text-ink placeholder:text-muted focus:border-volt w-full rounded-lg border-2 py-1.5 pl-8 pr-2 text-xs font-bold focus:outline-none"
             />
           </div>
 
-          <div className="max-h-60 overflow-y-auto space-y-0.5 pr-1">
+          <div className="max-h-60 space-y-0.5 overflow-y-auto pr-1">
             {filteredLanguages.length === 0 ? (
-              <p className="p-3 text-center text-xs font-bold text-muted">{t('settings.languageNoResults')}</p>
+              <p className="text-muted p-3 text-center text-xs font-bold">
+                {t('settings.languageNoResults')}
+              </p>
             ) : (
               filteredLanguages.map((item, idx) => {
                 const isSelected = item.code === locale;
@@ -175,18 +177,18 @@ export function LanguageSelector({
                     aria-selected={isSelected}
                     tabIndex={focusedIndex === idx ? 0 : -1}
                     onClick={() => handleSelect(item.code)}
-                    className={`flex w-full min-h-[40px] cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
+                    className={`flex min-h-[40px] w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
                       isSelected
                         ? 'bg-volt/40 text-ink font-extrabold'
                         : 'text-ink hover:bg-surface-2 font-medium'
                     } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rd-blue-strong)]`}
                   >
-                    <span className="flex items-center gap-2 min-w-0">
-                      <span className="text-base shrink-0" aria-hidden="true">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="shrink-0 text-base" aria-hidden="true">
                         {item.flag}
                       </span>
                       <span className="truncate">{item.name}</span>
-                      <span className="text-muted text-[10px] font-bold uppercase shrink-0">
+                      <span className="text-muted shrink-0 text-[10px] font-bold uppercase">
                         {item.suffix}
                       </span>
                     </span>
@@ -194,7 +196,7 @@ export function LanguageSelector({
                       <Check
                         size={14}
                         weight="bold"
-                        className="text-ron-strong dark:text-ron shrink-0 ml-1.5"
+                        className="text-ron-strong dark:text-ron ml-1.5 shrink-0"
                         aria-hidden="true"
                       />
                     )}

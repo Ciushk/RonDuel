@@ -48,6 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     pathname === `/${locale}` ||
     pathname === `/${locale}/` ||
     pathname === `/${locale}/leagues` ||
+    pathname === `/${locale}/town` ||
     pathname === `/${locale}/duels` ||
     pathname === `/${locale}/me` ||
     pathname === '/';

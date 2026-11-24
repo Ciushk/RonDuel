@@ -49,9 +49,32 @@ if (fs.existsSync(path.join(outDir, '_not-found.html'))) {
 }
 
 const locales = [
-  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
-  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
-  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+  'ro',
+  'en',
+  'es',
+  'pt',
+  'de',
+  'fr',
+  'it',
+  'nl',
+  'pl',
+  'bg',
+  'cs',
+  'da',
+  'el',
+  'et',
+  'fi',
+  'ga',
+  'hr',
+  'hu',
+  'lt',
+  'lv',
+  'mt',
+  'nb',
+  'sk',
+  'sl',
+  'sv',
+  'uk',
 ];
 
 // 4. Ensure <html lang="${locale}"> in pre-rendered static HTML files for each locale
@@ -138,8 +161,18 @@ for (const locale of locales) {
     icons: [
       { src: '/brand/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/brand/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: '/brand/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-      { src: '/brand/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      {
+        src: '/brand/icon-maskable-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/brand/icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
       { src: '/brand/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
       { src: '/brand/icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
     ],
@@ -255,4 +288,3 @@ if (fs.existsSync(notFoundPath)) {
 }
 
 console.log('Packaged Firebase Hosting directory at hosting-dist/');
-

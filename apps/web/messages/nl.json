@@ -14,7 +14,8 @@
     "profile": "Profiel",
     "pro": "Pro",
     "settings": "Instellingen",
-    "duelsYourTurnBadge": "{count, plural, one {# duel wacht op jouw zet} other {# duels wachten op jouw zet}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel wacht op jouw zet} other {# duels wachten op jouw zet}}",
+    "town": "Dorp"
   },
   "onboarding": {
     "pickNickname": "Kies je bijnaam",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Controleer of je de code goed hebt ingevoerd, of vraag degene die je heeft uitgenodigd om een nieuwe link.",
     "leaderboardTitleCount": "Competitieranglijst ({count})",
     "nicknamePlaceholder": "bijv. Alex99",
-    "joining": "Deelnemen…"
+    "joining": "Deelnemen…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Scherm-duel",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "De ronde voor {date} kon niet worden gepland: {error}.",
     "replyAdminDrafts": "{count} nieuwe vragen van type {type} over „{topic}” gemaakt ({ids}).",
     "replyAdminPanel": "Je kunt ze nakijken in het adminpaneel.",
-    "openAdmin": "Admin openen"
+    "openAdmin": "Admin openen",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Dagelijkse trivia met je vrienden",
@@ -784,5 +787,235 @@
     "description": "Dagelijkse trivia met je vrienden",
     "shortcutPlay": "Speel de ronde van vandaag",
     "shortcutLeagues": "Mijn competities"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Bouwen",
+      "shop": "Winkel",
+      "orders": "Bestellingen",
+      "inventory": "Voorraad",
+      "stats": "Inwoners",
+      "friends": "Vrienden",
+      "coins": "Munten",
+      "help": "Hulp",
+      "toggle": "Menubalk"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Niv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Meer woningen nodig",
+      "limitedByServices": "Meer voorzieningen nodig (school, ziekenhuis...)",
+      "gateTownHall": "Stadhuis vereist voor Niv2 (max 9 inwoners)",
+      "gateHospital": "Ziekenhuis vereist voor Niv4",
+      "gatePoliceFire": "Politie & Brandweer vereist voor Niv5",
+      "arrivalIn": "Volgende inwoner: {time}",
+      "maxCapacity": "Dorp heeft maximale capaciteit bereikt"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Starthuis",
+        "desc": "Gezellig onderkomen voor je eerste 2 inwoners."
+      },
+      "cottage": {
+        "name": "Huisje",
+        "desc": "Woning voor 2 inwoners."
+      },
+      "house": {
+        "name": "Woonhuis",
+        "desc": "Ruim familiehuis voor 4 inwoners."
+      },
+      "apartment": {
+        "name": "Appartementencomplex",
+        "desc": "Woongebouw met meerdere verdiepingen voor 10 inwoners."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Voornaam landhuis voor 6 inwoners."
+      },
+      "shop": {
+        "name": "Dorpswinkel",
+        "desc": "Voorziet inwoners van goederen en ondersteunt 6 personen."
+      },
+      "town_hall": {
+        "name": "Stadhuis",
+        "desc": "Centrum dat 8 inwoners ondersteunt. Ontgrendelt Niv2."
+      },
+      "park": {
+        "name": "Park",
+        "desc": "Groene oase die 4 inwoners ondersteunt."
+      },
+      "bakery": {
+        "name": "Bakkerij",
+        "desc": "Bakt vers brood voor 6 inwoners."
+      },
+      "school": {
+        "name": "School",
+        "desc": "Onderwijscentrum voor 10 inwoners."
+      },
+      "police_station": {
+        "name": "Politiebureau",
+        "desc": "Waakt over de orde voor 10 inwoners. Vereist voor Niv5."
+      },
+      "fire_station": {
+        "name": "Brandweerkazerne",
+        "desc": "Beschermt het dorp voor 10 inwoners. Vereist voor Niv5."
+      },
+      "hospital": {
+        "name": "Ziekenhuis",
+        "desc": "Gezondheidszorg voor 12 inwoners. Vereist voor Niv4."
+      },
+      "farm_plot": {
+        "name": "Akker",
+        "desc": "Vruchtbare grond voor het verbouwen van gewassen."
+      },
+      "road": {
+        "name": "Kasseienweg",
+        "desc": "Bestrate weg voor wandelende inwoners."
+      },
+      "fence": {
+        "name": "Houten Hek",
+        "desc": "Sfeervol houten hekwerk."
+      },
+      "tree": {
+        "name": "Schaduwrijke Boom",
+        "desc": "Loofboom voor natuurlijke schoonheid."
+      },
+      "bench": {
+        "name": "Parkbank",
+        "desc": "Rustplek voor inwoners."
+      },
+      "fountain": {
+        "name": "Stenen Fontein",
+        "desc": "Fontein voor het dorpsplein."
+      },
+      "golden_fountain": {
+        "name": "Gouden Fontein",
+        "desc": "Exclusieve prestigefontein voor Pro-spelers."
+      },
+      "windmill": {
+        "name": "Windmolen",
+        "desc": "Rustiek bouwwerk bij een streak van 7 dagen."
+      },
+      "clock_tower": {
+        "name": "Klokkentoren",
+        "desc": "Klassiek monument bij een streak van 30 dagen."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel-Standbeeld",
+        "desc": "Imposant standbeeld bij een streak van 100 dagen."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Haver",
+        "desc": "Sterk graangewas. Groeit in 4 uur."
+      },
+      "wheat": {
+        "name": "Tarwe",
+        "desc": "Gouden aren. Groeit in 8 uur."
+      },
+      "carrots": {
+        "name": "Wortelen",
+        "desc": "Zoete wortels. Groeien in 12 uur."
+      },
+      "sunflower": {
+        "name": "Zonnebloem",
+        "desc": "Stralende bloemen. Groeit in 24 uur."
+      },
+      "pumpkin": {
+        "name": "Pompoen",
+        "desc": "Reusachtige oogst. Groeit in 48 uur."
+      }
+    },
+    "orders": {
+      "title": "Dorpsbestellingen",
+      "locked": "Speel de ronde van vandaag om bestellingen te ontgrendelen",
+      "completed": "Geleverd",
+      "deliver": "Bestelling Leveren",
+      "missingItems": "Onvoldoende gewassen",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Graan voor de Bakker",
+        "market_stall": "Vers Marktpakket",
+        "soup_kitchen": "Voorraad voor de Soepkeuken",
+        "autumn_festival": "Herfstfeestmaal",
+        "village_pantry": "Voorraadkast Aanvullen"
+      }
+    },
+    "shop": {
+      "title": "Dorpscatalogus",
+      "tabHousing": "Wonen",
+      "tabServices": "Voorzieningen",
+      "tabFarm": "Boerderij",
+      "tabDecor": "Decoratie",
+      "priceCoins": "{coins} munten",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} woonruimte",
+      "serviceValue": "+{count} capaciteit",
+      "unlockLevel": "Ontgrendelt op Niv{level}",
+      "proOnly": "Exclusief Pro",
+      "streakOnly": "Vereist streak van {days} dagen",
+      "buy": "Bouwen",
+      "insufficientFunds": "Onvoldoende RonCoins",
+      "maxCountReached": "Maximum aantal bereikt"
+    },
+    "tiles": {
+      "emptyPlot": "Lege Akker",
+      "plantAction": "Zaaien",
+      "harvestAction": "Oogsten",
+      "growing": "Groeit (nog {time})",
+      "ready": "Klaar voor de oogst!",
+      "move": "Verplaatsen",
+      "remove": "Verwijderen ({coins} munten terug)",
+      "starterCannotRemove": "Starthuis kan niet worden verwijderd"
+    },
+    "tutorial": {
+      "step1Title": "Haver Zaaien",
+      "step1Desc": "Tik op een lege akker om je eerste zaden te zaaien.",
+      "step2Title": "Huisje Bouwen",
+      "step2Desc": "Open het bouwmenu en plaats een huisje voor nieuwe inwoners.",
+      "step3Title": "Bestellingen Uitvoeren",
+      "step3Desc": "Lever oogsten af om bestellingen te voltooien voor extra munten.",
+      "skip": "Overslaan",
+      "next": "Volgende",
+      "finish": "Begrepen!"
+    },
+    "coinStore": {
+      "title": "RonCoins-Winkel",
+      "subtitle": "Cosmetische dorpselementen. Heeft geen invloed op quizscores.",
+      "monthlyCapNotice": "Resterend deze maand: {remaining} € van {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins hebben geen echte geldwaarde.",
+      "buyPack": "Pakket Kopen voor {price}",
+      "termsLink": "Muntvoorwaarden"
+    },
+    "transfer": {
+      "title": "RonCoins Overmaken",
+      "desc": "Deel verdiente quizmunten met vrienden in je competitie.",
+      "amountLabel": "Aantal munten",
+      "recipientLabel": "Vriend in je competitie",
+      "send": "Munten Verzenden",
+      "dailyCapNotice": "Daglimiet: nog {remaining} munten vandaag"
+    },
+    "visit": {
+      "title": "Dorp van {name}",
+      "like": "Dorp Waarderen",
+      "liked": "Gewaardeerd ({count})",
+      "water": "Gewas water geven (-30m)",
+      "waterUsed": "Bewaterd ({count}/{max})",
+      "readOnlyNotice": "Je bekijkt het dorp van een vriend (alleen-lezen)"
+    },
+    "postRoundCta": "Je hebt {coins, plural, one {# RonCoin} other {# RonCoins}} verdiend — ga bouwen!",
+    "goBuild": "Naar het Dorp",
+    "plurals": {
+      "villagers": "{count, plural, one {# inwoner} other {# inwoners}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# akker} other {# akkers}}",
+      "hours": "{count, plural, one {# uur} other {# uur}}",
+      "minutes": "{count, plural, one {# minuut} other {# minuten}}",
+      "days": "{count, plural, one {# dag} other {# dagen}}"
+    }
   }
 }

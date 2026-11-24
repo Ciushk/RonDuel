@@ -55,7 +55,11 @@ export default function middleware(req: NextRequest) {
     const url = new URL(`/${detected}${search}`, req.url);
     const response = NextResponse.redirect(url, 307);
     if (!req.cookies.has('NEXT_LOCALE')) {
-      response.cookies.set('NEXT_LOCALE', detected, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+      response.cookies.set('NEXT_LOCALE', detected, {
+        path: '/',
+        maxAge: 31536000,
+        sameSite: 'lax',
+      });
     }
     return response;
   }
@@ -66,4 +70,3 @@ export default function middleware(req: NextRequest) {
 export const config = {
   matcher: ['/((?!api|admin|dev|offline|_next|_vercel|.*\\..*).*)'],
 };
-

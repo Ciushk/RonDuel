@@ -85,11 +85,10 @@ export default function AdminRoundsPage() {
     <main className="mx-auto flex max-w-[800px] flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-black text-ink">
-            Runde Zilnice (Next 7 Days)
-          </h1>
+          <h1 className="font-display text-ink text-2xl font-black">Runde Zilnice (Next 7 Days)</h1>
           <p className="text-muted text-xs font-medium">
-            Verifică bufferul de runde, generarea automată Gemini, răspunsurile și raportările utilizatorilor.
+            Verifică bufferul de runde, generarea automată Gemini, răspunsurile și raportările
+            utilizatorilor.
           </p>
         </div>
         <Link href={`/${locale}/admin`}>
@@ -106,36 +105,35 @@ export default function AdminRoundsPage() {
       )}
 
       {loading && (
-        <div className="py-12 text-center text-muted text-sm font-bold">
-          Se încarcă rundele...
-        </div>
+        <div className="text-muted py-12 text-center text-sm font-bold">Se încarcă rundele...</div>
       )}
 
       {!loading && rounds.length === 0 && (
-        <Card className="p-8 text-center text-muted">
-          Nu s-au găsit runde programate.
-        </Card>
+        <Card className="text-muted p-8 text-center">Nu s-au găsit runde programate.</Card>
       )}
 
       {!loading &&
         rounds.map((round) => (
-          <Card key={round.date} className="border-2 border-border p-5 space-y-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-3">
+          <Card key={round.date} className="border-border space-y-4 border-2 p-5 shadow-sm">
+            <div className="border-border-subtle flex flex-wrap items-center justify-between gap-2 border-b pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-display text-lg font-black text-ink">
+                  <span className="font-display text-ink text-lg font-black">
                     Runda #{round.roundNumber} ({round.date})
                   </span>
-                  <Chip tone={round.status === 'ready' ? 'volt' : 'neutral'} className="text-[10px] py-0 px-2 font-black">
+                  <Chip
+                    tone={round.status === 'ready' ? 'volt' : 'neutral'}
+                    className="px-2 py-0 text-[10px] font-black"
+                  >
                     {round.status.toUpperCase()}
                   </Chip>
                   {round.promotedFromReserve && (
-                    <Chip tone="gold" className="text-[10px] py-0 px-2 font-black">
+                    <Chip tone="gold" className="px-2 py-0 text-[10px] font-black">
                       REZERVĂ ACTIVATĂ
                     </Chip>
                   )}
                 </div>
-                <p className="text-xs text-muted font-bold mt-0.5">
+                <p className="text-muted mt-0.5 text-xs font-bold">
                   Tema: <span className="text-ink">{round.theme}</span>
                 </p>
               </div>
@@ -147,22 +145,20 @@ export default function AdminRoundsPage() {
                 return (
                   <div
                     key={q.id || q.index}
-                    className={`rounded-xl border p-3.5 space-y-2 transition ${
-                      q.flagged
-                        ? 'border-wrong bg-wrong/5'
-                        : 'border-border-subtle bg-surface-2/60'
+                    className={`space-y-2 rounded-xl border p-3.5 transition ${
+                      q.flagged ? 'border-wrong bg-wrong/5' : 'border-border-subtle bg-surface-2/60'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5 min-w-0">
+                      <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-muted uppercase">
+                          <span className="text-muted text-xs font-black uppercase">
                             Q{q.index + 1} · {q.type.toUpperCase()} · Dif {q.difficulty}/3
                           </span>
-                          <span className="text-xs font-bold text-muted">({q.category})</span>
+                          <span className="text-muted text-xs font-bold">({q.category})</span>
                           {q.reportCount > 0 && (
                             <span
-                              className={`inline-flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded ${
+                              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-black ${
                                 q.flagged
                                   ? 'bg-wrong text-white'
                                   : 'bg-gold/20 text-gold-strong dark:text-gold'
@@ -174,7 +170,7 @@ export default function AdminRoundsPage() {
                             </span>
                           )}
                         </div>
-                        <p className="font-bold text-sm text-ink">{q.prompt}</p>
+                        <p className="text-ink text-sm font-bold">{q.prompt}</p>
                       </div>
 
                       <Button
@@ -182,19 +178,19 @@ export default function AdminRoundsPage() {
                         variant="secondary"
                         disabled={isReplacing}
                         onClick={() => handleReplaceQuestion(round.date, q.index)}
-                        className="text-xs shrink-0 font-bold h-8 px-2.5"
+                        className="h-8 shrink-0 px-2.5 text-xs font-bold"
                       >
                         <ArrowClockwise
                           size={14}
                           weight="bold"
-                          className={isReplacing ? 'animate-spin mr-1' : 'mr-1'}
+                          className={isReplacing ? 'mr-1 animate-spin' : 'mr-1'}
                         />
                         {isReplacing ? 'Se regenerează…' : 'Înlocuiește întrebarea'}
                       </Button>
                     </div>
 
-                    <div className="text-xs space-y-1 pt-1 border-t border-border-subtle/60">
-                      <p className="text-correct-text font-extrabold flex items-center gap-1.5">
+                    <div className="border-border-subtle/60 space-y-1 border-t pt-1 text-xs">
+                      <p className="text-correct-text flex items-center gap-1.5 font-extrabold">
                         <CheckCircle size={14} weight="bold" />
                         Răspuns corect: {q.correctAnswer}
                       </p>

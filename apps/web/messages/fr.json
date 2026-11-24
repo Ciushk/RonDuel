@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Paramètres",
-    "duelsYourTurnBadge": "{count, plural, one {# duel attend ton tour} other {# duels attendent ton tour}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel attend ton tour} other {# duels attendent ton tour}}",
+    "town": "Ville"
   },
   "onboarding": {
     "pickNickname": "Choisis ton pseudo",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Vérifie que tu as bien saisi le code, ou demande un nouveau lien à la personne qui t'a invité.",
     "leaderboardTitleCount": "Classement de la ligue ({count})",
     "nicknamePlaceholder": "ex. : Alex99",
-    "joining": "Connexion en cours…"
+    "joining": "Connexion en cours…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Duel 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Impossible de programmer la manche du {date} : {error}.",
     "replyAdminDrafts": "{count} nouvelles questions {type} sur « {topic} » créées ({ids}).",
     "replyAdminPanel": "Tu peux les vérifier dans le panneau admin.",
-    "openAdmin": "Ouvrir l’admin"
+    "openAdmin": "Ouvrir l’admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Le quiz quotidien avec tes amis",
@@ -784,5 +787,235 @@
     "description": "Quiz quotidien avec tes amis",
     "shortcutPlay": "Jouer la manche du jour",
     "shortcutLeagues": "Mes ligues"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Bâtir",
+      "shop": "Boutique",
+      "orders": "Commandes",
+      "inventory": "Inventaire",
+      "stats": "Villageois",
+      "friends": "Amis",
+      "coins": "Pièces",
+      "help": "Aide",
+      "toggle": "Afficher le menu"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Niv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Besoin de plus de logements",
+      "limitedByServices": "Besoin de plus de services (école, hôpital...)",
+      "gateTownHall": "Hôtel de Ville requis pour le Niv2 (max 9 villageois)",
+      "gateHospital": "Hôpital requis pour le Niv4",
+      "gatePoliceFire": "Police et Pompiers requis pour le Niv5",
+      "arrivalIn": "Prochain arrivant : {time}",
+      "maxCapacity": "Ville à capacité maximale"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Maison de Départ",
+        "desc": "Maison douillette pour vos 2 premiers villageois."
+      },
+      "cottage": {
+        "name": "Cottage",
+        "desc": "Maison confortable pour 2 villageois."
+      },
+      "house": {
+        "name": "Maison",
+        "desc": "Grande maison familiale pour 4 villageois."
+      },
+      "apartment": {
+        "name": "Immeuble d'Habitation",
+        "desc": "Résidence à étages pour 10 villageois."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Élégante propriété accueillant 6 villageois."
+      },
+      "shop": {
+        "name": "Boutique du Village",
+        "desc": "Fournit des vivres et soutient 6 villageois."
+      },
+      "town_hall": {
+        "name": "Hôtel de Ville",
+        "desc": "Cœur civique soutenant 8 villageois. Débloque le Niv2."
+      },
+      "park": {
+        "name": "Parc",
+        "desc": "Espace vert soutenant 4 villageois."
+      },
+      "bakery": {
+        "name": "Boulangerie",
+        "desc": "Pains frais soutenant 6 villageois."
+      },
+      "school": {
+        "name": "École",
+        "desc": "Centre éducatif soutenant 10 villageois."
+      },
+      "police_station": {
+        "name": "Commissariat",
+        "desc": "Maintient l'ordre et soutient 10 villageois. Requis Niv5."
+      },
+      "fire_station": {
+        "name": "Caserne de Pompiers",
+        "desc": "Sécurise la ville et soutient 10 villageois. Requis Niv5."
+      },
+      "hospital": {
+        "name": "Hôpital",
+        "desc": "Soins médicaux soutenant 12 villageois. Requis Niv4."
+      },
+      "farm_plot": {
+        "name": "Parcelle Agricole",
+        "desc": "Terre fertile pour cultiver des récoltes bio."
+      },
+      "road": {
+        "name": "Route Pavée",
+        "desc": "Chemin pavé pour la promenade des villageois."
+      },
+      "fence": {
+        "name": "Clôture en Bois",
+        "desc": "Charmante palissade décorative en bois."
+      },
+      "tree": {
+        "name": "Arbre Ombragé",
+        "desc": "Arbre feuillu apportant de la verdure."
+      },
+      "bench": {
+        "name": "Banc Public",
+        "desc": "Halte reposante pour les villageois."
+      },
+      "fountain": {
+        "name": "Fontaine en Pierre",
+        "desc": "Fontaine rafraîchissante au centre du village."
+      },
+      "golden_fountain": {
+        "name": "Fontaine Dorée",
+        "desc": "Fontaine de prestige exclusive pour joueurs Pro."
+      },
+      "windmill": {
+        "name": "Moulin à Vent",
+        "desc": "Monument rustique débloqué avec 7 jours de série."
+      },
+      "clock_tower": {
+        "name": "Tour de l'Horloge",
+        "desc": "Monument classique débloqué avec 30 jours de série."
+      },
+      "ronduel_statue": {
+        "name": "Statue RonDuel",
+        "desc": "Statue monumentale débloquée avec 100 jours de série."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Avoine",
+        "desc": "Céréale robuste. Pousse en 4 heures."
+      },
+      "wheat": {
+        "name": "Blé",
+        "desc": "Épis dorés. Pousse en 8 heures."
+      },
+      "carrots": {
+        "name": "Carottes",
+        "desc": "Racines sucrées. Poussent en 12 heures."
+      },
+      "sunflower": {
+        "name": "Tournesol",
+        "desc": "Fleurs rayonnantes. Pousse en 24 heures."
+      },
+      "pumpkin": {
+        "name": "Citrouille",
+        "desc": "Récolte géante. Pousse en 48 heures."
+      }
+    },
+    "orders": {
+      "title": "Commandes du Village",
+      "locked": "Jouez la manche du jour pour débloquer les commandes",
+      "completed": "Livrée",
+      "deliver": "Livrer la Commande",
+      "missingItems": "Récoltes manquantes",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Céréales du Boulanger",
+        "market_stall": "Panier Fraîcheur du Marché",
+        "soup_kitchen": "Approvisionnement du Banquet",
+        "autumn_festival": "Festin d'Automne",
+        "village_pantry": "Réassort du Garde-Manger"
+      }
+    },
+    "shop": {
+      "title": "Catalogue du Village",
+      "tabHousing": "Logements",
+      "tabServices": "Services",
+      "tabFarm": "Ferme",
+      "tabDecor": "Décor",
+      "priceCoins": "{coins} pièces",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} logements",
+      "serviceValue": "+{count} services",
+      "unlockLevel": "Débloqué au Niv{level}",
+      "proOnly": "Exclusif Pro",
+      "streakOnly": "Requiert {days} jours de série",
+      "buy": "Bâtir",
+      "insufficientFunds": "RonCoins insuffisantes",
+      "maxCountReached": "Limite maximale atteinte"
+    },
+    "tiles": {
+      "emptyPlot": "Parcelle Libre",
+      "plantAction": "Planter",
+      "harvestAction": "Récolter",
+      "growing": "Pousse ({time} restant)",
+      "ready": "Prêt à récolter !",
+      "move": "Déplacer",
+      "remove": "Retirer (Rembourse {coins} pièces)",
+      "starterCannotRemove": "La maison de départ ne peut être retirée"
+    },
+    "tutorial": {
+      "step1Title": "Planter de l'Avoine",
+      "step1Desc": "Touchez une parcelle libre pour semer vos premières graines.",
+      "step2Title": "Bâtir un Cottage",
+      "step2Desc": "Ouvrez le menu construction pour poser un cottage et loger des villageois.",
+      "step3Title": "Commandes du Village",
+      "step3Desc": "Livrez vos récoltes pour accomplir des commandes et gagner des pièces.",
+      "skip": "Passer",
+      "next": "Suivant",
+      "finish": "Compris !"
+    },
+    "coinStore": {
+      "title": "Boutique RonCoins",
+      "subtitle": "Améliorations cosmétiques. N'influe jamais sur les scores ou classements.",
+      "monthlyCapNotice": "Plafond mensuel restant : {remaining} € sur {max} €",
+      "nonCompetitiveDisclaimer": "Les RonCoins ne sont pas convertibles en argent réel.",
+      "buyPack": "Acheter le pack pour {price}",
+      "termsLink": "Conditions des pièces"
+    },
+    "transfer": {
+      "title": "Transférer des RonCoins",
+      "desc": "Partagez des pièces de quiz avec vos amis de ligue.",
+      "amountLabel": "Montant à envoyer",
+      "recipientLabel": "Ami de votre ligue",
+      "send": "Envoyer les pièces",
+      "dailyCapNotice": "Limite quotidienne : {remaining} pièces restantes aujourd'hui"
+    },
+    "visit": {
+      "title": "Village de {name}",
+      "like": "Aimer le village",
+      "liked": "Aimé ({count})",
+      "water": "Arroser (-30m)",
+      "waterUsed": "Arrosé ({count}/{max})",
+      "readOnlyNotice": "Visite du village d'un ami (mode lecture)"
+    },
+    "postRoundCta": "Vous avez gagné {coins, plural, one {# RonCoin} other {# RonCoins}} — allez bâtir !",
+    "goBuild": "Bâtir le village",
+    "plurals": {
+      "villagers": "{count, plural, one {# villageois} other {# villageois}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# parcelle} other {# parcelles}}",
+      "hours": "{count, plural, one {# heure} other {# heures}}",
+      "minutes": "{count, plural, one {# minute} other {# minutes}}",
+      "days": "{count, plural, one {# jour} other {# jours}}"
+    }
   }
 }

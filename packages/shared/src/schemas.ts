@@ -163,15 +163,39 @@ export function generateInviteCode(randomFn: () => number = Math.random): string
 }
 
 const LEAGUE_NAMES: Record<Locale, readonly string[]> = {
-  en: ['Thursday Thunder', 'Coffee Duelists', 'Split Court Squad', 'Midnight Sparks', 'Brainy Bunch'],
-  ro: ['Fulgerul Zilei', 'Duelul de Cafea', 'Ga\u0219ca de Aur', 'Min\u021bi Rapide', 'Liga Prietenilor'],
+  en: [
+    'Thursday Thunder',
+    'Coffee Duelists',
+    'Split Court Squad',
+    'Midnight Sparks',
+    'Brainy Bunch',
+  ],
+  ro: [
+    'Fulgerul Zilei',
+    'Duelul de Cafea',
+    'Ga\u0219ca de Aur',
+    'Min\u021bi Rapide',
+    'Liga Prietenilor',
+  ],
   es: ['Trueno Diario', 'Duelo de Café', 'Equipo Relámpago', 'Mentes Rápidas', 'Liga del Grupo'],
-  pt: ['Trovão Diário', 'Duelo do Café', 'Esquadrão Rel\u00e2mpago', 'Mentes Rápidas', 'Liga da Galera'],
+  pt: [
+    'Trovão Diário',
+    'Duelo do Café',
+    'Esquadrão Rel\u00e2mpago',
+    'Mentes Rápidas',
+    'Liga da Galera',
+  ],
   de: ['Donnerstag-Donner', 'Kaffee-Duellanten', 'Blitz-Team', 'Schnelle Köpfe', 'Freundesliga'],
   fr: ['Tonnerre du Jour', 'Duel Café', 'Équipe Éclair', 'Esprits Vifs', 'Ligue des Potes'],
   it: ['Tuono Quotidiano', 'Duello al Caffè', 'Squadra Lampo', 'Menti Rapide', 'Lega degli Amici'],
   nl: ['Donderdag Donder', 'Koffieduelleerders', 'Bliksemteam', 'Snelle Geesten', 'Vriendenliga'],
-  pl: ['Codzienny Piorun', 'Pojedynek przy Kawie', 'Błyskawiczna Ekipa', 'Bystre Głowy', 'Liga Przyjaciół'],
+  pl: [
+    'Codzienny Piorun',
+    'Pojedynek przy Kawie',
+    'Błyskawiczna Ekipa',
+    'Bystre Głowy',
+    'Liga Przyjaciół',
+  ],
   bg: ['Дневен Гръм', 'Кафе Дуел', 'Светкавичен Отбор', 'Бързи Умове', 'Лига на Приятелите'],
   cs: ['Denní Hrom', 'Kávový Duel', 'Bleskový Tým', 'Bystré Hlavy', 'Liga Přátel'],
   da: ['Dagens Torden', 'Kaffeduel', 'Lynholdet', 'Kvikke Hoveder', 'Venneligaen'],

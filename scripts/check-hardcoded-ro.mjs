@@ -7,10 +7,10 @@ console.log('--- Checking Romanian copy for valid comma-below diacritics (ș, ț
 
 const CEDILLA_CHARS = ['ş', 'ţ', 'Ş', 'Ţ'];
 const CEDILLA_NAMES = {
-  'ş': 's-cedilla (U+015F) -> use ș (U+0219)',
-  'ţ': 't-cedilla (U+0163) -> use ț (U+021B)',
-  'Ş': 'S-cedilla (U+015E) -> use Ș (U+0218)',
-  'Ţ': 'T-cedilla (U+0162) -> use Ț (U+021A)',
+  ş: 's-cedilla (U+015F) -> use ș (U+0219)',
+  ţ: 't-cedilla (U+0163) -> use ț (U+021B)',
+  Ş: 'S-cedilla (U+015E) -> use Ș (U+0218)',
+  Ţ: 'T-cedilla (U+0162) -> use Ț (U+021A)',
 };
 
 const filesToCheck = [
@@ -29,7 +29,9 @@ for (const fp of filesToCheck) {
       const lines = content.split('\n');
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].includes(char)) {
-          console.error(`ERROR: Found invalid ${CEDILLA_NAMES[char]} in ${path.relative(rootDir, fp)}:${i + 1}`);
+          console.error(
+            `ERROR: Found invalid ${CEDILLA_NAMES[char]} in ${path.relative(rootDir, fp)}:${i + 1}`,
+          );
           console.error(`  Line: ${lines[i].trim()}`);
           hasError = true;
         }
@@ -48,7 +50,9 @@ if (fs.existsSync(seedFile)) {
       const textToCheck = `${ro.prompt} ${ro.explanation ?? ''} ${(ro.options ?? []).join(' ')}`;
       for (const char of CEDILLA_CHARS) {
         if (textToCheck.includes(char)) {
-          console.error(`ERROR: Found invalid ${CEDILLA_NAMES[char]} in seed question ${q.id} (ro)`);
+          console.error(
+            `ERROR: Found invalid ${CEDILLA_NAMES[char]} in seed question ${q.id} (ro)`,
+          );
           hasError = true;
         }
       }
@@ -57,7 +61,9 @@ if (fs.existsSync(seedFile)) {
 }
 
 if (hasError) {
-  console.error('Romanian diacritics check FAILED. Please replace cedillas with comma-below letters (ș, ț).');
+  console.error(
+    'Romanian diacritics check FAILED. Please replace cedillas with comma-below letters (ș, ț).',
+  );
   process.exit(1);
 } else {
   console.log('Romanian copy strictly uses valid comma-below letters (ș, ț, Ș, Ț). Clean! ✓');

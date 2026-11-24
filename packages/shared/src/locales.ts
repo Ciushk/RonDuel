@@ -35,9 +35,32 @@ export const ALL_LOCALES = [
 ] as const;
 
 export const SUPPORTED_LOCALE_CODES = [
-  'ro', 'en', 'es', 'pt', 'de', 'fr', 'it', 'nl', 'pl', 'bg',
-  'cs', 'da', 'el', 'et', 'fi', 'ga', 'hr', 'hu', 'lt', 'lv',
-  'mt', 'nb', 'sk', 'sl', 'sv', 'uk',
+  'ro',
+  'en',
+  'es',
+  'pt',
+  'de',
+  'fr',
+  'it',
+  'nl',
+  'pl',
+  'bg',
+  'cs',
+  'da',
+  'el',
+  'et',
+  'fi',
+  'ga',
+  'hr',
+  'hu',
+  'lt',
+  'lv',
+  'mt',
+  'nb',
+  'sk',
+  'sl',
+  'sv',
+  'uk',
 ] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALE_CODES)[number];

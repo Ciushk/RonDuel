@@ -279,18 +279,10 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
               </p>
             </div>
             <div className="mt-1 flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="volt"
-                onClick={() => setShowCreateLeague(true)}
-              >
+              <Button size="sm" variant="volt" onClick={() => setShowCreateLeague(true)}>
                 {t('league.createBtn')}
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setShowJoinByCode(true)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => setShowJoinByCode(true)}>
                 {t('splash.joinLeague')}
               </Button>
             </div>
@@ -310,10 +302,7 @@ export function HowItWorksSection({ played, onPrimaryCta }: HowItWorksSectionPro
         onClose={() => setShowCreateLeague(false)}
         onCreated={(lg) => router.push(`/${locale}/league/${lg.id ?? lg.leagueId}`)}
       />
-      <JoinByCodeDialog
-        open={showJoinByCode}
-        onClose={() => setShowJoinByCode(false)}
-      />
+      <JoinByCodeDialog open={showJoinByCode} onClose={() => setShowJoinByCode(false)} />
 
       {/* d) Short FAQ (accordion), 4 items */}
       <div className="space-y-2.5" data-testid="explainer-faq">

@@ -14,7 +14,8 @@
     "profile": "Profilo",
     "pro": "Pro",
     "settings": "Impostazioni",
-    "duelsYourTurnBadge": "{count, plural, one {# duello attende la tua mossa} other {# duelli attendono la tua mossa}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duello attende la tua mossa} other {# duelli attendono la tua mossa}}",
+    "town": "Città"
   },
   "onboarding": {
     "pickNickname": "Scegli il tuo nickname",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Verifica di aver inserito correttamente il codice, o chiedi un nuovo link a chi ti ha invitato.",
     "leaderboardTitleCount": "Classifica della lega ({count})",
     "nicknamePlaceholder": "es. Alex99",
-    "joining": "Accesso in corso…"
+    "joining": "Accesso in corso…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Duello 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Non ho potuto programmare il turno del {date}: {error}.",
     "replyAdminDrafts": "Create {count} nuove domande di tipo {type} su «{topic}» ({ids}).",
     "replyAdminPanel": "Puoi controllarle nel pannello admin.",
-    "openAdmin": "Apri admin"
+    "openAdmin": "Apri admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia quotidiano con i tuoi amici",
@@ -784,5 +787,235 @@
     "description": "Trivia quotidiano con i tuoi amici",
     "shortcutPlay": "Gioca la manche di oggi",
     "shortcutLeagues": "Le mie leghe"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Costruisci",
+      "shop": "Negozio",
+      "orders": "Ordini",
+      "inventory": "Inventario",
+      "stats": "Abitanti",
+      "friends": "Amici",
+      "coins": "Monete",
+      "help": "Aiuto",
+      "toggle": "Mostra/Nascondi"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Liv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Servono più abitazioni",
+      "limitedByServices": "Servono più servizi (scuola, ospedale...)",
+      "gateTownHall": "Municipio richiesto per Liv2 (limite a 9 abitanti)",
+      "gateHospital": "Ospedale richiesto per Liv4",
+      "gatePoliceFire": "Polizia e Vigili del Fuoco richiesti per Liv5",
+      "arrivalIn": "Prossimo arrivo: {time}",
+      "maxCapacity": "Città al massimo della capienza"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Casa Iniziale",
+        "desc": "Accogliente dimora per i tuoi primi 2 abitanti."
+      },
+      "cottage": {
+        "name": "Cottage",
+        "desc": "Abitazione confortevole per 2 abitanti."
+      },
+      "house": {
+        "name": "Casa",
+        "desc": "Casa familiare spaziosa per 4 abitanti."
+      },
+      "apartment": {
+        "name": "Condominio",
+        "desc": "Edificio residenziale a più piani per 10 abitanti."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Elegante tenuta per 6 abitanti."
+      },
+      "shop": {
+        "name": "Bottega Locale",
+        "desc": "Fornisce merci e sostiene 6 abitanti."
+      },
+      "town_hall": {
+        "name": "Municipio",
+        "desc": "Centro civico che sostiene 8 abitanti. Sblocca il Liv2."
+      },
+      "park": {
+        "name": "Parco",
+        "desc": "Oasi verde che sostiene 4 abitanti."
+      },
+      "bakery": {
+        "name": "Forno",
+        "desc": "Pane fresco ogni giorno, sostiene 6 abitanti."
+      },
+      "school": {
+        "name": "Scuola",
+        "desc": "Centro educativo per 10 abitanti."
+      },
+      "police_station": {
+        "name": "Commissariato",
+        "desc": "Garantisce l'ordine per 10 abitanti. Requisito Liv5."
+      },
+      "fire_station": {
+        "name": "Caserma dei Pompieri",
+        "desc": "Protegge la città per 10 abitanti. Requisito Liv5."
+      },
+      "hospital": {
+        "name": "Ospedale",
+        "desc": "Assistenza sanitaria per 12 abitanti. Requisito Liv4."
+      },
+      "farm_plot": {
+        "name": "Appezzamento Agricolo",
+        "desc": "Terreno fertile per coltivare prodotti freschi."
+      },
+      "road": {
+        "name": "Strada Lastricata",
+        "desc": "Sentiero pavimentato per le passeggiate dei cittadini."
+      },
+      "fence": {
+        "name": "Staccionata",
+        "desc": "Graziosa recinzione perimetrale in legno."
+      },
+      "tree": {
+        "name": "Albero Frondoso",
+        "desc": "Albero verde che regala ombra e bellezza."
+      },
+      "bench": {
+        "name": "Panchina",
+        "desc": "Punto di ristoro per gli abitanti."
+      },
+      "fountain": {
+        "name": "Fontana in Pietra",
+        "desc": "Fontana zampillante per il centro cittadino."
+      },
+      "golden_fountain": {
+        "name": "Fontana Dorata",
+        "desc": "Fontana prestigiosa esclusiva per giocatori Pro."
+      },
+      "windmill": {
+        "name": "Mulino a Vento",
+        "desc": "Monumento rustico sbloccato con 7 giorni di serie."
+      },
+      "clock_tower": {
+        "name": "Torre dell'Orologio",
+        "desc": "Monumento classico sbloccato con 30 giorni di serie."
+      },
+      "ronduel_statue": {
+        "name": "Statua RonDuel",
+        "desc": "Statua maestosa sbloccata con 100 giorni di serie."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Avena",
+        "desc": "Cereale resistente. Cresce in 4 ore."
+      },
+      "wheat": {
+        "name": "Grano",
+        "desc": "Spighe dorate. Cresce in 8 ore."
+      },
+      "carrots": {
+        "name": "Carote",
+        "desc": "Radici dolci. Crescono in 12 ore."
+      },
+      "sunflower": {
+        "name": "Girasole",
+        "desc": "Fiori splendenti. Cresce in 24 ore."
+      },
+      "pumpkin": {
+        "name": "Zucca",
+        "desc": "Raccolto gigante. Cresce in 48 ore."
+      }
+    },
+    "orders": {
+      "title": "Ordini Cittadini",
+      "locked": "Gioca la manche di oggi per sbloccare gli ordini",
+      "completed": "Consegnato",
+      "deliver": "Consegna Ordine",
+      "missingItems": "Raccolti insufficienti",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Cereali per il Fornaio",
+        "market_stall": "Pacco Raccolto Fresco",
+        "soup_kitchen": "Scorte per la Mensa",
+        "autumn_festival": "Banchetto d'Autunno",
+        "village_pantry": "Rifornimento Dispensa"
+      }
+    },
+    "shop": {
+      "title": "Catalogo Cittadino",
+      "tabHousing": "Alloggi",
+      "tabServices": "Servizi",
+      "tabFarm": "Fattoria",
+      "tabDecor": "Arredo",
+      "priceCoins": "{coins} monete",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} alloggi",
+      "serviceValue": "+{count} servizi",
+      "unlockLevel": "Sblocco a Liv{level}",
+      "proOnly": "Esclusivo Pro",
+      "streakOnly": "Richiede serie di {days} giorni",
+      "buy": "Costruisci",
+      "insufficientFunds": "RonCoins insufficienti",
+      "maxCountReached": "Limite massimo raggiunto"
+    },
+    "tiles": {
+      "emptyPlot": "Appezzamento Libero",
+      "plantAction": "Semina",
+      "harvestAction": "Raccogli",
+      "growing": "In crescita (mancano {time})",
+      "ready": "Pronto da raccogliere!",
+      "move": "Sposta",
+      "remove": "Rimuovi (Rimborso {coins} monete)",
+      "starterCannotRemove": "La casa iniziale non può essere rimossa"
+    },
+    "tutorial": {
+      "step1Title": "Semina l'Avena",
+      "step1Desc": "Tocca un appezzamento per piantare i primi semi e produrre cibo.",
+      "step2Title": "Costruisci un Cottage",
+      "step2Desc": "Apri il menu di costruzione per posizionare un cottage per nuovi abitanti.",
+      "step3Title": "Ordini Giornalieri",
+      "step3Desc": "Consegna i raccolti per completare ordini e guadagnare RonCoins extra.",
+      "skip": "Salta",
+      "next": "Avanti",
+      "finish": "Ho capito!"
+    },
+    "coinStore": {
+      "title": "Negozio RonCoins",
+      "subtitle": "Miglioramenti estetici. Non influenzano le domande né le classifiche.",
+      "monthlyCapNotice": "Disponibile questo mese: {remaining} € di {max} €",
+      "nonCompetitiveDisclaimer": "Le RonCoins non sono convertibili in denaro reale.",
+      "buyPack": "Acquista Pacchetto a {price}",
+      "termsLink": "Termini e condizioni monete"
+    },
+    "transfer": {
+      "title": "Trasferisci RonCoins",
+      "desc": "Condividi le monete del quiz con amici della tua lega.",
+      "amountLabel": "Quantità",
+      "recipientLabel": "Amico nella tua lega",
+      "send": "Invia Monete",
+      "dailyCapNotice": "Limite giornaliero: rimaste {remaining} monete oggi"
+    },
+    "visit": {
+      "title": "Città di {name}",
+      "like": "Metti Mi Piace",
+      "liked": "Ti piace ({count})",
+      "water": "Innaffia (-30m)",
+      "waterUsed": "Innaffiato ({count}/{max})",
+      "readOnlyNotice": "Visita della città di un amico (sola lettura)"
+    },
+    "postRoundCta": "Hai guadagnato {coins, plural, one {# RonCoin} other {# RonCoins}} — vai a costruire!",
+    "goBuild": "Vai alla città",
+    "plurals": {
+      "villagers": "{count, plural, one {# abitante} other {# abitanti}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# appezzamento} other {# appezzamenti}}",
+      "hours": "{count, plural, one {# ora} other {# ore}}",
+      "minutes": "{count, plural, one {# minuto} other {# minuti}}",
+      "days": "{count, plural, one {# giorno} other {# giorni}}"
+    }
   }
 }

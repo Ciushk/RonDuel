@@ -20,7 +20,10 @@ export async function POST(req: Request) {
     const user = getOrCreateUser({ uid: body.uid });
     if (user.isAnonymous) {
       return NextResponse.json(
-        { error: 'Please upgrade your anonymous account before purchasing RonDuel Pro or Streak Freezes.' },
+        {
+          error:
+            'Please upgrade your anonymous account before purchasing RonDuel Pro or Streak Freezes.',
+        },
         { status: 403 },
       );
     }

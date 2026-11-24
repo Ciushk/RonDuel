@@ -10,11 +10,5 @@ interface CreateLeagueDialogProps {
 }
 
 export function CreateLeagueDialog({ open, onClose, onCreated }: CreateLeagueDialogProps) {
-  return (
-    <CreateLeagueWizard
-      open={open}
-      onClose={onClose}
-      onCreated={onCreated}
-    />
-  );
+  return <CreateLeagueWizard open={open} onClose={onClose} onCreated={onCreated} />;
 }

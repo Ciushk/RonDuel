@@ -14,7 +14,8 @@
     "profile": "Profils",
     "pro": "Pro",
     "settings": "Iestatījumi",
-    "duelsYourTurnBadge": "{count, plural, zero {# divcīņu gaida tavu gājienu} one {# divcīņa gaida tavu gājienu} other {# divcīņas gaida tavu gājienu}}"
+    "duelsYourTurnBadge": "{count, plural, zero {# divcīņu gaida tavu gājienu} one {# divcīņa gaida tavu gājienu} other {# divcīņas gaida tavu gājienu}}",
+    "town": "Pilsēta"
   },
   "onboarding": {
     "pickNickname": "Izvēlies savu segvārdu",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Pārbaudi, vai ievadīji kodu pareizi, vai lūdz personai, kura tevi uzaicināja, jaunu saiti.",
     "leaderboardTitleCount": "Līgas līderu saraksts ({count})",
     "nicknamePlaceholder": "piem., Alex99",
-    "joining": "Pievienojas…"
+    "joining": "Pievienojas…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1 pret 1 Split Court duelis",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Neizdevās ieplānot raundu datumam {date}: {error}.",
     "replyAdminDrafts": "Izveidoju {count} jaunus {type} tipa jautājumus par „{topic}” ({ids}).",
     "replyAdminPanel": "Vari tos pārskatīt admina panelī.",
-    "openAdmin": "Atvērt adminu"
+    "openAdmin": "Atvērt adminu",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Ikdienas erudīcija ar draugiem",
@@ -784,5 +787,235 @@
     "description": "Ikdienas erudīcija ar draugiem",
     "shortcutPlay": "Spēlēt šodienas kārtu",
     "shortcutLeagues": "Manas līgas"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Būvēt",
+      "shop": "Veikals",
+      "orders": "Pasūtījumi",
+      "inventory": "Noliktava",
+      "stats": "Iedzīvotāji",
+      "friends": "Draugi",
+      "coins": "Monētas",
+      "help": "Palīdzība",
+      "toggle": "Rīkjosla"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Līm. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Nepieciešams vairāk mājokļu",
+      "limitedByServices": "Nepieciešams vairāk pakalpojumu (skola, slimnīca...)",
+      "gateTownHall": "Rātsnams nepieciešams 2. līmenim (maks. 9 iedzīvotāji)",
+      "gateHospital": "Slimnīca nepieciešama 4. līmenim",
+      "gatePoliceFire": "Policija un Ugunsdzēsēji nepieciešami 5. līmenim",
+      "arrivalIn": "Nākamais iedzīvotājs: {time}",
+      "maxCapacity": "Pilsēta sasniegusi maksimālo ietilpību"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Sākuma Māja",
+        "desc": "Mājīga mītne pirmajiem 2 iedzīvotājiem."
+      },
+      "cottage": {
+        "name": "Kotedža",
+        "desc": "Mājoklis 2 iedzīvotājiem."
+      },
+      "house": {
+        "name": "Dzīvojamā Māja",
+        "desc": "Plaša māja 4 iedzīvotājiem."
+      },
+      "apartment": {
+        "name": "Daudzdzīvokļu Nams",
+        "desc": "Ēka 10 iedzīvotājiem."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Eleganta muiža 6 iedzīvotājiem."
+      },
+      "shop": {
+        "name": "Ciemata Veikals",
+        "desc": "Nodrošina preces un uztur 6 iedzīvotājus."
+      },
+      "town_hall": {
+        "name": "Rātsnams",
+        "desc": "Centrs, kas uztur 8 iedzīvotājus. Atbloķē 2. līmeni."
+      },
+      "park": {
+        "name": "Parks",
+        "desc": "Zaļā zona, kas uztur 4 iedzīvotājus."
+      },
+      "bakery": {
+        "name": "Ceptuve",
+        "desc": "Svaiga maize 6 iedzīvotājiem."
+      },
+      "school": {
+        "name": "Skola",
+        "desc": "Mācību iestāde 10 iedzīvotājiem."
+      },
+      "police_station": {
+        "name": "Policijas Iecirknis",
+        "desc": "Rūpējas par kārtību 10 iedzīvotājiem. Prasība 5. līmenim."
+      },
+      "fire_station": {
+        "name": "Ugunsdzēsēju Depo",
+        "desc": "Aizsargā pilsētu 10 iedzīvotājiem. Prasība 5. līmenim."
+      },
+      "hospital": {
+        "name": "Slimnīca",
+        "desc": "Veselības aprūpe 12 iedzīvotājiem. Prasība 4. līmenim."
+      },
+      "farm_plot": {
+        "name": "Dārza Gabals",
+        "desc": "Auglīga zeme dārzeņu un labības audzēšanai."
+      },
+      "road": {
+        "name": "Bruģakmens Ceļš",
+        "desc": "Bruģēts ceļš iedzīvotāju pastaigām."
+      },
+      "fence": {
+        "name": "Koka Sēta",
+        "desc": "Dekoratīvs nožogojums."
+      },
+      "tree": {
+        "name": "Ēnas Koks",
+        "desc": "Zaļš koks pilsētas skaistumam."
+      },
+      "bench": {
+        "name": "Soliņš",
+        "desc": "Atpūtas vieta iedzīvotājiem."
+      },
+      "fountain": {
+        "name": "Akmens Strūklaka",
+        "desc": "Strūklaka pilsētas centrā."
+      },
+      "golden_fountain": {
+        "name": "Zelta Strūklaka",
+        "desc": "Ekskluzīva strūklaka Pro spēlētājiem."
+      },
+      "windmill": {
+        "name": "Vējdzirnavas",
+        "desc": "Vēsturisks piemineklis par 7 dienu sēriju."
+      },
+      "clock_tower": {
+        "name": "Pulksteņa Tornis",
+        "desc": "Monuments par 30 dienu sēriju."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel Statuja",
+        "desc": "Izcila statuja par 100 dienu sēriju."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Auzas",
+        "desc": "Izturīga labība. Izaug 4 stundās."
+      },
+      "wheat": {
+        "name": "Kvieši",
+        "desc": "Zeltainas vārpas. Izaug 8 stundās."
+      },
+      "carrots": {
+        "name": "Burkāni",
+        "desc": "Saldas saknes. Izaug 12 stundās."
+      },
+      "sunflower": {
+        "name": "Saulespuķe",
+        "desc": "Koši ziedi. Izaug 24 stundās."
+      },
+      "pumpkin": {
+        "name": "Ķirbis",
+        "desc": "Milzu raža. Izaug 48 stundās."
+      }
+    },
+    "orders": {
+      "title": "Dienas Pasūtījumi",
+      "locked": "Spēlē šodienas kārtu, lai atvērtu pasūtījumus",
+      "completed": "Piegādāts",
+      "deliver": "Piegādāt Pasūtījumu",
+      "missingItems": "Trūkst ražas",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Graudi Ceptuvei",
+        "market_stall": "Svaigs Tirgus Grozs",
+        "soup_kitchen": "Krājumi Virtuvei",
+        "autumn_festival": "Rudens Svētku Mielasts",
+        "village_pantry": "Klēts Papildināšana"
+      }
+    },
+    "shop": {
+      "title": "Pilsētas Katalogs",
+      "tabHousing": "Mājokļi",
+      "tabServices": "Pakalpojumi",
+      "tabFarm": "Saimniecība",
+      "tabDecor": "Dekors",
+      "priceCoins": "{coins} monētas",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} iedzīvotāji",
+      "serviceValue": "+{count} atbalsts",
+      "unlockLevel": "Pieejams no {level}. līm.",
+      "proOnly": "Tikai Pro",
+      "streakOnly": "Nepieciešama {days} dienu sērija",
+      "buy": "Būvēt",
+      "insufficientFunds": "Nepietiek RonCoins monētu",
+      "maxCountReached": "Sasniegts maksimums"
+    },
+    "tiles": {
+      "emptyPlot": "Brīvs Dārza Gabals",
+      "plantAction": "Sēt Sēklas",
+      "harvestAction": "Novākt Ražu",
+      "growing": "Aug (atlicis {time})",
+      "ready": "Gatavs novākšanai!",
+      "move": "Pārvietot",
+      "remove": "Noņemt (Atmaksā {coins} monētas)",
+      "starterCannotRemove": "Sākuma māju nevar noņemt"
+    },
+    "tutorial": {
+      "step1Title": "Iesēj Auzas",
+      "step1Desc": "Pieskaries brīvam dārzam, lai iesētu pirmās sēklas.",
+      "step2Title": "Uzcel Kotedžu",
+      "step2Desc": "Atver būvniecības izvēlni un novieto kotedžu jauniem iedzīvotājiem.",
+      "step3Title": "Izpildi Pasūtījumus",
+      "step3Desc": "Piegādā novākto ražu, lai nopelnītu papildu monētas.",
+      "skip": "Izlaist",
+      "next": "Tālāk",
+      "finish": "Sapratu!"
+    },
+    "coinStore": {
+      "title": "RonCoins Veikals",
+      "subtitle": "Kosmētiski pilsētas uzlabojumi. Neietekmē erudīcijas spēles rezultātus.",
+      "monthlyCapNotice": "Atlicis šomēnes: {remaining} € no {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins nevar apmainīt pret īstu naudu.",
+      "buyPack": "Pirkt paku par {price}",
+      "termsLink": "Monētu noteikumi"
+    },
+    "transfer": {
+      "title": "Pārskaitīt RonCoins",
+      "desc": "Dalies ar viktorīnā nopelnītajām monētām ar līgas draugiem.",
+      "amountLabel": "Sūtāmā summa",
+      "recipientLabel": "Līgas biedrs",
+      "send": "Sūtīt monētas",
+      "dailyCapNotice": "Dienas limits: šodien atlikušas {remaining} monētas"
+    },
+    "visit": {
+      "title": "{name} pilsēta",
+      "like": "Patīk pilsēta",
+      "liked": "Patika ({count})",
+      "water": "Apliet stādu (-30m)",
+      "waterUsed": "Aplieti ({count}/{max})",
+      "readOnlyNotice": "Apmeklē drauga pilsētu (skata režīms)"
+    },
+    "postRoundCta": "Tu nopelnīji {coins, plural, zero {# RonCoins} one {# RonCoin} other {# RonCoins}} — dodies būvēt!",
+    "goBuild": "Uz Pilsētu",
+    "plurals": {
+      "villagers": "{count, plural, zero {# iedzīvotāju} one {# iedzīvotājs} other {# iedzīvotāji}}",
+      "coins": "{count, plural, zero {# RonCoins} one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, zero {# gabalu} one {# gabals} other {# gabali}}",
+      "hours": "{count, plural, zero {# stundu} one {# stunda} other {# stundas}}",
+      "minutes": "{count, plural, zero {# minūšu} one {# minūte} other {# minūtes}}",
+      "days": "{count, plural, zero {# dienu} one {# diena} other {# dienas}}"
+    }
   }
 }

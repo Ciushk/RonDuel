@@ -117,4 +117,3 @@ describe('invite code, share card, and weekly winner', () => {
     expect(PRO_LIMITS.maxMonthlyDuels).toBeGreaterThanOrEqual(100);
   });
 });
-

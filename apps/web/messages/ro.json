@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Setări",
-    "duelsYourTurnBadge": "{count, plural, one {# duel la rândul tău} few {# dueluri la rândul tău} other {# de dueluri la rândul tău}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel la rândul tău} few {# dueluri la rândul tău} other {# de dueluri la rândul tău}}",
+    "town": "Oraș"
   },
   "onboarding": {
     "pickNickname": "Alege-ți porecla",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Verifică dacă ai introdus codul corect sau cere un link nou de la cel care te-a invitat.",
     "leaderboardTitleCount": "Clasamentul ligii ({count})",
     "nicknamePlaceholder": "ex. Alex99",
-    "joining": "Se intră în ligă…"
+    "joining": "Se intră în ligă…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Duel 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Nu am putut programa runda pentru {date}: {error}.",
     "replyAdminDrafts": "Am creat {count} întrebări noi de tip {type} despre „{topic}” ({ids}).",
     "replyAdminPanel": "Le poți verifica în panoul de admin.",
-    "openAdmin": "Deschide admin"
+    "openAdmin": "Deschide admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia zilnic cu prietenii tăi",
@@ -784,5 +787,235 @@
     "description": "Trivia zilnic cu prietenii tăi",
     "shortcutPlay": "Joacă runda de azi",
     "shortcutLeagues": "Ligile mele"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Construiește",
+      "shop": "Magazin",
+      "orders": "Comenzi",
+      "inventory": "Inventar",
+      "stats": "Săteni",
+      "friends": "Prieteni",
+      "coins": "Monede",
+      "help": "Ajutor",
+      "toggle": "Comută meniul"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Niv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Ai nevoie de mai multe locuințe",
+      "limitedByServices": "Ai nevoie de mai multe servicii (școală, spital...)",
+      "gateTownHall": "Primăria este necesară pentru Nivelul 2 (limită la 9 săteni)",
+      "gateHospital": "Spitalul este necesar pentru Nivelul 4",
+      "gatePoliceFire": "Poliția și Pompierii sunt necesare pentru Nivelul 5",
+      "arrivalIn": "Următorul sătean: {time}",
+      "maxCapacity": "Orașul a atins capacitatea maximă"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Casă de Început",
+        "desc": "Locuință primitoare pentru primii tăi 2 săteni."
+      },
+      "cottage": {
+        "name": "Căsuță",
+        "desc": "Locuință confortabilă pentru 2 săteni."
+      },
+      "house": {
+        "name": "Casă",
+        "desc": "Casă spațioasă pentru 4 săteni."
+      },
+      "apartment": {
+        "name": "Bloc de Apartamente",
+        "desc": "Clădire rezidențială pentru 10 săteni."
+      },
+      "villa": {
+        "name": "Vilă",
+        "desc": "Domeniu elegant care adăpostește 6 săteni."
+      },
+      "shop": {
+        "name": "Magazin Sătesc",
+        "desc": "Furnizează bunuri și susține 6 săteni."
+      },
+      "town_hall": {
+        "name": "Primărie",
+        "desc": "Centrul civic care susține 8 săteni. Deblochează Nivelul 2."
+      },
+      "park": {
+        "name": "Parc",
+        "desc": "Zonă verde de relaxare care susține 4 săteni."
+      },
+      "bakery": {
+        "name": "Brutărie",
+        "desc": "Coace pâine proaspătă și susține 6 săteni."
+      },
+      "school": {
+        "name": "Școală",
+        "desc": "Centru educațional care susține 10 săteni."
+      },
+      "police_station": {
+        "name": "Secție de Poliție",
+        "desc": "Asigură ordinea și susține 10 săteni. Necesară pentru Nivelul 5."
+      },
+      "fire_station": {
+        "name": "Stație de Pompieri",
+        "desc": "Răspuns la urgențe și susține 10 săteni. Necesară pentru Nivelul 5."
+      },
+      "hospital": {
+        "name": "Spital",
+        "desc": "Servicii medicale și susține 12 săteni. Necesar pentru Nivelul 4."
+      },
+      "farm_plot": {
+        "name": "Parcelă Agricolă",
+        "desc": "Pământ fertil pentru cultivarea legumelor și cerealelor."
+      },
+      "road": {
+        "name": "Alee Pietruită",
+        "desc": "Drum pietruit pe care sătenii se pot plimba."
+      },
+      "fence": {
+        "name": "Gard din Lemn",
+        "desc": "Gard decorativ din scânduri de lemn."
+      },
+      "tree": {
+        "name": "Copac Umbros",
+        "desc": "Arbore verde care aduce frumusețe naturală orașului."
+      },
+      "bench": {
+        "name": "Bancă de Parc",
+        "desc": "Loc de odihnă pentru sătenii călători."
+      },
+      "fountain": {
+        "name": "Fântână din Piatră",
+        "desc": "Fântână arteziană răcoritoare pentru centrul orașului."
+      },
+      "golden_fountain": {
+        "name": "Fântână Aurie",
+        "desc": "Fântână somptuoasă exclusivă pentru jucătorii Pro."
+      },
+      "windmill": {
+        "name": "Moară de Vânt",
+        "desc": "Monument rustic deblocat cu o serie de 7 zile consecutive."
+      },
+      "clock_tower": {
+        "name": "Turn cu Ceas",
+        "desc": "Monument clasic deblocat cu o serie de 30 de zile consecutive."
+      },
+      "ronduel_statue": {
+        "name": "Statuia RonDuel",
+        "desc": "Statuie măreață deblocată cu o serie de 100 de zile consecutive."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Ovăz",
+        "desc": "Cereală rezistentă. Crește în 4 ore."
+      },
+      "wheat": {
+        "name": "Grâu",
+        "desc": "Spice aurii. Crește în 8 ore."
+      },
+      "carrots": {
+        "name": "Morcovi",
+        "desc": "Rădăcini dulci. Cresc în 12 ore."
+      },
+      "sunflower": {
+        "name": "Floarea-Soarelui",
+        "desc": "Flori strălucitoare. Crește în 24 de ore."
+      },
+      "pumpkin": {
+        "name": "Dovleac",
+        "desc": "Recoltă uriașă. Crește în 48 de ore."
+      }
+    },
+    "orders": {
+      "title": "Comenzi Zilnice",
+      "locked": "Joacă runda de azi pentru a debloca comenzile",
+      "completed": "Livrat",
+      "deliver": "Livrează Comanda",
+      "missingItems": "Lipsesc recoltele necesare",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Grâne pentru Brutărie",
+        "market_stall": "Pachet de Recoltă Proaspătă",
+        "soup_kitchen": "Aprovizionare pentru Cantina Sătească",
+        "autumn_festival": "Banchetul Festivalului de Toamnă",
+        "village_pantry": "Reaprovizionarea Cămării"
+      }
+    },
+    "shop": {
+      "title": "Catalogul Orașului",
+      "tabHousing": "Locuințe",
+      "tabServices": "Servicii",
+      "tabFarm": "Fermă",
+      "tabDecor": "Decor",
+      "priceCoins": "{coins} monede",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} locuințe",
+      "serviceValue": "+{count} servicii",
+      "unlockLevel": "Deblocat la Niv.{level}",
+      "proOnly": "Exclusiv Pro",
+      "streakOnly": "Necesită o serie de {days} zile",
+      "buy": "Construiește",
+      "insufficientFunds": "Monede RonCoins insuficiente",
+      "maxCountReached": "Numărul maxim a fost deja atins"
+    },
+    "tiles": {
+      "emptyPlot": "Parcelă Agricolă Liberă",
+      "plantAction": "Plantează Semințe",
+      "harvestAction": "Recoltează",
+      "growing": "În creștere ({time} rămas)",
+      "ready": "Gata de recoltat!",
+      "move": "Mută",
+      "remove": "Elimină (Rambursare {coins} monede)",
+      "starterCannotRemove": "Casa de început nu poate fi eliminată"
+    },
+    "tutorial": {
+      "step1Title": "Plantează Ovăz",
+      "step1Desc": "Apasă pe o parcelă liberă pentru a planta primele semințe și a cultiva hrană.",
+      "step2Title": "Construiește o Căsuță",
+      "step2Desc": "Deschide meniul de construcție pentru a ridica o căsuță și a primi noi săteni.",
+      "step3Title": "Deschide Comenzile Zilnice",
+      "step3Desc": "Livrează recoltele obținute pentru a finaliza comenzi și a primi monede suplimentare.",
+      "skip": "Omite",
+      "next": "Înainte",
+      "finish": "Am înțeles!"
+    },
+    "coinStore": {
+      "title": "Magazin de RonCoins",
+      "subtitle": "Elemente decorative pentru oraș. Nu influențează trivia sau clasamentul.",
+      "monthlyCapNotice": "Disponibil luna aceasta: {remaining} € din {max} €",
+      "nonCompetitiveDisclaimer": "Monedele RonCoins nu pot fi convertite în bani reali și nu afectează scorul de la trivia.",
+      "buyPack": "Cumpără Pachetul pentru {price}",
+      "termsLink": "Termeni și condiții RonCoins"
+    },
+    "transfer": {
+      "title": "Trimite RonCoins",
+      "desc": "Trimite monede câștigate din trivia unui prieten din ligă.",
+      "amountLabel": "Sumă de trimis",
+      "recipientLabel": "Prieten din liga ta",
+      "send": "Trimite RonCoins",
+      "dailyCapNotice": "Limită zilnică: mai poți trimite {remaining} monede azi"
+    },
+    "visit": {
+      "title": "Orașul lui {name}",
+      "like": "Apreciază Orașul",
+      "liked": "Apreciat ({count})",
+      "water": "Udați recolta (-30m)",
+      "waterUsed": "Udat ({count}/{max})",
+      "readOnlyNotice": "Vizitezi orașul unui prieten (mod vizualizare)"
+    },
+    "postRoundCta": "Ai obținut {coins, plural, one {# RonCoin} few {# RonCoins} other {# de RonCoins}} — mergi și construiește",
+    "goBuild": "Mergi în Oraș",
+    "plurals": {
+      "villagers": "{count, plural, one {# sătean} few {# săteni} other {# de săteni}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoins} other {# de RonCoins}}",
+      "plots": "{count, plural, one {# parcelă} few {# parcele} other {# de parcele}}",
+      "hours": "{count, plural, one {# oră} few {# ore} other {# de ore}}",
+      "minutes": "{count, plural, one {# minut} few {# minute} other {# de minute}}",
+      "days": "{count, plural, one {# zi} few {# zile} other {# de zile}}"
+    }
   }
 }

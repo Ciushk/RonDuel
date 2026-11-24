@@ -115,13 +115,19 @@ export default function ProPaywallPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2" role="group" aria-label={t('pro.billingIntervalLabel')}>
+        <div
+          className="grid grid-cols-2 gap-2 pt-2"
+          role="group"
+          aria-label={t('pro.billingIntervalLabel')}
+        >
           <Button
             size="sm"
             variant={plan === 'monthly' ? 'primary' : 'secondary'}
             onClick={() => setPlan('monthly')}
           >
-            {t('pro.monthly', { price: format.number(4.99, { style: 'currency', currency: 'EUR' }) })}
+            {t('pro.monthly', {
+              price: format.number(4.99, { style: 'currency', currency: 'EUR' }),
+            })}
           </Button>
           <Button
             size="sm"

@@ -37,9 +37,7 @@ function detectLocale(): SupportedLocale {
 
   // 3. Inspect browser languages
   const browserLangs =
-    typeof navigator !== 'undefined'
-      ? navigator.languages || [navigator.language]
-      : [];
+    typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [];
 
   for (const lang of browserLangs) {
     if (!lang) continue;
@@ -65,7 +63,7 @@ export default function RootPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-bg p-4 font-mono text-xs text-muted">
+    <div className="bg-bg text-muted flex min-h-dvh items-center justify-center p-4 font-mono text-xs">
       <noscript>
         <meta httpEquiv="refresh" content="0;url=/en" />
       </noscript>

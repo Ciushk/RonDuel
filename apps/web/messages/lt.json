@@ -14,7 +14,8 @@
     "profile": "Profilis",
     "pro": "Pro",
     "settings": "Nustatymai",
-    "duelsYourTurnBadge": "{count, plural, one {# dvikova laukia tavo ėjimo} few {# dvikovos laukia tavo ėjimo} many {# dvikovų laukia tavo ėjimo} other {# dvikovų laukia tavo ėjimo}}"
+    "duelsYourTurnBadge": "{count, plural, one {# dvikova laukia tavo ėjimo} few {# dvikovos laukia tavo ėjimo} many {# dvikovų laukia tavo ėjimo} other {# dvikovų laukia tavo ėjimo}}",
+    "town": "Miestas"
   },
   "onboarding": {
     "pickNickname": "Pasirinkite slapyvardį",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Patikrink, ar teisingai įvedei kodą, arba paprašyk tave pakvietusio asmens naujos nuorodos.",
     "leaderboardTitleCount": "Lygos lyderių lentelė ({count})",
     "nicknamePlaceholder": "pvz., Alex99",
-    "joining": "Jungiamasi…"
+    "joining": "Jungiamasi…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1 prieš 1 „Split Court“ dvikova",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Nepavyko suplanuoti raundo datai {date}: {error}.",
     "replyAdminDrafts": "Sukūriau {count} naujų {type} tipo klausimų apie „{topic}” ({ids}).",
     "replyAdminPanel": "Juos gali peržiūrėti admin skydelyje.",
-    "openAdmin": "Atidaryti admin"
+    "openAdmin": "Atidaryti admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Kasdienė viktorina su draugais",
@@ -784,5 +787,235 @@
     "description": "Kasdienė viktorina su draugais",
     "shortcutPlay": "Žaisti šiandienos etapą",
     "shortcutLeagues": "Mano lygos"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Statyti",
+      "shop": "Parduotuvė",
+      "orders": "Užsakymai",
+      "inventory": "Atsargos",
+      "stats": "Gyventojai",
+      "friends": "Draugai",
+      "coins": "Monetos",
+      "help": "Pagalba",
+      "toggle": "Įrankių juosta"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "{level} lyg."
+    },
+    "growth": {
+      "limitedByHousing": "Reikia daugiau būstų",
+      "limitedByServices": "Reikia daugiau paslaugų (mokyklos, ligoninės...)",
+      "gateTownHall": "Rotušė būtina 2 lygiui pasiekti (iki 9 gyventojų)",
+      "gateHospital": "Ligoninė būtina 4 lygiui pasiekti",
+      "gatePoliceFire": "Policija ir Gaisrinė būtinos 5 lygiui pasiekti",
+      "arrivalIn": "Kitas gyventojas: {time}",
+      "maxCapacity": "Miestas pasiekė didžiausią talpą"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Pradinis Namas",
+        "desc": "Jaukūs namai pirmiesiems 2 gyventojams."
+      },
+      "cottage": {
+        "name": "Trobelė",
+        "desc": "Namai 2 gyventojams."
+      },
+      "house": {
+        "name": "Gyvenamasis Namas",
+        "desc": "Erdvus namas 4 gyventojams."
+      },
+      "apartment": {
+        "name": "Daugiabutis",
+        "desc": "Gyvenamasis pastatas 10 gyventojų."
+      },
+      "villa": {
+        "name": "Vila",
+        "desc": "Prabangi sodyba 6 gyventojams."
+      },
+      "shop": {
+        "name": "Miestelio Parduotuvė",
+        "desc": "Tiekia prekes ir palaiko 6 gyventojus."
+      },
+      "town_hall": {
+        "name": "Rotušė",
+        "desc": "Centras, palaikantis 8 gyventojus. Atrakina 2 lygį."
+      },
+      "park": {
+        "name": "Parkas",
+        "desc": "Žalioji zona, palaikanti 4 gyventojus."
+      },
+      "bakery": {
+        "name": "Kepykla",
+        "desc": "Šviežia duona palaiko 6 gyventojus."
+      },
+      "school": {
+        "name": "Mokykla",
+        "desc": "Švietimo įstaiga 10 gyventojų."
+      },
+      "police_station": {
+        "name": "Policijos Nuovada",
+        "desc": "Užtikrina tvarką 10 gyventojų. Būtina 5 lygiui."
+      },
+      "fire_station": {
+        "name": "Gaisrinė",
+        "desc": "Saugo miestą 10 gyventojų. Būtina 5 lygiui."
+      },
+      "hospital": {
+        "name": "Ligoninė",
+        "desc": "Sveikatos priežiūra 12 gyventojų. Būtina 4 lygiui."
+      },
+      "farm_plot": {
+        "name": "Daržo Sklypas",
+        "desc": "Derlinga žemė augalams auginti."
+      },
+      "road": {
+        "name": "Grįstas Kelias",
+        "desc": "Takas gyventojų pasivaikščiojimams."
+      },
+      "fence": {
+        "name": "Medinė Tvorelė",
+        "desc": "Dekoratyvinė sklypo tvora."
+      },
+      "tree": {
+        "name": "Pavėsio Medis",
+        "desc": "Medis natūraliam grožiui kurti."
+      },
+      "bench": {
+        "name": "Suoliukas",
+        "desc": "Poilsio vieta gyventojams."
+      },
+      "fountain": {
+        "name": "Akmens Fontanas",
+        "desc": "Fontanas miesto centre."
+      },
+      "golden_fountain": {
+        "name": "Auksinis Fontanas",
+        "desc": "Išskirtinis fontanas Pro žaidėjams."
+      },
+      "windmill": {
+        "name": "Vėjo Malūnas",
+        "desc": "Kaimiškas paminklas už 7 dienų seriją."
+      },
+      "clock_tower": {
+        "name": "Laikrodžio Bokštas",
+        "desc": "Klasikinis monumentas už 30 dienų seriją."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel Statula",
+        "desc": "Didelė statula už 100 dienų seriją."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Avižos",
+        "desc": "Atsparūs javai. Užauga per 4 valandas."
+      },
+      "wheat": {
+        "name": "Kviečiai",
+        "desc": "Auksinės varpos. Užauga per 8 valandas."
+      },
+      "carrots": {
+        "name": "Morkos",
+        "desc": "Saldžios daržovės. Užauga per 12 valandų."
+      },
+      "sunflower": {
+        "name": "Saulėgrąža",
+        "desc": "Ryškūs žiedai. Užauga per 24 valandas."
+      },
+      "pumpkin": {
+        "name": "Moliūgas",
+        "desc": "Didžiulis derlius. Užauga per 48 valandas."
+      }
+    },
+    "orders": {
+      "title": "Dienos Užsakymai",
+      "locked": "Žaisk šiandienos etapą, kad atrakintum užsakymus",
+      "completed": "Pristatyta",
+      "deliver": "Pristatyti Užsakymą",
+      "missingItems": "Trūksta derliaus",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Grūdai Kepyklai",
+        "market_stall": "Šviežias Turgaus Krepšelis",
+        "soup_kitchen": "Atsargos Valgyklai",
+        "autumn_festival": "Rudens Šventės Vaišės",
+        "village_pantry": "Kluono Papildymas"
+      }
+    },
+    "shop": {
+      "title": "Miesto Katalogas",
+      "tabHousing": "Būstai",
+      "tabServices": "Paslaugos",
+      "tabFarm": "Ūkis",
+      "tabDecor": "Dekoras",
+      "priceCoins": "{coins} monetų",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} būsto vietos",
+      "serviceValue": "+{count} palaikymas",
+      "unlockLevel": "Atrakinama {level} lygyje",
+      "proOnly": "Tik Pro nariams",
+      "streakOnly": "Reikia {days} d. serijos",
+      "buy": "Statyti",
+      "insufficientFunds": "Nepakanka RonCoins monetų",
+      "maxCountReached": "Pasiektas limitas"
+    },
+    "tiles": {
+      "emptyPlot": "Laisvas Sklypas",
+      "plantAction": "Sėti",
+      "harvestAction": "Nuimti Derlių",
+      "growing": "Auga (liko {time})",
+      "ready": "Paruošta derliui!",
+      "move": "Perkelti",
+      "remove": "Pašalinti (Grąžinama {coins} monetų)",
+      "starterCannotRemove": "Pradinio namo pašalinti negalima"
+    },
+    "tutorial": {
+      "step1Title": "Pasėk Avižų",
+      "step1Desc": "Paliesk laisvą sklypą ir pasėk pirmąsias sėklas.",
+      "step2Title": "Pastatyk Trobelę",
+      "step2Desc": "Atidaryk statybų meniu ir pastatyk trobelę gyventojams.",
+      "step3Title": "Vykdyk Užsakymus",
+      "step3Desc": "Pristatyk derlių ir užsidirbk papildomų monetų.",
+      "skip": "Praleisti",
+      "next": "Toliau",
+      "finish": "Supratau!"
+    },
+    "coinStore": {
+      "title": "RonCoins Parduotuvė",
+      "subtitle": "Kosmetiniai patobulinimai. Neturi įtakos protmūšio rezultatams.",
+      "monthlyCapNotice": "Liko šį mėnesį: {remaining} € iš {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins negalima iškeisti į tikrus pinigus.",
+      "buyPack": "Pirkti paketą už {price}",
+      "termsLink": "Monetų taisyklės"
+    },
+    "transfer": {
+      "title": "Pervesti RonCoins",
+      "desc": "Pasidalink protmūšyje laimėtomis monetomis su lygos draugais.",
+      "amountLabel": "Suma",
+      "recipientLabel": "Lygos draugas",
+      "send": "Siųsti monetas",
+      "dailyCapNotice": "Dienos limitas: šiandien liko {remaining} monetų"
+    },
+    "visit": {
+      "title": "{name} miestas",
+      "like": "Patinka miestas",
+      "liked": "Patiko ({count})",
+      "water": "Palaistyti augalą (-30m)",
+      "waterUsed": "Palaistyta ({count}/{max})",
+      "readOnlyNotice": "Lankaisi draugo mieste (peržiūros režimas)"
+    },
+    "postRoundCta": "Laimėjai {coins, plural, one {# RonCoin} few {# RonCoins} other {# RonCoins}} — statyk miestą!",
+    "goBuild": "Į Miestą",
+    "plurals": {
+      "villagers": "{count, plural, one {# gyventojas} few {# gyventojai} other {# gyventojų}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoins} other {# RonCoins}}",
+      "plots": "{count, plural, one {# sklypas} few {# sklypai} other {# sklypų}}",
+      "hours": "{count, plural, one {# valanda} few {# valandos} other {# valandų}}",
+      "minutes": "{count, plural, one {# minutė} few {# minutės} other {# minučių}}",
+      "days": "{count, plural, one {# diena} few {# dienos} other {# dienų}}"
+    }
   }
 }

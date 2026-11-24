@@ -19,12 +19,7 @@ const ICON_SIZE_MAP = {
   lg: 56,
 };
 
-export function Wordmark({
-  className,
-  size = 'md',
-  showIcon = true,
-  iconSize,
-}: WordmarkProps) {
+export function Wordmark({ className, size = 'md', showIcon = true, iconSize }: WordmarkProps) {
   const iconPx = iconSize ?? ICON_SIZE_MAP[size];
 
   return (

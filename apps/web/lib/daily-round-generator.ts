@@ -1,9 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import {
-  computePromptSimilarity,
-  type Locale,
-  type QuestionType,
-} from '@ronduel/shared';
+import { computePromptSimilarity, type Locale, type QuestionType } from '@ronduel/shared';
 
 export interface GeneratedQuestionItem {
   id: string;
@@ -72,9 +68,7 @@ const THEME_IDEAS = [
 ];
 
 function getGenAIClient(): GoogleGenAI | null {
-  const apiKey =
-    process.env.GEMINI_API_KEY?.trim() ||
-    process.env.GOOGLE_API_KEY?.trim();
+  const apiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
   if (!apiKey) return null;
   return new GoogleGenAI({ apiKey });
 }
@@ -99,7 +93,10 @@ export function validateQuestionFormat(
   for (const [loc, locContent] of Object.entries(item.content)) {
     if (!locContent) continue;
     if (locContent.prompt.length > 140) {
-      return { valid: false, reason: `Prompt too long in ${loc} (${locContent.prompt.length} > 140)` };
+      return {
+        valid: false,
+        reason: `Prompt too long in ${loc} (${locContent.prompt.length} > 140)`,
+      };
     }
     if (locContent.options.length !== 4) {
       return { valid: false, reason: `Options length must be 4 in ${loc}` };
@@ -344,7 +341,10 @@ Important formatting rules:
       }
 
       // 2. Dedup check against existing prompts
-      const dedupCheck = checkDedupSimilarity(questionItem.content.en.prompt, params.existingPrompts);
+      const dedupCheck = checkDedupSimilarity(
+        questionItem.content.en.prompt,
+        params.existingPrompts,
+      );
       if (dedupCheck.duplicate) {
         continue;
       }
@@ -353,7 +353,7 @@ Important formatting rules:
       const answerStr =
         params.type === 'order'
           ? (questionItem.correctOrder ?? []).join(' -> ')
-          : questionItem.content.en.options[questionItem.correctIndex ?? 0] ?? '';
+          : (questionItem.content.en.options[questionItem.correctIndex ?? 0] ?? '');
 
       const factCheck = await factCheckQuestionWithGemini(
         ai,
@@ -487,4 +487,3 @@ Return JSON matching:
     return null;
   }
 }
-

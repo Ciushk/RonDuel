@@ -321,7 +321,7 @@ export function RonBotMascot() {
               </span>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h2 className="font-display text-base font-extrabold">RonBot AI</h2>
+                  <h2 className="font-display text-base font-extrabold">{t('ronbot.title')}</h2>
                   {isOnAdminPage && (
                     <Chip tone="gold" className="px-1.5 py-0.5 text-[10px]">
                       {t('ronbot.adminTitle')}

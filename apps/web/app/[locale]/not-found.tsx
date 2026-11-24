@@ -11,7 +11,7 @@ export default function LocaleNotFound() {
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-6 px-4 text-center">
       <Wordmark size="lg" />
       <div className="space-y-2">
-        <span className="font-display text-muted text-sm font-extrabold tracking-widest uppercase">
+        <span className="font-display text-muted text-sm font-extrabold uppercase tracking-widest">
           {t('code')}
         </span>
         <h1 className="font-display text-ink text-3xl font-extrabold">{t('title')}</h1>

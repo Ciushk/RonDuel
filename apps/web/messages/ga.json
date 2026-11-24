@@ -14,7 +14,8 @@
     "profile": "Próifíl",
     "pro": "Pro",
     "settings": "Socruithe",
-    "duelsYourTurnBadge": "{count, plural, one {# chomhrac ag fanacht le do bheart} two {# chomhrac ag fanacht le do bheart} few {# chomhrac ag fanacht le do bheart} many {# gcomhrac ag fanacht le do bheart} other {# comhrac ag fanacht le do bheart}}"
+    "duelsYourTurnBadge": "{count, plural, one {# chomhrac ag fanacht le do bheart} two {# chomhrac ag fanacht le do bheart} few {# chomhrac ag fanacht le do bheart} many {# gcomhrac ag fanacht le do bheart} other {# comhrac ag fanacht le do bheart}}",
+    "town": "Baile"
   },
   "onboarding": {
     "pickNickname": "Roghnaigh do leasainm",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Deimhnigh gur chuir tú an cód isteach i gceart, nó iarr nasc nua ar an té a thug cuireadh duit.",
     "leaderboardTitleCount": "Clár ceannais na sraithe ({count})",
     "nicknamePlaceholder": "m.sh. Alex99",
-    "joining": "Ag glacadh páirte…"
+    "joining": "Ag glacadh páirte…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Comhrac 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Níorbh fhéidir an babhta do {date} a sceidealú: {error}.",
     "replyAdminDrafts": "Cruthaíodh {count} ceist nua den chineál {type} faoi „{topic}” ({ids}).",
     "replyAdminPanel": "Is féidir leat iad a sheiceáil sa phainéal riaracháin.",
-    "openAdmin": "Oscail an riarachán"
+    "openAdmin": "Oscail an riarachán",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Tráth na gceist laethúil le do chairde",
@@ -784,5 +787,235 @@
     "description": "Tráth na gceist laethúil le do chairde",
     "shortcutPlay": "Imir babhta an lae inniu",
     "shortcutLeagues": "Mo chuid sraitheanna"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Tóg",
+      "shop": "Siopa",
+      "orders": "Orduithe",
+      "inventory": "Stóras",
+      "stats": "Sráidbhaile",
+      "friends": "Cairde",
+      "coins": "Boinn",
+      "help": "Cabhair",
+      "toggle": "Barra uirlisí"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Leibhéal {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Níos mó tithe de dhíth",
+      "limitedByServices": "Níos mó seirbhísí de dhíth (scoil, ospidéal...)",
+      "gateTownHall": "Halla an Bhaile de dhíth do Leibhéal 2 (uas. 9 duine)",
+      "gateHospital": "Ospidéal de dhíth do Leibhéal 4",
+      "gatePoliceFire": "Póilíní agus Dóiteáin de dhíth do Leibhéal 5",
+      "arrivalIn": "An chéad duine eile: {time}",
+      "maxCapacity": "Tá an baile lán"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Teach Tosaigh",
+        "desc": "Teach cluthar don chéad 2 dhuine."
+      },
+      "cottage": {
+        "name": "Bothán",
+        "desc": "Teach do 2 dhuine."
+      },
+      "house": {
+        "name": "Teach Cónaithe",
+        "desc": "Teach fairsing teaghlaigh do 4 dhuine."
+      },
+      "apartment": {
+        "name": "Foirgneamh Árasán",
+        "desc": "Foirgneamh cónaithe do 10 duine."
+      },
+      "villa": {
+        "name": "Vile",
+        "desc": "Eastát galánta do 6 dhuine."
+      },
+      "shop": {
+        "name": "Siopa an Bhaile",
+        "desc": "Soláthraíonn earraí do 6 dhuine."
+      },
+      "town_hall": {
+        "name": "Halla an Bhaile",
+        "desc": "Lárionad do 8 nduine. Díghlasálann Leibhéal 2."
+      },
+      "park": {
+        "name": "Páirc an Bhaile",
+        "desc": "Spás glas do 4 dhuine."
+      },
+      "bakery": {
+        "name": "Bácús",
+        "desc": "Arán úr do 6 dhuine."
+      },
+      "school": {
+        "name": "Scoil",
+        "desc": "Ionad oideachais do 10 duine."
+      },
+      "police_station": {
+        "name": "Stáisiún na nGardaí",
+        "desc": "Cosaint do 10 duine. Riachtanach do Leibhéal 5."
+      },
+      "fire_station": {
+        "name": "Stáisiún Dóiteáin",
+        "desc": "Cosaint don bhaile do 10 duine. Riachtanach do Leibhéal 5."
+      },
+      "hospital": {
+        "name": "Ospidéal",
+        "desc": "Cúram sláinte do 12 duine. Riachtanach do Leibhéal 4."
+      },
+      "farm_plot": {
+        "name": "Plota Feirme",
+        "desc": "Talamh thorthúil do bharra orgánacha."
+      },
+      "road": {
+        "name": "Bóthar Cloiche",
+        "desc": "Cosán pábháilte do dhaoine."
+      },
+      "fence": {
+        "name": "Claí Adhmaid",
+        "desc": "Claí deas adhmaid."
+      },
+      "tree": {
+        "name": "Crann Scátha",
+        "desc": "Crann glas a chuireann áilleacht ar an mbaile."
+      },
+      "bench": {
+        "name": "Binse Páirce",
+        "desc": "Áit scíthe do mhuintir an bhaile."
+      },
+      "fountain": {
+        "name": "Scairdeán Cloiche",
+        "desc": "Scairdeán i lár an bhaile."
+      },
+      "golden_fountain": {
+        "name": "Scairdeán Órga",
+        "desc": "Scairdeán eisiach d'imreoirí Pro."
+      },
+      "windmill": {
+        "name": "Muileann Gaoithe",
+        "desc": "Séadchomhartha do shraith 7 lá."
+      },
+      "clock_tower": {
+        "name": "Túr Cloig",
+        "desc": "Séadchomhartha clasaiceach do shraith 30 lá."
+      },
+      "ronduel_statue": {
+        "name": "Dealbh RonDuel",
+        "desc": "Dealbh mhór do shraith 100 lá."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Coirce",
+        "desc": "Gránach láidir. Fásann sé i 4 huaire."
+      },
+      "wheat": {
+        "name": "Cruithneacht",
+        "desc": "Déisí órga. Fásann sé in 8 n-uaire."
+      },
+      "carrots": {
+        "name": "Cairéid",
+        "desc": "Fréamhacha milse. Fásann siad i 12 uair."
+      },
+      "sunflower": {
+        "name": "Lus na Gréine",
+        "desc": "Bláthanna geala. Fásann sé i 24 uair."
+      },
+      "pumpkin": {
+        "name": "Puimcín",
+        "desc": "Buaic-bharr ollmhór. Fásann sé i 48 n-uaire."
+      }
+    },
+    "orders": {
+      "title": "Orduithe Laethúla",
+      "locked": "Imir babhta an lae inniu chun orduithe a dhíghlasáil",
+      "completed": "Seachadta",
+      "deliver": "Seachaid Ordú",
+      "missingItems": "Barra ar iarraidh",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Grán don Bháicéir",
+        "market_stall": "Ciseán Úr an Mhargaidh",
+        "soup_kitchen": "Soláthairtí don Chistin Pobail",
+        "autumn_festival": "Féasta an Fhómhair",
+        "village_pantry": "Athlíonadh an Phantrí"
+      }
+    },
+    "shop": {
+      "title": "Catalóg an Bhaile",
+      "tabHousing": "Tithíocht",
+      "tabServices": "Seirbhísí",
+      "tabFarm": "Feirm",
+      "tabDecor": "Maisiúchán",
+      "priceCoins": "{coins} bonn",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} teach",
+      "serviceValue": "+{count} tacaíocht",
+      "unlockLevel": "Díghlasáiltear ag Leibhéal {level}",
+      "proOnly": "Eisiach do Pro",
+      "streakOnly": "Sraith {days} lá de dhíth",
+      "buy": "Tóg",
+      "insufficientFunds": "Easpa RonCoins",
+      "maxCountReached": "Uasmhéid bainte amach"
+    },
+    "tiles": {
+      "emptyPlot": "Plota Folamh",
+      "plantAction": "Cuir Síolta",
+      "harvestAction": "Bain Barra",
+      "growing": "Ag fás ({time} fágtha)",
+      "ready": "Réidh le baint!",
+      "move": "Bog",
+      "remove": "Bain ({coins} bonn ar ais)",
+      "starterCannotRemove": "Ní féidir an teach tosaigh a bhaint"
+    },
+    "tutorial": {
+      "step1Title": "Cuir Coirce",
+      "step1Desc": "Tapáil plota folamh chun do chéad síolta a chur.",
+      "step2Title": "Tóg Bothán",
+      "step2Desc": "Oscail an roghchlár tógála chun bothán a thógáil do dhaoine nua.",
+      "step3Title": "Comhlíon Orduithe",
+      "step3Desc": "Seachaid barra chun orduithe a chomhlíonadh agus boinn a shaothrú.",
+      "skip": "Léim",
+      "next": "Ar aghaidh",
+      "finish": "Tuigthe!"
+    },
+    "coinStore": {
+      "title": "Siopa RonCoins",
+      "subtitle": "Uasghráduithe cosmaideacha. Ní chuireann sé isteach ar an gcluiche.",
+      "monthlyCapNotice": "Fágtha an mhí seo: {remaining} € as {max} €",
+      "nonCompetitiveDisclaimer": "Ní féidir RonCoins a mhalartú ar airgead fíor.",
+      "buyPack": "Ceannaigh Pacáiste ar {price}",
+      "termsLink": "Téarmaí na mBonn"
+    },
+    "transfer": {
+      "title": "Aistrigh RonCoins",
+      "desc": "Roinn boinn thráth na gceist le cairde i do léig.",
+      "amountLabel": "Méid le seoladh",
+      "recipientLabel": "Cara i do léig",
+      "send": "Seol Boinn",
+      "dailyCapNotice": "Teorainn laethúil: {remaining} bonn fágtha inniu"
+    },
+    "visit": {
+      "title": "Baile {name}",
+      "like": "Is maith liom an baile",
+      "liked": "Thaitin sé leat ({count})",
+      "water": "Uiscigh barr (-30m)",
+      "waterUsed": "Uiscithe ({count}/{max})",
+      "readOnlyNotice": "Ag tabhairt cuairte ar bhaile cara (amharc amháin)"
+    },
+    "postRoundCta": "Ghnóthaigh tú {coins, plural, one {# RonCoin} two {# RonCoin} few {# RonCoin} many {# RonCoin} other {# RonCoins}} — téigh ag tógáil!",
+    "goBuild": "Chun an Bhaile",
+    "plurals": {
+      "villagers": "{count, plural, one {# duine} two {# dhuine} few {# dhuine} many {# nduine} other {# duine}}",
+      "coins": "{count, plural, one {# RonCoin} two {# RonCoin} few {# RonCoin} many {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# phlota} two {# phlota} few {# phlota} many {# bplota} other {# plota}}",
+      "hours": "{count, plural, one {# uair} two {# uair} few {# huaire} many {# n-uaire} other {# uair}}",
+      "minutes": "{count, plural, one {# nóiméad} two {# nóiméad} few {# nóiméad} many {# nóiméad} other {# nóiméad}}",
+      "days": "{count, plural, one {# lá} two {# lá} few {# lá} many {# lá} other {# lá}}"
+    }
   }
 }

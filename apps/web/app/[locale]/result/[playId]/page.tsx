@@ -10,7 +10,7 @@ import {
   Trophy,
   Users,
 } from '@phosphor-icons/react';
-import { buildShareCardText } from '@ronduel/shared';
+import { buildShareCardText, calculateTriviaCoins } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ import { ScoreCountUp } from '@/components/result/ScoreCountUp';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { useFeatureFlag } from '@/lib/feature-flags';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
 
 interface LeagueRankInfo {
@@ -85,12 +86,28 @@ export default function ResultPage() {
   );
   const [isReporting, setIsReporting] = useState(false);
 
+  const townEnabled = useFeatureFlag('town_enabled');
+  const [userIsPro, setUserIsPro] = useState(false);
   const [animated, setAnimated] = useState(false);
   const [showPB, setShowPB] = useState(false);
   const [showTiles, setShowTiles] = useState(false);
   const [flameBumping, setFlameBumping] = useState(false);
   const [showRows, setShowRows] = useState(false);
   const [isPB, setIsPB] = useState(false);
+
+  useEffect(() => {
+    const s = getLocalSession();
+    if (s?.uid && s.uid !== 'u_ssr' && s.uid !== 'anon') {
+      fetch(`/api/me/profile?uid=${encodeURIComponent(s.uid)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.pro?.active) setUserIsPro(true);
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  const earnedCoins = data?.totalScore ? calculateTriviaCoins(data.totalScore, userIsPro) : 0;
 
   const skipAnimation = useCallback(() => {
     if (!animated) return;
@@ -641,7 +658,7 @@ export default function ResultPage() {
                     weight="bold"
                     className="text-duel-strong shrink-0"
                   />
-                  <span className="text-ink truncate">RonDuel World</span>
+                  <span className="text-ink truncate">{t('league.worldLeagueName')}</span>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
                   {t('common.rankPlace', { rank: worldRank.rank })}{' '}
@@ -696,6 +713,24 @@ export default function ResultPage() {
             <Trophy size={18} weight="fill" aria-hidden="true" />
             {t('result.openLeague')} {primaryLeague?.name ? `(${primaryLeague.name})` : ''}
           </Link>
+        )}
+
+        {townEnabled && earnedCoins > 0 && (
+          <div className="border-border bg-surface-2 space-y-3 rounded-[16px] border-2 p-4 text-center shadow-[3px_3px_0px_0px_#16131F]">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-2xl">🏡</span>
+              <p className="text-ink text-sm font-black">
+                {t('town.postRoundCta', { coins: earnedCoins })}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/town`}
+              className="rd-sticker rd-sticker-pressable inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[14px] border-2 border-[#0E0D15] bg-[#C6FF3D] px-5 text-sm font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] active:translate-y-0.5"
+            >
+              <span>🏡</span>
+              <span>{t('town.goBuild')}</span>
+            </Link>
+          </div>
         )}
 
         {/* Secondary actions: Challenge friends & Have a code */}

@@ -18,6 +18,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 
 if (getApps().length === 0) {
   initializeApp();
@@ -74,6 +75,18 @@ import {
   syncUserToFirestore,
 } from './firestore-users.js';
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
+import { processAwardTriviaCoins } from './town-award.js';
+import { initPlayerTown } from './town-init.js';
+import { buildItem, buyFarmPlot, getTownCatalog, moveTile, removeTile } from './town-actions.js';
+import { deliverOrder, getOrCreateDailyOrders, harvestCrop, plantCrop } from './town-farming.js';
+import { getTownVisit, likeTown } from './town-snapshots.js';
+import { createCoinCheckoutSession, handleTownStripeWebhook } from './town-purchase.js';
+import { getTransferStatus, transferCoins } from './town-transfer.js';
+import { getFriendWaterStatus, waterFriendCrop } from './town-help.js';
+import { batchReconcileLedgers } from './town-wallet.js';
+import { notifyCropsReady } from './town-notifications.js';
+
+export { notifyCropsReady };
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
 setGlobalOptions({ region: 'europe-west1' });
@@ -163,6 +176,376 @@ export const api = onRequest(apiOptions, async (req, res) => {
       });
       res.status(200).json(chatRes);
       return;
+    }
+
+    if ((method === 'POST' || method === 'GET') && pathname === '/town/init') {
+      const uid = String(body.uid ?? url.searchParams.get('uid') ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing or invalid uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await initPlayerTown(db, uid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        if (err.message?.includes('disabled')) {
+          res.status(403).json({ error: err.message });
+          return;
+        }
+        res.status(500).json({ error: err.message || 'Failed to initialize town' });
+        return;
+      }
+    }
+
+    if (method === 'GET' && pathname === '/town/catalog') {
+      const db = getDb();
+      const catalog = await getTownCatalog(db);
+      res.status(200).json(catalog);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/town/build') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await buildItem(db, uid, {
+          itemId: String(body.itemId ?? ''),
+          x: Number(body.x),
+          y: Number(body.y),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Build failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/move') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await moveTile(db, uid, {
+          fromX: Number(body.fromX),
+          fromY: Number(body.fromY),
+          toX: Number(body.toX),
+          toY: Number(body.toY),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Move failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/remove') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await removeTile(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Remove failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/buy-plot') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await buyFarmPlot(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Plot purchase failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/plant') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await plantCrop(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+          cropId: String(body.cropId ?? ''),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Plant failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/harvest') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await harvestCrop(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Harvest failed' });
+        return;
+      }
+    }
+
+    if (method === 'GET' && pathname === '/town/orders') {
+      const uid = String(url.searchParams.get('uid') ?? '');
+      const roundDate = String(
+        url.searchParams.get('date') ?? getLocalDateString(new Date(), 'UTC'),
+      );
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await getOrCreateDailyOrders(db, uid, roundDate);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Orders fetch failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/deliver-order') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await deliverOrder(db, uid, {
+          roundDate: String(body.roundDate ?? getLocalDateString(new Date(), 'UTC')),
+          orderId: String(body.orderId ?? ''),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Delivery failed' });
+        return;
+      }
+    }
+
+    if (method === 'GET' && pathname === '/town/inventory') {
+      const uid = String(url.searchParams.get('uid') ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      const snap = await db
+        .collection('users')
+        .doc(uid)
+        .collection('townInventory')
+        .doc('main')
+        .get();
+      res.status(200).json(snap.exists ? snap.data() : { crops: {} });
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/town/visit') {
+      const hostUid = String(url.searchParams.get('hostUid') ?? '');
+      const viewerUid = String(url.searchParams.get('viewerUid') ?? '');
+      if (!hostUid || !viewerUid || viewerUid === 'anon' || viewerUid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing hostUid or viewerUid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await getTownVisit(db, hostUid, viewerUid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Visit failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/like') {
+      const hostUid = String(body.hostUid ?? '');
+      const viewerUid = String(body.viewerUid ?? '');
+      if (!hostUid || !viewerUid || viewerUid === 'anon' || viewerUid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing hostUid or viewerUid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await likeTown(db, hostUid, viewerUid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Like failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/checkout') {
+      const uid = String(body.uid ?? '');
+      const packId = String(body.packId ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res
+          .status(401)
+          .json({ error: 'Please sign in or link your account before purchasing coins' });
+        return;
+      }
+      if (!packId) {
+        res.status(400).json({ error: 'Missing packId' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await createCoinCheckoutSession(db, {
+          uid,
+          packId,
+          successUrl: body.successUrl ? String(body.successUrl) : undefined,
+          cancelUrl: body.cancelUrl ? String(body.cancelUrl) : undefined,
+          simulateImmediately: Boolean(body.simulateImmediately),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Checkout failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/stripe-webhook') {
+      const db = getDb();
+      try {
+        const result = await handleTownStripeWebhook(db, body);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Webhook processing failed' });
+        return;
+      }
+    }
+
+    if (method === 'GET' && pathname === '/town/transfer-status') {
+      const uid = String(url.searchParams.get('uid') ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await getTransferStatus(db, uid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Status check failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/transfer') {
+      const senderUid = String(body.senderUid ?? '');
+      const receiverUid = String(body.receiverUid ?? '');
+      const amount = Number(body.amount ?? 0);
+      if (!senderUid || !receiverUid || senderUid === 'anon' || receiverUid === 'anon') {
+        res.status(401).json({ error: 'Invalid sender or receiver' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await transferCoins(db, {
+          senderUid,
+          receiverUid,
+          amount,
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Transfer failed' });
+        return;
+      }
+    }
+
+    if (method === 'GET' && pathname === '/town/water-status') {
+      const helperUid = String(url.searchParams.get('helperUid') ?? '');
+      const hostUid = String(url.searchParams.get('hostUid') ?? '');
+      if (!helperUid || !hostUid || helperUid === 'anon' || hostUid === 'anon') {
+        res.status(401).json({ error: 'Missing helperUid or hostUid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await getFriendWaterStatus(db, helperUid, hostUid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Water status check failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/water') {
+      const helperUid = String(body.helperUid ?? '');
+      const hostUid = String(body.hostUid ?? '');
+      const tileX = Number(body.tileX ?? 0);
+      const tileY = Number(body.tileY ?? 0);
+      if (!helperUid || !hostUid || helperUid === 'anon' || hostUid === 'anon') {
+        res.status(401).json({ error: 'Missing helperUid or hostUid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await waterFriendCrop(db, {
+          helperUid,
+          hostUid,
+          tileX,
+          tileY,
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Water failed' });
+        return;
+      }
     }
 
     if (method === 'GET' && pathname === '/game/status') {
@@ -783,4 +1166,60 @@ export const cleanupExpiredAnonymousUsers = onSchedule('every 24 hours', async (
   const result = await purgeExpiredAnonymousUsers();
   await storePersistence.flushNow();
   console.log('[Firestore] Scheduled anonymous purge', result);
+});
+
+/**
+ * RonTown award trigger: awards RonCoins when a daily round play document is written to store_plays/{docId}.
+ */
+export const awardTriviaCoins = onDocumentWritten(
+  { document: 'store_plays/{docId}', region: 'europe-west1' },
+  async (event) => {
+    const afterSnap = event.data?.after;
+    if (!afterSnap || !afterSnap.exists) return;
+    const data = afterSnap.data();
+    if (!data || !data.v) return;
+    const db = getDb();
+    await processAwardTriviaCoins(db, data.v, event.params.docId);
+  },
+);
+
+/**
+ * Scheduled batched ledger reconciliation (daily at 03:00).
+ */
+export const reconcileLedgerJob = onSchedule('0 3 * * *', async () => {
+  const db = getDb();
+  let lastUid: string | undefined = undefined;
+  let totalBatches = 0;
+  let totalMismatches = 0;
+
+  do {
+    const res = await batchReconcileLedgers(db, 100, lastUid);
+    totalBatches += 1;
+    totalMismatches += res.mismatchCount;
+    lastUid = res.lastUid ?? undefined;
+  } while (lastUid && totalBatches < 50);
+
+  console.log(
+    `[reconcileLedgerJob] Completed ${totalBatches} batches, mismatches: ${totalMismatches}`,
+  );
+});
+
+/**
+ * RonTown initialization endpoint.
+ * Idempotently provisions a player's town on first open.
+ */
+export const town_init = onCall({ region: 'europe-west1' }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError('unauthenticated', 'Must be signed in to initialize town');
+  }
+  const db = getDb();
+  try {
+    return await initPlayerTown(db, uid);
+  } catch (err: any) {
+    if (err.message?.includes('disabled')) {
+      throw new HttpsError('failed-precondition', err.message);
+    }
+    throw new HttpsError('internal', err.message || 'Failed to initialize town');
+  }
 });

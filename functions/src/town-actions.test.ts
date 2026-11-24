@@ -1,0 +1,267 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { clearEconomyConfigCache } from './town-economy.js';
+import { buildItem, buyFarmPlot, moveTile, removeTile } from './town-actions.js';
+
+describe('town-actions server business logic', () => {
+  let store: Map<string, Record<string, unknown>>;
+  let mockDb: any;
+
+  beforeEach(() => {
+    clearEconomyConfigCache();
+    store = new Map();
+    // Default economy enabled
+    store.set('config/townEconomy', {
+      enabled: true,
+      purchasesEnabled: false,
+      transfersEnabled: false,
+      helpEnabled: false,
+      baseServiceCapacity: 4,
+      removeRefundRate: 0.5,
+      arrivalIntervalSeconds: 7200,
+    });
+
+    // Mock DB setup
+    mockDb = {
+      collection: (col: string) => ({
+        doc: (id: string) => ({
+          collection: (subCol: string) => {
+            const subHandler = {
+              doc: (subId: string) => ({
+                path: `${col}/${id}/${subCol}/${subId}`,
+                get: async () => {
+                  const data = store.get(`${col}/${id}/${subCol}/${subId}`);
+                  return { exists: data !== undefined, data: () => data };
+                },
+              }),
+              get: async () => {
+                const docs: any[] = [];
+                const prefix = `${col}/${id}/${subCol}/`;
+                for (const [p, d] of store.entries()) {
+                  if (p.startsWith(prefix)) {
+                    docs.push({ id: p.slice(prefix.length), data: () => d });
+                  }
+                }
+                return { docs };
+              },
+            };
+            return subHandler;
+          },
+          path: `${col}/${id}`,
+          get: async () => {
+            const data = store.get(`${col}/${id}`);
+            return { exists: data !== undefined, data: () => data };
+          },
+        }),
+      }),
+      runTransaction: async (fn: (tx: any) => Promise<any>) => {
+        const tx = {
+          get: async (ref: any) => {
+            if (ref.docs !== undefined) {
+              return ref; // query snapshot
+            }
+            if (typeof ref.get === 'function') {
+              return ref.get();
+            }
+            const data = store.get(ref.path);
+            return { exists: data !== undefined, data: () => data };
+          },
+          set: (
+            ref: { path: string },
+            data: Record<string, unknown>,
+            options?: { merge?: boolean },
+          ) => {
+            if (options?.merge && store.has(ref.path)) {
+              store.set(ref.path, { ...store.get(ref.path), ...data });
+            } else {
+              store.set(ref.path, { ...data });
+            }
+          },
+          update: (ref: { path: string }, data: Record<string, unknown>) => {
+            const existing = store.get(ref.path) || {};
+            store.set(ref.path, { ...existing, ...data });
+          },
+          delete: (ref: { path: string }) => {
+            store.delete(ref.path);
+          },
+        };
+        return fn(tx);
+      },
+    };
+
+    // Setup user with 500 coins and basic town
+    store.set('users/u1', { pro: { active: false }, streak: { length: 0 } });
+    store.set('users/u1/wallet/main', {
+      balance: 500,
+      buckets: { trivia: 0, town: 500, purchased: 0, gift: 0 },
+      monthPurchasedEUR: 0,
+      monthKey: '2026-11',
+      locked: false,
+    });
+    store.set('users/u1/town/main', {
+      gridSize: 8,
+      population: 2,
+      housingCapacity: 2,
+      serviceCapacity: 4,
+      populationCap: 2,
+      level: 1,
+      maxLevelReached: 1,
+      tutorialStep: 1,
+      plotsOwned: 2,
+    });
+    store.set('users/u1/townTiles/3_3', { itemId: 'starter_house', x: 3, y: 3 });
+  });
+
+  describe('buildItem', () => {
+    it('buys and places a cottage, debits wallet, updates housing and advances tutorial', async () => {
+      const res = await buildItem(mockDb, 'u1', { itemId: 'cottage', x: 1, y: 1 });
+      expect(res.success).toBe(true);
+      expect(res.town.housingCapacity).toBe(4); // 2 starter + 2 cottage
+      expect(res.town.tutorialStep).toBe(2);
+
+      // Wallet was debited 120 coins (500 - 120 = 380)
+      const wallet = store.get('users/u1/wallet/main') as any;
+      expect(wallet.balance).toBe(380);
+
+      // Tile placed
+      const tile = store.get('users/u1/townTiles/1_1');
+      expect(tile?.itemId).toBe('cottage');
+    });
+
+    it('rejects building when funds are insufficient', async () => {
+      // Apartment costs 900 coins, player has 500
+      // Unlock level 3 is also needed, let's set level 3 to test insufficient funds
+      store.set('users/u1/town/main', {
+        gridSize: 10,
+        population: 25,
+        housingCapacity: 20,
+        serviceCapacity: 20,
+        populationCap: 20,
+        level: 3,
+        maxLevelReached: 3,
+        plotsOwned: 2,
+      });
+
+      await expect(buildItem(mockDb, 'u1', { itemId: 'apartment', x: 5, y: 5 })).rejects.toThrow(
+        'INSUFFICIENT_FUNDS',
+      );
+    });
+
+    it('rejects placement collision with existing tile', async () => {
+      // 3_3 is occupied by starter_house
+      await expect(buildItem(mockDb, 'u1', { itemId: 'cottage', x: 3, y: 3 })).rejects.toThrow(
+        'already occupied',
+      );
+    });
+
+    it('rejects building when level is too low', async () => {
+      // Villa requires Lv4, player is Lv1
+      await expect(buildItem(mockDb, 'u1', { itemId: 'villa', x: 0, y: 0 })).rejects.toThrow(
+        'requires Town Level 4',
+      );
+    });
+
+    it('rejects Pro-only building if user is not Pro', async () => {
+      // golden_fountain requires Pro
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 10,
+        level: 2,
+        maxLevelReached: 2,
+        plotsOwned: 2,
+      });
+      await expect(
+        buildItem(mockDb, 'u1', { itemId: 'golden_fountain', x: 0, y: 0 }),
+      ).rejects.toThrow('Pro subscription');
+    });
+
+    it('rejects streak-unlock building if user streak is insufficient', async () => {
+      // Windmill requires 7-day streak
+      await expect(buildItem(mockDb, 'u1', { itemId: 'windmill', x: 0, y: 0 })).rejects.toThrow(
+        '7-day streak',
+      );
+    });
+
+    it('enforces maxCount for Town Hall (max 1)', async () => {
+      // Place first town hall
+      await buildItem(mockDb, 'u1', { itemId: 'town_hall', x: 0, y: 0 });
+      // Second town hall must fail
+      await expect(buildItem(mockDb, 'u1', { itemId: 'town_hall', x: 4, y: 0 })).rejects.toThrow(
+        'Maximum limit of 1 reached',
+      );
+    });
+  });
+
+  describe('removeTile', () => {
+    it('refuses to remove the Starter House', async () => {
+      await expect(removeTile(mockDb, 'u1', { x: 3, y: 3 })).rejects.toThrow(
+        'Starter House cannot be removed',
+      );
+    });
+
+    it('removes cottage, refunds 50% coins to town bucket, and recalculates capacities', async () => {
+      await buildItem(mockDb, 'u1', { itemId: 'cottage', x: 1, y: 1 });
+      const walletBefore = store.get('users/u1/wallet/main') as any;
+      expect(walletBefore.balance).toBe(380);
+
+      // Remove cottage (cost 120 -> 50% refund = 60)
+      const res = await removeTile(mockDb, 'u1', { x: 1, y: 1 });
+      expect(res.success).toBe(true);
+      expect(res.refundCoins).toBe(60);
+
+      const walletAfter = store.get('users/u1/wallet/main') as any;
+      expect(walletAfter.balance).toBe(440); // 380 + 60
+
+      expect(store.has('users/u1/townTiles/1_1')).toBe(false);
+
+      const town = store.get('users/u1/town/main') as any;
+      expect(town.housingCapacity).toBe(2); // Reduced back to starter house
+    });
+  });
+
+  describe('moveTile', () => {
+    it('moves a tile to a free coordinate within bounds', async () => {
+      await buildItem(mockDb, 'u1', { itemId: 'cottage', x: 1, y: 1 });
+      const res = await moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 5, toY: 5 });
+      expect(res.success).toBe(true);
+
+      expect(store.has('users/u1/townTiles/1_1')).toBe(false);
+      const moved = store.get('users/u1/townTiles/5_5');
+      expect(moved?.itemId).toBe('cottage');
+      expect(moved?.x).toBe(5);
+      expect(moved?.y).toBe(5);
+    });
+
+    it('rejects move if target is occupied', async () => {
+      await buildItem(mockDb, 'u1', { itemId: 'cottage', x: 1, y: 1 });
+      // 3_3 is occupied by starter_house
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 3, toY: 3 })).rejects.toThrow(
+        'already occupied',
+      );
+    });
+  });
+
+  describe('buyFarmPlot', () => {
+    it('buys extra plot with escalating cost (50 for plot 3) and places plot tile', async () => {
+      const res = await buyFarmPlot(mockDb, 'u1', { x: 0, y: 5 });
+      expect(res.success).toBe(true);
+      expect(res.cost).toBe(50);
+      expect(res.plotsOwned).toBe(3);
+
+      const tile = store.get('users/u1/townTiles/0_5');
+      expect(tile?.itemId).toBe('plot');
+
+      const wallet = store.get('users/u1/wallet/main') as any;
+      expect(wallet.balance).toBe(450); // 500 - 50
+    });
+
+    it('rejects buying more than 12 plots', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        plotsOwned: 12,
+      });
+      await expect(buyFarmPlot(mockDb, 'u1', { x: 0, y: 5 })).rejects.toThrow(
+        'Maximum of 12 farm plots already reached',
+      );
+    });
+  });
+});

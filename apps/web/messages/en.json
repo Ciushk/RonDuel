@@ -14,7 +14,8 @@
     "profile": "Profile",
     "pro": "Pro",
     "settings": "Settings",
-    "duelsYourTurnBadge": "{count, plural, one {# duel waiting for your move} other {# duels waiting for your move}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duel waiting for your move} other {# duels waiting for your move}}",
+    "town": "Town"
   },
   "onboarding": {
     "pickNickname": "Pick your nickname",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Check that you entered the code correctly, or ask the person who invited you for a new link.",
     "leaderboardTitleCount": "League leaderboard ({count})",
     "nicknamePlaceholder": "e.g. Alex99",
-    "joining": "Joining…"
+    "joining": "Joining…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court Duel",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Could not schedule the round for {date}: {error}.",
     "replyAdminDrafts": "Created {count} new {type} questions about “{topic}” ({ids}).",
     "replyAdminPanel": "You can review them in the admin panel.",
-    "openAdmin": "Open admin"
+    "openAdmin": "Open admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Daily trivia with your friends",
@@ -784,5 +787,235 @@
     "description": "Daily trivia with your friends",
     "shortcutPlay": "Play today's round",
     "shortcutLeagues": "My leagues"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Build",
+      "shop": "Shop",
+      "orders": "Orders",
+      "inventory": "Inventory",
+      "stats": "Villagers",
+      "friends": "Friends",
+      "coins": "Coins",
+      "help": "Help",
+      "toggle": "Toggle toolbar"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Lv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Need more housing",
+      "limitedByServices": "Need more services (school, hospital...)",
+      "gateTownHall": "Town Hall required to reach Lv2 (cap at 9 villagers)",
+      "gateHospital": "Hospital required to reach Lv4",
+      "gatePoliceFire": "Police & Fire Station required to reach Lv5",
+      "arrivalIn": "Next arrival: {time}",
+      "maxCapacity": "Town at max capacity"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Starter House",
+        "desc": "Cozy home housing 2 villagers."
+      },
+      "cottage": {
+        "name": "Cottage",
+        "desc": "Comfortable home housing 2 villagers."
+      },
+      "house": {
+        "name": "House",
+        "desc": "Spacious family home housing 4 villagers."
+      },
+      "apartment": {
+        "name": "Apartment Building",
+        "desc": "Multi-story residence housing 10 villagers."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Elegant estate housing 6 villagers."
+      },
+      "shop": {
+        "name": "Town Shop",
+        "desc": "Supplies goods and supports 6 villagers."
+      },
+      "town_hall": {
+        "name": "Town Hall",
+        "desc": "Civic center supporting 8 villagers. Unlocks Level 2."
+      },
+      "park": {
+        "name": "Park",
+        "desc": "Green sanctuary supporting 4 villagers."
+      },
+      "bakery": {
+        "name": "Bakery",
+        "desc": "Bakes fresh goods and supports 6 villagers."
+      },
+      "school": {
+        "name": "School",
+        "desc": "Learning center supporting 10 villagers."
+      },
+      "police_station": {
+        "name": "Police Station",
+        "desc": "Protects community, supporting 10 villagers. Gate for Lv5."
+      },
+      "fire_station": {
+        "name": "Fire Station",
+        "desc": "Emergency response, supporting 10 villagers. Gate for Lv5."
+      },
+      "hospital": {
+        "name": "Hospital",
+        "desc": "Healthcare facility, supporting 12 villagers. Gate for Lv4."
+      },
+      "farm_plot": {
+        "name": "Farm Plot",
+        "desc": "Plot of fertile soil to cultivate organic crops."
+      },
+      "road": {
+        "name": "Cobblestone Road",
+        "desc": "Paved pathway for villagers to stroll on."
+      },
+      "fence": {
+        "name": "Picket Fence",
+        "desc": "Charming wooden perimeter fence."
+      },
+      "tree": {
+        "name": "Shade Tree",
+        "desc": "Leafy green tree providing natural beauty."
+      },
+      "bench": {
+        "name": "Park Bench",
+        "desc": "Rest stop for wandering villagers."
+      },
+      "fountain": {
+        "name": "Stone Fountain",
+        "desc": "Refreshing town center water feature."
+      },
+      "golden_fountain": {
+        "name": "Golden Fountain",
+        "desc": "Gleaming prestige fountain for Pro players."
+      },
+      "windmill": {
+        "name": "Windmill",
+        "desc": "Rustic landmark unlocked with a 7-day streak."
+      },
+      "clock_tower": {
+        "name": "Clock Tower",
+        "desc": "Timeless monument unlocked with a 30-day streak."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel Statue",
+        "desc": "Masterpiece statue unlocked with a 100-day streak."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Oats",
+        "desc": "Hardy cereal crop. Grows in 4 hours."
+      },
+      "wheat": {
+        "name": "Wheat",
+        "desc": "Golden grains. Grows in 8 hours."
+      },
+      "carrots": {
+        "name": "Carrots",
+        "desc": "Sweet orange roots. Grows in 12 hours."
+      },
+      "sunflower": {
+        "name": "Sunflower",
+        "desc": "Radiant blooms. Grows in 24 hours."
+      },
+      "pumpkin": {
+        "name": "Pumpkin",
+        "desc": "Prize harvest giant. Grows in 48 hours."
+      }
+    },
+    "orders": {
+      "title": "Daily Town Orders",
+      "locked": "Play today's round to unlock orders",
+      "completed": "Delivered",
+      "deliver": "Deliver Order",
+      "missingItems": "Missing required crops",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Baker's Morning Grain",
+        "market_stall": "Fresh Harvest Bundle",
+        "soup_kitchen": "Community Stew Supply",
+        "autumn_festival": "Autumn Bounty Feast",
+        "village_pantry": "Pantry Restock Order"
+      }
+    },
+    "shop": {
+      "title": "Town Catalog",
+      "tabHousing": "Housing",
+      "tabServices": "Services",
+      "tabFarm": "Farm",
+      "tabDecor": "Decor",
+      "priceCoins": "{coins} coins",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} housing",
+      "serviceValue": "+{count} supports",
+      "unlockLevel": "Unlocks at Lv{level}",
+      "proOnly": "Pro Exclusive",
+      "streakOnly": "Requires {days}-day streak",
+      "buy": "Build",
+      "insufficientFunds": "Not enough RonCoins",
+      "maxCountReached": "Maximum count reached"
+    },
+    "tiles": {
+      "emptyPlot": "Empty Farm Plot",
+      "plantAction": "Plant Crop",
+      "harvestAction": "Harvest Crops",
+      "growing": "Growing ({time} left)",
+      "ready": "Ready to harvest!",
+      "move": "Move",
+      "remove": "Remove (Refund {coins} coins)",
+      "starterCannotRemove": "Starter house cannot be removed"
+    },
+    "tutorial": {
+      "step1Title": "Plant Oats",
+      "step1Desc": "Tap an empty farm plot to plant your first seeds and grow food.",
+      "step2Title": "Build a Cottage",
+      "step2Desc": "Open the Build menu to place a cottage and invite more villagers.",
+      "step3Title": "Open Daily Orders",
+      "step3Desc": "Deliver harvested crops to fulfill town orders for extra RonCoins.",
+      "skip": "Skip",
+      "next": "Next",
+      "finish": "Got it!"
+    },
+    "coinStore": {
+      "title": "RonCoins Store",
+      "subtitle": "Cosmetic town upgrades. Never affects trivia or rankings.",
+      "monthlyCapNotice": "Remaining this month: €{remaining} / €{max}",
+      "nonCompetitiveDisclaimer": "RonCoins can never be converted to real money and never affect competitive trivia scores.",
+      "buyPack": "Get Pack for {price}",
+      "termsLink": "Coins terms and conditions"
+    },
+    "transfer": {
+      "title": "Transfer RonCoins",
+      "desc": "Share trivia-earned coins with your league friends.",
+      "amountLabel": "Amount to send",
+      "recipientLabel": "Friend in your league",
+      "send": "Send RonCoins",
+      "dailyCapNotice": "Daily cap: {remaining} coins left today"
+    },
+    "visit": {
+      "title": "Town of {name}",
+      "like": "Like Town",
+      "liked": "Liked ({count})",
+      "water": "Water Crop (-30m)",
+      "waterUsed": "Watered ({count}/{max})",
+      "readOnlyNotice": "Visiting friend's town (view mode)"
+    },
+    "postRoundCta": "You earned {coins, plural, one {# RonCoin} other {# RonCoins}} — go build",
+    "goBuild": "Go Build",
+    "plurals": {
+      "villagers": "{count, plural, one {# villager} other {# villagers}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# plot} other {# plots}}",
+      "hours": "{count, plural, one {# hour} other {# hours}}",
+      "minutes": "{count, plural, one {# minute} other {# minutes}}",
+      "days": "{count, plural, one {# day} other {# days}}"
+    }
   }
 }

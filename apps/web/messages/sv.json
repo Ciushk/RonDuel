@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Inställningar",
-    "duelsYourTurnBadge": "{count, plural, one {# duell väntar på ditt drag} other {# dueller väntar på ditt drag}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duell väntar på ditt drag} other {# dueller väntar på ditt drag}}",
+    "town": "Stad"
   },
   "onboarding": {
     "pickNickname": "Välj ditt smeknamn",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Kontrollera att du angav koden korrekt, eller be personen som bjöd in dig om en ny länk.",
     "leaderboardTitleCount": "Ligatopplista ({count})",
     "nicknamePlaceholder": "t.ex. Alex99",
-    "joining": "Går med…"
+    "joining": "Går med…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court-duell",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Kunde inte schemalägga rundan för {date}: {error}.",
     "replyAdminDrafts": "Skapade {count} nya frågor av typen {type} om ”{topic}” ({ids}).",
     "replyAdminPanel": "Du kan granska dem i adminpanelen.",
-    "openAdmin": "Öppna admin"
+    "openAdmin": "Öppna admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Daglig frågesport med dina vänner",
@@ -784,5 +787,235 @@
     "description": "Daglig frågesport med dina vänner",
     "shortcutPlay": "Spela dagens omgång",
     "shortcutLeagues": "Mina ligor"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Bygg",
+      "shop": "Butik",
+      "orders": "Ordrar",
+      "inventory": "Lager",
+      "stats": "Invånare",
+      "friends": "Vänner",
+      "coins": "Mynt",
+      "help": "Hjälp",
+      "toggle": "Menyrad"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Niv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Behöver fler bostäder",
+      "limitedByServices": "Behöver fler inrättningar (skola, sjukhus...)",
+      "gateTownHall": "Rådhus krävs för Niv2 (max 9 invånare)",
+      "gateHospital": "Sjukhus krävs för Niv4",
+      "gatePoliceFire": "Polis och Brandstation krävs för Niv5",
+      "arrivalIn": "Nästa invånare: {time}",
+      "maxCapacity": "Staden har nått full kapacitet"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Starthus",
+        "desc": "Hemtrevligt hus för dina första 2 invånare."
+      },
+      "cottage": {
+        "name": "Stuga",
+        "desc": "Bostad för 2 invånare."
+      },
+      "house": {
+        "name": "Bostadshus",
+        "desc": "Rymligt hem för 4 invånare."
+      },
+      "apartment": {
+        "name": "Flerfamiljshus",
+        "desc": "Flervåningshus med plats för 10 invånare."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Ståndsmässig fastighet för 6 invånare."
+      },
+      "shop": {
+        "name": "Lanthandel",
+        "desc": "Förser byn och stöder 6 invånare."
+      },
+      "town_hall": {
+        "name": "Rådhus",
+        "desc": "Stadens centrum som stöder 8 invånare. Låser upp Niv2."
+      },
+      "park": {
+        "name": "Stadspark",
+        "desc": "Grönskande park som stöder 4 invånare."
+      },
+      "bakery": {
+        "name": "Bageri",
+        "desc": "Bakar färskt bröd för 6 invånare."
+      },
+      "school": {
+        "name": "Skola",
+        "desc": "Kunskapscentrum för 10 invånare."
+      },
+      "police_station": {
+        "name": "Polisstation",
+        "desc": "Upprätthåller ordning för 10 invånare. Krav för Niv5."
+      },
+      "fire_station": {
+        "name": "Brandstation",
+        "desc": "Skyddar staden för 10 invånare. Krav för Niv5."
+      },
+      "hospital": {
+        "name": "Sjukhus",
+        "desc": "Sjukvård för 12 invånare. Krav för Niv4."
+      },
+      "farm_plot": {
+        "name": "Odlingslott",
+        "desc": "Bördig jord för ekologisk odling."
+      },
+      "road": {
+        "name": "Kullerstensgata",
+        "desc": "Stensatt gångväg för stadens invånare."
+      },
+      "fence": {
+        "name": "Staket",
+        "desc": "Fint trästaket för inhägnad."
+      },
+      "tree": {
+        "name": "Skuggande Träd",
+        "desc": "Lövträd för en lummig miljö."
+      },
+      "bench": {
+        "name": "Parkbänk",
+        "desc": "Viloplats för invånarna."
+      },
+      "fountain": {
+        "name": "Stenfontän",
+        "desc": "Svalkande fontän för stadens torg."
+      },
+      "golden_fountain": {
+        "name": "Guldfontän",
+        "desc": "Exklusiv prestige fontän för Pro-spelare."
+      },
+      "windmill": {
+        "name": "Väderkvarn",
+        "desc": "Rustik kvarn vid 7 dagars svit."
+      },
+      "clock_tower": {
+        "name": "Klocktorn",
+        "desc": "Klassiskt monument vid 30 dagars svit."
+      },
+      "ronduel_statue": {
+        "name": "RonDuel-Staty",
+        "desc": "Ståtlig staty vid 100 dagars svit."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Havre",
+        "desc": "Härdigt sädesslag. Växer på 4 timmar."
+      },
+      "wheat": {
+        "name": "Vete",
+        "desc": "Gyllene ax. Växer på 8 timmar."
+      },
+      "carrots": {
+        "name": "Morötter",
+        "desc": "Söta rötter. Växer på 12 timmar."
+      },
+      "sunflower": {
+        "name": "Solros",
+        "desc": "Strålande blommor. Växer på 24 timmar."
+      },
+      "pumpkin": {
+        "name": "Pumpa",
+        "desc": "Jätteväxt. Växer på 48 timmar."
+      }
+    },
+    "orders": {
+      "title": "Dagsordrar",
+      "locked": "Spela dagens omgång för att låsa upp ordrar",
+      "completed": "Levererad",
+      "deliver": "Leverera Order",
+      "missingItems": "Saknar grödor",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Spannmål till Bagaren",
+        "market_stall": "Färsk Marknadskorg",
+        "soup_kitchen": "Råvaror till Soppköket",
+        "autumn_festival": "Höstfestens Festmåltid",
+        "village_pantry": "Påfyllning av Skafferi"
+      }
+    },
+    "shop": {
+      "title": "Stadskatalog",
+      "tabHousing": "Bostäder",
+      "tabServices": "Service",
+      "tabFarm": "Jordbruk",
+      "tabDecor": "Dekor",
+      "priceCoins": "{coins} mynt",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} bostäder",
+      "serviceValue": "+{count} stöd",
+      "unlockLevel": "Låses upp på Niv{level}",
+      "proOnly": "Endast för Pro",
+      "streakOnly": "Kräver {days} dagars svit",
+      "buy": "Bygg",
+      "insufficientFunds": "Inte tillräckligt med RonCoins",
+      "maxCountReached": "Maximalt antal uppnått"
+    },
+    "tiles": {
+      "emptyPlot": "Ledig Odlingslott",
+      "plantAction": "Plantera",
+      "harvestAction": "Skörda",
+      "growing": "Växer ({time} kvar)",
+      "ready": "Redo för skörd!",
+      "move": "Flytta",
+      "remove": "Ta bort (Återbetalar {coins} mynt)",
+      "starterCannotRemove": "Starthuset kan inte tas bort"
+    },
+    "tutorial": {
+      "step1Title": "Plantera Havre",
+      "step1Desc": "Tryck på en ledig lott för att så dina första frön.",
+      "step2Title": "Bygg en Stuga",
+      "step2Desc": "Öppna byggmenyn för att placera en stuga åt nya invånare.",
+      "step3Title": "Fullfölj Ordrar",
+      "step3Desc": "Leverera skördar för att slutföra ordrar och tjäna extra mynt.",
+      "skip": "Hoppa över",
+      "next": "Nästa",
+      "finish": "Uppfattat!"
+    },
+    "coinStore": {
+      "title": "RonCoins-Butik",
+      "subtitle": "Kosmetiska uppgraderingar. Påverkar aldrig tävlingsspelet.",
+      "monthlyCapNotice": "Kvar denna månad: {remaining} € av {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins kan inte växlas mot riktiga pengar.",
+      "buyPack": "Köp paket för {price}",
+      "termsLink": "Myntvillkor"
+    },
+    "transfer": {
+      "title": "Överför RonCoins",
+      "desc": "Dela intjänade quizmynt med vänner i din liga.",
+      "amountLabel": "Belopp att skicka",
+      "recipientLabel": "Vän i din liga",
+      "send": "Skicka mynt",
+      "dailyCapNotice": "Dagsgräns: {remaining} mynt kvar idag"
+    },
+    "visit": {
+      "title": "{name}s stad",
+      "like": "Gilla staden",
+      "liked": "Gillat ({count})",
+      "water": "Vattna gröda (-30m)",
+      "waterUsed": "Vattnat ({count}/{max})",
+      "readOnlyNotice": "Besöker en väns stad (visningsläge)"
+    },
+    "postRoundCta": "Du tjänade {coins, plural, one {# RonCoin} other {# RonCoins}} — dags att bygga!",
+    "goBuild": "Gå till staden",
+    "plurals": {
+      "villagers": "{count, plural, one {# invånare} other {# invånare}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# lott} other {# lotter}}",
+      "hours": "{count, plural, one {# timme} other {# timmar}}",
+      "minutes": "{count, plural, one {# minut} other {# minuter}}",
+      "days": "{count, plural, one {# dag} other {# dagar}}"
+    }
   }
 }

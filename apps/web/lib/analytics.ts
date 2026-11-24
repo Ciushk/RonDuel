@@ -187,3 +187,31 @@ export function trackEvent(name: AnalyticsEvent, properties?: Record<string, unk
     // Ignore analytics errors
   }
 }
+
+const flagCallbacks = new Set<() => void>();
+
+export function isPostHogFeatureEnabled(flag: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (client) {
+      return Boolean(client.isFeatureEnabled(flag));
+    }
+  } catch {
+    // Ignore
+  }
+  return false;
+}
+
+export function onPostHogFeatureFlags(callback: () => void): () => void {
+  flagCallbacks.add(callback);
+  if (client) {
+    try {
+      client.onFeatureFlags(callback);
+    } catch {
+      // Ignore
+    }
+  }
+  return () => {
+    flagCallbacks.delete(callback);
+  };
+}

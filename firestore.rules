@@ -38,6 +38,32 @@ service cloud.firestore {
       match /pushTokens/{token} {
         allow read, write: if isOwner(uid);
       }
+
+      // RonTown subcollections: client write deny always, read owner only
+      match /wallet/{doc} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /town/{doc} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /townTiles/{tileId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /townInventory/{doc} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /townOrders/{roundDate} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
     }
 
     // Public round metadata only (never questions or answers)
@@ -109,6 +135,49 @@ service cloud.firestore {
     }
     match /reports/{id} {
       allow read, write: if isAdmin();
+    }
+
+    // RonTown ledger: append-only by functions; owner reads own entries only
+    match /ledger/{entryId} {
+      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // RonTown public snapshots: read only if request.auth shares a league with host or is owner
+    match /townSnapshots/{hostUid} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == hostUid ||
+        resource.data.leagueIds.hasAny(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.leagueIds) ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // RonTown visits: read by host or visitor, write deny
+    match /townVisits/{visitId} {
+      allow read: if isSignedIn() && (
+        visitId.matches('.*_' + request.auth.uid + '_.*') ||
+        visitId.matches(request.auth.uid + '_.*') ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // RonTown coin purchases: read owner only, write deny
+    match /coinPurchases/{sessionId} {
+      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // RonTown configs: read for authenticated users, write deny
+    match /config/townEconomy {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /config/townCatalog {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
 
     // Server-only secrets (roundSecrets, duelSecrets, stripeEvents, rateLimits): default deny

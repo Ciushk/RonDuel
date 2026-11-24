@@ -21,27 +21,29 @@ export async function GET(req: Request, context: { params: Promise<{ code: strin
   return NextResponse.json(league);
 }
 
-const PatchSchema = z.discriminatedUnion('action', [
-  z.object({
-    action: z.literal('rename'),
-    actorUid: z.string().min(1),
-    name: z.string().min(2).max(30),
-  }),
-  z.object({
-    action: z.literal('regenerate_code'),
-    actorUid: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal('private_approval'),
-    actorUid: z.string().min(1),
-    enabled: z.boolean(),
-  }),
-]).or(
-  z.object({
-    actorUid: z.string().min(1),
-    name: z.string().min(2).max(30),
-  }),
-);
+const PatchSchema = z
+  .discriminatedUnion('action', [
+    z.object({
+      action: z.literal('rename'),
+      actorUid: z.string().min(1),
+      name: z.string().min(2).max(30),
+    }),
+    z.object({
+      action: z.literal('regenerate_code'),
+      actorUid: z.string().min(1),
+    }),
+    z.object({
+      action: z.literal('private_approval'),
+      actorUid: z.string().min(1),
+      enabled: z.boolean(),
+    }),
+  ])
+  .or(
+    z.object({
+      actorUid: z.string().min(1),
+      name: z.string().min(2).max(30),
+    }),
+  );
 
 export async function PATCH(req: Request, context: { params: Promise<{ code: string }> }) {
   try {

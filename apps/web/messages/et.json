@@ -14,7 +14,8 @@
     "profile": "Profiil",
     "pro": "Pro",
     "settings": "Seaded",
-    "duelsYourTurnBadge": "{count, plural, one {# duell ootab sinu käiku} other {# duelli ootab sinu käiku}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duell ootab sinu käiku} other {# duelli ootab sinu käiku}}",
+    "town": "Linn"
   },
   "onboarding": {
     "pickNickname": "Vali oma hüüdnimi",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Kontrolli, kas sisestasid koodi õigesti, või küsi kutsujalt uus link.",
     "leaderboardTitleCount": "Liiga edetabel ({count})",
     "nicknamePlaceholder": "nt Alex99",
-    "joining": "Liitumine…"
+    "joining": "Liitumine…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "1v1 Split Court duell",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Vooru kuupäevaks {date} ei saanud ajastada: {error}.",
     "replyAdminDrafts": "Lõin {count} uut tüüpi {type} küsimust teemal „{topic}” ({ids}).",
     "replyAdminPanel": "Saad neid adminipaneelis üle vaadata.",
-    "openAdmin": "Ava admin"
+    "openAdmin": "Ava admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Igapäevane viktoriin sõpradega",
@@ -784,5 +787,235 @@
     "description": "Igapäevane viktoriin sõpradega",
     "shortcutPlay": "Mängi tänane voor",
     "shortcutLeagues": "Minu liigad"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Ehita",
+      "shop": "Pood",
+      "orders": "Tellimused",
+      "inventory": "Ladu",
+      "stats": "Elanikud",
+      "friends": "Sõbrad",
+      "coins": "Mündid",
+      "help": "Abi",
+      "toggle": "Menüüriba"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Tase {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Vaja rohkem elamispinda",
+      "limitedByServices": "Vaja rohkem teenuseid (kool, haigla...)",
+      "gateTownHall": "Linnavalitsus nõutav tasemel 2 (kuni 9 elanikku)",
+      "gateHospital": "Haigla nõutav tasemel 4",
+      "gatePoliceFire": "Politsei ja Päästeamet nõutavad tasemel 5",
+      "arrivalIn": "Järgmine elanik: {time}",
+      "maxCapacity": "Linn on saavutanud maksimaalse mahu"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Algkodu",
+        "desc": "Hubane eluase sinu esimestele 2 elanikule."
+      },
+      "cottage": {
+        "name": "Maja",
+        "desc": "Kodu 2 elanikule."
+      },
+      "house": {
+        "name": "Elamu",
+        "desc": "Ruumikas pereelamu 4 elanikule."
+      },
+      "apartment": {
+        "name": "Korterelamu",
+        "desc": "Mitmepereelamu 10 elanikule."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Härrastemaja 6 elanikule."
+      },
+      "shop": {
+        "name": "Linnapood",
+        "desc": "Varustab elanikke ja toetab 6 inimest."
+      },
+      "town_hall": {
+        "name": "Linnavalitsus",
+        "desc": "Halduskeskus, mis toetab 8 elanikku. Avab taseme 2."
+      },
+      "park": {
+        "name": "Linnapark",
+        "desc": "Roheala, mis toetab 4 elanikku."
+      },
+      "bakery": {
+        "name": "Pagaritöökoda",
+        "desc": "Värske leib toetab 6 elanikku."
+      },
+      "school": {
+        "name": "Kool",
+        "desc": "Hariduskeskus 10 elanikule."
+      },
+      "police_station": {
+        "name": "Politseijaoskond",
+        "desc": "Tagab korra 10 elanikule. Vajalik tasemel 5."
+      },
+      "fire_station": {
+        "name": "Päästekomando",
+        "desc": "Kaitseb linna 10 elanikule. Vajalik tasemel 5."
+      },
+      "hospital": {
+        "name": "Haigla",
+        "desc": "Arstiabi 12 elanikule. Vajalik tasemel 4."
+      },
+      "farm_plot": {
+        "name": "Põllulapp",
+        "desc": "Viljakas muld aiasaaduste kasvatamiseks."
+      },
+      "road": {
+        "name": "Munakivitee",
+        "desc": "Sillutatud tee jalutavatele elanikele."
+      },
+      "fence": {
+        "name": "Puitpiire",
+        "desc": "Dekoratiivne lippaed."
+      },
+      "tree": {
+        "name": "Varjupuu",
+        "desc": "Lopsakas lehtpuu linna kaunistamiseks."
+      },
+      "bench": {
+        "name": "Pargipink",
+        "desc": "Puhkekoht elanikele."
+      },
+      "fountain": {
+        "name": "Kivipurskkaev",
+        "desc": "Purskkaev keskväljakule."
+      },
+      "golden_fountain": {
+        "name": "Kuldne Purskkaev",
+        "desc": "Suursugune purskkaev Pro-mängijatele."
+      },
+      "windmill": {
+        "name": "Tuulik",
+        "desc": "Maamärk 7-päevase seeria eest."
+      },
+      "clock_tower": {
+        "name": "Kellatorn",
+        "desc": "Klassikaline monument 30-päevase seeria eest."
+      },
+      "ronduel_statue": {
+        "name": "RonDueli Kuju",
+        "desc": "Suursugune mälestusmärk 100-päevase seeria eest."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Kaer",
+        "desc": "Vastupidav teravili. Valmib 4 tunniga."
+      },
+      "wheat": {
+        "name": "Nisu",
+        "desc": "Kuldsed viljapead. Valmib 8 tunniga."
+      },
+      "carrots": {
+        "name": "Porgandid",
+        "desc": "Magusad juurviljad. Valmib 12 tunniga."
+      },
+      "sunflower": {
+        "name": "Päevalill",
+        "desc": "Säravad õied. Valmib 24 tunniga."
+      },
+      "pumpkin": {
+        "name": "Kõrvits",
+        "desc": "Hiiglaslik saak. Valmib 48 tunniga."
+      }
+    },
+    "orders": {
+      "title": "Päevatellimused",
+      "locked": "Mängi tänane voor tellimuste avamiseks",
+      "completed": "Tarnitud",
+      "deliver": "Tarni Tellimus",
+      "missingItems": "Saak puudub",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Teravili Pagariärile",
+        "market_stall": "Värske Turukorv",
+        "soup_kitchen": "Varud Supiköögile",
+        "autumn_festival": "Sügispeo Pidulaud",
+        "village_pantry": "Sahvri Täiendamine"
+      }
+    },
+    "shop": {
+      "title": "Linnakataloog",
+      "tabHousing": "Elamud",
+      "tabServices": "Teenused",
+      "tabFarm": "Talu",
+      "tabDecor": "Dekoor",
+      "priceCoins": "{coins} münti",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} elukohta",
+      "serviceValue": "+{count} toetust",
+      "unlockLevel": "Avaneb tasemel {level}",
+      "proOnly": "Ainult Pro",
+      "streakOnly": "Vajab {days}-päevast seeriat",
+      "buy": "Ehita",
+      "insufficientFunds": "Pole piisavalt RonCoins münte",
+      "maxCountReached": "Maksimumlimiit täis"
+    },
+    "tiles": {
+      "emptyPlot": "Vaba Põllulapp",
+      "plantAction": "Külva Seemned",
+      "harvestAction": "Korista Saak",
+      "growing": "Kasvab (jäänud {time})",
+      "ready": "Saak on valmis!",
+      "move": "Liiguta",
+      "remove": "Eemalda (Tagastab {coins} münti)",
+      "starterCannotRemove": "Algkodu ei saa eemaldada"
+    },
+    "tutorial": {
+      "step1Title": "Külva Kaera",
+      "step1Desc": "Vajuta vabale maalapile oma esimeste seemnete külvamiseks.",
+      "step2Title": "Ehita Maja",
+      "step2Desc": "Ava ehitusmenüü ja paiguta maja uutele elanikele.",
+      "step3Title": "Täida Tellimusi",
+      "step3Desc": "Tarni saak tellimuste täitmiseks ja lisamüntide teenimiseks.",
+      "skip": "Jäta vahele",
+      "next": "Edasi",
+      "finish": "Selge!"
+    },
+    "coinStore": {
+      "title": "RonCoins Pood",
+      "subtitle": "Kosmeetilised uuendused. Ei mõjuta teadmistemängu ega edetabeleid.",
+      "monthlyCapNotice": "Sel kuul jäänud: {remaining} € / {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins münte ei saa vahetada pärisraha vastu.",
+      "buyPack": "Osta pakk hinnaga {price}",
+      "termsLink": "Müntide tingimused"
+    },
+    "transfer": {
+      "title": "Kanna RonCoins münte",
+      "desc": "Jaga viktoriinil teenitud münte oma liiga sõpradega.",
+      "amountLabel": "Summa",
+      "recipientLabel": "Sõber sinu liigast",
+      "send": "Saada mündid",
+      "dailyCapNotice": "Päevalimiit: täna jäänud {remaining} münti"
+    },
+    "visit": {
+      "title": "Mängija {name} linn",
+      "like": "Märgi meeldivaks",
+      "liked": "Meeldis ({count})",
+      "water": "Kasta taime (-30m)",
+      "waterUsed": "Kastetud ({count}/{max})",
+      "readOnlyNotice": "Külastad sõbra linna (vaatlusrežiim)"
+    },
+    "postRoundCta": "Teenisid {coins, plural, one {# RonCoini} other {# RonCoinsi}} — asu ehitama!",
+    "goBuild": "Mine Linna",
+    "plurals": {
+      "villagers": "{count, plural, one {# elanik} other {# elanikku}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# lapp} other {# lappi}}",
+      "hours": "{count, plural, one {# tund} other {# tundi}}",
+      "minutes": "{count, plural, one {# minut} other {# minutit}}",
+      "days": "{count, plural, one {# päev} other {# päeva}}"
+    }
   }
 }

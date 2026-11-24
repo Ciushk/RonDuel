@@ -35,7 +35,7 @@ export async function generateMetadata({
       canonical: `https://ronduel.web.app/${resolvedLocale}`,
       languages: {
         ...Object.fromEntries(
-          routing.locales.map((code) => [code, `https://ronduel.web.app/${code}`])
+          routing.locales.map((code) => [code, `https://ronduel.web.app/${code}`]),
         ),
         'x-default': 'https://ronduel.web.app/ro',
       },

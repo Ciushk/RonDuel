@@ -14,7 +14,8 @@
     "profile": "Perfil",
     "pro": "Pro",
     "settings": "Ajustes",
-    "duelsYourTurnBadge": "{count, plural, one {# duelo à espera da tua jogada} other {# duelos à espera da tua jogada}}"
+    "duelsYourTurnBadge": "{count, plural, one {# duelo à espera da tua jogada} other {# duelos à espera da tua jogada}}",
+    "town": "Vila"
   },
   "onboarding": {
     "pickNickname": "Escolha seu apelido",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Verifica se introduziste o código corretamente, ou pede um novo link a quem te convidou.",
     "leaderboardTitleCount": "Classificação da liga ({count})",
     "nicknamePlaceholder": "ex.: Alex99",
-    "joining": "A entrar…"
+    "joining": "A entrar…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Duelo 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Não consegui agendar a ronda de {date}: {error}.",
     "replyAdminDrafts": "Criei {count} perguntas novas do tipo {type} sobre «{topic}» ({ids}).",
     "replyAdminPanel": "Podes revê-las no painel de admin.",
-    "openAdmin": "Abrir admin"
+    "openAdmin": "Abrir admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia diário com os teus amigos",
@@ -784,5 +787,235 @@
     "description": "Trivia diário com os teus amigos",
     "shortcutPlay": "Jogar a rodada de hoje",
     "shortcutLeagues": "As minhas ligas"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Construir",
+      "shop": "Loja",
+      "orders": "Pedidos",
+      "inventory": "Inventário",
+      "stats": "Aldeões",
+      "friends": "Amigos",
+      "coins": "Moedas",
+      "help": "Ajuda",
+      "toggle": "Alternar menu"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Nív. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Falta habitação",
+      "limitedByServices": "Faltam serviços (escola, hospital...)",
+      "gateTownHall": "Câmara Municipal necessária para Nív2 (máx 9 aldeões)",
+      "gateHospital": "Hospital necessário para Nív4",
+      "gatePoliceFire": "Polícia e Bombeiros necessários para Nív5",
+      "arrivalIn": "Próxima chegada: {time}",
+      "maxCapacity": "Vila na capacidade máxima"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Casa Inicial",
+        "desc": "Lar acolhedor para os teus primeiros 2 aldeões."
+      },
+      "cottage": {
+        "name": "Cabana",
+        "desc": "Habitação confortável para 2 aldeões."
+      },
+      "house": {
+        "name": "Casa",
+        "desc": "Casa de família espaçosa para 4 aldeões."
+      },
+      "apartment": {
+        "name": "Edifício de Apartamentos",
+        "desc": "Residência de vários andares para 10 aldeões."
+      },
+      "villa": {
+        "name": "Vivenda",
+        "desc": "Propriedade distinta para 6 aldeões."
+      },
+      "shop": {
+        "name": "Loja da Vila",
+        "desc": "Fornece mantimentos e apoia 6 aldeões."
+      },
+      "town_hall": {
+        "name": "Câmara Municipal",
+        "desc": "Centro cívico para 8 aldeões. Desbloqueia o Nível 2."
+      },
+      "park": {
+        "name": "Parque",
+        "desc": "Espaço verde que apoia 4 aldeões."
+      },
+      "bakery": {
+        "name": "Padaria",
+        "desc": "Pão fresco que apoia 6 aldeões."
+      },
+      "school": {
+        "name": "Escola",
+        "desc": "Centro de ensino para 10 aldeões."
+      },
+      "police_station": {
+        "name": "Esquadra de Polícia",
+        "desc": "Mantém a ordem para 10 aldeões. Requisito Nív5."
+      },
+      "fire_station": {
+        "name": "Quartel de Bombeiros",
+        "desc": "Protege a vila para 10 aldeões. Requisito Nív5."
+      },
+      "hospital": {
+        "name": "Hospital",
+        "desc": "Cuidados médicos para 12 aldeões. Requisito Nív4."
+      },
+      "farm_plot": {
+        "name": "Talhão Agrícola",
+        "desc": "Solo fértil para semear produtos biológicos."
+      },
+      "road": {
+        "name": "Estrada em Calçada",
+        "desc": "Caminho pavimentado para os aldeões passearem."
+      },
+      "fence": {
+        "name": "Cerca de Madeira",
+        "desc": "Cerca rústica de ripas de madeira."
+      },
+      "tree": {
+        "name": "Árvore Frondosa",
+        "desc": "Árvore de folhas verdes que embeleza a vila."
+      },
+      "bench": {
+        "name": "Banco de Jardim",
+        "desc": "Lugar de descanso para os aldeões."
+      },
+      "fountain": {
+        "name": "Fonte de Pedra",
+        "desc": "Fonte ornamental para o centro da vila."
+      },
+      "golden_fountain": {
+        "name": "Fonte Dourada",
+        "desc": "Fonte de prestígio exclusiva para membros Pro."
+      },
+      "windmill": {
+        "name": "Moinho de Vento",
+        "desc": "Monumento rústico com sequência de 7 dias."
+      },
+      "clock_tower": {
+        "name": "Torre do Relógio",
+        "desc": "Monumento clássico com sequência de 30 dias."
+      },
+      "ronduel_statue": {
+        "name": "Estátua RonDuel",
+        "desc": "Estátua imponente com sequência de 100 dias."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Aveia",
+        "desc": "Cereal resistente. Cresce em 4 horas."
+      },
+      "wheat": {
+        "name": "Trigo",
+        "desc": "Espigas douradas. Cresce em 8 horas."
+      },
+      "carrots": {
+        "name": "Cenouras",
+        "desc": "Raízes doces. Crescem em 12 horas."
+      },
+      "sunflower": {
+        "name": "Girassol",
+        "desc": "Flores radiantes. Cresce em 24 horas."
+      },
+      "pumpkin": {
+        "name": "Abóbora",
+        "desc": "Fruto gigante. Cresce em 48 horas."
+      }
+    },
+    "orders": {
+      "title": "Pedidos da Vila",
+      "locked": "Joga a ronda diária para desbloquear pedidos",
+      "completed": "Entregue",
+      "deliver": "Entregar Pedido",
+      "missingItems": "Faltam produtos agrícolas",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Grão do Padeiro",
+        "market_stall": "Cesto Fresco do Mercado",
+        "soup_kitchen": "Provisões Comunitárias",
+        "autumn_festival": "Banquete de Outono",
+        "village_pantry": "Reabastecimento da Despensa"
+      }
+    },
+    "shop": {
+      "title": "Catálogo da Vila",
+      "tabHousing": "Habitação",
+      "tabServices": "Serviços",
+      "tabFarm": "Quinta",
+      "tabDecor": "Decoração",
+      "priceCoins": "{coins} moedas",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} habitação",
+      "serviceValue": "+{count} apoios",
+      "unlockLevel": "Desbloqueia no Nív{level}",
+      "proOnly": "Exclusivo Pro",
+      "streakOnly": "Requer sequência de {days} dias",
+      "buy": "Construir",
+      "insufficientFunds": "RonCoins insuficientes",
+      "maxCountReached": "Quantidade máxima atingida"
+    },
+    "tiles": {
+      "emptyPlot": "Talhão Vazio",
+      "plantAction": "Semear",
+      "harvestAction": "Colher",
+      "growing": "A crescer ({time} restantes)",
+      "ready": "Pronto para colher!",
+      "move": "Mover",
+      "remove": "Remover (Reembolso de {coins} moedas)",
+      "starterCannotRemove": "A casa inicial não pode ser removida"
+    },
+    "tutorial": {
+      "step1Title": "Semear Aveia",
+      "step1Desc": "Toca num talhão livre para lançar as primeiras sementes.",
+      "step2Title": "Construir Cabana",
+      "step2Desc": "Abre o menu de construção para erguer uma cabana e receber aldeões.",
+      "step3Title": "Pedidos da Vila",
+      "step3Desc": "Entrega colheitas para cumprir pedidos e faturar mais moedas.",
+      "skip": "Saltar",
+      "next": "Seguinte",
+      "finish": "Entendido!"
+    },
+    "coinStore": {
+      "title": "Loja RonCoins",
+      "subtitle": "Melhorias cosméticas. Não interferem com o jogo competitivo.",
+      "monthlyCapNotice": "Disponível este mês: {remaining} € de {max} €",
+      "nonCompetitiveDisclaimer": "As RonCoins não têm valor monetário real.",
+      "buyPack": "Obter Pacote por {price}",
+      "termsLink": "Termos das moedas"
+    },
+    "transfer": {
+      "title": "Transferir RonCoins",
+      "desc": "Partilha moedas ganhas no quiz com colegas de liga.",
+      "amountLabel": "Quantidade a enviar",
+      "recipientLabel": "Colega da tua liga",
+      "send": "Enviar Moedas",
+      "dailyCapNotice": "Limite diário: restam {remaining} moedas hoje"
+    },
+    "visit": {
+      "title": "Vila de {name}",
+      "like": "Gostar da Vila",
+      "liked": "Gostaste ({count})",
+      "water": "Regar colheita (-30m)",
+      "waterUsed": "Regado ({count}/{max})",
+      "readOnlyNotice": "A visitar a vila de um amigo (modo visualização)"
+    },
+    "postRoundCta": "Ganhaste {coins, plural, one {# RonCoin} other {# RonCoins}} — vai construir!",
+    "goBuild": "Ir para a Vila",
+    "plurals": {
+      "villagers": "{count, plural, one {# aldeão} other {# aldeões}}",
+      "coins": "{count, plural, one {# RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# talhão} other {# talhões}}",
+      "hours": "{count, plural, one {# hora} other {# horas}}",
+      "minutes": "{count, plural, one {# minuto} other {# minutos}}",
+      "days": "{count, plural, one {# dia} other {# dias}}"
+    }
   }
 }

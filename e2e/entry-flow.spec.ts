@@ -84,7 +84,9 @@ test.describe('New Entry Flow, League Preview & Join Experience', () => {
 
     // 4-bullet explanation is visible
     await expect(page.getByText('Ce se întâmplă acum:')).toBeVisible();
-    await expect(page.getByText(/Intri în liga Liga Prietenilor și apari în clasament/)).toBeVisible();
+    await expect(
+      page.getByText(/Intri în liga Liga Prietenilor și apari în clasament/),
+    ).toBeVisible();
     await expect(page.getByText(/În fiecare zi e o rundă nouă: 6 întrebări/)).toBeVisible();
     await expect(page.getByText(/Scorul tău contează în toate ligile în care ești/)).toBeVisible();
     await expect(page.getByText(/Scorurile celorlalți de azi le vezi după ce joci/)).toBeVisible();
@@ -152,7 +154,7 @@ test.describe('New Entry Flow, League Preview & Join Experience', () => {
           theme: 'light',
           isAnonymous: false,
           authProvider: 'google',
-        })
+        }),
       );
     }, sUid);
 
@@ -165,7 +167,9 @@ test.describe('New Entry Flow, League Preview & Join Experience', () => {
     await expect(page.getByRole('button', { name: 'Șterge liga' })).toBeVisible();
 
     // Toggle private approval
-    const approvalCheckbox = page.getByRole('checkbox', { name: 'Aprobare privată pentru membri noi' });
+    const approvalCheckbox = page.getByRole('checkbox', {
+      name: 'Aprobare privată pentru membri noi',
+    });
     await approvalCheckbox.click();
     await expect(page.getByText('Aprobare privată activată')).toBeVisible();
   });

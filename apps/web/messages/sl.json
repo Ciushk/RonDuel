@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Nastavitve",
-    "duelsYourTurnBadge": "{count, plural, one {# dvoboj čaka na tvojo potezo} few {# dvoboji čakajo na tvojo potezo} many {# dvobojev čaka na tvojo potezo} other {# dvobojev čaka na tvojo potezo}}"
+    "duelsYourTurnBadge": "{count, plural, one {# dvoboj čaka na tvojo potezo} few {# dvoboji čakajo na tvojo potezo} many {# dvobojev čaka na tvojo potezo} other {# dvobojev čaka na tvojo potezo}}",
+    "town": "Mesto"
   },
   "onboarding": {
     "pickNickname": "Izberi svoj vzdevek",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Preveri, ali je koda pravilno vnesena, ali pa prosi osebo, ki te je povabila, za novo povezavo.",
     "leaderboardTitleCount": "Lestvica lige ({count})",
     "nicknamePlaceholder": "npr. Alex99",
-    "joining": "Pridruževanje…"
+    "joining": "Pridruževanje…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Dvoboj 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Kroga za {date} nisem mogel načrtovati: {error}.",
     "replyAdminDrafts": "Ustvaril sem {count} novih vprašanj tipa {type} o „{topic}” ({ids}).",
     "replyAdminPanel": "Pregledaš jih lahko v skrbniški plošči.",
-    "openAdmin": "Odpri skrbnika"
+    "openAdmin": "Odpri skrbnika",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Dnevni kviz s prijatelji",
@@ -784,5 +787,235 @@
     "description": "Dnevni kviz s prijatelji",
     "shortcutPlay": "Odigraj današnjo rundo",
     "shortcutLeagues": "Moje lige"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Gradi",
+      "shop": "Trgovina",
+      "orders": "Naročila",
+      "inventory": "Shramba",
+      "stats": "Prebivalci",
+      "friends": "Prijatelji",
+      "coins": "Kovanci",
+      "help": "Pomoč",
+      "toggle": "Orodna vrstica"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Raven {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Potrebnih je več bivališč",
+      "limitedByServices": "Potrebnih je več storitev (šola, bolnišnica...)",
+      "gateTownHall": "Mestna hiša je potrebna za 2. raven (največ 9 prebivalcev)",
+      "gateHospital": "Bolnišnica je potrebna za 4. raven",
+      "gatePoliceFire": "Policija in Gasilci so potrebni za 5. raven",
+      "arrivalIn": "Naslednji prebivalec: {time}",
+      "maxCapacity": "Mesto je doseglo polno zmogljivost"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Začetna Hiša",
+        "desc": "Prijeten dom za vaša prva 2 prebivalca."
+      },
+      "cottage": {
+        "name": "Koča",
+        "desc": "Bivališče za 2 prebivalca."
+      },
+      "house": {
+        "name": "Hiša",
+        "desc": "Prostorna družinska hiša za 4 prebivalce."
+      },
+      "apartment": {
+        "name": "Stanovanjski Blok",
+        "desc": "Večnadstropna stavba za 10 prebivalcev."
+      },
+      "villa": {
+        "name": "Vila",
+        "desc": "Elegantno posestvo za 6 prebivalcev."
+      },
+      "shop": {
+        "name": "Vaška Trgovina",
+        "desc": "Zaloge za 6 prebivalcev."
+      },
+      "town_hall": {
+        "name": "Mestna Hiša",
+        "desc": "Središče za 8 prebivalcev. Odklepa 2. raven."
+      },
+      "park": {
+        "name": "Mestni Park",
+        "desc": "Zeleni kotiček za 4 prebivalce."
+      },
+      "bakery": {
+        "name": "Pekarna",
+        "desc": "Svež kruh za 6 prebivalcev."
+      },
+      "school": {
+        "name": "Šola",
+        "desc": "Izobraževalno središče za 10 prebivalcev."
+      },
+      "police_station": {
+        "name": "Policijska Postaja",
+        "desc": "Varnost za 10 prebivalcev. Zahteva 5. raven."
+      },
+      "fire_station": {
+        "name": "Gasilski Dom",
+        "desc": "Zaščita za 10 prebivalcev. Zahteva 5. raven."
+      },
+      "hospital": {
+        "name": "Bolnišnica",
+        "desc": "Zdravstvo za 12 prebivalcev. Zahteva 4. raven."
+      },
+      "farm_plot": {
+        "name": "Kmetijska Greda",
+        "desc": "Plodna tla za pridelavo pridelkov."
+      },
+      "road": {
+        "name": "Tlakovana Pot",
+        "desc": "Urejena pot za sprehode prebivalcev."
+      },
+      "fence": {
+        "name": "Lesena Ograja",
+        "desc": "Lepa lesena ograja."
+      },
+      "tree": {
+        "name": "Senčno Drevo",
+        "desc": "Listnato drevo za naravno senco."
+      },
+      "bench": {
+        "name": "Klop v Parku",
+        "desc": "Kotiček za počitek."
+      },
+      "fountain": {
+        "name": "Kamniti Vodnjak",
+        "desc": "Vodnjak na osrednjem trgu."
+      },
+      "golden_fountain": {
+        "name": "Zlati Vodnjak",
+        "desc": "Ekskluzivni vodnjak za Pro igralce."
+      },
+      "windmill": {
+        "name": "Mlin na Veter",
+        "desc": "Spomenik za 7-dnevni niz."
+      },
+      "clock_tower": {
+        "name": "Stolp z Uro",
+        "desc": "Klasični monument za 30-dnevni niz."
+      },
+      "ronduel_statue": {
+        "name": "Kip RonDuel",
+        "desc": "Veličasten kip za 100-dnevni niz."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Oves",
+        "desc": "Trpežno žito. Zraste v 4 urah."
+      },
+      "wheat": {
+        "name": "Pšenica",
+        "desc": "Zlati klasi. Zraste v 8 urah."
+      },
+      "carrots": {
+        "name": "Korenje",
+        "desc": "Sladka zelenjava. Zraste v 12 urah."
+      },
+      "sunflower": {
+        "name": "Sončnica",
+        "desc": "Žareči cvetovi. Zraste v 24 urah."
+      },
+      "pumpkin": {
+        "name": "Buča",
+        "desc": "Velikanski pridelek. Zraste v 48 urah."
+      }
+    },
+    "orders": {
+      "title": "Dnevna Naročila",
+      "locked": "Odigrajte današnji krog za odklep naročil",
+      "completed": "Dostavljeno",
+      "deliver": "Dostavi",
+      "missingItems": "Premalo pridelka",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Žito za Pekarno",
+        "market_stall": "Sveža Tržna Košara",
+        "soup_kitchen": "Zaloge za Kuhinjo",
+        "autumn_festival": "Jesenska Gostija",
+        "village_pantry": "Polnjenje Shrambe"
+      }
+    },
+    "shop": {
+      "title": "Katalog Mesta",
+      "tabHousing": "Bivališča",
+      "tabServices": "Storitve",
+      "tabFarm": "Kmetija",
+      "tabDecor": "Okraski",
+      "priceCoins": "{coins} kovancev",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} prebivalcev",
+      "serviceValue": "+{count} podpora",
+      "unlockLevel": "Odklenjeno pri ravni {level}",
+      "proOnly": "Samo Pro",
+      "streakOnly": "Zahteva {days}-dnevni niz",
+      "buy": "Gradi",
+      "insufficientFunds": "Premalo RonCoins",
+      "maxCountReached": "Dosežena omejitev"
+    },
+    "tiles": {
+      "emptyPlot": "Prazna Greda",
+      "plantAction": "Posadi",
+      "harvestAction": "Požanji",
+      "growing": "Raste (še {time})",
+      "ready": "Pripravljeno za žetev!",
+      "move": "Premakni",
+      "remove": "Odstrani (Vrne {coins} kovancev)",
+      "starterCannotRemove": "Začetne hiše ni mogoče odstraniti"
+    },
+    "tutorial": {
+      "step1Title": "Posadi Oves",
+      "step1Desc": "Dotakni se prazne grede in posadi prva semena.",
+      "step2Title": "Zgradi Kočo",
+      "step2Desc": "Odpri meni gradnje in postavi kočo za nove prebivalce.",
+      "step3Title": "Izpolni Naročila",
+      "step3Desc": "Dostavi pridelke in zasluži dodatne kovance.",
+      "skip": "Preskoči",
+      "next": "Naprej",
+      "finish": "Razumem!"
+    },
+    "coinStore": {
+      "title": "Trgovina RonCoins",
+      "subtitle": "Kozmetične nadgradnje. Ne vpliva na kviz ali lestvice.",
+      "monthlyCapNotice": "Ta mesec ostaja: {remaining} € od {max} €",
+      "nonCompetitiveDisclaimer": "Kovancev RonCoins ni mogoče zamenjati za pravi denar.",
+      "buyPack": "Kupi paket za {price}",
+      "termsLink": "Pogoji za kovance"
+    },
+    "transfer": {
+      "title": "Prenos RonCoins",
+      "desc": "Deli kovance iz kviza s prijatelji v ligi.",
+      "amountLabel": "Znesek",
+      "recipientLabel": "Prijatelj v ligi",
+      "send": "Pošlji kovance",
+      "dailyCapNotice": "Dnevna omejitev: danes ostaja še {remaining} kovancev"
+    },
+    "visit": {
+      "title": "Mesto igralca {name}",
+      "like": "Všečkaj mesto",
+      "liked": "Všečkano ({count})",
+      "water": "Zalij pridelek (-30m)",
+      "waterUsed": "Zalito ({count}/{max})",
+      "readOnlyNotice": "Ogled mesta prijatelja (samo za branje)"
+    },
+    "postRoundCta": "Zaslužil si {coins, plural, one {# RonCoin} two {# RonCoina} few {# RonCoine} other {# RonCoins}} — pojdi gradit!",
+    "goBuild": "V Mesto",
+    "plurals": {
+      "villagers": "{count, plural, one {# prebivalec} two {# prebivalca} few {# prebivalci} other {# prebivalcev}}",
+      "coins": "{count, plural, one {# RonCoin} two {# RonCoina} few {# RonCoine} other {# RonCoins}}",
+      "plots": "{count, plural, one {# greda} two {# gredi} few {# grede} other {# gred}}",
+      "hours": "{count, plural, one {# ura} two {# uri} few {# ure} other {# ur}}",
+      "minutes": "{count, plural, one {# minuta} two {# minuti} few {# minute} other {# minut}}",
+      "days": "{count, plural, one {# dan} two {# dneva} few {# dnevi} other {# dni}}"
+    }
   }
 }

@@ -399,7 +399,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => setShowLoginModal(true)}
-            className="font-display text-muted hover:text-ink cursor-pointer text-sm font-extrabold tracking-widest uppercase transition-colors"
+            className="font-display text-muted hover:text-ink cursor-pointer text-sm font-extrabold uppercase tracking-widest transition-colors"
             title="Conectare"
           >
             404 · Error
@@ -416,7 +416,7 @@ export default function AdminPage() {
         </Link>
 
         {showLoginModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <Card className="w-full max-w-sm space-y-4 text-left">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-lg font-extrabold">Conectare securizată</h2>
@@ -899,7 +899,7 @@ export default function AdminPage() {
 
       {/* MODAL: AI DRAFT GENERATOR */}
       {showDraftModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <div className="backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <Card className="w-full max-w-md space-y-4">
             <h2 className="font-display text-lg font-extrabold">Generează drafturi AI</h2>
             <div className="space-y-3 text-sm">
@@ -955,7 +955,7 @@ export default function AdminPage() {
 
       {/* MODAL: SCHEDULE ROUND */}
       {showScheduleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <div className="backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <Card className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto">
             <h2 className="font-display text-lg font-extrabold">Programează o rundă</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -997,9 +997,7 @@ export default function AdminPage() {
                         type="button"
                         onClick={() => {
                           if (isSelected) {
-                            setSelectedQuestionIds(
-                              selectedQuestionIds.filter((id) => id !== q.id),
-                            );
+                            setSelectedQuestionIds(selectedQuestionIds.filter((id) => id !== q.id));
                           } else if (selectedQuestionIds.length < 6) {
                             setSelectedQuestionIds([...selectedQuestionIds, q.id]);
                           }
@@ -1038,7 +1036,7 @@ export default function AdminPage() {
 
       {/* MODAL: QUESTION EDITOR & LIVE PREVIEW */}
       {editingQuestion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <div className="backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <Card className="max-h-[92vh] w-full max-w-4xl space-y-4 overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <h2 className="font-display text-lg font-extrabold">

@@ -68,7 +68,10 @@ export default function PlayPage() {
       }),
     });
     const data = await res.json();
-    const returnTo = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnTo') : null;
+    const returnTo =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('returnTo')
+        : null;
     if (data.alreadyFinished && data.playId) {
       router.replace(
         returnTo
@@ -325,7 +328,7 @@ export default function PlayPage() {
           )}
 
           <div
-            className="font-display text-ron-strong text-9xl font-extrabold animate-pulse"
+            className="font-display text-ron-strong animate-pulse text-9xl font-extrabold"
             aria-live="assertive"
           >
             {countdown}
@@ -374,11 +377,7 @@ export default function PlayPage() {
         </div>
       </div>
 
-      <TimerBar
-        remainingMs={remainingMs}
-        limitMs={item.limitMs}
-        label={t('play.timeLeft')}
-      />
+      <TimerBar remainingMs={remainingMs} limitMs={item.limitMs} label={t('play.timeLeft')} />
 
       <Card className="space-y-5">
         <h1 className="font-display text-2xl font-extrabold leading-snug">{item.prompt}</h1>
@@ -444,13 +443,13 @@ export default function PlayPage() {
                   className={[
                     'rd-sticker rd-sticker-pressable relative flex min-h-14 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 py-3 text-left text-base font-bold transition-all',
                     isLocked ? 'rd-locked' : '',
-                    isDimmed ? 'opacity-60 pointer-events-none' : '',
+                    isDimmed ? 'pointer-events-none opacity-60' : '',
                     isCorrectChoice && isSelected
-                      ? 'bg-correct text-[#16131F] rd-pop'
+                      ? 'bg-correct rd-pop text-[#16131F]'
                       : isWrongSelected
-                        ? 'bg-wrong text-[var(--rd-on-wrong)] rd-shake'
+                        ? 'bg-wrong rd-shake text-[var(--rd-on-wrong)]'
                         : isCorrectAnswerRevealed
-                          ? 'border-2 border-correct-text bg-correct/20 text-ink animate-in fade-in duration-300'
+                          ? 'border-correct-text bg-correct/20 text-ink animate-in fade-in border-2 duration-300'
                           : 'bg-surface text-ink hover:bg-surface-2',
                   ].join(' ')}
                 >
@@ -462,7 +461,7 @@ export default function PlayPage() {
 
                   {/* Float score tag when selected & correct */}
                   {feedback && feedback.correct && isSelected && (
-                    <span className="rd-float-up pointer-events-none absolute right-3 -top-3 z-30 inline-flex items-center gap-1 rounded-full border-2 border-[#16131F] bg-volt px-2.5 py-0.5 text-xs font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
+                    <span className="rd-float-up bg-volt pointer-events-none absolute -top-3 right-3 z-30 inline-flex items-center gap-1 rounded-full border-2 border-[#16131F] px-2.5 py-0.5 text-xs font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
                       +{feedback.points}
                     </span>
                   )}
@@ -473,7 +472,9 @@ export default function PlayPage() {
                       <CheckCircle
                         size={22}
                         weight="fill"
-                        className={isCorrectAnswerRevealed ? 'text-correct-text rd-pop-icon' : 'rd-pop-icon'}
+                        className={
+                          isCorrectAnswerRevealed ? 'text-correct-text rd-pop-icon' : 'rd-pop-icon'
+                        }
                         aria-hidden="true"
                       />
                       {/* Fast Answer Bonus Spark Rays */}
@@ -482,11 +483,11 @@ export default function PlayPage() {
                           aria-hidden="true"
                           className="pointer-events-none absolute inset-0 flex items-center justify-center"
                         >
-                          <span className="rd-ray-ring absolute h-6 w-6 rounded-full border-2 border-volt" />
+                          <span className="rd-ray-ring border-volt absolute h-6 w-6 rounded-full border-2" />
                           {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
                             <span
                               key={deg}
-                              className="rd-ray absolute h-3.5 w-1 rounded-full bg-volt"
+                              className="rd-ray bg-volt absolute h-3.5 w-1 rounded-full"
                               style={{ '--r': `${deg}deg` } as React.CSSProperties}
                             />
                           ))}

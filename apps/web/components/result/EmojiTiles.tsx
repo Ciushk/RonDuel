@@ -29,9 +29,11 @@ export function EmojiTiles({ emojiLine, animated = false }: EmojiTilesProps) {
         return (
           <div
             key={idx}
-            style={animated ? ({ animationDelay: `${idx * 80}ms` } as React.CSSProperties) : undefined}
+            style={
+              animated ? ({ animationDelay: `${idx * 80}ms` } as React.CSSProperties) : undefined
+            }
             className={[
-              'relative flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border-2 border-border text-xl font-bold select-none rd-sticker',
+              'border-border rd-sticker relative flex h-[42px] w-[42px] select-none items-center justify-center rounded-[10px] border-2 text-xl font-bold',
               isGreen
                 ? 'bg-correct text-[#16131F]'
                 : isLightning

@@ -46,7 +46,9 @@ export function JoinByCodeDialog({ open, onClose }: JoinByCodeDialogProps) {
     setError('');
     try {
       const session = getLocalSession();
-      const res = await fetch(`/api/leagues/${encodeURIComponent(cleanCode)}?uid=${encodeURIComponent(session.uid)}`);
+      const res = await fetch(
+        `/api/leagues/${encodeURIComponent(cleanCode)}?uid=${encodeURIComponent(session.uid)}`,
+      );
       if (res.status === 404) {
         setError(t('codeNotFound'));
         return;
@@ -91,7 +93,7 @@ export function JoinByCodeDialog({ open, onClose }: JoinByCodeDialogProps) {
             value={code}
             onChange={handleChange}
             placeholder={t('codePlaceholder')}
-            className="border-border bg-surface-2 text-ink rd-tabular w-full rounded-xl border-2 px-4 py-3 text-center text-xl font-extrabold tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-[var(--rd-blue-strong)]"
+            className="border-border bg-surface-2 text-ink rd-tabular w-full rounded-xl border-2 px-4 py-3 text-center text-xl font-extrabold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-[var(--rd-blue-strong)]"
           />
         </div>
 
@@ -103,12 +105,7 @@ export function JoinByCodeDialog({ open, onClose }: JoinByCodeDialogProps) {
           <Button variant="secondary" fullWidth onClick={onClose} type="button">
             {tCommon('common.cancel')}
           </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            type="submit"
-            disabled={code.length < 6 || loading}
-          >
+          <Button variant="primary" fullWidth type="submit" disabled={code.length < 6 || loading}>
             {loading ? '...' : t('searchBtn')}
           </Button>
         </div>

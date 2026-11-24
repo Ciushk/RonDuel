@@ -76,7 +76,10 @@ export async function verifyFirebaseAdminIdToken(
     const jwk = jwks.find((k) => k.kid === header.kid);
     if (!jwk) return null;
 
-    const publicKey = crypto.createPublicKey({ key: jwk as unknown as crypto.JsonWebKey, format: 'jwk' });
+    const publicKey = crypto.createPublicKey({
+      key: jwk as unknown as crypto.JsonWebKey,
+      format: 'jwk',
+    });
     const verify = crypto.createVerify('RSA-SHA256');
     verify.update(`${parts[0]}.${parts[1]}`);
     verify.end();

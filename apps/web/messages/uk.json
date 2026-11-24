@@ -14,7 +14,8 @@
     "profile": "Профіль",
     "pro": "Pro",
     "settings": "Налаштування",
-    "duelsYourTurnBadge": "{count, plural, one {# дуель очікує на твій хід} few {# дуелі очікують на твій хід} many {# дуелей очікують на твій хід} other {# дуелі очікують на твій хід}}"
+    "duelsYourTurnBadge": "{count, plural, one {# дуель очікує на твій хід} few {# дуелі очікують на твій хід} many {# дуелей очікують на твій хід} other {# дуелі очікують на твій хід}}",
+    "town": "Місто"
   },
   "onboarding": {
     "pickNickname": "Обери свій псевдонім",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Введи 6-значний код запрошення.",
     "leaderboardTitleCount": "Таблиця лідерів ({count})",
     "nicknamePlaceholder": "Твій нікнейм…",
-    "joining": "Приєднання до ліги…"
+    "joining": "Приєднання до ліги…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Дуель 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Не вдалося запланувати раунд на {date}: {error}.",
     "replyAdminDrafts": "Створено {count} нових запитань типу {type} про «{topic}» ({ids}).",
     "replyAdminPanel": "Їх можна перевірити в панелі адміна.",
-    "openAdmin": "Відкрити адмін"
+    "openAdmin": "Відкрити адмін",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Щоденна вікторина з друзями",
@@ -784,5 +787,235 @@
     "description": "Щоденна вікторина з друзями",
     "shortcutPlay": "Грати сьогоднішній раунд",
     "shortcutLeagues": "Мої ліги"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Будувати",
+      "shop": "Крамниця",
+      "orders": "Замовлення",
+      "inventory": "Склад",
+      "stats": "Жителі",
+      "friends": "Друзі",
+      "coins": "Монети",
+      "help": "Довідка",
+      "toggle": "Панель"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Рів. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Потрібно більше житла",
+      "limitedByServices": "Потрібно більше закладів (школа, лікарня...)",
+      "gateTownHall": "Ратуша потрібна для Рів2 (макс 9 жителів)",
+      "gateHospital": "Лікарня потрібна для Рів4",
+      "gatePoliceFire": "Поліція та Пожежна частина потрібні для Рів5",
+      "arrivalIn": "Наступний житель: {time}",
+      "maxCapacity": "Місто досягло максимальної місткості"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Початковий Будинок",
+        "desc": "Затишний дім для перших 2 жителів."
+      },
+      "cottage": {
+        "name": "Котедж",
+        "desc": "Житло для 2 жителів."
+      },
+      "house": {
+        "name": "Будинок",
+        "desc": "Просторий сімейний дім для 4 жителів."
+      },
+      "apartment": {
+        "name": "Багатоквартирний Будинок",
+        "desc": "Житлова споруда для 10 жителів."
+      },
+      "villa": {
+        "name": "Вілла",
+        "desc": "Вишуканий маєток для 6 жителів."
+      },
+      "shop": {
+        "name": "Місцева Крамниця",
+        "desc": "Забезпечує товарами та підтримує 6 жителів."
+      },
+      "town_hall": {
+        "name": "Ратуша",
+        "desc": "Центр міста для 8 жителів. Відкриває Рів2."
+      },
+      "park": {
+        "name": "Міський Парк",
+        "desc": "Зелений куточок для 4 жителів."
+      },
+      "bakery": {
+        "name": "Пекарня",
+        "desc": "Свіжий хліб для 6 жителів."
+      },
+      "school": {
+        "name": "Школа",
+        "desc": "Освітній осередок для 10 жителів."
+      },
+      "police_station": {
+        "name": "Поліцейський Відділок",
+        "desc": "Охороняє спокій 10 жителів. Вимога Рів5."
+      },
+      "fire_station": {
+        "name": "Пожежна Частина",
+        "desc": "Захищає місто для 10 жителів. Вимога Рів5."
+      },
+      "hospital": {
+        "name": "Лікарня",
+        "desc": "Медична допомога для 12 жителів. Вимога Рів4."
+      },
+      "farm_plot": {
+        "name": "Земельна Ділянка",
+        "desc": "Родючий ґрунт для вирощування врожаю."
+      },
+      "road": {
+        "name": "Брукована Вулиця",
+        "desc": "Доріжка для прогулянок жителів."
+      },
+      "fence": {
+        "name": "Дерев'яний Паркан",
+        "desc": "Охайний декоративний паркан."
+      },
+      "tree": {
+        "name": "Затінкове Дерево",
+        "desc": "Зелене дерево для краси міста."
+      },
+      "bench": {
+        "name": "Паркова Лавка",
+        "desc": "Місце відпочинку для жителів."
+      },
+      "fountain": {
+        "name": "Кам'яний Фонтан",
+        "desc": "Фонтан на центральній площі міста."
+      },
+      "golden_fountain": {
+        "name": "Золотий Фонтан",
+        "desc": "Престижний фонтан для гравців Pro."
+      },
+      "windmill": {
+        "name": "Вітряк",
+        "desc": "Історична пам'ятка за серію з 7 днів."
+      },
+      "clock_tower": {
+        "name": "Годинникова Вежа",
+        "desc": "Класичний монумент за серію з 30 днів."
+      },
+      "ronduel_statue": {
+        "name": "Статуя RonDuel",
+        "desc": "Велична статуя за серію зі 100 днів."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Овес",
+        "desc": "Витривалий злак. Достигає за 4 години."
+      },
+      "wheat": {
+        "name": "Пшениця",
+        "desc": "Золоті колоски. Достигає за 8 годин."
+      },
+      "carrots": {
+        "name": "Морква",
+        "desc": "Солодкі коренеплоди. Достигає за 12 годин."
+      },
+      "sunflower": {
+        "name": "Соняшник",
+        "desc": "Яскраві суцвіття. Достигає за 24 години."
+      },
+      "pumpkin": {
+        "name": "Гарбуз",
+        "desc": "Гігантський плід. Достигає за 48 годин."
+      }
+    },
+    "orders": {
+      "title": "Щоденні Замовлення",
+      "locked": "Зіграйте сьогоднішній раунд, щоб відкрити замовлення",
+      "completed": "Доставлено",
+      "deliver": "Виконати Замовлення",
+      "missingItems": "Не вистачає врожаю",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Зерно для Пекаря",
+        "market_stall": "Свіжий Ринковий Кошик",
+        "soup_kitchen": "Продукти для Громадської Їдальні",
+        "autumn_festival": "Святковий Осінній Бенкет",
+        "village_pantry": "Поповнення Комори"
+      }
+    },
+    "shop": {
+      "title": "Міський Каталог",
+      "tabHousing": "Житло",
+      "tabServices": "Заклади",
+      "tabFarm": "Ферма",
+      "tabDecor": "Декор",
+      "priceCoins": "{coins} монет",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} житла",
+      "serviceValue": "+{count} підтримки",
+      "unlockLevel": "Відкривається на Рів{level}",
+      "proOnly": "Тільки для Pro",
+      "streakOnly": "Вимагає серію з {days} днів",
+      "buy": "Будувати",
+      "insufficientFunds": "Недостатньо RonCoins",
+      "maxCountReached": "Досягнуто ліміту"
+    },
+    "tiles": {
+      "emptyPlot": "Вільна Ділянка",
+      "plantAction": "Посадити",
+      "harvestAction": "Зібрати Врожай",
+      "growing": "Росте (залишилось {time})",
+      "ready": "Готово до збору!",
+      "move": "Перемістити",
+      "remove": "Видалити (Повертає {coins} монет)",
+      "starterCannotRemove": "Початковий будинок не можна видалити"
+    },
+    "tutorial": {
+      "step1Title": "Посадіть Овес",
+      "step1Desc": "Торкніться вільної ділянки, щоб посіяти перші зерна.",
+      "step2Title": "Зведіть Котедж",
+      "step2Desc": "Відкрийте меню будівництва та збудуйте котедж для жителів.",
+      "step3Title": "Виконуйте Замовлення",
+      "step3Desc": "Віддавайте зібраний врожай на замовлення та заробляйте монети.",
+      "skip": "Пропустити",
+      "next": "Далі",
+      "finish": "Зрозуміло!"
+    },
+    "coinStore": {
+      "title": "Крамниця RonCoins",
+      "subtitle": "Косметичні поліпшення для міста. Не впливає на змагальну вікторину.",
+      "monthlyCapNotice": "Залишок цього місяця: {remaining} € з {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins не можна обміняти на справжні гроші.",
+      "buyPack": "Купити пакунок за {price}",
+      "termsLink": "Умови щодо монет"
+    },
+    "transfer": {
+      "title": "Переказати RonCoins",
+      "desc": "Діліться виграними у вікторині монетами з друзями по лізі.",
+      "amountLabel": "Сума для переказу",
+      "recipientLabel": "Друг з ліги",
+      "send": "Надіслати монети",
+      "dailyCapNotice": "Денний ліміт: сьогодні залишилося {remaining} монет"
+    },
+    "visit": {
+      "title": "Місто гравця {name}",
+      "like": "Вподобати місто",
+      "liked": "Вподобано ({count})",
+      "water": "Полити рослину (-30хв)",
+      "waterUsed": "Полито ({count}/{max})",
+      "readOnlyNotice": "Ви переглядаєте місто друга (режим огляду)"
+    },
+    "postRoundCta": "Ви заробили {coins, plural, one {# RonCoin} few {# RonCoins} other {# RonCoins}} — час будувати!",
+    "goBuild": "До Міста",
+    "plurals": {
+      "villagers": "{count, plural, one {# житель} few {# жителі} many {# жителів} other {# жителя}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoins} many {# RonCoins} other {# RonCoins}}",
+      "plots": "{count, plural, one {# ділянка} few {# ділянки} many {# ділянок} other {# ділянки}}",
+      "hours": "{count, plural, one {# година} few {# години} many {# годин} other {# години}}",
+      "minutes": "{count, plural, one {# хвилина} few {# хвилини} many {# хвилин} other {# хвилини}}",
+      "days": "{count, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
+    }
   }
 }

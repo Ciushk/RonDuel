@@ -10,7 +10,8 @@ export interface LocalizedQuestionDraft {
 export interface GeneratedDraftTemplate {
   type: QuestionType;
   correctIndex?: number;
-  content: Partial<Record<Locale, LocalizedQuestionDraft>> & Record<'ro' | 'en', LocalizedQuestionDraft>;
+  content: Partial<Record<Locale, LocalizedQuestionDraft>> &
+    Record<'ro' | 'en', LocalizedQuestionDraft>;
 }
 
 export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
@@ -50,7 +51,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
         ro: {
           prompt: 'Care este cea mai apropiat\u0103 stea de P\u0103m\u00e2nt, dup\u0103 Soare?',
           options: ['Proxima Centauri', 'Sirius', 'Betelgeuse', 'Vega'],
-          explanation: 'Proxima Centauri se afl\u0103 la aproximativ 4,24 ani-lumin\u0103 de Sistemul Solar.',
+          explanation:
+            'Proxima Centauri se afl\u0103 la aproximativ 4,24 ani-lumin\u0103 de Sistemul Solar.',
         },
         en: {
           prompt: 'Which is the closest star to Earth after the Sun?',
@@ -75,7 +77,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Pe ce planet\u0103 din Sistemul Solar se afl\u0103 vulcanul gigant Olympus Mons?',
+          prompt:
+            'Pe ce planet\u0103 din Sistemul Solar se afl\u0103 vulcanul gigant Olympus Mons?',
           options: ['Marte', 'Venus', 'Mercur', 'Jupiter'],
           explanation:
             'Olympus Mons de pe Marte are aproximativ 22 km \u00een\u0103l\u021bime, fiind cel mai \u00eenalt vulcan planetar cunoscut.',
@@ -104,7 +107,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       type: 'order',
       content: {
         ro: {
-          prompt: 'Ordoneaz\u0103 planetele de la cea mai apropiat\u0103 la cea mai \u00eendep\u0103rtat\u0103 de Soare:',
+          prompt:
+            'Ordoneaz\u0103 planetele de la cea mai apropiat\u0103 la cea mai \u00eendep\u0103rtat\u0103 de Soare:',
           options: ['Mercur', 'Venus', 'P\u0103m\u00e2nt', 'Marte'],
           explanation:
             'Cele patru planete telurice interioare sunt Mercur, Venus, P\u0103m\u00e2nt \u0219i Marte.',
@@ -132,7 +136,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'G\u0103se\u0219te intrusul: care dintre urm\u0103toarele NU este o planet\u0103 din Sistemul Solar?',
+          prompt:
+            'G\u0103se\u0219te intrusul: care dintre urm\u0103toarele NU este o planet\u0103 din Sistemul Solar?',
           options: ['Sirius', 'Neptun', 'Saturn', 'Venus'],
           explanation:
             'Sirius este o stea (cea mai str\u0103lucitoare de pe cerul nop\u021bii), nu o planet\u0103.',
@@ -219,7 +224,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       type: 'order',
       content: {
         ro: {
-          prompt: 'Ordoneaz\u0103 cronologic aceste inven\u021bii, de la cea mai veche la cea mai recent\u0103:',
+          prompt:
+            'Ordoneaz\u0103 cronologic aceste inven\u021bii, de la cea mai veche la cea mai recent\u0103:',
           options: ['Tiparul cu litere mobile', 'Motorul cu abur', 'Telefonul', 'Internetul (WWW)'],
           explanation:
             'Tiparul lui Gutenberg (~1440), motorul cu abur (~1712/1776), telefonul (1876), World Wide Web (1989).',
@@ -251,7 +257,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       correctIndex: 0,
       content: {
         ro: {
-          prompt: 'Care este unitatea de m\u0103sur\u0103 \u00een Sistemul Interna\u021bional pentru for\u021b\u0103?',
+          prompt:
+            'Care este unitatea de m\u0103sur\u0103 \u00een Sistemul Interna\u021bional pentru for\u021b\u0103?',
           options: ['Newton (N)', 'Joule (J)', 'Watt (W)', 'Pascal (Pa)'],
           explanation:
             'For\u021ba se m\u0103soar\u0103 \u00een Newtoni (1 N = 1 kg·m/s²), \u00een timp ce Joule m\u0103soar\u0103 energia.',
@@ -283,7 +290,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
         ro: {
           prompt: 'Care este viteza aproximativ\u0103 a luminii \u00een vid?',
           options: ['300.000 km/s', '150.000 km/s', '340 m/s', '30.000 km/s'],
-          explanation: 'Lumina se propag\u0103 \u00een vid cu aproximativ 299.792 km/s (~300.000 km/s).',
+          explanation:
+            'Lumina se propag\u0103 \u00een vid cu aproximativ 299.792 km/s (~300.000 km/s).',
         },
         en: {
           prompt: 'What is the approximate speed of light in a vacuum?',
@@ -403,8 +411,14 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
       content: {
         ro: {
           prompt: 'Care este cel mai \u00eenalt v\u00e2rf montan din Rom\u00e2nia?',
-          options: ['V\u00e2rful Moldoveanu', 'V\u00e2rful Negoiu', 'V\u00e2rful Omu', 'V\u00e2rful Par\u00e2ngul Mare'],
-          explanation: 'V\u00e2rful Moldoveanu din Mun\u021bii F\u0103g\u0103ra\u0219 are altitudinea de 2.544 metri.',
+          options: [
+            'V\u00e2rful Moldoveanu',
+            'V\u00e2rful Negoiu',
+            'V\u00e2rful Omu',
+            'V\u00e2rful Par\u00e2ngul Mare',
+          ],
+          explanation:
+            'V\u00e2rful Moldoveanu din Mun\u021bii F\u0103g\u0103ra\u0219 are altitudinea de 2.544 metri.',
         },
         en: {
           prompt: 'Which is the highest mountain peak in Romania?',
@@ -421,7 +435,8 @@ export const CURATED_TOPIC_BANK: Record<string, GeneratedDraftTemplate[]> = {
         pt: {
           prompt: 'Qual \u00e9 o pico de montanha mais alto da Rom\u00eania?',
           options: ['Pico Moldoveanu', 'Pico Negoiu', 'Pico Omu', 'Pico Par\u00e2ngul Mare'],
-          explanation: 'O Pico Moldoveanu nas Montanhas F\u0103g\u0103ra\u0219 tem 2.544 metros de altitude.',
+          explanation:
+            'O Pico Moldoveanu nas Montanhas F\u0103g\u0103ra\u0219 tem 2.544 metros de altitude.',
         },
       },
     },

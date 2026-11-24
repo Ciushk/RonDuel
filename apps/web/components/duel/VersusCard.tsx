@@ -93,7 +93,7 @@ export function VersusCard({
         aria-label={t('duel.title')}
         onClick={handleSkip}
         className={[
-          'relative h-[290px] w-full overflow-hidden rounded-[20px] border-2 border-border bg-surface rd-sticker select-none',
+          'border-border bg-surface rd-sticker relative h-[290px] w-full select-none overflow-hidden rounded-[20px] border-2',
           animating ? 'cursor-pointer' : '',
         ].join(' ')}
       >
@@ -101,21 +101,21 @@ export function VersusCard({
         <div
           style={{ clipPath: 'polygon(0 0, 62% 0, 38% 100%, 0 100%)' }}
           className={[
-            'absolute inset-y-0 left-0 w-full bg-[#FF5A4E] p-5 pr-20 flex flex-col justify-between items-start text-left transition-all duration-300',
+            'absolute inset-y-0 left-0 flex w-full flex-col items-start justify-between bg-[#FF5A4E] p-5 pr-20 text-left transition-all duration-300',
             animating ? 'rd-vs-left' : '',
             isDuelComplete && isLeftWinner ? 'shadow-[inset_0_0_28px_rgba(198,255,61,0.7)]' : '',
-            isDuelComplete && !isLeftWinner && winnerUid ? 'opacity-85 contrast-90' : '',
+            isDuelComplete && !isLeftWinner && winnerUid ? 'contrast-90 opacity-85' : '',
           ].join(' ')}
         >
           {/* Top meta: Avatar & Sub-line */}
-          <div className="flex flex-col gap-2 items-start">
+          <div className="flex flex-col items-start gap-2">
             <div className="relative">
               <Avatar
                 nickname={leftPlayer.nickname}
-                className="h-16 w-16 text-2xl border-2 border-[#16131F] shadow-[0_3px_0_#16131F]"
+                className="h-16 w-16 border-2 border-[#16131F] text-2xl shadow-[0_3px_0_#16131F]"
               />
               {isDuelComplete && isLeftWinner && (
-                <span className="absolute -bottom-2 -right-2 inline-flex items-center gap-0.5 rounded-full border-2 border-[#16131F] bg-volt px-2 py-0.5 text-[11px] font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
+                <span className="bg-volt absolute -bottom-2 -right-2 inline-flex items-center gap-0.5 rounded-full border-2 border-[#16131F] px-2 py-0.5 text-[11px] font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
                   🏆
                 </span>
               )}
@@ -123,7 +123,7 @@ export function VersusCard({
 
             <div className="flex items-center gap-1 font-mono text-xs font-bold uppercase tracking-wider text-white">
               {isLeftMe && (
-                <span className="rounded bg-[#16131F]/30 px-1 py-0.5 text-[10px] text-volt">
+                <span className="text-volt rounded bg-[#16131F]/30 px-1 py-0.5 text-[10px]">
                   {t('duel.youLabel')}
                 </span>
               )}
@@ -142,7 +142,7 @@ export function VersusCard({
             >
               {leftPlayer.nickname}
             </p>
-            <p className="font-mono text-2xl font-black text-white rd-tabular">
+            <p className="rd-tabular font-mono text-2xl font-black text-white">
               {leftPlayer.finishedAt ? t('common.points', { points: leftPlayer.score ?? 0 }) : '—'}
             </p>
           </div>
@@ -152,21 +152,21 @@ export function VersusCard({
         <div
           style={{ clipPath: 'polygon(62% 0, 100% 0, 100% 100%, 38% 100%)' }}
           className={[
-            'absolute inset-y-0 right-0 w-full bg-[#3D7BFF] p-5 pl-20 flex flex-col justify-between items-end text-right transition-all duration-300',
+            'absolute inset-y-0 right-0 flex w-full flex-col items-end justify-between bg-[#3D7BFF] p-5 pl-20 text-right transition-all duration-300',
             animating ? 'rd-vs-right' : '',
             isDuelComplete && isRightWinner ? 'shadow-[inset_0_0_28px_rgba(198,255,61,0.7)]' : '',
-            isDuelComplete && !isRightWinner && winnerUid ? 'opacity-85 contrast-90' : '',
+            isDuelComplete && !isRightWinner && winnerUid ? 'contrast-90 opacity-85' : '',
           ].join(' ')}
         >
           {/* Top meta: Avatar & Sub-line */}
-          <div className="flex flex-col gap-2 items-end">
+          <div className="flex flex-col items-end gap-2">
             <div className="relative">
               <Avatar
                 nickname={rightPlayer?.nickname ?? 'VS'}
-                className="h-16 w-16 text-2xl border-2 border-[#16131F] shadow-[0_3px_0_#16131F]"
+                className="h-16 w-16 border-2 border-[#16131F] text-2xl shadow-[0_3px_0_#16131F]"
               />
               {isDuelComplete && isRightWinner && (
-                <span className="absolute -bottom-2 -left-2 inline-flex items-center gap-0.5 rounded-full border-2 border-[#16131F] bg-volt px-2 py-0.5 text-[11px] font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
+                <span className="bg-volt absolute -bottom-2 -left-2 inline-flex items-center gap-0.5 rounded-full border-2 border-[#16131F] px-2 py-0.5 text-[11px] font-black text-[#16131F] shadow-[0_2px_0_#16131F]">
                   🏆
                 </span>
               )}
@@ -174,7 +174,7 @@ export function VersusCard({
 
             <div className="flex items-center gap-1 font-mono text-xs font-bold uppercase tracking-wider text-white">
               {isRightMe && (
-                <span className="rounded bg-[#16131F]/30 px-1 py-0.5 text-[10px] text-volt">
+                <span className="text-volt rounded bg-[#16131F]/30 px-1 py-0.5 text-[10px]">
                   {t('duel.youLabel')}
                 </span>
               )}
@@ -197,8 +197,10 @@ export function VersusCard({
             >
               {rightPlayer?.nickname ?? t('duel.openOpponent')}
             </p>
-            <p className="font-mono text-2xl font-black text-white rd-tabular">
-              {rightPlayer?.finishedAt ? t('common.points', { points: rightPlayer.score ?? 0 }) : '—'}
+            <p className="rd-tabular font-mono text-2xl font-black text-white">
+              {rightPlayer?.finishedAt
+                ? t('common.points', { points: rightPlayer.score ?? 0 })
+                : '—'}
             </p>
           </div>
         </div>
@@ -223,7 +225,7 @@ export function VersusCard({
               {[0, 60, 120, 180, 240, 300].map((deg) => (
                 <span
                   key={deg}
-                  className="rd-vs-spark absolute h-3.5 w-1.5 rounded-full border border-border bg-volt"
+                  className="rd-vs-spark border-border bg-volt absolute h-3.5 w-1.5 rounded-full border"
                   style={{ '--r': `${deg}deg` } as React.CSSProperties}
                 />
               ))}
@@ -234,7 +236,7 @@ export function VersusCard({
           <div className={animating ? 'rd-vs-clash' : ''}>
             <div
               className={[
-                'flex h-[76px] w-[76px] items-center justify-center rounded-full border-[3px] border-border bg-volt font-display text-[28px] font-black text-[#16131F] shadow-[0_4px_0_var(--rd-border)]',
+                'border-border bg-volt font-display flex h-[76px] w-[76px] items-center justify-center rounded-full border-[3px] text-[28px] font-black text-[#16131F] shadow-[0_4px_0_var(--rd-border)]',
                 animating ? 'rd-vs-stamp' : '',
               ].join(' ')}
             >
@@ -247,7 +249,7 @@ export function VersusCard({
       {/* Status Card Below */}
       <div
         className={[
-          'rounded-[16px] border-2 border-border bg-surface p-4 text-center rd-sticker space-y-3',
+          'border-border bg-surface rd-sticker space-y-3 rounded-[16px] border-2 p-4 text-center',
           animating ? 'rd-vs-status' : '',
         ].join(' ')}
       >
@@ -260,7 +262,7 @@ export function VersusCard({
                     name:
                       winnerUid === challenger.uid
                         ? challenger.nickname
-                        : opponent?.nickname ?? t('duel.winnerBadge'),
+                        : (opponent?.nickname ?? t('duel.winnerBadge')),
                   })
                 : t('duel.drawTitle')}
             </Chip>
@@ -277,7 +279,7 @@ export function VersusCard({
           )}
 
           {headToHead && (
-            <span className="font-mono text-xs font-bold text-muted">
+            <span className="text-muted font-mono text-xs font-bold">
               {t('duel.headToHead')}: {headToHead.meWins} – {headToHead.opponentWins}
             </span>
           )}

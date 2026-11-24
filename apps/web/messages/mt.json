@@ -14,7 +14,8 @@
     "profile": "Profil",
     "pro": "Pro",
     "settings": "Issettjar",
-    "duelsYourTurnBadge": "{count, plural, one {# dwell qed jistenna l-mossa tiegħek} two {żewġ dwellijiet qed jistennew il-mossa tiegħek} few {# dwellijiet qed jistennew il-mossa tiegħek} many {#-il dwell qed jistennew il-mossa tiegħek} other {# dwell qed jistennew il-mossa tiegħek}}"
+    "duelsYourTurnBadge": "{count, plural, one {# dwell qed jistenna l-mossa tiegħek} two {żewġ dwellijiet qed jistennew il-mossa tiegħek} few {# dwellijiet qed jistennew il-mossa tiegħek} many {#-il dwell qed jistennew il-mossa tiegħek} other {# dwell qed jistennew il-mossa tiegħek}}",
+    "town": "Belt"
   },
   "onboarding": {
     "pickNickname": "Agħżel il-laqam tiegħek",
@@ -230,7 +231,8 @@
     "invalidCodeHint": "Iċċekkja li daħħalt il-kodiċi b'mod korrett, jew staqsi lill-persuna li stidnitlek għal link ġdid.",
     "leaderboardTitleCount": "Klassifika tal-kampjonat ({count})",
     "nicknamePlaceholder": "eż. Alex99",
-    "joining": "Qed tidħol…"
+    "joining": "Qed tidħol…",
+    "worldLeagueName": "RonDuel World"
   },
   "duel": {
     "title": "Dwell 1v1 Split Court",
@@ -666,7 +668,8 @@
     "replyAdminScheduleFailed": "Ma stajtx niskeda r-rawnd għal {date}: {error}.",
     "replyAdminDrafts": "Ħloqt {count} mistoqsijiet ġodda tat-tip {type} dwar „{topic}” ({ids}).",
     "replyAdminPanel": "Tista’ tiċċekkjahom fil-pannell tal-admin.",
-    "openAdmin": "Iftaħ l-admin"
+    "openAdmin": "Iftaħ l-admin",
+    "title": "RonBot AI"
   },
   "home": {
     "heroTitle": "RonDuel – Trivia ta' kuljum ma' sħabek",
@@ -784,5 +787,235 @@
     "description": "Trivia ta' kuljum ma' sħabek",
     "shortcutPlay": "Ilgħab ir-rawnd tal-lum",
     "shortcutLeagues": "Il-kampjonati tiegħi"
+  },
+  "town": {
+    "toolbar": {
+      "build": "Ibni",
+      "shop": "Ħanut",
+      "orders": "Ordnijiet",
+      "inventory": "Stokk",
+      "stats": "Residenti",
+      "friends": "Ħbieb",
+      "coins": "Muniti",
+      "help": "Għajnuna",
+      "toggle": "Għodod"
+    },
+    "chips": {
+      "coins": "{count} RonCoins",
+      "population": "{population} / {cap}",
+      "level": "Liv. {level}"
+    },
+    "growth": {
+      "limitedByHousing": "Hemm bżonn aktar djar",
+      "limitedByServices": "Hemm bżonn aktar servizzi (skola, sptar...)",
+      "gateTownHall": "Il-Kunsill meħtieġ għal Liv2 (massimu 9 residenti)",
+      "gateHospital": "L-Isptar meħtieġ għal Liv4",
+      "gatePoliceFire": "Il-Pulizija u l-Pompieri meħtieġa għal Liv5",
+      "arrivalIn": "Resident li jmiss: {time}",
+      "maxCapacity": "Il-belt laħqet il-kapaċità massima"
+    },
+    "catalog": {
+      "starter_house": {
+        "name": "Dar tal-Bidu",
+        "desc": "Dar komda għall-ewwel 2 residenti tiegħek."
+      },
+      "cottage": {
+        "name": "Għorfa",
+        "desc": "Dar għal 2 residenti."
+      },
+      "house": {
+        "name": "Dar",
+        "desc": "Dar spazjuża għal 4 residenti."
+      },
+      "apartment": {
+        "name": "Blokk Appartamenti",
+        "desc": "Bini għal 10 residenti."
+      },
+      "villa": {
+        "name": "Villa",
+        "desc": "Proprjetà eleganti għal 6 residenti."
+      },
+      "shop": {
+        "name": "Ħanut tar-Raħal",
+        "desc": "Ipprovdi oġġetti u jsostni 6 residenti."
+      },
+      "town_hall": {
+        "name": "Kunsill Lokali",
+        "desc": "Ċentru għal 8 residenti. Jiftaħ Liv2."
+      },
+      "park": {
+        "name": "Park",
+        "desc": "Spazju aħdar għal 4 residenti."
+      },
+      "bakery": {
+        "name": "Forn",
+        "desc": "Ħobż frisk għal 6 residenti."
+      },
+      "school": {
+        "name": "Skola",
+        "desc": "Ċentru edukattiv għal 10 residenti."
+      },
+      "police_station": {
+        "name": "Għassa tal-Pulizija",
+        "desc": "Żamma tal-ordni għal 10 residenti. Meħtieġa għal Liv5."
+      },
+      "fire_station": {
+        "name": "Stazzjon tat-Tifi tan-Nar",
+        "desc": "Protezzjoni tal-belt għal 10 residenti. Meħtieġa għal Liv5."
+      },
+      "hospital": {
+        "name": "Sptar",
+        "desc": "Kura tas-saħħa għal 12-il resident. Meħtieġ għal Liv4."
+      },
+      "farm_plot": {
+        "name": "Raba'",
+        "desc": "Art fertili għat-tkabbir tal-uċuħ."
+      },
+      "road": {
+        "name": "Triq biċ-Ċagħaq",
+        "desc": "Mogħdija witta għar-residenti."
+      },
+      "fence": {
+        "name": "Ċint tal-Injam",
+        "desc": "Ċint dekorattiv tal-injam."
+      },
+      "tree": {
+        "name": "Siġra tad-Dell",
+        "desc": "Siġra b'weraq ħodor li ssebbaħ il-belt."
+      },
+      "bench": {
+        "name": "Bank tal-Park",
+        "desc": "Post ta' mistrieħ għar-residenti."
+      },
+      "fountain": {
+        "name": "Funtana tal-Ġebel",
+        "desc": "Funtana sabiħa fiċ-ċentru tal-belt."
+      },
+      "golden_fountain": {
+        "name": "Funtana tad-Deheb",
+        "desc": "Funtana prestiġjuża għal plejers Pro."
+      },
+      "windmill": {
+        "name": "Mitħna tar-Riħ",
+        "desc": "Monument storiku għal serje ta' 7 ijiem."
+      },
+      "clock_tower": {
+        "name": "Torri tal-Arloġġ",
+        "desc": "Monument klassiku għal serje ta' 30 jum."
+      },
+      "ronduel_statue": {
+        "name": "Statwa RonDuel",
+        "desc": "Statwa maestuża għal serje ta' 100 jum."
+      }
+    },
+    "crops": {
+      "oats": {
+        "name": "Ħafur",
+        "desc": "Ċereali reżistenti. Jikber f'4 sigħat."
+      },
+      "wheat": {
+        "name": "Qamħ",
+        "desc": "Qamħ dehbi. Jikber fi 8 sigħat."
+      },
+      "carrots": {
+        "name": "Zunnarija",
+        "desc": "Għeruq ħelwin. Jikbru fi 12-il siegħa."
+      },
+      "sunflower": {
+        "name": "Ġirasol",
+        "desc": "Fjuri jgħajtu. Jikber f'24 siegħa."
+      },
+      "pumpkin": {
+        "name": "Qargħa Ħamra",
+        "desc": "Uċuh ġganteski. Tikber fi 48 siegħa."
+      }
+    },
+    "orders": {
+      "title": "Ordnijiet ta' Kuljum",
+      "locked": "Ilgħab il-partita tal-lum biex tiftaħ l-ordnijiet",
+      "completed": "Mqassam",
+      "deliver": "Qassam l-Ordni",
+      "missingItems": "Nieqes xi wċuħ",
+      "reward": "+{coins} RonCoins",
+      "templates": {
+        "bakers_basket": "Qamħ għall-Furnar",
+        "market_stall": "Qoffa Friska tas-Suq",
+        "soup_kitchen": "Provvisti għall-Kċina tal-Fqar",
+        "autumn_festival": "Ikla tal-Festival tal-Ħarifa",
+        "village_pantry": "Mili tal-K pantry"
+      }
+    },
+    "shop": {
+      "title": "Katalogu tal-Belt",
+      "tabHousing": "Djar",
+      "tabServices": "Servizzi",
+      "tabFarm": "Razzett",
+      "tabDecor": "Dekorazzjoni",
+      "priceCoins": "{coins} muniti",
+      "approxEur": "≈ {eur}",
+      "housingValue": "+{count} djar",
+      "serviceValue": "+{count} sostenn",
+      "unlockLevel": "Jinfetaħ f'Liv{level}",
+      "proOnly": "Esklussiv għal Pro",
+      "streakOnly": "Jeħtieġ serje ta' {days} ijiem",
+      "buy": "Ibni",
+      "insufficientFunds": "M'għandekx biżżejjed RonCoins",
+      "maxCountReached": "Laħaq il-massimu"
+    },
+    "tiles": {
+      "emptyPlot": "Raba' Vojt",
+      "plantAction": "Iżra'",
+      "harvestAction": "Aħsad",
+      "growing": "Qed jikber (fadal {time})",
+      "ready": "Lest għall-ħsad!",
+      "move": "Mexxi",
+      "remove": "Neħħi (Tirċievi lura {coins} muniti)",
+      "starterCannotRemove": "Id-dar tal-bidu ma tistax titneħħa"
+    },
+    "tutorial": {
+      "step1Title": "Iżra' l-Ħafur",
+      "step1Desc": "Mess raba' vojt biex tiżra' l-ewwel żerriegħa.",
+      "step2Title": "Ibni Għorfa",
+      "step2Desc": "Iftaħ il-menu tal-bini biex tibni għorfa għar-residenti.",
+      "step3Title": "Wettaq l-Ordnijiet",
+      "step3Desc": "Qassam il-ħsad biex tlesti l-ordnijiet u taqla' l-muniti.",
+      "skip": "Aqbeż",
+      "next": "Li jmiss",
+      "finish": "Fhimt!"
+    },
+    "coinStore": {
+      "title": "Ħanut RonCoins",
+      "subtitle": "Titjib kosmetiku. Qatt ma jaffettwa l-kwizz jew il-klassifiki.",
+      "monthlyCapNotice": "Fadal dan ix-xahar: {remaining} € minn {max} €",
+      "nonCompetitiveDisclaimer": "RonCoins ma jistgħux jissarrfu fi flus reali.",
+      "buyPack": "Ixtri Pakkett għal {price}",
+      "termsLink": "Kundizzjonijiet tal-muniti"
+    },
+    "transfer": {
+      "title": "Ittrasferixxi RonCoins",
+      "desc": "Aqsam muniti li rbaħt fil-kwizz ma' sħabek fil-kampjonat.",
+      "amountLabel": "Ammont",
+      "recipientLabel": "Ħabib fil-kampjonat",
+      "send": "Ibgħat il-muniti",
+      "dailyCapNotice": "Limitu ta' kuljum: fadal {remaining} muniti llum"
+    },
+    "visit": {
+      "title": "Il-Belt ta' {name}",
+      "like": "Għoġobni l-Belt",
+      "liked": "Għoġbok ({count})",
+      "water": "Isqi l-uċuh (-30m)",
+      "waterUsed": "Misluf ({count}/{max})",
+      "readOnlyNotice": "Qed iżżur il-belt ta' ħabib (wiri biss)"
+    },
+    "postRoundCta": "Ksibt {coins, plural, one {# RonCoin} few {# RonCoins} many {# RonCoins} other {# RonCoins}} — mur ibni!",
+    "goBuild": "Mur fil-Belt",
+    "plurals": {
+      "villagers": "{count, plural, one {resident #} few {# residenti} many {#-il resident} other {# resident}}",
+      "coins": "{count, plural, one {# RonCoin} few {# RonCoins} many {#-il RonCoin} other {# RonCoins}}",
+      "plots": "{count, plural, one {# raba'} few {# oqsma} many {#-il qasam} other {# raba'}}",
+      "hours": "{count, plural, one {# siegħa} few {# sigħat} many {#-il siegħa} other {# siegħa}}",
+      "minutes": "{count, plural, one {# minuta} few {# minuti} many {#-il minuta} other {# minuta}}",
+      "days": "{count, plural, one {# jum} few {# ijiem} many {#-il jum} other {# jum}}"
+    }
   }
 }
