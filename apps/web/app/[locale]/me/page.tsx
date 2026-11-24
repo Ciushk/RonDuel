@@ -66,7 +66,7 @@ interface ProfileData {
     currentWinStreak: number;
   }>;
   playedDates: Array<{ date: string; score: number }>;
-  topicAccuracy: Array<{ topic: string; accuracyPct: number; total: number }>;
+  topicAccuracy: Array<{ topic: string; accuracyPct: number; total: number; correct?: number }>;
 }
 
 function formatStreakText(
@@ -667,14 +667,25 @@ export default function ProfilePage() {
           profile.topicAccuracy.length === 0 ? (
             <p className="text-muted text-xs">{t('profile.topicAccuracyEmpty')}</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {profile.topicAccuracy.map((row) => (
-                <div
-                  key={row.topic}
-                  className="flex items-center justify-between text-sm font-bold"
-                >
-                  <span className="capitalize">{row.topic}</span>
-                  <span className="rd-tabular">{row.accuracyPct}%</span>
+                <div key={row.topic} className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 text-sm font-bold">
+                    <span className="min-w-0 truncate capitalize">{row.topic}</span>
+                    <span className="rd-tabular shrink-0 text-xs">
+                      {row.accuracyPct}%
+                      <span className="text-muted ml-1.5 font-bold">
+                        ({row.correct ?? 0}/{row.total})
+                      </span>
+                    </span>
+                  </div>
+                  <div className="bg-surface-2 border-border h-2 w-full overflow-hidden rounded-full border">
+                    <div
+                      className="bg-volt-strong h-full rounded-full transition-all"
+                      style={{ width: `${Math.min(100, Math.max(0, row.accuracyPct))}%` }}
+                      aria-hidden="true"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

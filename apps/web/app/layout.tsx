@@ -78,10 +78,13 @@ export const metadata: Metadata = {
   },
 };
 
+// The [locale] layout overwrites `lang` on <html> with an inline script before
+// hydration, so React must not reconcile that attribute back to the server value.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="ro"
+      suppressHydrationWarning
       data-theme="light"
       className={`${bricolage.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >

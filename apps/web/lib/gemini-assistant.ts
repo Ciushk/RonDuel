@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { LOCALES, type Locale, type QuestionType } from '@ronduel/shared';
 
+import { ALL_LOCALES } from './locales';
 import {
   classifyRonbotIntent,
   detectMessageLocale,
@@ -13,6 +14,7 @@ import {
   approveAdminQuestion,
   createDuel,
   createLeague,
+  ensureDuelQuestions,
   generateAiQuestionDrafts,
   getAdminDashboard,
   getPlayResult,
@@ -49,7 +51,8 @@ export interface ChatResponsePayload {
 
 const RONDUEL_COMPLETE_ENCYCLOPEDIA = `
 You are RonBot ⚡, the official AI mascot and game master of RonDuel ("Duelul zilnic pentru grupul tău de prieteni" / "The daily duel for your group chat").
-Always answer in the user's language (defaulting to Romanian if the query is in Romanian). Be warm, clear, structured, and accurate.
+RonDuel ships 26 interface languages: ro, en, es, pt, de, fr, it, nl, pl, bg, cs, da, el, et, fi, ga, hr, hu, lt, lv, mt, nb, sk, sl, sv, uk.
+ALWAYS answer in the language of the current RonDuel interface, which is given as "Interface locale" in the live context below. Never answer in a different language and never default to Romanian unless the interface locale is ro. Be warm, clear, structured, and accurate.
 
 COMPLETE RONDUEL RULES & SPECIFICATION:
 1. HOW TO PLAY (CUM SE JOACĂ):
@@ -211,7 +214,11 @@ function buildSmartRonDuelReply(params: {
 }): { reply: string; actionLink?: { label: string; href: string }; generic: boolean } {
   const { message, locale, uid, tz = 'Europe/Bucharest', nickname, adminActionResult } = params;
   const pageLocale = locale || 'ro';
-  const lang = detectMessageLocale(message, pageLocale);
+  // RonBot answers in the language the player selected in the app, even when a
+  // word or two in the message looks like another language.
+  const lang = (LOCALES as readonly string[]).includes(pageLocale)
+    ? pageLocale
+    : detectMessageLocale(message, pageLocale);
   const intent = classifyRonbotIntent(message);
 
   if (adminActionResult) {
@@ -320,6 +327,11 @@ function buildSmartRonDuelReply(params: {
 export async function runRonBotChat(params: ChatRequestParams): Promise<ChatResponsePayload> {
   const locale = params.locale ?? 'ro';
   const tz = params.tz ?? 'Europe/Bucharest';
+
+  // A duel needs Gemini-written duel questions: top the pool up before creating one.
+  if (params.uid && classifyRonbotIntent(params.message) === 'createDuel') {
+    await ensureDuelQuestions({ count: 2, target: 20 }).catch(() => undefined);
+  }
   const adminActionResult = detectAdminIntent(params.message, Boolean(params.isAdmin));
   const smartFallback = buildSmartRonDuelReply({
     message: params.message,
@@ -344,10 +356,13 @@ export async function runRonBotChat(params: ChatRequestParams): Promise<ChatResp
     try {
       const client = new GoogleGenAI({ apiKey });
       const todayStatus = getTodayStatus(params.uid ?? 'anon', tz);
+      const localeName =
+        ALL_LOCALES.find((l) => l.code === params.locale)?.name ?? params.locale ?? 'English';
       const liveContext =
-        `\n[Live context: date ${todayStatus.date}, round #${todayStatus.roundNumber}, topic "${todayStatus.topicOfTheDay}". ` +
+        `\n[Live context: interface locale "${params.locale ?? 'ro'}" (${localeName}); reply strictly in ${localeName}. ` +
+        `Date ${todayStatus.date}, round #${todayStatus.roundNumber}, topic "${todayStatus.topicOfTheDay}". ` +
         `Nickname "${params.nickname ?? 'guest'}". Played today: ${todayStatus.played}. Streak: ${todayStatus.streakCurrent}. ` +
-        `Answer in the user's language, only the question they asked, in at most 6 short lines unless they asked for detail. ` +
+        `Answer only the question they asked, in at most 6 short lines unless they asked for detail. ` +
         `Do not append a play button or the full rulebook.]`;
 
       const interaction = await client.interactions.create({

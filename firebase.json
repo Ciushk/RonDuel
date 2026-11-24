@@ -5,14 +5,8 @@
   },
   "hosting": {
     "public": "hosting-dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "predeploy": [
-      "node scripts/build-hosting.mjs"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "predeploy": ["node scripts/build-hosting.mjs"],
     "cleanUrls": true,
     "trailingSlash": false,
     "redirects": [],
@@ -44,6 +38,10 @@
         "destination": "/ro/l/_shell.html"
       },
       {
+        "source": "/ro/league/*/admin",
+        "destination": "/ro/league/_shell/admin.html"
+      },
+      {
         "source": "/ro/league/**",
         "destination": "/ro/league/_shell.html"
       },
@@ -58,6 +56,10 @@
       {
         "source": "/en/l/**",
         "destination": "/en/l/_shell.html"
+      },
+      {
+        "source": "/en/league/*/admin",
+        "destination": "/en/league/_shell/admin.html"
       },
       {
         "source": "/en/league/**",
@@ -76,6 +78,10 @@
         "destination": "/es/l/_shell.html"
       },
       {
+        "source": "/es/league/*/admin",
+        "destination": "/es/league/_shell/admin.html"
+      },
+      {
         "source": "/es/league/**",
         "destination": "/es/league/_shell.html"
       },
@@ -90,6 +96,10 @@
       {
         "source": "/pt/l/**",
         "destination": "/pt/l/_shell.html"
+      },
+      {
+        "source": "/pt/league/*/admin",
+        "destination": "/pt/league/_shell/admin.html"
       },
       {
         "source": "/pt/league/**",
@@ -108,6 +118,10 @@
         "destination": "/de/l/_shell.html"
       },
       {
+        "source": "/de/league/*/admin",
+        "destination": "/de/league/_shell/admin.html"
+      },
+      {
         "source": "/de/league/**",
         "destination": "/de/league/_shell.html"
       },
@@ -122,6 +136,10 @@
       {
         "source": "/fr/l/**",
         "destination": "/fr/l/_shell.html"
+      },
+      {
+        "source": "/fr/league/*/admin",
+        "destination": "/fr/league/_shell/admin.html"
       },
       {
         "source": "/fr/league/**",
@@ -140,6 +158,10 @@
         "destination": "/it/l/_shell.html"
       },
       {
+        "source": "/it/league/*/admin",
+        "destination": "/it/league/_shell/admin.html"
+      },
+      {
         "source": "/it/league/**",
         "destination": "/it/league/_shell.html"
       },
@@ -154,6 +176,10 @@
       {
         "source": "/nl/l/**",
         "destination": "/nl/l/_shell.html"
+      },
+      {
+        "source": "/nl/league/*/admin",
+        "destination": "/nl/league/_shell/admin.html"
       },
       {
         "source": "/nl/league/**",
@@ -172,6 +198,10 @@
         "destination": "/pl/l/_shell.html"
       },
       {
+        "source": "/pl/league/*/admin",
+        "destination": "/pl/league/_shell/admin.html"
+      },
+      {
         "source": "/pl/league/**",
         "destination": "/pl/league/_shell.html"
       },
@@ -186,6 +216,10 @@
       {
         "source": "/bg/l/**",
         "destination": "/bg/l/_shell.html"
+      },
+      {
+        "source": "/bg/league/*/admin",
+        "destination": "/bg/league/_shell/admin.html"
       },
       {
         "source": "/bg/league/**",
@@ -204,6 +238,10 @@
         "destination": "/cs/l/_shell.html"
       },
       {
+        "source": "/cs/league/*/admin",
+        "destination": "/cs/league/_shell/admin.html"
+      },
+      {
         "source": "/cs/league/**",
         "destination": "/cs/league/_shell.html"
       },
@@ -218,6 +256,10 @@
       {
         "source": "/da/l/**",
         "destination": "/da/l/_shell.html"
+      },
+      {
+        "source": "/da/league/*/admin",
+        "destination": "/da/league/_shell/admin.html"
       },
       {
         "source": "/da/league/**",
@@ -236,6 +278,10 @@
         "destination": "/el/l/_shell.html"
       },
       {
+        "source": "/el/league/*/admin",
+        "destination": "/el/league/_shell/admin.html"
+      },
+      {
         "source": "/el/league/**",
         "destination": "/el/league/_shell.html"
       },
@@ -250,6 +296,10 @@
       {
         "source": "/et/l/**",
         "destination": "/et/l/_shell.html"
+      },
+      {
+        "source": "/et/league/*/admin",
+        "destination": "/et/league/_shell/admin.html"
       },
       {
         "source": "/et/league/**",
@@ -268,6 +318,10 @@
         "destination": "/fi/l/_shell.html"
       },
       {
+        "source": "/fi/league/*/admin",
+        "destination": "/fi/league/_shell/admin.html"
+      },
+      {
         "source": "/fi/league/**",
         "destination": "/fi/league/_shell.html"
       },
@@ -282,6 +336,10 @@
       {
         "source": "/ga/l/**",
         "destination": "/ga/l/_shell.html"
+      },
+      {
+        "source": "/ga/league/*/admin",
+        "destination": "/ga/league/_shell/admin.html"
       },
       {
         "source": "/ga/league/**",
@@ -300,6 +358,10 @@
         "destination": "/hr/l/_shell.html"
       },
       {
+        "source": "/hr/league/*/admin",
+        "destination": "/hr/league/_shell/admin.html"
+      },
+      {
         "source": "/hr/league/**",
         "destination": "/hr/league/_shell.html"
       },
@@ -314,6 +376,10 @@
       {
         "source": "/hu/l/**",
         "destination": "/hu/l/_shell.html"
+      },
+      {
+        "source": "/hu/league/*/admin",
+        "destination": "/hu/league/_shell/admin.html"
       },
       {
         "source": "/hu/league/**",
@@ -332,6 +398,10 @@
         "destination": "/lt/l/_shell.html"
       },
       {
+        "source": "/lt/league/*/admin",
+        "destination": "/lt/league/_shell/admin.html"
+      },
+      {
         "source": "/lt/league/**",
         "destination": "/lt/league/_shell.html"
       },
@@ -346,6 +416,10 @@
       {
         "source": "/lv/l/**",
         "destination": "/lv/l/_shell.html"
+      },
+      {
+        "source": "/lv/league/*/admin",
+        "destination": "/lv/league/_shell/admin.html"
       },
       {
         "source": "/lv/league/**",
@@ -364,6 +438,10 @@
         "destination": "/mt/l/_shell.html"
       },
       {
+        "source": "/mt/league/*/admin",
+        "destination": "/mt/league/_shell/admin.html"
+      },
+      {
         "source": "/mt/league/**",
         "destination": "/mt/league/_shell.html"
       },
@@ -378,6 +456,10 @@
       {
         "source": "/nb/l/**",
         "destination": "/nb/l/_shell.html"
+      },
+      {
+        "source": "/nb/league/*/admin",
+        "destination": "/nb/league/_shell/admin.html"
       },
       {
         "source": "/nb/league/**",
@@ -396,6 +478,10 @@
         "destination": "/sk/l/_shell.html"
       },
       {
+        "source": "/sk/league/*/admin",
+        "destination": "/sk/league/_shell/admin.html"
+      },
+      {
         "source": "/sk/league/**",
         "destination": "/sk/league/_shell.html"
       },
@@ -410,6 +496,10 @@
       {
         "source": "/sl/l/**",
         "destination": "/sl/l/_shell.html"
+      },
+      {
+        "source": "/sl/league/*/admin",
+        "destination": "/sl/league/_shell/admin.html"
       },
       {
         "source": "/sl/league/**",
@@ -428,6 +518,10 @@
         "destination": "/sv/l/_shell.html"
       },
       {
+        "source": "/sv/league/*/admin",
+        "destination": "/sv/league/_shell/admin.html"
+      },
+      {
         "source": "/sv/league/**",
         "destination": "/sv/league/_shell.html"
       },
@@ -442,6 +536,10 @@
       {
         "source": "/uk/l/**",
         "destination": "/uk/l/_shell.html"
+      },
+      {
+        "source": "/uk/league/*/admin",
+        "destination": "/uk/league/_shell/admin.html"
       },
       {
         "source": "/uk/league/**",

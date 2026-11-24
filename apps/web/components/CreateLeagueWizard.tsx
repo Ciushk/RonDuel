@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { LEAGUE_COLOR_OPTIONS, LEAGUE_EMOJI_OPTIONS } from '@/lib/league-theme';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import { formatYearlyPrice } from '@/lib/pricing';
 import {
@@ -33,16 +34,8 @@ interface CreateLeagueWizardProps {
   onCreated?: (league: { id: string; leagueId: string; name: string; inviteCode: string }) => void;
 }
 
-const EMOJI_OPTIONS = ['🏆', '⚡', '☕', '🧠', '🎯', '🚀', '👑', '🔥'];
-
-const COLOR_OPTIONS = [
-  { id: 'default', name: 'Classic', pro: false, bg: 'bg-[#FF5A4E]' },
-  { id: 'volt', name: 'Volt', pro: false, bg: 'bg-[#C6FF3D]' },
-  { id: 'gold', name: 'Gold', pro: false, bg: 'bg-[#FFB800]' },
-  { id: 'midnight', name: 'Midnight', pro: true, bg: 'bg-[#0E0D15]' },
-  { id: 'clay', name: 'Clay', pro: true, bg: 'bg-[#E07A5F]' },
-  { id: 'neon', name: 'Neon', pro: true, bg: 'bg-[#00F5D4]' },
-];
+const EMOJI_OPTIONS = LEAGUE_EMOJI_OPTIONS;
+const COLOR_OPTIONS = LEAGUE_COLOR_OPTIONS;
 
 export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWizardProps) {
   const t = useTranslations('league');
@@ -83,9 +76,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
     setCreatedLeague(null);
 
     const tz = getBrowserTimeZone();
-    fetch(
-      `/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&leagues=`,
-    )
+    fetch(`/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(tz)}&leagues=`)
       .then((r) => r.json())
       .then((data) => {
         if (data.ownedLeaguesCount !== undefined) setOwnedCount(data.ownedLeaguesCount);

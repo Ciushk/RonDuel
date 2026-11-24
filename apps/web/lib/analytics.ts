@@ -19,6 +19,7 @@ export type AnalyticsEvent =
   | 'league_preview_viewed'
   | 'join_clicked'
   | 'league_joined'
+  | 'league_join_requested'
   | 'league_created'
   | 'league_invite_shared'
   | 'daily_round_started'

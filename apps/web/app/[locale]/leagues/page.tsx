@@ -44,6 +44,8 @@ interface LeagueItem {
   name: string;
   inviteCode?: string;
   isOwner?: boolean;
+  themeEmoji?: string;
+  themeColor?: string;
   memberCount: number;
   maxMembers?: number;
   isFull?: boolean;
@@ -428,18 +430,16 @@ export default function LeaguesPage() {
                   >
                     <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                       <div className="flex min-w-0 flex-1 items-center gap-3">
-                        {/* Initials avatars */}
-                        <div className="flex shrink-0 -space-x-2">
-                          {(league.initials && league.initials.length > 0 ? league.initials : ['L'])
-                            .slice(0, 3)
-                            .map((init, i) => (
-                              <div
-                                key={i}
-                                className="border-border bg-surface-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 text-xs font-black shadow-sm"
-                              >
-                                {init}
-                              </div>
-                            ))}
+                        {/* League icon in the colour the owner picked */}
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 text-xl leading-none shadow-sm"
+                          style={{
+                            backgroundColor: `${getLeagueTheme(league.themeColor).hex}26`,
+                            borderColor: getLeagueTheme(league.themeColor).hex,
+                          }}
+                          aria-hidden="true"
+                        >
+                          {league.themeEmoji || '🏆'}
                         </div>
 
                         <div className="min-w-0">

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { joinLeague } from '@/lib/server-store';
+import { getTodayStatus, joinLeague } from '@/lib/server-store';
 
 const JoinSchema = z.object({
   uid: z.string().min(3),
@@ -19,12 +19,21 @@ export async function POST(req: Request, context: { params: Promise<{ code: stri
       nickname: body.nickname,
       tz: body.tz,
     });
-    const { getTodayStatus } = await import('@/lib/server-store');
+    if (league.joinRequestPending) {
+      return NextResponse.json({
+        leagueId: league.id,
+        name: league.name,
+        inviteCode: league.inviteCode,
+        requestPending: true,
+        playedToday: false,
+      });
+    }
     const state = getTodayStatus(body.uid, body.tz);
     return NextResponse.json({
       leagueId: league.id,
       name: league.name,
       inviteCode: league.inviteCode,
+      requestPending: false,
       playedToday: Boolean(state.played),
     });
   } catch (err) {

@@ -44,7 +44,9 @@ interface LeagueView {
   themeEmoji?: string;
   themeColor?: string;
   isOwner?: boolean;
+  isModerator?: boolean;
   isMember?: boolean;
+  requestCount?: number;
   isWorld?: boolean;
   description?: string;
   intlRank?: number | null;
@@ -432,10 +434,15 @@ export default function LeaguePage() {
                 ? t('league.publicNoLimit')
                 : t('league.membersCount', { count: league.memberCount })}
             </Chip>
-            {league.isOwner && !isWorldLeague && (
+            {(league.isOwner || league.isModerator) && !isWorldLeague && (
               <Link href={`/${locale}/league/${league.id}/admin`}>
                 <Button size="sm" variant="secondary" className="text-xs">
                   {t('league.manageShort')}
+                  {Number(league.requestCount ?? 0) > 0 && (
+                    <span className="bg-volt ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-black text-[#16131F]">
+                      {league.requestCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
             )}

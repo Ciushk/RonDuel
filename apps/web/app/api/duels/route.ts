@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getUserDuels, createDuel } from '@/lib/server-store';
+import { getUserDuels, createDuel, ensureDuelQuestions } from '@/lib/server-store';
 
 const CreateDuelSchema = z.object({
   challengerUid: z.string().min(3),
@@ -31,6 +31,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = CreateDuelSchema.parse(await req.json());
+    // Keep the Gemini-written duel pool topped up so duel questions never come
+    // from (or repeat) the daily round bank.
+    await ensureDuelQuestions({ count: 2, target: 20 }).catch(() => undefined);
     const duel = createDuel(body);
     return NextResponse.json({ duelId: duel.id, status: duel.status });
   } catch (err) {
@@ -40,4 +43,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

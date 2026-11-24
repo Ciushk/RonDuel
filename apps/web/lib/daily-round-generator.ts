@@ -1,9 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import {
-  computePromptSimilarity,
-  type Locale,
-  type QuestionType,
-} from '@ronduel/shared';
+import { computePromptSimilarity, type Locale, type QuestionType } from '@ronduel/shared';
 
 export interface GeneratedQuestionItem {
   id: string;
@@ -72,9 +68,7 @@ const THEME_IDEAS = [
 ];
 
 function getGenAIClient(): GoogleGenAI | null {
-  const apiKey =
-    process.env.GEMINI_API_KEY?.trim() ||
-    process.env.GOOGLE_API_KEY?.trim();
+  const apiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
   if (!apiKey) return null;
   return new GoogleGenAI({ apiKey });
 }
@@ -99,7 +93,10 @@ export function validateQuestionFormat(
   for (const [loc, locContent] of Object.entries(item.content)) {
     if (!locContent) continue;
     if (locContent.prompt.length > 140) {
-      return { valid: false, reason: `Prompt too long in ${loc} (${locContent.prompt.length} > 140)` };
+      return {
+        valid: false,
+        reason: `Prompt too long in ${loc} (${locContent.prompt.length} > 140)`,
+      };
     }
     if (locContent.options.length !== 4) {
       return { valid: false, reason: `Options length must be 4 in ${loc}` };
@@ -146,6 +143,33 @@ export function checkDedupSimilarity(
     }
   }
   return { duplicate: false };
+}
+
+/**
+ * A question is a duplicate if its English prompt OR any of its translated prompts
+ * is similar to a prompt that already exists in the bank (daily rounds, duels,
+ * reserves). Checking every locale catches near-duplicates that only look
+ * different after translation.
+ */
+export function isDuplicateQuestion(
+  item: GeneratedQuestionItem,
+  existingPrompts: string[],
+  threshold = 0.82,
+): boolean {
+  const prompts = Object.values(item.content)
+    .map((c) => c?.prompt)
+    .filter((p): p is string => Boolean(p));
+  return prompts.some((p) => checkDedupSimilarity(p, existingPrompts, threshold).duplicate);
+}
+
+function normalizeCategory(raw: unknown, fallback: string): string {
+  if (typeof raw !== 'string') return fallback;
+  const clean = raw
+    .replace(/[\r\n\t]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (clean.length < 2 || clean.length > 40) return fallback;
+  return clean;
 }
 
 /**
@@ -329,7 +353,9 @@ Important formatting rules:
       const questionItem: GeneratedQuestionItem = {
         id: `gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         type: params.type,
-        category: params.category,
+        // Gemini writes the question and assigns its own category/topic; the
+        // blueprint category is only a fallback when the model omits one.
+        category: normalizeCategory(parsed.category, params.category),
         difficulty: params.difficulty,
         sourceHint: parsed.sourceHint || 'Gemini 2.5 Flash',
         content: parsed.content,
@@ -343,9 +369,8 @@ Important formatting rules:
         continue;
       }
 
-      // 2. Dedup check against existing prompts
-      const dedupCheck = checkDedupSimilarity(questionItem.content.en.prompt, params.existingPrompts);
-      if (dedupCheck.duplicate) {
+      // 2. Dedup check against every existing prompt (all locales)
+      if (isDuplicateQuestion(questionItem, params.existingPrompts)) {
         continue;
       }
 
@@ -353,7 +378,7 @@ Important formatting rules:
       const answerStr =
         params.type === 'order'
           ? (questionItem.correctOrder ?? []).join(' -> ')
-          : questionItem.content.en.options[questionItem.correctIndex ?? 0] ?? '';
+          : (questionItem.content.en.options[questionItem.correctIndex ?? 0] ?? '');
 
       const factCheck = await factCheckQuestionWithGemini(
         ai,
@@ -419,6 +444,40 @@ export async function generateFullDailyRound(params: {
     questions,
     createdAt: new Date().toISOString(),
   };
+}
+
+const DUEL_TYPE_ROTATION: QuestionType[] = ['mcq', 'odd', 'logic', 'mcq', 'logic'];
+const DUEL_CATEGORIES: Record<string, string> = {
+  mcq: 'General Knowledge',
+  odd: 'Vocabulary & Associations',
+  logic: 'Logic & Numbers',
+};
+
+/**
+ * Gemini generates one duel-only question. Duel questions are kept apart from the
+ * daily round bank: they are deduplicated against every existing prompt and never
+ * scheduled in a daily round, so a duel question can never spoil a daily round
+ * (nor appear again in the near future).
+ */
+export async function generateDuelQuestionWithGemini(params: {
+  existingPrompts: string[];
+  seed?: number;
+}): Promise<GeneratedQuestionItem | null> {
+  const offset = Math.abs(params.seed ?? Date.now()) % DUEL_TYPE_ROTATION.length;
+  for (let attempt = 0; attempt < DUEL_TYPE_ROTATION.length; attempt += 1) {
+    const type = DUEL_TYPE_ROTATION[(offset + attempt) % DUEL_TYPE_ROTATION.length]!;
+    const item = await generateSingleQuestionWithGemini({
+      type,
+      difficulty: attempt % 2 === 0 ? 2 : 3,
+      category: DUEL_CATEGORIES[type] ?? 'General Knowledge',
+      existingPrompts: params.existingPrompts,
+    });
+    if (item) {
+      if (isDuplicateQuestion(item, params.existingPrompts, 0.8)) continue;
+      return { ...item, sourceHint: 'Gemini 2.5 Flash · duel' };
+    }
+  }
+  return null;
 }
 
 /**
@@ -487,4 +546,3 @@ Return JSON matching:
     return null;
   }
 }
-

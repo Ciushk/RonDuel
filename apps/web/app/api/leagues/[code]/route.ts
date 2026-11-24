@@ -2,12 +2,16 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import {
+  addLeagueModerator,
   deleteLeague,
   getLeagueByCodeOrId,
   leaveOrRemoveLeagueMember,
   regenerateLeagueInviteCode,
+  removeLeagueModerator,
   renameLeague,
+  reviewLeagueJoinRequest,
   setLeaguePrivateApproval,
+  setLeagueTheme,
 } from '@/lib/server-store';
 
 export async function GET(req: Request, context: { params: Promise<{ code: string }> }) {
@@ -21,27 +25,45 @@ export async function GET(req: Request, context: { params: Promise<{ code: strin
   return NextResponse.json(league);
 }
 
-const PatchSchema = z.discriminatedUnion('action', [
-  z.object({
-    action: z.literal('rename'),
-    actorUid: z.string().min(1),
-    name: z.string().min(2).max(30),
-  }),
-  z.object({
-    action: z.literal('regenerate_code'),
-    actorUid: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal('private_approval'),
-    actorUid: z.string().min(1),
-    enabled: z.boolean(),
-  }),
-]).or(
-  z.object({
-    actorUid: z.string().min(1),
-    name: z.string().min(2).max(30),
-  }),
-);
+const PatchSchema = z
+  .discriminatedUnion('action', [
+    z.object({
+      action: z.literal('rename'),
+      actorUid: z.string().min(1),
+      name: z.string().min(2).max(30),
+    }),
+    z.object({
+      action: z.literal('regenerate_code'),
+      actorUid: z.string().min(1),
+    }),
+    z.object({
+      action: z.literal('private_approval'),
+      actorUid: z.string().min(1),
+      enabled: z.boolean(),
+    }),
+    z.object({
+      action: z.literal('theme'),
+      actorUid: z.string().min(1),
+      themeEmoji: z.string().min(1).max(8).optional(),
+      themeColor: z.string().min(1).max(20).optional(),
+    }),
+    z.object({
+      action: z.literal('moderator_add'),
+      actorUid: z.string().min(1),
+      targetUid: z.string().min(1),
+    }),
+    z.object({
+      action: z.literal('moderator_remove'),
+      actorUid: z.string().min(1),
+      targetUid: z.string().min(1),
+    }),
+  ])
+  .or(
+    z.object({
+      actorUid: z.string().min(1),
+      name: z.string().min(2).max(30),
+    }),
+  );
 
 export async function PATCH(req: Request, context: { params: Promise<{ code: string }> }) {
   try {
@@ -59,6 +81,31 @@ export async function PATCH(req: Request, context: { params: Promise<{ code: str
         codeOrId: code,
         actorUid: body.actorUid,
         enabled: body.enabled,
+      });
+      return NextResponse.json(res);
+    }
+    if ('action' in body && body.action === 'theme') {
+      const res = setLeagueTheme({
+        codeOrId: code,
+        actorUid: body.actorUid,
+        themeEmoji: body.themeEmoji,
+        themeColor: body.themeColor,
+      });
+      return NextResponse.json(res);
+    }
+    if ('action' in body && body.action === 'moderator_add') {
+      const res = addLeagueModerator({
+        codeOrId: code,
+        actorUid: body.actorUid,
+        targetUid: body.targetUid,
+      });
+      return NextResponse.json(res);
+    }
+    if ('action' in body && body.action === 'moderator_remove') {
+      const res = removeLeagueModerator({
+        codeOrId: code,
+        actorUid: body.actorUid,
+        targetUid: body.targetUid,
       });
       return NextResponse.json(res);
     }
@@ -107,12 +154,33 @@ const MemberActionSchema = z.discriminatedUnion('action', [
     actorUid: z.string().min(1),
     targetUid: z.string().min(1),
   }),
+  z.object({
+    action: z.literal('approve_request'),
+    actorUid: z.string().min(1),
+    targetUid: z.string().min(1),
+  }),
+  z.object({
+    action: z.literal('reject_request'),
+    actorUid: z.string().min(1),
+    targetUid: z.string().min(1),
+  }),
 ]);
 
 export async function POST(req: Request, context: { params: Promise<{ code: string }> }) {
   try {
     const { code } = await context.params;
     const body = MemberActionSchema.parse(await req.json());
+
+    if (body.action === 'approve_request' || body.action === 'reject_request') {
+      const res = reviewLeagueJoinRequest({
+        codeOrId: code,
+        actorUid: body.actorUid,
+        targetUid: body.targetUid,
+        approve: body.action === 'approve_request',
+      });
+      return NextResponse.json(res);
+    }
+
     const targetUid = body.action === 'leave' ? body.actorUid : body.targetUid;
     const res = leaveOrRemoveLeagueMember({
       codeOrId: code,
