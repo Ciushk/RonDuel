@@ -5,8 +5,14 @@
   },
   "hosting": {
     "public": "hosting-dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "predeploy": ["node scripts/build-hosting.mjs"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "predeploy": [
+      "node scripts/build-hosting.mjs"
+    ],
     "cleanUrls": true,
     "trailingSlash": false,
     "redirects": [],
