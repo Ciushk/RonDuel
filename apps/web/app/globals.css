@@ -590,3 +590,57 @@ html[data-theme='dark'] {
     bottom: calc(var(--bottom-stack, 12px) + 12px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* RonTown isometric pixel-art helpers (transform & opacity animations only) */
+.rt-pixelated {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+@keyframes rt-harvest-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.rt-harvest-pulse {
+  animation: rt-harvest-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes rt-float-reward {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -26px);
+  }
+}
+
+.rt-float-reward {
+  animation: rt-float-reward 600ms ease-out forwards;
+}
+
+.rt-paused,
+.rt-paused * {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-harvest-pulse {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rt-float-reward {
+    animation: none !important;
+    transform: translate(-50%, -12px) !important;
+    opacity: 1 !important;
+  }
+}
+
