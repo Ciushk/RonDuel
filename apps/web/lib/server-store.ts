@@ -1936,10 +1936,14 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const intlRankIdx = leaguesLb.findIndex((l) => l.id === league.id);
   const intlRank = intlRankIdx >= 0 ? intlRankIdx + 1 : null;
 
+  const isOwner = Boolean(viewerUid && league.ownerUid === viewerUid);
+  const isMember = Boolean(viewerMember);
+  const showInviteCode = isOwner || isMember || !league.privateApproval;
+
   return {
     id: league.id,
     name: league.name,
-    inviteCode: league.inviteCode,
+    inviteCode: showInviteCode ? league.inviteCode : '',
     ownerUid: league.ownerUid,
     adminName,
     themeEmoji: league.themeEmoji ?? '🏆',
@@ -1954,8 +1958,8 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
     viewerRankAllTime,
     isWorld,
     intlRank,
-    isOwner: Boolean(viewerUid && league.ownerUid === viewerUid),
-    isMember: Boolean(viewerMember),
+    isOwner,
+    isMember,
     privateApproval: Boolean(league.privateApproval),
     todayScores,
     allTime,
@@ -1977,7 +1981,7 @@ export function renameLeague(params: {
     throw new ApiError('LEAGUE_OWNER_ONLY', 'Only the league owner can rename the league', 403);
   }
   const trimmed = params.name.trim();
-  if (trimmed.length < 2 || trimmed.length > 30) {
+  if (trimmed.length < 2 || trimmed.length > 30 || trimmed.toLowerCase() === 'undefined') {
     throw new ApiError(
       'LEAGUE_NAME_INVALID',
       'League name must be between 2 and 30 characters',
@@ -2096,15 +2100,36 @@ export function setLeaguePrivateApproval(params: {
 }
 
 export function joinLeague(params: {
-  inviteCode: string;
+  inviteCode?: string;
+  codeOrId?: string;
   uid: string;
   nickname: string;
   tz: string;
 }) {
   const store = getStore();
-  const id = store.inviteCodes[params.inviteCode.toUpperCase()];
-  if (!id) throw new ApiError('CODE_INVALID', 'Invalid invite code', 404);
-  const league = store.leagues[id]!;
+  const rawCode = (params.inviteCode || params.codeOrId || '').trim();
+  const codeUpper = rawCode.toUpperCase();
+
+  const idFromCode = store.inviteCodes[codeUpper];
+  const targetLeague =
+    (idFromCode ? store.leagues[idFromCode] : null) ||
+    store.leagues[rawCode] ||
+    (params.codeOrId ? store.leagues[params.codeOrId] : null);
+
+  if (!targetLeague) throw new ApiError('CODE_INVALID', 'Invalid invite code', 404);
+
+  // If private approval is active on this league, player must provide the exact secret invite code
+  if (targetLeague.privateApproval) {
+    if (!idFromCode || codeUpper !== targetLeague.inviteCode.toUpperCase()) {
+      throw new ApiError(
+        'PRIVATE_APPROVAL_CODE_REQUIRED',
+        'Această ligă necesită codul de invitație corect pentru aprobare privată.',
+        403,
+      );
+    }
+  }
+
+  const league = targetLeague;
 
   const nickCheck = validateNickname(params.nickname);
   if (!nickCheck.ok) {
@@ -2165,8 +2190,8 @@ export function joinLeague(params: {
     league.members[params.uid]!.nickname = nickCheck.value;
   }
 
-  if (!user.leagueIds.includes(id)) {
-    user.leagueIds.push(id);
+  if (!user.leagueIds.includes(league.id)) {
+    user.leagueIds.push(league.id);
   }
   markUserDirty(user.uid);
 

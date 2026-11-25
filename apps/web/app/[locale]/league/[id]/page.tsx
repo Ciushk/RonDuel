@@ -16,11 +16,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
-import { Avatar, Button, Card, Chip, Toast } from '@/components/ui';
+import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { getLeagueTheme } from '@/lib/league-theme';
-import { getLocalSession } from '@/lib/session';
+import { getBrowserTimeZone, getLocalSession, recordLeagueId } from '@/lib/session';
 
 interface LeagueMemberRow {
   rank?: number;
@@ -82,6 +82,9 @@ export default function LeaguePage() {
   const [sessionNickname, setSessionNickname] = useState<string>('');
   const [toast, setToast] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [joinCodeModalOpen, setJoinCodeModalOpen] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [joinCodeError, setJoinCodeError] = useState('');
 
   useEffect(() => {
     const s = getLocalSession();
@@ -250,6 +253,7 @@ export default function LeaguePage() {
     if (!league) return;
     const s = getLocalSession();
     const nextVal = !league.privateApproval;
+    setLeague((prev) => (prev ? { ...prev, privateApproval: nextVal } : prev));
     setActionLoading(true);
     try {
       const res = await fetch(`/api/leagues/${league.id}`, {
@@ -264,9 +268,58 @@ export default function LeaguePage() {
       if (res.ok) {
         setToast(nextVal ? t('league.privateApprovalOn') : t('league.privateApprovalOff'));
         loadLeague();
+      } else {
+        setLeague((prev) => (prev ? { ...prev, privateApproval: !nextVal } : prev));
       }
+    } catch {
+      setLeague((prev) => (prev ? { ...prev, privateApproval: !nextVal } : prev));
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const executeJoin = async (codeToUse?: string) => {
+    if (!league) return;
+    const s = getLocalSession();
+    setActionLoading(true);
+    setJoinCodeError('');
+    try {
+      const res = await fetch(`/api/leagues/${encodeURIComponent(league.id)}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: s.uid,
+          nickname: s.nickname || sessionNickname,
+          tz: getBrowserTimeZone(),
+          inviteCode: codeToUse,
+          code: codeToUse,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setJoinCodeError(data.error || 'Cod incorect sau eroare la alăturare');
+        return;
+      }
+      recordLeagueId(league.id);
+      setToast(t('league.joinedSuccess', { default: 'Te-ai alăturat ligii cu succes!' }));
+      setJoinCodeModalOpen(false);
+      setJoinCodeInput('');
+      loadLeague();
+    } catch {
+      setJoinCodeError(t('common.networkErrorRetry', { default: 'Eroare de rețea. Reîncearcă.' }));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleJoinClick = () => {
+    if (!league) return;
+    if (league.privateApproval) {
+      setJoinCodeInput('');
+      setJoinCodeError('');
+      setJoinCodeModalOpen(true);
+    } else {
+      void executeJoin();
     }
   };
 
@@ -435,17 +488,18 @@ export default function LeaguePage() {
                 : t('league.membersCount', { count: league.memberCount })}
             </Chip>
             {league.isOwner && !isWorldLeague && (
-              <Link href={`/${locale}/league/${league.id}/admin`}>
-                <Button size="sm" variant="secondary" className="text-xs">
-                  {t('league.manageShort')}
-                </Button>
+              <Link
+                href={`/${locale}/league/${league.id}/admin`}
+                className="border-border bg-surface text-ink hover:bg-surface-2 inline-flex h-9 items-center justify-center rounded-xl border-2 px-3 text-xs font-black shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-transform active:translate-y-0.5"
+              >
+                {t('league.manageShort')}
               </Link>
             )}
           </div>
         </div>
 
-        {/* Invite Code & Link Section (Only for private leagues) */}
-        {!isWorldLeague && (
+        {/* Invite Code & Link Section (Only for members/owner of private leagues) */}
+        {!isWorldLeague && (league.isMember || league.isOwner) && (
           <div className="border-border-subtle bg-surface-2 min-w-0 space-y-2 rounded-xl border p-3">
             <div className="min-w-0">
               <span className="text-muted block text-[10px] font-bold uppercase">
@@ -489,6 +543,36 @@ export default function LeaguePage() {
                 />
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Non-member Join Section (Issue 6) */}
+        {!isWorldLeague && !league.isMember && !league.isOwner && (
+          <div className="border-border bg-surface-2 space-y-3 rounded-2xl border-2 p-4 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]">
+            <div className="space-y-1">
+              <h3 className="font-display text-ink text-base font-black">
+                {t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+              </h3>
+              <p className="text-muted text-xs font-medium">
+                {league.privateApproval
+                  ? t('league.joinLeaguePrivateHint', {
+                      default: 'Această ligă are aprobare privată activată. Este necesar codul de acces primit de la proprietar.',
+                    })
+                  : t('league.joinLeaguePublicHint', {
+                      default: 'Apasă butonul de mai jos pentru a intra în ligă și a concura zilnic alături de ceilalți membri!',
+                    })}
+              </p>
+            </div>
+            <Button
+              size="lg"
+              variant="volt"
+              fullWidth
+              disabled={actionLoading}
+              onClick={handleJoinClick}
+              className="font-black shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
+            >
+              {actionLoading ? '...' : t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+            </Button>
           </div>
         )}
 
@@ -882,6 +966,79 @@ export default function LeaguePage() {
         myUid={sessionUid}
         label={isWorldLeague ? t('common.yourWorldRank') : t('league.yourLeagueRank')}
       />
+
+      {/* Join By Code Sheet for Private Approval League */}
+      <Sheet
+        open={joinCodeModalOpen}
+        onClose={() => setJoinCodeModalOpen(false)}
+        title={t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const clean = joinCodeInput.trim().toUpperCase();
+            if (clean.length < 2) {
+              setJoinCodeError(t('splash.codeNotFound', { default: 'Introdu un cod valid' }));
+              return;
+            }
+            void executeJoin(clean);
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-1">
+            <p className="text-ink text-sm font-bold">
+              {t('league.privateApproval', { default: 'Aprobare privată pentru membri noi' })}
+            </p>
+            <p className="text-muted text-xs leading-relaxed">
+              Această ligă este privată. Te rugăm să introduci codul primit de la proprietar pentru a te alătura:
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="join-code-input" className="text-muted mb-1 block text-xs font-bold">
+              {t('splash.codeLabel', { default: 'Cod ligă' })}
+            </label>
+            <input
+              id="join-code-input"
+              type="text"
+              required
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck="false"
+              maxLength={8}
+              value={joinCodeInput}
+              onChange={(e) => {
+                setJoinCodeInput(e.target.value.trim().toUpperCase());
+                setJoinCodeError('');
+              }}
+              placeholder={t('splash.codePlaceholder', { default: 'Cod invitație' })}
+              className="border-border bg-surface-2 text-ink rd-tabular w-full rounded-xl border-2 px-4 py-3 text-center text-xl font-extrabold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-[var(--rd-blue-strong)]"
+            />
+          </div>
+
+          {joinCodeError && <p className="text-wrong text-xs font-bold">{joinCodeError}</p>}
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setJoinCodeModalOpen(false)}
+              type="button"
+            >
+              {t('league.cancel', { default: 'Anulează' })}
+            </Button>
+            <Button
+              variant="volt"
+              fullWidth
+              type="submit"
+              disabled={joinCodeInput.trim().length < 2 || actionLoading}
+              className="font-black"
+            >
+              {actionLoading ? '...' : t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+            </Button>
+          </div>
+        </form>
+      </Sheet>
     </main>
   );
 }

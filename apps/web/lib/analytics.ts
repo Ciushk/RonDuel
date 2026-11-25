@@ -190,16 +190,17 @@ export function trackEvent(name: AnalyticsEvent, properties?: Record<string, unk
 
 const flagCallbacks = new Set<() => void>();
 
-export function isPostHogFeatureEnabled(flag: string): boolean {
-  if (typeof window === 'undefined') return false;
+export function isPostHogFeatureEnabled(flag: string): boolean | undefined {
+  if (typeof window === 'undefined') return undefined;
   try {
     if (client) {
-      return Boolean(client.isFeatureEnabled(flag));
+      const enabled = client.isFeatureEnabled(flag);
+      return typeof enabled === 'boolean' ? enabled : undefined;
     }
   } catch {
     // Ignore
   }
-  return false;
+  return undefined;
 }
 
 export function onPostHogFeatureFlags(callback: () => void): () => void {

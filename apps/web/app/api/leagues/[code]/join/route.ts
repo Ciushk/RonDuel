@@ -7,6 +7,8 @@ const JoinSchema = z.object({
   uid: z.string().min(3),
   nickname: z.string().min(2).max(20),
   tz: z.string().default('UTC'),
+  inviteCode: z.string().optional(),
+  code: z.string().optional(),
 });
 
 export async function POST(req: Request, context: { params: Promise<{ code: string }> }) {
@@ -14,7 +16,8 @@ export async function POST(req: Request, context: { params: Promise<{ code: stri
     const { code } = await context.params;
     const body = JoinSchema.parse(await req.json());
     const league = joinLeague({
-      inviteCode: code,
+      inviteCode: body.inviteCode || body.code || code,
+      codeOrId: code,
       uid: body.uid,
       nickname: body.nickname,
       tz: body.tz,

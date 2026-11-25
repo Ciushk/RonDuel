@@ -221,8 +221,9 @@ export default function LeagueAdminPage() {
 
   const handleTogglePrivateApproval = async () => {
     if (!league || !isPro) return;
-    setApprovalLoading(true);
     const nextVal = !privateApproval;
+    setPrivateApproval(nextVal);
+    setApprovalLoading(true);
     try {
       const res = await fetch(`/api/leagues/${encodeURIComponent(league.id)}`, {
         method: 'PATCH',
@@ -234,11 +235,13 @@ export default function LeagueAdminPage() {
         }),
       });
       if (res.ok) {
-        setPrivateApproval(nextVal);
+        setLeague((prev) => (prev ? { ...prev, privateApproval: nextVal } : prev));
         showToast(nextVal ? 'Aprobare privată activată' : 'Aprobare privată dezactivată');
+      } else {
+        setPrivateApproval(!nextVal);
       }
     } catch {
-      // Error
+      setPrivateApproval(!nextVal);
     } finally {
       setApprovalLoading(false);
     }

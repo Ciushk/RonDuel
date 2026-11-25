@@ -133,8 +133,12 @@ for (const locale of locales) {
       throw new Error(`Missing expected hosting shell: ${shellPath}`);
     }
   }
+  const adminShellPath = path.join(outDir, locale, 'league', '_shell', 'admin.html');
+  if (!fs.existsSync(adminShellPath)) {
+    throw new Error(`Missing expected hosting admin shell: ${adminShellPath}`);
+  }
 }
-console.log('Verified all 104 client shells exist across 26 locales.');
+console.log('Verified all 130 client shells exist across 26 locales.');
 
 // 5. Generate localized webmanifest for all 26 locales
 for (const locale of locales) {

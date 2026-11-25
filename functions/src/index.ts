@@ -48,8 +48,10 @@ import {
   leaveOrRemoveLeagueMember,
   processStripeWebhook,
   publishAdminRound,
+  regenerateLeagueInviteCode,
   renameLeague,
   scheduleAdminRound,
+  setLeaguePrivateApproval,
   startDuelSide,
   startRound,
   submitAnswer,
@@ -640,13 +642,20 @@ export const api = onRequest(apiOptions, async (req, res) => {
 
     const leagueJoinMatch = pathname.match(/^\/leagues\/([^/]+)\/join$/);
     if (method === 'POST' && leagueJoinMatch) {
-      const lg = joinLeague({
-        inviteCode: decodeURIComponent(leagueJoinMatch[1]!),
-        uid: String(body.uid),
-        nickname: String(body.nickname),
-        tz: String(body.tz ?? 'UTC'),
-      });
-      res.status(200).json({ leagueId: lg.id, name: lg.name, inviteCode: lg.inviteCode });
+      const codeOrId = decodeURIComponent(leagueJoinMatch[1]!);
+      const inviteCodeParam = body.inviteCode || body.code;
+      try {
+        const lg = joinLeague({
+          inviteCode: inviteCodeParam ? String(inviteCodeParam) : codeOrId,
+          codeOrId,
+          uid: String(body.uid),
+          nickname: String(body.nickname),
+          tz: String(body.tz ?? 'UTC'),
+        });
+        res.status(200).json({ leagueId: lg.id, name: lg.name, inviteCode: lg.inviteCode });
+      } catch (e: any) {
+        res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
+      }
       return;
     }
 
@@ -665,12 +674,41 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       if (method === 'PATCH') {
         try {
-          const lg = renameLeague({
-            codeOrId: code,
-            actorUid: String(body.actorUid),
-            name: String(body.name),
-          });
-          res.status(200).json({ success: true, name: lg.name });
+          if (body.action === 'regenerate_code') {
+            const result = regenerateLeagueInviteCode({
+              codeOrId: code,
+              actorUid: String(body.actorUid),
+            });
+            res.status(200).json(result);
+            return;
+          }
+          if (body.action === 'private_approval') {
+            const result = setLeaguePrivateApproval({
+              codeOrId: code,
+              actorUid: String(body.actorUid),
+              enabled: Boolean(body.enabled),
+            });
+            res.status(200).json(result);
+            return;
+          }
+          if (body.action === 'rename' || typeof body.name === 'string') {
+            const trimmed = String(body.name ?? '').trim();
+            if (trimmed.length < 2 || trimmed.length > 30 || trimmed.toLowerCase() === 'undefined') {
+              res.status(400).json({
+                error: 'League name must be between 2 and 30 characters',
+                code: 'LEAGUE_NAME_INVALID',
+              });
+              return;
+            }
+            const lg = renameLeague({
+              codeOrId: code,
+              actorUid: String(body.actorUid),
+              name: trimmed,
+            });
+            res.status(200).json({ success: true, name: lg.name });
+            return;
+          }
+          res.status(400).json({ error: 'Unknown action', code: 'BAD_REQUEST' });
         } catch (e: any) {
           res.status(400).json({ error: e.message, code: e.code || 'BAD_REQUEST' });
         }

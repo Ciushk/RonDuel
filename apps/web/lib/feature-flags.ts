@@ -22,15 +22,7 @@ export function getFeatureFlag(flag: TownFeatureFlag | string): boolean {
     if (ph !== undefined && ph !== null) {
       return ph;
     }
-    // Default town feature flags to true
-    if (
-      flag === 'town_enabled' ||
-      flag === 'town_help_enabled' ||
-      flag === 'coins_transfer_enabled' ||
-      flag === 'coins_purchase_enabled'
-    ) {
-      return true;
-    }
+    // Default town feature flags to true (launched and accessible)
     return true;
   } catch {
     return true;
