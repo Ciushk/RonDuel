@@ -1,57 +1,22 @@
 'use client';
 
 import { PaperPlaneRight, Sparkle, X } from '@phosphor-icons/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import { Button, Chip } from '@/components/ui';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
+const BotMarkdown = dynamic(
+  () => import('@/components/BotMarkdown').then((m) => m.BotMarkdown),
+  { ssr: false },
+);
+
 const HISTORY_KEY = 'ronduel_ronbot_history_v1';
 const HISTORY_LIMIT = 30;
-
-function prepareBotMarkdown(text: string) {
-  return text.replace(/^[•●]\s?/gm, '- ');
-}
-
-function BotMarkdown({ text }: { text: string }) {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      skipHtml
-      components={{
-        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-        em: ({ children }) => <em>{children}</em>,
-        ul: ({ children }) => (
-          <ul className="mb-2 list-disc space-y-1 pl-4 last:mb-0">{children}</ul>
-        ),
-        ol: ({ children }) => (
-          <ol className="mb-2 list-decimal space-y-1 pl-4 last:mb-0">{children}</ol>
-        ),
-        li: ({ children }) => <li>{children}</li>,
-        code: ({ children }) => <code className="rounded bg-black/5 px-1">{children}</code>,
-        a: ({ href, children }) => (
-          <a href={href} className="underline" target="_blank" rel="noreferrer">
-            {children}
-          </a>
-        ),
-        hr: () => <hr className="my-2 opacity-20" />,
-        br: () => <br />,
-        h1: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
-        h2: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
-        h3: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
-        pre: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
-      }}
-    >
-      {prepareBotMarkdown(text)}
-    </ReactMarkdown>
-  );
-}
 
 interface ChatMessage {
   id: string;
@@ -95,7 +60,7 @@ export function RonBotMascot() {
   ]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!open || historyReady || typeof window === 'undefined') return;
     try {
       const raw = window.sessionStorage.getItem(HISTORY_KEY);
       if (raw) {
@@ -108,7 +73,7 @@ export function RonBotMascot() {
       // Ignore a damaged history blob.
     }
     setHistoryReady(true);
-  }, []);
+  }, [open, historyReady]);
 
   useEffect(() => {
     if (!historyReady || typeof window === 'undefined') return;

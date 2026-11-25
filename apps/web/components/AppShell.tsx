@@ -2,17 +2,22 @@
 
 import { ArrowLeft, Moon, Sun } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { BottomNav } from '@/components/BottomNav';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import { SplashScreen } from '@/components/SplashScreen';
 import { Button, Wordmark } from '@/components/ui';
 import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
+
+const SplashScreen = dynamic(
+  () => import('@/components/SplashScreen').then((m) => m.SplashScreen),
+  { ssr: false },
+);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
@@ -44,9 +49,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const hideBottomNav = isPlayFocusMode || isLeaguePreview || isAdmin || isCheckoutReturn;
 
+  const isHomeRoute = pathname === `/${locale}` || pathname === `/${locale}/`;
+
   const isTopLevelPage =
-    pathname === `/${locale}` ||
-    pathname === `/${locale}/` ||
+    isHomeRoute ||
     pathname === `/${locale}/leagues` ||
     pathname === `/${locale}/town` ||
     pathname === `/${locale}/duels` ||
@@ -84,7 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="bg-bg text-ink flex min-h-dvh flex-col">
-      <SplashScreen />
+      {isHomeRoute && <SplashScreen />}
 
       {/* A. Clean Header */}
       {!isPlayFocusMode && (
@@ -104,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
               <Link
                 href={`/${locale}`}
+                prefetch={false}
                 aria-label={t('a11y.homeLink')}
                 className="inline-flex select-none items-center"
               >
@@ -157,19 +164,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                 : 'pb-24 lg:pb-6'
           }`}
         >
-          <Link href={`/${locale}/legal/terms`} className="underline">
+          <Link href={`/${locale}/legal/terms`} prefetch={false} className="underline">
             {t('legal.footerTerms')}
           </Link>
-          <Link href={`/${locale}/regulament`} className="underline">
+          <Link href={`/${locale}/regulament`} prefetch={false} className="underline">
             {t('rules.footerLink')}
           </Link>
-          <Link href={`/${locale}/legal/privacy`} className="underline">
+          <Link href={`/${locale}/legal/privacy`} prefetch={false} className="underline">
             {t('legal.footerPrivacy')}
           </Link>
-          <Link href={`/${locale}/legal/cookies`} className="underline">
+          <Link href={`/${locale}/legal/cookies`} prefetch={false} className="underline">
             {t('legal.footerCookies')}
           </Link>
-          <Link href={`/${locale}/legal/imprint`} className="underline">
+          <Link href={`/${locale}/legal/imprint`} prefetch={false} className="underline">
             {t('legal.footerImprint')}
           </Link>
         </footer>

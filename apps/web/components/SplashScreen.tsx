@@ -79,7 +79,9 @@ export function SplashScreen() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [fading, setFading] = useState(false);
-  const [unmounted, setUnmounted] = useState(false);
+  const [unmounted, setUnmounted] = useState(
+    () => pathname !== `/${locale}` && pathname !== `/${locale}/`,
+  );
   const [isSignedInUser, setIsSignedInUser] = useState(false);
   const [status, setStatus] = useState<SplashRoundStatus>({
     roundNumber: 1,

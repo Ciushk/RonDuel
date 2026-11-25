@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/AppShell';
-import { RonBotMascot } from '@/components/RonBotMascot';
+import { DeferredRonBot } from '@/components/DeferredRonBot';
 import { routing } from '@/i18n/routing';
 
 export function generateStaticParams() {
@@ -88,7 +88,7 @@ export default async function LocaleLayout({
         }}
       />
       <AppShell>{children}</AppShell>
-      <RonBotMascot />
+      <DeferredRonBot />
     </NextIntlClientProvider>
   );
 }

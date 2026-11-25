@@ -197,6 +197,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
             <Link
               key={tab.key}
               href={tab.href}
+              prefetch={false}
               aria-current={tab.isActive ? 'page' : undefined}
               onClick={() => handleTabClick(tab.key, tab.isActive)}
               className={`relative flex min-h-12 items-center gap-3 rounded-xl border-2 px-3 py-2 text-sm font-bold transition-all ${
@@ -243,6 +244,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
               <Link
                 key={tab.key}
                 href={tab.href}
+                prefetch={false}
                 aria-current={tab.isActive ? 'page' : undefined}
                 onClick={() => handleTabClick(tab.key, tab.isActive)}
                 className="group relative -mt-3.5 flex min-h-[48px] flex-1 select-none flex-col items-center justify-start gap-0.5"
@@ -264,6 +266,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
             <Link
               key={tab.key}
               href={tab.href}
+              prefetch={false}
               aria-current={tab.isActive ? 'page' : undefined}
               onClick={() => handleTabClick(tab.key, tab.isActive)}
               className={`group relative flex min-h-[48px] flex-1 select-none flex-col items-center justify-center gap-0.5 rounded-lg py-1 transition-colors ${
