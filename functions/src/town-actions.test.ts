@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { clearEconomyConfigCache } from './town-economy.js';
-import { buildItem, buyFarmPlot, moveTile, removeTile } from './town-actions.js';
+import { buildItem, buyFarmPlot, buyLandTile, moveTile, removeTile } from './town-actions.js';
 
 describe('town-actions server business logic', () => {
   let store: Map<string, Record<string, unknown>>;
@@ -264,4 +264,62 @@ describe('town-actions server business logic', () => {
       );
     });
   });
+
+  describe('buyLandTile', () => {
+    it('purchases an adjacent expand-ring tile, debits wallet, and updates town.land', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: { '3_3': 'basic-block', '3_4': 'basic-block' },
+      });
+
+      const res = await buyLandTile(mockDb, 'u1', {
+        x: 4,
+        y: 3,
+        groundType: 'basic-block-flowers',
+      });
+      expect(res.success).toBe(true);
+      expect(res.cost).toBe(25);
+      expect(res.land['4_3']).toBe('basic-block-flowers');
+
+      const wallet = store.get('users/u1/wallet/main') as any;
+      expect(wallet.balance).toBe(475); // 500 - 25
+    });
+
+    it('rejects buying a tile that is not adjacent to owned land', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        land: { '3_3': 'basic-block' },
+      });
+
+      await expect(
+        buyLandTile(mockDb, 'u1', { x: 0, y: 0, groundType: 'basic-block' }),
+      ).rejects.toThrow('adjacent to owned land');
+    });
+
+    it('rejects building on unowned land or water when town has a land map', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 2,
+        serviceCapacity: 4,
+        populationCap: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: { '3_3': 'basic-block', '4_3': 'basic-block-wather' },
+      });
+
+      await expect(buildItem(mockDb, 'u1', { itemId: 'cottage', x: 0, y: 0 })).rejects.toThrow(
+        'not owned land',
+      );
+      await expect(buildItem(mockDb, 'u1', { itemId: 'cottage', x: 4, y: 3 })).rejects.toThrow(
+        'water or shoreline',
+      );
+    });
+  });
 });
+

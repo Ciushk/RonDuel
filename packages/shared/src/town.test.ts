@@ -4,12 +4,21 @@ import {
   calculateTownCapacities,
   calculateTownLevel,
   calculateTriviaCoins,
+  computeExpandRing,
   DEFAULT_TOWN_CATALOG,
   DEFAULT_TOWN_ECONOMY,
+  findWalkablePath,
+  generateStarterLand,
   getGridSizeForLevel,
   getPlotPrice,
+  GROUND_TILE_TYPES,
+  isCellInExpandRing,
+  isGroundPlantable,
+  isGroundWalkable,
+  LAND_PRICES,
   LedgerEntrySchema,
   WalletDocSchema,
+  type GroundTileType,
 } from './town.js';
 
 describe('calculateTriviaCoins', () => {
@@ -255,3 +264,117 @@ describe('calculateTownLevel and getGridSizeForLevel', () => {
     expect(getPlotPrice(11)).toBe(600);
   });
 });
+
+describe('RonTown ground types, starter land, expand ring, and BFS pathfinding', () => {
+  it('defines prices for all 12 ground types and classifies walkability/plantability', () => {
+    expect(GROUND_TILE_TYPES).toHaveLength(12);
+    for (const gt of GROUND_TILE_TYPES) {
+      expect(LAND_PRICES[gt]).toBeGreaterThan(0);
+    }
+    expect(isGroundWalkable('basic-block')).toBe(true);
+    expect(isGroundWalkable('basic-block-street')).toBe(true);
+    expect(isGroundWalkable('basic-block-wather')).toBe(false);
+    expect(isGroundWalkable('basic-block-wather-grass-50-50')).toBe(false);
+
+    expect(isGroundPlantable('basic-block')).toBe(true);
+    expect(isGroundPlantable('basic-block-dirt')).toBe(true);
+    expect(isGroundPlantable('basic-block-street')).toBe(false);
+    expect(isGroundPlantable('basic-block-wather')).toBe(false);
+
+    expect(DEFAULT_TOWN_CATALOG.items.cabbage).toBeDefined();
+    expect(DEFAULT_TOWN_CATALOG.items.cabbage?.type).toBe('crop');
+    expect(DEFAULT_TOWN_CATALOG.items.lantern).toBeDefined();
+    expect(DEFAULT_TOWN_CATALOG.items.lantern?.type).toBe('decor');
+  });
+
+  it('generates 5-8 edge-connected starter grass tiles covering starter house and plots', () => {
+    const seeds = [
+      { x: 3, y: 3 },
+      { x: 3, y: 4 },
+      { x: 4, y: 4 },
+    ];
+    let step = 0;
+    const deterministicRng = () => {
+      step = (step + 1) % 7;
+      return step / 7;
+    };
+    const land = generateStarterLand(seeds, 8, undefined, deterministicRng);
+    const keys = Object.keys(land);
+    expect(keys.length).toBeGreaterThanOrEqual(5);
+    expect(keys.length).toBeLessThanOrEqual(8);
+    expect(land['3_3']).toBe('basic-block');
+    expect(land['3_4']).toBe('basic-block');
+    expect(land['4_4']).toBe('basic-block');
+
+    // Verify single 4-connected component
+    const visited = new Set<string>(['3_3']);
+    const queue = [{ x: 3, y: 3 }];
+    while (queue.length > 0) {
+      const c = queue.shift()!;
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        const nk = `${c.x + dx}_${c.y + dy}`;
+        if (land[nk] && !visited.has(nk)) {
+          visited.add(nk);
+          queue.push({ x: c.x + dx, y: c.y + dy });
+        }
+      }
+    }
+    expect(visited.size).toBe(keys.length);
+  });
+
+  it('computes expand ring as all empty 4-neighbours within grid bounds', () => {
+    const land: Record<string, GroundTileType> = {
+      '0_0': 'basic-block',
+      '1_0': 'basic-block',
+    };
+    const ring = computeExpandRing(land, 8);
+    expect(ring).toEqual([
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { x: 2, y: 0 },
+    ]);
+    expect(isCellInExpandRing(land, 8, 2, 0)).toBe(true);
+    expect(isCellInExpandRing(land, 8, 0, 0)).toBe(false);
+    expect(isCellInExpandRing(land, 8, -1, 0)).toBe(false);
+    expect(isCellInExpandRing(land, 8, 5, 5)).toBe(false);
+  });
+
+  it('finds shortest walkable path avoiding buildings and water', () => {
+    const land: Record<string, GroundTileType> = {
+      '0_0': 'basic-block',
+      '1_0': 'basic-block-wather', // water blocks walking
+      '2_0': 'basic-block',
+      '0_1': 'basic-block',
+      '1_1': 'basic-block',
+      '2_1': 'basic-block',
+    };
+    const path = findWalkablePath({
+      start: { x: 0, y: 0 },
+      goal: { x: 2, y: 0 },
+      land,
+      blockedKeys: new Set(),
+    });
+    expect(path).toEqual([
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 2, y: 0 },
+    ]);
+
+    // Blocked by building in the corridor -> unreachable
+    const blockedPath = findWalkablePath({
+      start: { x: 0, y: 0 },
+      goal: { x: 2, y: 0 },
+      land,
+      blockedKeys: new Set(['1_1']),
+    });
+    expect(blockedPath).toBeNull();
+  });
+});
+

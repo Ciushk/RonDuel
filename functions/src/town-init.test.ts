@@ -78,6 +78,16 @@ describe('town-init Cloud Function logic', () => {
     expect(plot1?.itemId).toBe('plot');
     expect(plot2?.itemId).toBe('plot');
 
+    // Check starter land (5-8 connected grass tiles covering starter tiles)
+    const land = result.town.land;
+    expect(land).toBeDefined();
+    const landCount = Object.keys(land ?? {}).length;
+    expect(landCount).toBeGreaterThanOrEqual(5);
+    expect(landCount).toBeLessThanOrEqual(8);
+    expect(land?.['3_3']).toBe('basic-block');
+    expect(land?.['3_4']).toBe('basic-block');
+    expect(land?.['4_4']).toBe('basic-block');
+
     // Check wallet has 100 coins in 'town' bucket
     const wallet = store.get('users/user_new/wallet/main') as any;
     expect(wallet).toBeDefined();

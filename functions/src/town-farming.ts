@@ -1,6 +1,7 @@
 import { FieldValue, type Firestore, Timestamp } from 'firebase-admin/firestore';
 import {
   DEFAULT_TOWN_CATALOG,
+  isGroundPlantable,
   type CatalogItem,
   type TownCatalogDoc,
   type TownDoc,
@@ -44,17 +45,31 @@ export async function plantCrop(
       throw new Error(`Crop requires Town Level ${cropItem.unlockLevel}`);
     }
 
+    const coordKey = `${params.x}_${params.y}`;
     const tileSnap = await tx.get(tileRef);
-    if (!tileSnap.exists) {
-      throw new Error(`No farm plot at (${params.x}, ${params.y})`);
-    }
-    const tileData = tileSnap.data() as TownTileDoc;
+    let tileData: TownTileDoc;
+    let isNewPlotFromGround = false;
 
-    if (tileData.itemId !== 'plot') {
-      throw new Error('Crops can only be planted on farm plots');
-    }
-    if (tileData.cropId) {
-      throw new Error('This farm plot already has a growing crop');
+    if (!tileSnap.exists) {
+      const ground = townData.land?.[coordKey];
+      if (!isGroundPlantable(ground)) {
+        throw new Error(`No farm plot at (${params.x}, ${params.y})`);
+      }
+      isNewPlotFromGround = true;
+      tileData = {
+        itemId: 'plot',
+        x: params.x,
+        y: params.y,
+        placedAt: FieldValue.serverTimestamp(),
+      };
+    } else {
+      tileData = tileSnap.data() as TownTileDoc;
+      if (tileData.itemId !== 'plot') {
+        throw new Error('Crops can only be planted on farm plots');
+      }
+      if (tileData.cropId) {
+        throw new Error('This farm plot already has a growing crop');
+      }
     }
 
     // Debit seed price
@@ -82,7 +97,15 @@ export async function plantCrop(
       waterCount: 0,
     };
 
-    tx.update(tileRef, { ...updatedTile });
+    if (isNewPlotFromGround) {
+      tx.set(tileRef, updatedTile);
+      tx.update(townRef, {
+        land: { ...(townData.land ?? {}), [coordKey]: 'basic-block-dirt' },
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } else {
+      tx.update(tileRef, { ...updatedTile });
+    }
 
     // Advance tutorial step 0 (plant oats)
     if (townData.tutorialStep === 0 && params.cropId === 'oats') {

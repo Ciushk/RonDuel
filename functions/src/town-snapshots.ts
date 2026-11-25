@@ -52,6 +52,7 @@ export async function publishTownSnapshot(db: Firestore, uid: string): Promise<v
     likesCount: townData.likesCount ?? 0,
     leagueIds: Array.isArray(userData.leagueIds) ? userData.leagueIds : [],
     tiles,
+    ...(townData.land ? { land: townData.land } : {}),
     updatedAt: FieldValue.serverTimestamp(),
   };
 

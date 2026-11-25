@@ -134,6 +134,71 @@ export interface LedgerEntry {
   createdAt?: unknown;
 }
 
+export const GROUND_TILE_TYPES = [
+  'basic-block',
+  'basic-block-flowers',
+  'basic-block-flowers-two',
+  'basic-block-dirt',
+  'basic-block-street',
+  'basic-block-street-curve',
+  'basic-block-intersection',
+  'basic-block-wather',
+  'basic-block-wather-two',
+  'basic-block-wather-grass-50-50',
+  'basic-block-water-grass-20-80',
+  'basic-block-water-grass-80-20',
+] as const;
+
+export type GroundTileType = (typeof GROUND_TILE_TYPES)[number];
+
+/**
+ * Placeholder configurable prices (in RonCoins) for buying land expansion tiles.
+ * Adjust here once final land economy pricing is locked.
+ */
+export const LAND_PRICES: Record<GroundTileType, number> = {
+  'basic-block': 20,
+  'basic-block-flowers': 25,
+  'basic-block-flowers-two': 25,
+  'basic-block-dirt': 20,
+  'basic-block-street': 30,
+  'basic-block-street-curve': 30,
+  'basic-block-intersection': 35,
+  'basic-block-wather': 40,
+  'basic-block-wather-two': 40,
+  'basic-block-wather-grass-50-50': 35,
+  'basic-block-water-grass-20-80': 35,
+  'basic-block-water-grass-80-20': 35,
+};
+
+export const WALKABLE_GROUND_TYPES: ReadonlySet<GroundTileType> = new Set<GroundTileType>([
+  'basic-block',
+  'basic-block-flowers',
+  'basic-block-flowers-two',
+  'basic-block-dirt',
+  'basic-block-street',
+  'basic-block-street-curve',
+  'basic-block-intersection',
+]);
+
+export const PLANTABLE_GROUND_TYPES: ReadonlySet<GroundTileType> = new Set<GroundTileType>([
+  'basic-block',
+  'basic-block-flowers',
+  'basic-block-flowers-two',
+  'basic-block-dirt',
+]);
+
+export function isGroundTileType(value: string): value is GroundTileType {
+  return (GROUND_TILE_TYPES as readonly string[]).includes(value);
+}
+
+export function isGroundWalkable(ground: GroundTileType | undefined): boolean {
+  return ground !== undefined && WALKABLE_GROUND_TYPES.has(ground);
+}
+
+export function isGroundPlantable(ground: GroundTileType | undefined): boolean {
+  return ground !== undefined && PLANTABLE_GROUND_TYPES.has(ground);
+}
+
 export interface TownDoc {
   createdAt?: unknown;
   gridSize: number;
@@ -147,6 +212,8 @@ export interface TownDoc {
   tutorialStep: number;
   likesCount: number;
   plotsOwned: number;
+  /** Owned isometric ground cells keyed by `${x}_${y}`. */
+  land?: Record<string, GroundTileType>;
   updatedAt?: unknown;
 }
 
@@ -194,6 +261,7 @@ export interface TownSnapshotDoc {
     cropId?: string;
     ready?: boolean;
   }>;
+  land?: Record<string, GroundTileType>;
   updatedAt?: unknown;
 }
 
@@ -467,6 +535,19 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       footprint: { w: 1, h: 1 },
       spriteKey: 'wheat',
     },
+    cabbage: {
+      id: 'cabbage',
+      type: 'crop',
+      nameKey: 'town.crops.cabbage.name',
+      descKey: 'town.crops.cabbage.desc',
+      priceCoins: 5,
+      growTimeSeconds: 21600,
+      yieldCount: 2,
+      orderValue: 12,
+      unlockLevel: 1,
+      footprint: { w: 1, h: 1 },
+      spriteKey: 'cabbage',
+    },
     carrots: {
       id: 'carrots',
       type: 'crop',
@@ -537,6 +618,16 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'tree',
+    },
+    lantern: {
+      id: 'lantern',
+      type: 'decor',
+      nameKey: 'town.catalog.lantern.name',
+      descKey: 'town.catalog.lantern.desc',
+      priceCoins: 25,
+      unlockLevel: 1,
+      footprint: { w: 1, h: 1 },
+      spriteKey: 'lantern',
     },
     bench: {
       id: 'bench',
@@ -739,3 +830,191 @@ export function calculateLazyArrivals(params: {
     newLastArrivalSeconds,
   };
 }
+
+export interface GridCoord {
+  x: number;
+  y: number;
+}
+
+const CARDINAL_DIRS: readonly GridCoord[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+];
+
+/**
+ * Generates 5–8 random, 4-neighbour edge-connected grass tiles covering all seed tiles.
+ * Ensures every starting building/plot sits on owned land.
+ */
+export function generateStarterLand(
+  seedTiles: GridCoord[] = [
+    { x: 3, y: 3 },
+    { x: 3, y: 4 },
+    { x: 4, y: 4 },
+  ],
+  gridSize = 8,
+  targetCount?: number,
+  rng: () => number = Math.random,
+): Record<string, GroundTileType> {
+  const land: Record<string, GroundTileType> = {};
+  const clampedTarget =
+    targetCount !== undefined
+      ? Math.max(seedTiles.length, Math.min(gridSize * gridSize, targetCount))
+      : Math.max(seedTiles.length, 5 + Math.floor(rng() * 4)); // 5..8 tiles
+
+  const validSeeds = seedTiles.filter(
+    (c) => c.x >= 0 && c.y >= 0 && c.x < gridSize && c.y < gridSize,
+  );
+  if (validSeeds.length === 0) {
+    const center = Math.floor(gridSize / 2);
+    validSeeds.push({ x: center, y: center });
+  }
+
+  for (const seed of validSeeds) {
+    land[`${seed.x}_${seed.y}`] = 'basic-block';
+  }
+
+  // Ensure all seeds are connected in one 4-neighbour component via simple L-path bridges
+  for (let i = 1; i < validSeeds.length; i++) {
+    let cx = validSeeds[i - 1]!.x;
+    let cy = validSeeds[i - 1]!.y;
+    const tx = validSeeds[i]!.x;
+    const ty = validSeeds[i]!.y;
+    while (cx !== tx) {
+      cx += cx < tx ? 1 : -1;
+      land[`${cx}_${cy}`] = 'basic-block';
+    }
+    while (cy !== ty) {
+      cy += cy < ty ? 1 : -1;
+      land[`${cx}_${cy}`] = 'basic-block';
+    }
+  }
+
+  // Expand by adding random 4-neighbours until we reach clampedTarget
+  while (Object.keys(land).length < clampedTarget) {
+    const frontier = computeExpandRing(land, gridSize);
+    if (frontier.length === 0) break;
+    const pick = frontier[Math.floor(rng() * frontier.length)]!;
+    land[`${pick.x}_${pick.y}`] = 'basic-block';
+  }
+
+  return land;
+}
+
+/**
+ * Computes every empty 4-neighbour cell adjacent to owned land within [0, gridSize).
+ */
+export function computeExpandRing(
+  land: Record<string, GroundTileType>,
+  gridSize: number,
+): GridCoord[] {
+  const seen = new Set<string>();
+  const ring: GridCoord[] = [];
+
+  for (const key of Object.keys(land)) {
+    const [xs, ys] = key.split('_');
+    const x = Number(xs);
+    const y = Number(ys);
+    if (!Number.isInteger(x) || !Number.isInteger(y)) continue;
+
+    for (const dir of CARDINAL_DIRS) {
+      const nx = x + dir.x;
+      const ny = y + dir.y;
+      if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) continue;
+      const nKey = `${nx}_${ny}`;
+      if (land[nKey] || seen.has(nKey)) continue;
+      seen.add(nKey);
+      ring.push({ x: nx, y: ny });
+    }
+  }
+
+  ring.sort((a, b) => a.x + a.y - (b.x + b.y) || a.x - b.x || a.y - b.y);
+  return ring;
+}
+
+/**
+ * Checks whether (x, y) is an unowned cell 4-adjacent to at least one owned cell.
+ */
+export function isCellInExpandRing(
+  land: Record<string, GroundTileType>,
+  gridSize: number,
+  x: number,
+  y: number,
+): boolean {
+  if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
+  if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) return false;
+  if (land[`${x}_${y}`]) return false;
+
+  for (const dir of CARDINAL_DIRS) {
+    if (land[`${x + dir.x}_${y + dir.y}`]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Breadth-first search pathfinder on owned walkable ground tiles, avoiding blocked cells
+ * (water, shores, buildings, decor). Returns the path including start and goal, or null if unreachable.
+ */
+export function findWalkablePath(params: {
+  start: GridCoord;
+  goal: GridCoord;
+  land: Record<string, GroundTileType>;
+  blockedKeys: ReadonlySet<string>;
+  allowGoalBlocked?: boolean;
+}): GridCoord[] | null {
+  const { start, goal, land, blockedKeys, allowGoalBlocked = false } = params;
+  const startKey = `${start.x}_${start.y}`;
+  const goalKey = `${goal.x}_${goal.y}`;
+
+  if (startKey === goalKey) return [{ ...start }];
+
+  const goalGround = land[goalKey];
+  if (!isGroundWalkable(goalGround)) return null;
+  if (!allowGoalBlocked && blockedKeys.has(goalKey)) return null;
+
+  const visited = new Set<string>([startKey]);
+  const parent = new Map<string, string>();
+  const coords = new Map<string, GridCoord>([[startKey, { ...start }]]);
+  const queue: GridCoord[] = [{ ...start }];
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    const currKey = `${curr.x}_${curr.y}`;
+
+    for (const dir of CARDINAL_DIRS) {
+      const nx = curr.x + dir.x;
+      const ny = curr.y + dir.y;
+      const nKey = `${nx}_${ny}`;
+      if (visited.has(nKey)) continue;
+
+      const ground = land[nKey];
+      if (!isGroundWalkable(ground)) continue;
+
+      const isGoal = nKey === goalKey;
+      if (!isGoal && blockedKeys.has(nKey)) continue;
+
+      visited.add(nKey);
+      parent.set(nKey, currKey);
+      coords.set(nKey, { x: nx, y: ny });
+
+      if (isGoal) {
+        const path: GridCoord[] = [];
+        let trace: string | undefined = goalKey;
+        while (trace) {
+          path.push(coords.get(trace)!);
+          trace = parent.get(trace);
+        }
+        path.reverse();
+        return path;
+      }
+
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  return null;
+}
+

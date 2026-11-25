@@ -80,7 +80,14 @@ import {
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
-import { buildItem, buyFarmPlot, getTownCatalog, moveTile, removeTile } from './town-actions.js';
+import {
+  buildItem,
+  buyFarmPlot,
+  buyLandTile,
+  getTownCatalog,
+  moveTile,
+  removeTile,
+} from './town-actions.js';
 import { deliverOrder, getOrCreateDailyOrders, harvestCrop, plantCrop } from './town-farming.js';
 import { getTownVisit, likeTown } from './town-snapshots.js';
 import { createCoinCheckoutSession, handleTownStripeWebhook } from './town-purchase.js';
@@ -190,7 +197,27 @@ export const api = onRequest(apiOptions, async (req, res) => {
       const db = getDb();
       try {
         const result = await initPlayerTown(db, uid);
-        res.status(200).json(result);
+        const [tilesSnap, walletSnap] = await Promise.all([
+          db.collection('users').doc(uid).collection('townTiles').get(),
+          db.collection('users').doc(uid).collection('wallet').doc('main').get(),
+        ]);
+        const tiles: Record<string, unknown> = {};
+        for (const doc of tilesSnap.docs) {
+          const data = doc.data();
+          const serializeTs = (val: unknown) => {
+            if (val && typeof (val as { toMillis?: () => number }).toMillis === 'function') {
+              return new Date((val as { toMillis: () => number }).toMillis()).toISOString();
+            }
+            return val;
+          };
+          tiles[doc.id] = {
+            ...data,
+            ...(data.plantedAt ? { plantedAt: serializeTs(data.plantedAt) } : {}),
+            ...(data.readyAt ? { readyAt: serializeTs(data.readyAt) } : {}),
+          };
+        }
+        const walletBalance = walletSnap.exists ? Number(walletSnap.data()?.balance ?? 0) : 0;
+        res.status(200).json({ ...result, tiles, walletBalance });
         return;
       } catch (err: any) {
         if (err.message?.includes('disabled')) {
@@ -288,6 +315,27 @@ export const api = onRequest(apiOptions, async (req, res) => {
         return;
       } catch (err: any) {
         res.status(400).json({ error: err.message || 'Plot purchase failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/buy-land') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await buyLandTile(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+          groundType: String(body.groundType ?? ''),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Land purchase failed' });
         return;
       }
     }

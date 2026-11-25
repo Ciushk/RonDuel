@@ -1,5 +1,10 @@
 import { FieldValue, type Firestore, Timestamp } from 'firebase-admin/firestore';
-import type { TownDoc, TownTileDoc, TownInventoryDoc } from '@ronduel/shared';
+import {
+  generateStarterLand,
+  type TownDoc,
+  type TownTileDoc,
+  type TownInventoryDoc,
+} from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
 import { creditWallet } from './town-wallet.js';
 
@@ -12,7 +17,7 @@ export interface InitTownResult {
  * Idempotently initializes a player's starting town.
  * If town already exists, returns existing town without modifications.
  * If not, provisions starting 8x8 town with 1 Starter House, 2 villagers,
- * 2 farm plots, and credits 100 starter coins to the 'town' bucket.
+ * 2 farm plots, 5-8 edge-connected starter grass tiles, and credits 100 starter coins to the 'town' bucket.
  */
 export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTownResult> {
   const economy = await assertTownFeatureEnabled(db);
@@ -32,6 +37,15 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
       };
     }
 
+    const starterLand = generateStarterLand(
+      [
+        { x: 3, y: 3 },
+        { x: 3, y: 4 },
+        { x: 4, y: 4 },
+      ],
+      8,
+    );
+
     const newTown: TownDoc = {
       gridSize: 8,
       population: 2,
@@ -44,6 +58,7 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
       tutorialStep: 0,
       likesCount: 0,
       plotsOwned: 2,
+      land: starterLand,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     };

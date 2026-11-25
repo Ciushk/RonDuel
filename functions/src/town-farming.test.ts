@@ -118,6 +118,27 @@ describe('town-farming server business logic', () => {
         'already has a growing crop',
       );
     });
+
+    it('plants cabbage directly on an owned grass tile and converts ground to dirt', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        maxLevelReached: 1,
+        tutorialStep: 1,
+        land: { '3_3': 'basic-block', '2_3': 'basic-block' },
+      });
+
+      const res = await plantCrop(mockDb, 'u1', { x: 2, y: 3, cropId: 'cabbage' });
+      expect(res.success).toBe(true);
+      expect(res.tile.cropId).toBe('cabbage');
+      expect(res.tile.itemId).toBe('plot');
+
+      const town = store.get('users/u1/town/main') as any;
+      expect(town.land['2_3']).toBe('basic-block-dirt');
+
+      const wallet = store.get('users/u1/wallet/main') as any;
+      expect(wallet.balance).toBe(95); // 100 - 5
+    });
   });
 
   describe('harvestCrop', () => {

@@ -4,9 +4,15 @@ import {
   calculateTownCapacities,
   calculateTownLevel,
   DEFAULT_TOWN_CATALOG,
+  generateStarterLand,
   getGridSizeForLevel,
   getPlotPrice,
+  isCellInExpandRing,
+  isGroundTileType,
+  isGroundWalkable,
+  LAND_PRICES,
   type CatalogItem,
+  type GroundTileType,
   type TownCatalogDoc,
   type TownDoc,
   type TownTileDoc,
@@ -103,11 +109,21 @@ export async function buildItem(
       throw new Error(`Maximum limit of ${item.maxCount} reached for this item`);
     }
 
-    // Check collision for footprint
+    // Check collision for footprint (and owned walkable land if town uses isometric land map)
+    const hasLandMap = Boolean(townData.land && Object.keys(townData.land).length > 0);
     const occupiedKeys = new Set(existingTiles.map((t) => `${t.x}_${t.y}`));
     for (let dx = 0; dx < w; dx++) {
       for (let dy = 0; dy < h; dy++) {
         const coordKey = `${params.x + dx}_${params.y + dy}`;
+        if (hasLandMap) {
+          const ground = townData.land?.[coordKey];
+          if (!ground) {
+            throw new Error(`Tile (${params.x + dx}, ${params.y + dy}) is not owned land`);
+          }
+          if (!isGroundWalkable(ground)) {
+            throw new Error(`Cannot build on water or shoreline at (${params.x + dx}, ${params.y + dy})`);
+          }
+        }
         if (occupiedKeys.has(coordKey)) {
           throw new Error(`Tile (${params.x + dx}, ${params.y + dy}) is already occupied`);
         }
@@ -357,6 +373,24 @@ export async function moveTile(
       throw new Error('Destination out of bounds');
     }
 
+    const hasLandMap = Boolean(townData.land && Object.keys(townData.land).length > 0);
+    if (hasLandMap) {
+      for (let dx = 0; dx < w; dx++) {
+        for (let dy = 0; dy < h; dy++) {
+          const destKey = `${params.toX + dx}_${params.toY + dy}`;
+          const ground = townData.land?.[destKey];
+          if (!ground) {
+            throw new Error(`Destination tile (${params.toX + dx}, ${params.toY + dy}) is not owned land`);
+          }
+          if (!isGroundWalkable(ground)) {
+            throw new Error(
+              `Cannot move onto water or shoreline at (${params.toX + dx}, ${params.toY + dy})`,
+            );
+          }
+        }
+      }
+    }
+
     // Check collision at destination
     const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
     for (const doc of tilesSnap.docs) {
@@ -516,3 +550,92 @@ export async function buyFarmPlot(
   await publishTownSnapshot(db, uid).catch(() => {});
   return result;
 }
+
+export async function buyLandTile(
+  db: Firestore,
+  uid: string,
+  params: { x: number; y: number; groundType: string },
+): Promise<{
+  success: boolean;
+  cost: number;
+  x: number;
+  y: number;
+  groundType: GroundTileType;
+  land: Record<string, GroundTileType>;
+}> {
+  await assertTownFeatureEnabled(db);
+
+  if (!isGroundTileType(params.groundType)) {
+    throw new Error(`Invalid ground type: ${params.groundType}`);
+  }
+  const groundType: GroundTileType = params.groundType;
+
+  const townRef = db.collection('users').doc(uid).collection('town').doc('main');
+
+  const result = await db.runTransaction(async (tx) => {
+    const townSnap = await tx.get(townRef);
+    if (!townSnap.exists) {
+      throw new Error('Town not initialized');
+    }
+    const townData = townSnap.data() as TownDoc;
+    const gridSize = townData.gridSize ?? 8;
+
+    let currentLand: Record<string, GroundTileType> =
+      townData.land && Object.keys(townData.land).length > 0 ? { ...townData.land } : {};
+
+    if (Object.keys(currentLand).length === 0) {
+      // Backfill land from existing tiles for legacy towns created before isometric land
+      const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
+      const seeds = tilesSnap.docs.map((d) => {
+        const t = d.data() as TownTileDoc;
+        return { x: t.x, y: t.y };
+      });
+      currentLand = generateStarterLand(
+        seeds.length > 0 ? seeds : [{ x: 3, y: 3 }],
+        gridSize,
+      );
+    }
+
+    if (!isCellInExpandRing(currentLand, gridSize, params.x, params.y)) {
+      throw new Error(
+        `Tile (${params.x}, ${params.y}) must be an empty cell adjacent to owned land within bounds`,
+      );
+    }
+
+    const cost = LAND_PRICES[groundType];
+    if (cost > 0) {
+      await debitWallet({
+        transaction: tx,
+        db,
+        uid,
+        amount: cost,
+        reason: 'spend',
+        refId: `land:${groundType}`,
+        idempotencyKey: `buy_land:${uid}:${params.x}_${params.y}:${Date.now()}`,
+      });
+    }
+
+    const nextLand: Record<string, GroundTileType> = {
+      ...currentLand,
+      [`${params.x}_${params.y}`]: groundType,
+    };
+
+    tx.update(townRef, {
+      land: nextLand,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    return {
+      success: true,
+      cost,
+      x: params.x,
+      y: params.y,
+      groundType,
+      land: nextLand,
+    };
+  });
+
+  await publishTownSnapshot(db, uid).catch(() => {});
+  return result;
+}
+
