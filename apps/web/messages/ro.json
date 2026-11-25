@@ -798,7 +798,16 @@
       "friends": "Prieteni",
       "coins": "Monede",
       "help": "Ajutor",
-      "toggle": "Comută meniul"
+      "toggle": "Comută meniul",
+      "ariaLabel": "Acțiuni RonTown",
+      "move": "Mută",
+      "farm": "Recoltează",
+      "visit": "Vizitează",
+      "hideBar": "Ascunde bara de acțiuni",
+      "showBar": "Arată bara de acțiuni",
+      "seedMenu": "Semințe de cultură",
+      "plantSeed": "Plantează {crop}",
+      "more": "Meniu oraș"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -906,6 +915,10 @@
       "ronduel_statue": {
         "name": "Statuia RonDuel",
         "desc": "Statuie măreață deblocată cu o serie de 100 de zile consecutive."
+      },
+      "lantern": {
+        "name": "Felinar din Lemn",
+        "desc": "Felinar rustic din lemn care luminează aleile orașului."
       }
     },
     "crops": {
@@ -928,6 +941,10 @@
       "pumpkin": {
         "name": "Dovleac",
         "desc": "Recoltă uriașă. Crește în 48 de ore."
+      },
+      "cabbage": {
+        "name": "Varză",
+        "desc": "Căpățâni proaspete de varză. Crește în 6 ore."
       }
     },
     "orders": {
@@ -1016,6 +1033,42 @@
       "hours": "{count, plural, one {# oră} few {# ore} other {# de ore}}",
       "minutes": "{count, plural, one {# minut} few {# minute} other {# de minute}}",
       "days": "{count, plural, one {# zi} few {# zile} other {# de zile}}"
+    },
+    "land": {
+      "title": "Cumpără teren",
+      "subtitle": "Extinde orașul pe parcela ({x}, {y})",
+      "close": "Închide panoul de teren",
+      "chooseGround": "Alege tipul de teren",
+      "expandAria": "Extinde terenul la ({x}, {y})",
+      "buyButton": "Cumpără {label} · {price} RonCoins",
+      "buying": "Se cumpără...",
+      "shortCoins": "Mai ai nevoie de {needed} RonCoins (costă {price} RonCoins).",
+      "types": {
+        "grass": "Iarbă",
+        "flowers": "Pajiște cu flori",
+        "flowersTwo": "Flori de câmp",
+        "dirt": "Pământ",
+        "street": "Alee",
+        "streetCurve": "Alee curbată",
+        "intersection": "Intersecție",
+        "water": "Apă",
+        "waterTwo": "Apă cu valuri",
+        "shoreHalf": "Mal",
+        "shoreCorner": "Colț de plajă",
+        "shoreEdge": "Țărm"
+      }
+    },
+    "map": {
+      "regionAria": "Harta izometrică RonTown",
+      "groundCell": "Teren ({x}, {y})",
+      "readyShort": "Gata",
+      "harvestBadgeAria": "Recoltează {crop} la ({x}, {y})",
+      "placingBanner": "Apasă pe un teren liber pentru a plasa {item}",
+      "movingPickBanner": "Apasă pe o clădire sau un decor pentru a-l muta",
+      "movingDestBanner": "Apasă pe un teren liber pentru a muta ({x}, {y})",
+      "plantingBanner": "Apasă pe iarbă, pământ sau o parcelă liberă pentru a planta {crop}",
+      "cancel": "Anulează",
+      "helpBody": "Apasă pe terenurile cu X verde pentru a te extinde, folosește Construiește pentru case și servicii, Recoltează pentru semințe și apasă secera aurie pentru a trimite sătenii la cules."
     }
   }
 }

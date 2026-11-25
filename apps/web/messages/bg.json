@@ -798,7 +798,16 @@
       "friends": "Приятели",
       "coins": "Монети",
       "help": "Помощ",
-      "toggle": "Лента с инструменти"
+      "toggle": "Лента с инструменти",
+      "ariaLabel": "RonTown actions",
+      "move": "Move",
+      "farm": "Farm",
+      "visit": "Visit",
+      "hideBar": "Hide action bar",
+      "showBar": "Show action bar",
+      "seedMenu": "Crop seeds",
+      "plantSeed": "Plant {crop}",
+      "more": "Town menu"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -906,6 +915,10 @@
       "ronduel_statue": {
         "name": "Статуя RonDuel",
         "desc": "Величествена статуя за серия от 100 дни."
+      },
+      "lantern": {
+        "name": "Street Lantern",
+        "desc": "Warm wooden post lantern glowing along town paths."
       }
     },
     "crops": {
@@ -928,6 +941,10 @@
       "pumpkin": {
         "name": "Тиква",
         "desc": "Гигантска реколта. Расте за 48 часа."
+      },
+      "cabbage": {
+        "name": "Cabbage",
+        "desc": "Crisp green cabbage heads. Grows in 6 hours."
       }
     },
     "orders": {
@@ -1016,6 +1033,42 @@
       "hours": "{count, plural, one {# час} other {# часа}}",
       "minutes": "{count, plural, one {# минута} other {# минути}}",
       "days": "{count, plural, one {# ден} other {# дни}}"
+    },
+    "land": {
+      "title": "Buy land",
+      "subtitle": "Expand onto tile ({x}, {y})",
+      "close": "Close buy land sheet",
+      "chooseGround": "Choose ground tile type",
+      "expandAria": "Expand land at ({x}, {y})",
+      "buyButton": "Buy {label} · {price} RonCoins",
+      "buying": "Buying...",
+      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "types": {
+        "grass": "Grass",
+        "flowers": "Meadow",
+        "flowersTwo": "Wildflowers",
+        "dirt": "Dirt",
+        "street": "Path",
+        "streetCurve": "Curved Path",
+        "intersection": "Crossroads",
+        "water": "Water",
+        "waterTwo": "Rippled Water",
+        "shoreHalf": "Shoreline",
+        "shoreCorner": "Beach Corner",
+        "shoreEdge": "Waterfront"
+      }
+    },
+    "map": {
+      "regionAria": "RonTown isometric map",
+      "groundCell": "Ground tile ({x}, {y})",
+      "readyShort": "Ready",
+      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
+      "placingBanner": "Tap an owned green tile to place {item}",
+      "movingPickBanner": "Tap any building or decor to move it",
+      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
+      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
+      "cancel": "Cancel",
+      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting."
     }
   }
 }
