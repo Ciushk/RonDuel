@@ -1899,8 +1899,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   }));
 
   let allTimeMembers = Object.values(league.members)
-    .filter((m) => (m.allTimeScore || 0) > 0 && (m.roundsPlayed || 0) > 0)
-    .sort((a, b) => b.allTimeScore - a.allTimeScore);
+    .sort((a, b) => (b.allTimeScore || 0) - (a.allTimeScore || 0));
 
   if (countryFilter) {
     allTimeMembers = allTimeMembers.filter((m) => {
@@ -1921,8 +1920,8 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
     rank: idx + 1,
     uid: member.uid,
     nickname: sanitizeDisplayName(store.users[member.uid]?.nickname || member.nickname, member.uid),
-    allTimeScore: member.allTimeScore,
-    roundsPlayed: member.roundsPlayed,
+    allTimeScore: member.allTimeScore || 0,
+    roundsPlayed: member.roundsPlayed || 0,
     joinedAt: member.joinedAt,
     scoreToday:
       viewerFinishedToday || !isWorld ? (league.days[today]?.[member.uid]?.score ?? null) : null,
@@ -2495,15 +2494,35 @@ export function getUserDuels(uid: string) {
   }).length;
   const maxMonthly = user.pro.active ? PRO_LIMITS.maxMonthlyDuels : FREE_LIMITS.maxMonthlyDuels;
 
+  let totalScore = 0;
+  for (const d of finished) {
+    totalScore += (d.myScore ?? 0);
+  }
+
+  const finishedWins = finished.filter((d) => d.isWinner).length;
+  const finishedDraws = finished.filter((d) => d.isTie).length;
+  const finishedLosses = finished.filter((d) => !d.isWinner && !d.isTie).length;
+
+  const wins = Math.max(user.duelStats?.wins ?? 0, finishedWins);
+  const draws = Math.max(user.duelStats?.draws ?? 0, finishedDraws);
+  const losses = Math.max(user.duelStats?.losses ?? 0, finishedLosses);
+
   return {
     yourTurn,
     waiting,
     finished,
-    isPro: user.pro.active,
+    isPro: Boolean(user.pro?.active),
     activeCount,
     maxActive,
     monthlyCount,
     maxMonthly,
+    stats: {
+      totalScore,
+      wins,
+      losses,
+      draws,
+      played: wins + losses + draws,
+    },
   };
 }
 

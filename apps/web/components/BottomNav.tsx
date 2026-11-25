@@ -174,9 +174,7 @@ export function BottomNav({ desktopSidebar = false }: BottomNavProps) {
     badge: null,
   };
 
-  const tabs = townEnabled
-    ? [todayTab, leaguesTab, townTab, duelsTab, profileTab]
-    : [todayTab, leaguesTab, duelsTab, profileTab];
+  const tabs = [todayTab, leaguesTab, townTab, duelsTab, profileTab];
 
   const handleTabClick = (
     tabKey: 'today' | 'leagues' | 'town' | 'duels' | 'profile',

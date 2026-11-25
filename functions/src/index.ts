@@ -42,6 +42,7 @@ import {
   getPlayResult,
   getRoundMeta,
   getTodayStatus,
+  getUserDuels,
   getUserProfile,
   joinLeague,
   leaveOrRemoveLeagueMember,
@@ -553,6 +554,9 @@ export const api = onRequest(apiOptions, async (req, res) => {
       const tz = url.searchParams.get('tz') ?? 'UTC';
       const rawLeagues = url.searchParams.get('leagues');
       const clientLeagueIds = rawLeagues ? rawLeagues.split(',').filter(Boolean) : undefined;
+      if (uid && uid !== 'anon' && uid !== 'u_ssr' && !getStore().users[uid]) {
+        await getUserFromFirestore(uid);
+      }
       res.status(200).json(getTodayStatus(uid, tz, clientLeagueIds));
       return;
     }
@@ -701,6 +705,19 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
     }
 
+    if (method === 'GET' && pathname === '/duels') {
+      const uid = url.searchParams.get('uid') ?? 'anon';
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(400).json({ error: 'Missing uid' });
+        return;
+      }
+      if (!getStore().users[uid]) {
+        await getUserFromFirestore(uid);
+      }
+      res.status(200).json(getUserDuels(uid));
+      return;
+    }
+
     if (method === 'POST' && pathname === '/duels') {
       const d = createDuel({
         challengerUid: String(body.challengerUid),
@@ -779,6 +796,11 @@ export const api = onRequest(apiOptions, async (req, res) => {
         const updated = changeUserNickname({ uid, newNickname: nickname });
         const user = getOrCreateUser({ uid });
         await syncUserToFirestore(user);
+        try {
+          await getAuth().updateUser(uid, { displayName: nickname });
+        } catch {
+          // Auth user might not exist or be anonymous
+        }
         res.status(200).json(updated);
       } catch (err: any) {
         res.status(400).json({

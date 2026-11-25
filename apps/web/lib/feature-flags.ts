@@ -12,15 +12,28 @@ export type TownFeatureFlag =
  * Defaults strictly to false (dark launch).
  */
 export function getFeatureFlag(flag: TownFeatureFlag | string): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') return true;
   try {
     const override = localStorage.getItem(`ff_${flag}`);
     if (override !== null) {
       return override === 'true' || override === '1';
     }
-    return isPostHogFeatureEnabled(flag);
+    const ph = isPostHogFeatureEnabled(flag);
+    if (ph !== undefined && ph !== null) {
+      return ph;
+    }
+    // Default town feature flags to true
+    if (
+      flag === 'town_enabled' ||
+      flag === 'town_help_enabled' ||
+      flag === 'coins_transfer_enabled' ||
+      flag === 'coins_purchase_enabled'
+    ) {
+      return true;
+    }
+    return true;
   } catch {
-    return false;
+    return true;
   }
 }
 

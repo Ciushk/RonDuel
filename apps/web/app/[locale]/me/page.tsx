@@ -25,7 +25,7 @@ import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
 import { GuestAccountNotice } from '@/components/GuestAccountNotice';
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
-import { logoutUser } from '@/lib/firebase';
+import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import { clearLocalSession, getLocalSession, saveLocalSession } from '@/lib/session';
 
@@ -273,6 +273,12 @@ export default function ProfilePage() {
 
       const s = getLocalSession();
       saveLocalSession({ ...s, nickname: data.nickname });
+      try {
+        const auth = getFirebaseAuth();
+        if (auth?.currentUser) {
+          await updateProfile(auth.currentUser, { displayName: data.nickname });
+        }
+      } catch {}
       setToast(t('profile.nicknameUpdated'));
       setNickModalOpen(false);
       loadProfile();

@@ -483,6 +483,27 @@ export default function LocaleHomePage() {
         </Button>
       </Link>
 
+      {/* RonTown Entry Card */}
+      <Link href={`/${locale}/town`} className="block">
+        <div className="border-border bg-surface text-ink hover:border-volt hover:bg-surface-2 flex items-center justify-between gap-3 rounded-2xl border-2 p-3.5 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-[#C6FF3D] text-2xl shadow-sm">
+              🏡
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-display font-black text-sm text-ink truncate">RonTown</span>
+                <span className="bg-[#C6FF3D] text-[#0E0D15] text-[10px] font-black px-1.5 py-0.2 rounded border border-border">JOC</span>
+              </div>
+              <p className="text-muted text-xs font-medium truncate">Construiește-ți orașul, recoltează și adună bănuți!</p>
+            </div>
+          </div>
+          <Button size="sm" variant="volt" className="shrink-0 h-9 px-3 text-xs font-black">
+            {t('common.playNow')}
+          </Button>
+        </div>
+      </Link>
+
       {/* Two Equal Action Buttons: Create league & Join league */}
       <div className="grid grid-cols-2 gap-3">
         <Button

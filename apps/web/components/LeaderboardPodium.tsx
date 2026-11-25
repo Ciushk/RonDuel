@@ -113,27 +113,42 @@ export function StickyUserRank({ myRank, myScore, myNickname, myUid, label }: St
   const rankLabel = label ?? t('common.yourRank');
   const [isInViewport, setIsInViewport] = useState(false);
   const barRef = useRef<HTMLElement>(null);
-  const visible = Boolean(myRank || myScore != null);
-  useBottomStack('sticky-user-rank', barRef, visible);
+  const isCardVisible = Boolean(myRank || myScore != null) && !isInViewport;
+  useBottomStack('sticky-user-rank', barRef, isCardVisible);
 
   useEffect(() => {
     if (!myUid || typeof window === 'undefined') return;
-    const target = document.getElementById(`rank-row-${myUid}`);
-    if (!target) return;
+    let observer: IntersectionObserver | null = null;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        setIsInViewport(Boolean(entry?.isIntersecting));
-      },
-      { threshold: 0.25 },
-    );
+    const findAndObserve = () => {
+      const target = document.getElementById(`rank-row-${myUid}`);
+      if (!target) {
+        setIsInViewport(false);
+        return;
+      }
+      observer?.disconnect();
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          setIsInViewport(Boolean(entry?.isIntersecting));
+        },
+        { threshold: 0.1 },
+      );
+      observer.observe(target);
+    };
 
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [myUid]);
+    findAndObserve();
+    const timer1 = setTimeout(findAndObserve, 200);
+    const timer2 = setTimeout(findAndObserve, 800);
 
-  if (!visible) return null;
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      observer?.disconnect();
+    };
+  }, [myUid, myRank, myScore]);
+
+  if (!isCardVisible) return null;
 
   const handleScrollToMe = () => {
     if (!myUid || typeof window === 'undefined') return;

@@ -8,7 +8,27 @@ import {
   registerWithEmail,
   updateProfile,
 } from '@/lib/firebase';
+import { isAutoNickname } from '@/lib/onboarding-profile';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
+
+function choosePreferredNickname(
+  explicit?: string,
+  sessionNick?: string,
+  authDisplayName?: string | null,
+): string {
+  const cleanExplicit = (explicit ?? '').trim();
+  if (cleanExplicit) return cleanExplicit;
+
+  const cleanSession = (sessionNick ?? '').trim();
+  if (cleanSession && !isAutoNickname(cleanSession)) {
+    return cleanSession;
+  }
+
+  const cleanAuth = (authDisplayName ?? '').trim();
+  if (cleanAuth) return cleanAuth;
+
+  return cleanSession || '';
+}
 
 export interface SavedAccount {
   uid: string;
@@ -82,7 +102,12 @@ export async function linkSessionWithGoogle(): Promise<SavedAccount> {
     (error as { code?: string }).code = 'auth/no-email';
     throw error;
   }
-  const nickname = linked.user.displayName || session.nickname;
+  const nickname = choosePreferredNickname(undefined, session.nickname, linked.user.displayName);
+  if (linked.user && nickname && linked.user.displayName !== nickname) {
+    try {
+      await updateProfile(linked.user, { displayName: nickname });
+    } catch {}
+  }
   const data = await postUpgrade({
     uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
     targetUid: linked.merged ? linked.user.uid : undefined,
@@ -132,7 +157,12 @@ export async function linkSessionWithPassword(params: {
     }
   }
   const email = linked.user.email || params.email.trim();
-  const nickname = params.nickname || linked.user.displayName || session.nickname;
+  const nickname = choosePreferredNickname(params.nickname, session.nickname, linked.user.displayName);
+  if (linked.user && nickname && linked.user.displayName !== nickname) {
+    try {
+      await updateProfile(linked.user, { displayName: nickname });
+    } catch {}
+  }
   const data = await postUpgrade({
     uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
     targetUid: linked.merged ? linked.user.uid : undefined,

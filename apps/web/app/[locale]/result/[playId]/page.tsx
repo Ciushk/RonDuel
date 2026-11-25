@@ -2,6 +2,7 @@
 
 import {
   CheckCircle,
+  Clock,
   Flame,
   GlobeHemisphereWest,
   ShareNetwork,
@@ -85,6 +86,7 @@ export default function ResultPage() {
     'wrong_answer',
   );
   const [isReporting, setIsReporting] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
 
   const townEnabled = useFeatureFlag('town_enabled');
   const [userIsPro, setUserIsPro] = useState(false);
@@ -197,6 +199,23 @@ export default function ResultPage() {
       clearTimeout(completeTimer);
     };
   }, [data]);
+
+  useEffect(() => {
+    if (!data) return;
+    setSecondsRemaining(15);
+    const interval = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev === null) return null;
+        if (prev <= 1) {
+          clearInterval(interval);
+          router.push(returnTo || `/${locale}`);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [data, locale, returnTo, router]);
 
   useEffect(() => {
     const session = getLocalSession();
@@ -527,6 +546,27 @@ export default function ResultPage() {
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
+      {/* 15-second Auto-Redirect Countdown */}
+      {secondsRemaining !== null && (
+        <div className="border-border bg-surface text-ink flex items-center justify-between gap-2 rounded-2xl border-2 p-3 text-xs font-bold shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]">
+          <div className="flex items-center gap-2">
+            <span className="bg-volt-strong flex h-2.5 w-2.5 animate-pulse rounded-full" />
+            <span>
+              Revenire la pagina principală în{' '}
+              <strong className="rd-tabular text-ron-strong font-black">{secondsRemaining}s</strong>
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-8 px-2.5 text-xs font-bold"
+            onClick={() => router.push(returnTo || `/${locale}`)}
+          >
+            {t('result.backHome')}
+          </Button>
+        </div>
+      )}
+
       {/* Warning banner for unlinked anonymous users */}
       {!isAccountLinked && !showSlimBanner && (
         <Card
