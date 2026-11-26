@@ -259,8 +259,9 @@ export function RonBotMascot() {
         t('ronbot.suggestPro'),
       ];
 
-  const isAdminRoute = Boolean(pathname?.includes('/admin'));
-  if (isPlayPage || isAdminRoute || !splashFinished) return null;
+  const isAdminRoute = Boolean(pathname && /(?:^|\/)admin(?:\/|$)/.test(pathname));
+  const isTownRoute = Boolean(pathname && /^\/[a-z]{2}(?:-[a-z]{2})?\/town(?:\/|$)/i.test(pathname));
+  if (isTownRoute || isPlayPage || isAdminRoute || !splashFinished) return null;
 
   const lastAssistantId = [...messages]
     .reverse()
