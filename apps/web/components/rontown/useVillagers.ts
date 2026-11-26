@@ -7,7 +7,7 @@ import {
   type GridCoord,
   type GroundTileType,
 } from '@ronduel/shared';
-import { getVillagerFeetPoint, isoToScreen } from './iso';
+import { getVillagerFeetPoint, isoToScreen, objectZ, Z_LAYER } from './iso';
 import { RESIDENT_VILLAGER_KINDS, VILLAGER_SPRITES, type VillagerKind } from './sprites';
 
 /** Configurable villager movement & animation constants. */
@@ -209,7 +209,7 @@ export function useVillagers({
       v.lastTransform = nextTransform;
     }
 
-    const nextZ = String(Math.round((v.col + v.row) * 10) + 6);
+    const nextZ = String(objectZ(v.col + v.row, Z_LAYER.villager));
     if (v.lastZIndex !== nextZ) {
       handles.wrap.style.zIndex = nextZ;
       v.lastZIndex = nextZ;
@@ -257,10 +257,7 @@ export function useVillagers({
 
     if (fallbackCells.length === 0) return;
 
-    const desiredCount = Math.max(
-      1,
-      Math.min(population, VILLAGER_CONFIG.maxVisibleResidents),
-    );
+    const desiredCount = Math.max(1, Math.min(population, VILLAGER_CONFIG.maxVisibleResidents));
     const map = runtimesRef.current;
     const now = performance.now();
     let changed = false;
@@ -365,7 +362,9 @@ export function useVillagers({
       setVillagerList((prev) => {
         if (
           prev.length === nextList.length &&
-          prev.every((item, idx) => item.id === nextList[idx]?.id && item.kind === nextList[idx]?.kind)
+          prev.every(
+            (item, idx) => item.id === nextList[idx]?.id && item.kind === nextList[idx]?.kind,
+          )
         ) {
           return prev;
         }
@@ -553,13 +552,16 @@ export function useVillagers({
       if (needsContinuousFrame) {
         rafId = window.requestAnimationFrame(tick);
       } else if (Number.isFinite(earliestWakeMs) && earliestWakeMs < Infinity) {
-        wakeTimeoutId = window.setTimeout(() => {
-          wakeTimeoutId = null;
-          if (!document.hidden && rafId === null) {
-            lastTime = performance.now();
-            rafId = window.requestAnimationFrame(tick);
-          }
-        }, Math.max(50, Math.round(earliestWakeMs)));
+        wakeTimeoutId = window.setTimeout(
+          () => {
+            wakeTimeoutId = null;
+            if (!document.hidden && rafId === null) {
+              lastTime = performance.now();
+              rafId = window.requestAnimationFrame(tick);
+            }
+          },
+          Math.max(50, Math.round(earliestWakeMs)),
+        );
       }
     };
 

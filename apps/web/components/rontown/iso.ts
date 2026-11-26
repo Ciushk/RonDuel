@@ -6,6 +6,21 @@ export const TILE_W = 128;
 export const DIAMOND_H = 64;
 export const TILE_H = 76;
 
+/** Two-band isometric depth constants: flat floor slabs stay below all standing objects. */
+export const Z_FLOOR_BASE = 0; // flat slabs only
+export const Z_OBJECT_BASE = 1000; // everything that stands up
+export const Z_DEPTH_STEP = 100; // per (x+y) diagonal
+export const Z_LAYER = { crop: 20, building: 40, villager: 50, badge: 80 } as const;
+export const Z_UI = 50000; // tooltips and floating rewards above everything
+
+export function floorZ(x: number, y: number, sub = 0): number {
+  return Z_FLOOR_BASE + (x + y) * 2 + sub;
+}
+
+export function objectZ(depth: number, layer: number): number {
+  return Z_OBJECT_BASE + Math.round(depth * Z_DEPTH_STEP) + layer;
+}
+
 /** Placement cursor sprite dimensions (block-free-spot / button-taken-spot). */
 export const CURSOR_W = 206;
 export const CURSOR_H = 128;
@@ -91,12 +106,13 @@ export function getCursorPlacement(col: number, row: number): { x: number; y: nu
 
 /**
  * Feet anchor point for a villager standing at fractional or integer iso coordinates (col, row).
+ * Placed at the diamond center plus a small 4px grounding bias so anchor and depth match.
  */
 export function getVillagerFeetPoint(col: number, row: number): { x: number; y: number } {
   const origin = isoToScreen(col, row);
   return {
     x: origin.x + TILE_W / 2,
-    y: origin.y + DIAMOND_H - 8,
+    y: origin.y + DIAMOND_H / 2 + 4,
   };
 }
 

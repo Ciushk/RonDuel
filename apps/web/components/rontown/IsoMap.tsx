@@ -9,6 +9,7 @@ import {
   computeDisplayZoomRange,
   computeMapBounds,
   DIAMOND_H,
+  floorZ,
   formatDurationShort,
   getBuildingPlacement,
   getCropGrowthInfo,
@@ -17,8 +18,11 @@ import {
   getPanAxisLimits,
   getVillagerFeetPoint,
   isoToScreen,
+  objectZ,
   TILE_H,
   TILE_W,
+  Z_LAYER,
+  Z_UI,
 } from './iso';
 import {
   CATALOG_SPRITES,
@@ -172,7 +176,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               top,
               width: TILE_W,
               height: TILE_H,
-              zIndex: (x + y) * 10,
+              zIndex: floorZ(x, y),
             }}
           >
             <img
@@ -192,7 +196,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               onFocus={() => onHoverCell({ x, y })}
               onBlur={() => onHoverCell(null)}
               aria-label={cellLabel}
-              className="pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-3 focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
+              className="focus-visible:outline-3 pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
               style={{
                 width: TILE_W,
                 height: DIAMOND_H,
@@ -218,7 +222,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 top,
                 width: TILE_W,
                 height: TILE_H,
-                zIndex: (x + y) * 10,
+                zIndex: floorZ(x, y),
               }}
             >
               <img
@@ -238,7 +242,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 onFocus={() => onHoverCell({ x, y })}
                 onBlur={() => onHoverCell(null)}
                 aria-label={t('town.land.expandAria', { x, y })}
-                className="pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-3 focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
+                className="focus-visible:outline-3 pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
                 style={{
                   width: TILE_W,
                   height: DIAMOND_H,
@@ -251,7 +255,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
       {/* 3. Crops, roads, buildings, and decor */}
       {objectItems.map(({ key, tile, w, h, sortKey }) => {
-        // Road decor auto-picks street / curve / intersection
+        // Road decor auto-picks street / curve / intersection (floor band, sits over its ground slab)
         if (tile.itemId === 'road') {
           const spec = resolveRoadSprite(tile.x, tile.y, isRoadAt);
           const origin = isoToScreen(tile.x, tile.y);
@@ -268,7 +272,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               style={{
                 left: origin.x - boundsMinX,
                 top: origin.y - boundsMinY,
-                zIndex: sortKey * 10 + 2,
+                zIndex: floorZ(tile.x, tile.y, 1),
                 transform: spec.flipX ? 'scaleX(-1)' : undefined,
               }}
               draggable={false}
@@ -276,7 +280,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           );
         }
 
-        // Farm plot (empty dirt placeholder or growing/ready crop)
+        // Farm plot (empty dirt placeholder in floor band, or growing/ready crop in object band)
         if (tile.itemId === 'plot') {
           if (!tile.cropId) {
             const origin = isoToScreen(tile.x, tile.y);
@@ -293,7 +297,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 style={{
                   left: origin.x - boundsMinX,
                   top: origin.y - boundsMinY,
-                  zIndex: sortKey * 10 + 2,
+                  zIndex: floorZ(tile.x, tile.y, 1),
                 }}
                 draggable={false}
               />
@@ -326,7 +330,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 style={{
                   left: pos.x - boundsMinX,
                   top: pos.y - boundsMinY,
-                  zIndex: sortKey * 10 + 2,
+                  zIndex: objectZ(sortKey, Z_LAYER.crop),
                 }}
                 draggable={false}
               />
@@ -345,10 +349,10 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                   style={{
                     left: badgeCenterX,
                     top: badgeTopY,
-                    zIndex: sortKey * 10 + 8,
+                    zIndex: objectZ(sortKey, Z_LAYER.badge),
                     transform: 'translate(-50%, -35%)',
                   }}
-                  className="absolute flex min-h-[88px] min-w-[88px] cursor-pointer flex-col items-center justify-center gap-1 bg-transparent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default"
+                  className="focus-visible:outline-3 absolute flex min-h-[88px] min-w-[88px] cursor-pointer flex-col items-center justify-center gap-1 bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default"
                 >
                   <img
                     src={UI_SPRITES.farmReady.src}
@@ -368,7 +372,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                   style={{
                     left: badgeCenterX,
                     top: badgeTopY,
-                    zIndex: sortKey * 10 + 8,
+                    zIndex: objectZ(sortKey, Z_LAYER.badge),
                     transform: 'translate(-50%, -25%)',
                   }}
                   className="pointer-events-none absolute flex flex-col items-center gap-1"
@@ -406,7 +410,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 top: anchor.y - boundsMinY,
                 width: 96,
                 height: 96,
-                zIndex: anchor.sortKey * 10 + 4,
+                zIndex: objectZ(anchor.sortKey, Z_LAYER.building),
               }}
             >
               {tile.itemId.slice(0, 3)}
@@ -429,7 +433,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
             style={{
               left: placement.x - boundsMinX,
               top: placement.y - boundsMinY,
-              zIndex: placement.sortKey * 10 + 4,
+              zIndex: objectZ(placement.sortKey, Z_LAYER.building),
             }}
             draggable={false}
           />
@@ -655,7 +659,15 @@ export function IsoMap({
     }
     flushTransformNow();
     syncZoomButtons();
-  }, [viewportSize.w, viewportSize.h, stageW, stageH, zoomRange, flushTransformNow, syncZoomButtons]);
+  }, [
+    viewportSize.w,
+    viewportSize.h,
+    stageW,
+    stageH,
+    zoomRange,
+    flushTransformNow,
+    syncZoomButtons,
+  ]);
 
   // Cleanup rAF & transition timers on unmount
   useEffect(() => {
@@ -730,15 +742,7 @@ export function IsoMap({
       const worldY = (anchorY - cam.panY) / cam.zoom;
       const nextPanX = anchorX - worldX * clampedZoom;
       const nextPanY = anchorY - worldY * clampedZoom;
-      const clampedPan = clampPanPosition(
-        nextPanX,
-        nextPanY,
-        vp.w,
-        vp.h,
-        st.w,
-        st.h,
-        clampedZoom,
-      );
+      const clampedPan = clampPanPosition(nextPanX, nextPanY, vp.w, vp.h, st.w, st.h, clampedZoom);
 
       cam.zoom = clampedZoom;
       cam.panX = clampedPan.x;
@@ -1007,7 +1011,9 @@ export function IsoMap({
   const cursorOverlay = useMemo(() => {
     if (isVisitMode || !hoveredCell) return null;
     const { x, y } = hoveredCell;
-    const isInteractiveMode = Boolean(placingItemId || movingTile || moveModeActive || selectedSeed);
+    const isInteractiveMode = Boolean(
+      placingItemId || movingTile || moveModeActive || selectedSeed,
+    );
     if (!isInteractiveMode) return null;
 
     let isValid = false;
@@ -1034,7 +1040,7 @@ export function IsoMap({
       width: spec.width,
       height: spec.height,
       src: spec.src,
-      zIndex: (x + y) * 10 + 9,
+      zIndex: objectZ(x + y, 90),
     };
   }, [
     isVisitMode,
@@ -1054,7 +1060,9 @@ export function IsoMap({
   // Pixel-art tile info tooltip on hover/focus in explore mode (placed buildings/crops)
   const hoverTooltip = useMemo(() => {
     if (!hoveredCell) return null;
-    const isInteractiveMode = Boolean(placingItemId || movingTile || moveModeActive || selectedSeed);
+    const isInteractiveMode = Boolean(
+      placingItemId || movingTile || moveModeActive || selectedSeed,
+    );
     if (isInteractiveMode) return null;
 
     const raw = tiles[`${hoveredCell.x}_${hoveredCell.y}`];
@@ -1074,7 +1082,18 @@ export function IsoMap({
       top: origin.y - 26 - bounds.minY,
       label,
     };
-  }, [hoveredCell, placingItemId, movingTile, moveModeActive, selectedSeed, tiles, catalog, bounds.minX, bounds.minY, t]);
+  }, [
+    hoveredCell,
+    placingItemId,
+    movingTile,
+    moveModeActive,
+    selectedSeed,
+    tiles,
+    catalog,
+    bounds.minX,
+    bounds.minY,
+    t,
+  ]);
 
   const canZoomIn = zoomLimitsState.zoom < zoomLimitsState.maxZoom - 0.005;
   const canZoomOut = zoomLimitsState.zoom > zoomLimitsState.minZoom + 0.005;
@@ -1106,7 +1125,7 @@ export function IsoMap({
       onPointerCancel={finishPointer}
       onClickCapture={handleClickCapture}
       onKeyDown={handleKeyDown}
-      className={`relative h-full w-full flex-1 touch-none select-none overflow-hidden overscroll-none bg-[#132013] focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-[#C6FF3D] ${
+      className={`focus-visible:outline-3 relative h-full w-full flex-1 touch-none select-none overflow-hidden overscroll-none bg-[#132013] focus-visible:outline-offset-[-3px] focus-visible:outline-[#C6FF3D] ${
         tabHidden ? 'rt-paused' : ''
       }`}
     >
@@ -1147,12 +1166,13 @@ export function IsoMap({
           return (
             <div
               key={v.id}
+              data-villager-id={v.id}
               ref={(el) => registerDom(v.id, 'wrap', el)}
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 will-change-transform"
               style={{
                 transform: `translate3d(${initX}px, ${initY}px, 0)`,
-                zIndex: Math.round((v.initialX + v.initialY) * 10) + 6,
+                zIndex: objectZ(v.initialX + v.initialY, Z_LAYER.villager),
                 transition: reducedMotion ? 'opacity 180ms linear' : undefined,
               }}
             >
@@ -1163,6 +1183,7 @@ export function IsoMap({
               )}
               <img
                 ref={(el) => registerDom(v.id, 'img', el)}
+                data-villager-img={v.id}
                 src={spec.src}
                 alt=""
                 width={spec.width}
@@ -1202,7 +1223,7 @@ export function IsoMap({
               left: hoverTooltip.left,
               top: hoverTooltip.top,
               transform: 'translate(-50%, -100%)',
-              zIndex: 990,
+              zIndex: Z_UI,
             }}
           >
             {hoverTooltip.label}
@@ -1220,7 +1241,7 @@ export function IsoMap({
               style={{
                 left: origin.x + TILE_W / 2 - bounds.minX,
                 top: origin.y - 36 - bounds.minY,
-                zIndex: 999,
+                zIndex: Z_UI + 10,
               }}
             >
               {reward.text}
@@ -1250,7 +1271,7 @@ export function IsoMap({
           }
           aria-label={t('town.map.zoomIn')}
           title={t('town.map.zoomIn')}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
+          className="focus-visible:outline-3 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
         >
           +
         </button>
@@ -1268,7 +1289,7 @@ export function IsoMap({
           }
           aria-label={t('town.map.zoomOut')}
           title={t('town.map.zoomOut')}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
+          className="focus-visible:outline-3 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
         >
           −
         </button>

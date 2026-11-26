@@ -8,15 +8,20 @@ import {
   computeDisplayZoomRange,
   computeMapBounds,
   DIAMOND_H,
+  floorZ,
   getBuildingPlacement,
   getCropGrowthInfo,
   getCropPlacement,
   getCursorPlacement,
+  getVillagerFeetPoint,
   isoDiamondBottom,
   isoToScreen,
   MAX_RUBBER_BAND_PX,
+  objectZ,
   TILE_H,
   TILE_W,
+  Z_LAYER,
+  Z_UI,
 } from './iso';
 import {
   CATALOG_SPRITES,
@@ -259,6 +264,54 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
         const f = path.join(PUBLIC_RONTOWN_UI_DIR, `${prefix}-${sz}.png`);
         expect(fs.existsSync(f), `Missing ${prefix}-${sz}.png`).toBe(true);
         expect(readPngSize(f)).toEqual({ width: sz, height: sz });
+      }
+    }
+  });
+
+  it('keeps villager z above every floor slab across a 6x6 grid and all walk directions/progresses', () => {
+    // Max floor z across a 6x6 grid (including road/dirt sub=1)
+    let maxFloorZ = -Infinity;
+    for (let x = 0; x < 6; x++) {
+      for (let y = 0; y < 6; y++) {
+        maxFloorZ = Math.max(maxFloorZ, floorZ(x, y, 0), floorZ(x, y, 1));
+      }
+    }
+
+    const dirs = [
+      { dx: 1, dy: 0 },
+      { dx: -1, dy: 0 },
+      { dx: 0, dy: 1 },
+      { dx: 0, dy: -1 },
+    ];
+    const progresses = [0, 0.25, 0.5, 0.75, 1];
+
+    for (let c = 0; c < 6; c++) {
+      for (let r = 0; r < 6; r++) {
+        // Integer tile comparisons against standing objects
+        const vIntZ = objectZ(c + r, Z_LAYER.villager);
+        expect(vIntZ).toBeGreaterThan(maxFloorZ);
+        expect(vIntZ).toBeGreaterThan(objectZ(c + r, Z_LAYER.building));
+        expect(vIntZ).toBeLessThan(objectZ(c + r + 1, Z_LAYER.crop));
+        expect(vIntZ).toBeLessThan(Z_UI);
+
+        // Feet anchor sits at diamond center + 4px (+36)
+        const origin = isoToScreen(c, r);
+        expect(getVillagerFeetPoint(c, r)).toEqual({
+          x: origin.x + TILE_W / 2,
+          y: origin.y + DIAMOND_H / 2 + 4,
+        });
+
+        for (const { dx, dy } of dirs) {
+          const nc = c + dx;
+          const nr = r + dy;
+          if (nc < 0 || nr < 0 || nc >= 6 || nr >= 6) continue;
+          for (const p of progresses) {
+            const col = c + dx * p;
+            const row = r + dy * p;
+            const vz = objectZ(col + row, Z_LAYER.villager);
+            expect(vz).toBeGreaterThan(maxFloorZ);
+          }
+        }
       }
     }
   });
