@@ -2,15 +2,11 @@
 
 import {
   ArrowsOutCardinal,
-  Backpack,
   CheckCircle,
   Gift,
   Hammer,
   Plant,
-  Question,
-  Scroll,
   Trash,
-  Users,
   X,
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
@@ -172,61 +168,71 @@ export function TownSheets({
         </div>
 
         <div className="mt-4 max-h-[60vh] overflow-y-auto">
-          {/* TOWN OVERFLOW MENU SHEET */}
+          {/* TOWN OVERFLOW MENU SHEET ("Meniu oraș") */}
           {activeSheet === 'menu' && (
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => openSheet('orders')}
-                className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-              >
-                <Scroll size={20} weight="fill" aria-hidden="true" />
-                <span>{t('town.toolbar.orders')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => openSheet('inventory')}
-                className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-              >
-                <Backpack size={20} weight="fill" aria-hidden="true" />
-                <span>{t('town.toolbar.inventory')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => openSheet('stats')}
-                className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-              >
-                <Users size={20} weight="fill" aria-hidden="true" />
-                <span>{t('town.toolbar.stats')}</span>
-              </button>
-              {coinsPurchaseEnabled && (
-                <button
-                  type="button"
-                  onClick={() => openSheet('coins')}
-                  className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-                >
-                  <RonCoinIcon size={20} />
-                  <span>{t('town.toolbar.coins')}</span>
-                </button>
-              )}
-              {coinsTransferEnabled && (
-                <button
-                  type="button"
-                  onClick={() => openSheet('transfer')}
-                  className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-                >
-                  <Gift size={20} weight="fill" aria-hidden="true" />
-                  <span>{t('town.transfer.title')}</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => openSheet('help')}
-                className="border-border bg-surface-2 text-ink flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border-2 px-3.5 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-              >
-                <Question size={20} weight="bold" aria-hidden="true" />
-                <span>{t('town.toolbar.help')}</span>
-              </button>
+            <div className="grid grid-cols-2 gap-3 pb-1 pr-1">
+              {[
+                {
+                  sheet: 'orders' as const,
+                  icon: 'icon-orders',
+                  label: t('town.toolbar.orders'),
+                  visible: true,
+                },
+                {
+                  sheet: 'inventory' as const,
+                  icon: 'icon-inventory',
+                  label: t('town.toolbar.inventory'),
+                  visible: true,
+                },
+                {
+                  sheet: 'stats' as const,
+                  icon: 'icon-villagers',
+                  label: t('town.toolbar.stats'),
+                  visible: true,
+                },
+                {
+                  sheet: 'coins' as const,
+                  icon: 'icon-coins',
+                  label: t('town.toolbar.coins'),
+                  visible: coinsPurchaseEnabled,
+                },
+                {
+                  sheet: 'transfer' as const,
+                  icon: 'icon-send-coins',
+                  label: t('town.transfer.title'),
+                  visible: coinsTransferEnabled,
+                },
+                {
+                  sheet: 'help' as const,
+                  icon: 'icon-help',
+                  label: t('town.toolbar.help'),
+                  visible: true,
+                },
+              ]
+                .filter((item) => item.visible)
+                .map((item) => (
+                  <button
+                    key={item.sheet}
+                    type="button"
+                    onClick={() => openSheet(item.sheet)}
+                    className="rt-menu-sticker text-ink flex min-h-[96px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-[#FFF7EC] px-3 py-3 text-center text-sm font-black leading-tight focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] dark:bg-surface-2"
+                  >
+                    <img
+                      src={`/rontown/ui/${item.icon}.png`}
+                      srcSet={`/rontown/ui/${item.icon}.png 1x, /rontown/ui/${item.icon}@2x.png 2x`}
+                      sizes="(min-width: 1024px) 48px, 40px"
+                      alt=""
+                      aria-hidden="true"
+                      width={48}
+                      height={48}
+                      decoding="async"
+                      draggable={false}
+                      style={{ imageRendering: 'auto' }}
+                      className="rt-menu-sticker-icon block h-10 w-10 shrink-0 select-none object-contain lg:h-12 lg:w-12"
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
             </div>
           )}
 
@@ -741,7 +747,7 @@ export function TownSheets({
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <RonCoinIcon size={22} />
+                      <RonCoinIcon size={28} variant="stack" />
                       <div>
                         <span className="text-ink font-mono text-base font-black tabular-nums">
                           {pack.coins.toLocaleString()}

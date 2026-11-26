@@ -28,8 +28,10 @@ import {
   VILLAGER_SPRITES,
   type SpriteSpec,
 } from './sprites';
+import { getRonCoinSources } from './RonCoinIcon';
 
 const PUBLIC_RONTOWN_DIR = path.resolve(process.cwd(), 'apps/web/public/rontown');
+const PUBLIC_RONTOWN_UI_DIR = path.resolve(process.cwd(), 'apps/web/public/rontown/ui');
 
 function readPngSize(filePath: string): { width: number; height: number } {
   const buf = fs.readFileSync(filePath);
@@ -178,5 +180,70 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
       seen.add(filename);
     }
     expect(seen.size).toBeGreaterThan(50);
+  });
+
+  it('maps RonCoinIcon CSS sizes to exact 1x/2x srcset pairs and avoids stack-16', () => {
+    expect(getRonCoinSources(14)).toEqual({
+      src: '/rontown/ui/roncoin-16.png',
+      srcSet: '/rontown/ui/roncoin-16.png 1x, /rontown/ui/roncoin-32.png 2x',
+      base: 16,
+      retina: 32,
+    });
+    expect(getRonCoinSources(16).base).toBe(16);
+    expect(getRonCoinSources(18).base).toBe(24);
+    expect(getRonCoinSources(20)).toEqual({
+      src: '/rontown/ui/roncoin-24.png',
+      srcSet: '/rontown/ui/roncoin-24.png 1x, /rontown/ui/roncoin-48.png 2x',
+      base: 24,
+      retina: 48,
+    });
+    expect(getRonCoinSources(22).base).toBe(24);
+    expect(getRonCoinSources(24).base).toBe(24);
+    expect(getRonCoinSources(28).base).toBe(32);
+    expect(getRonCoinSources(32).base).toBe(32);
+    expect(getRonCoinSources(64).base).toBe(64);
+    expect(getRonCoinSources(128)).toEqual({
+      src: '/rontown/ui/roncoin-128.png',
+      srcSet: '/rontown/ui/roncoin-128.png 1x, /rontown/ui/roncoin-256.png 2x',
+      base: 128,
+      retina: 256,
+    });
+
+    // Stack variant enforces minimum 24px base so roncoin-stack-16 is never used
+    expect(getRonCoinSources(16, 'stack')).toEqual({
+      src: '/rontown/ui/roncoin-stack-24.png',
+      srcSet: '/rontown/ui/roncoin-stack-24.png 1x, /rontown/ui/roncoin-stack-48.png 2x',
+      base: 24,
+      retina: 48,
+    });
+    expect(getRonCoinSources(28, 'stack').src).toBe('/rontown/ui/roncoin-stack-32.png');
+  });
+
+  it('ships all 6 town menu 1x/2x icons and official RonCoin PNG sizes in public/rontown/ui', () => {
+    const menuIcons = [
+      'icon-orders',
+      'icon-inventory',
+      'icon-villagers',
+      'icon-coins',
+      'icon-send-coins',
+      'icon-help',
+    ];
+    for (const name of menuIcons) {
+      const f1 = path.join(PUBLIC_RONTOWN_UI_DIR, `${name}.png`);
+      const f2 = path.join(PUBLIC_RONTOWN_UI_DIR, `${name}@2x.png`);
+      expect(fs.existsSync(f1), `Missing ${name}.png`).toBe(true);
+      expect(fs.existsSync(f2), `Missing ${name}@2x.png`).toBe(true);
+      expect(readPngSize(f1)).toEqual({ width: 128, height: 128 });
+      expect(readPngSize(f2)).toEqual({ width: 256, height: 256 });
+    }
+
+    const coinSizes = [16, 24, 32, 48, 64, 128, 256];
+    for (const sz of coinSizes) {
+      for (const prefix of ['roncoin', 'roncoin-stack']) {
+        const f = path.join(PUBLIC_RONTOWN_UI_DIR, `${prefix}-${sz}.png`);
+        expect(fs.existsSync(f), `Missing ${prefix}-${sz}.png`).toBe(true);
+        expect(readPngSize(f)).toEqual({ width: sz, height: sz });
+      }
+    }
   });
 });

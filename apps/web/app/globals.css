@@ -680,6 +680,34 @@ html[data-theme='dark'] {
   animation-play-state: paused !important;
 }
 
+/* RonTown "Meniu oraș" sticker micro-interactions (transform & opacity only) */
+.rt-menu-sticker {
+  border: 2px solid #0e0d15;
+  box-shadow: 3px 3px 0 0 #0e0d15;
+  transition: transform 120ms ease-out;
+}
+
+.rt-menu-sticker:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #0e0d15;
+}
+
+@keyframes rt-menu-icon-bob {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rt-menu-sticker:hover .rt-menu-sticker-icon {
+    animation: rt-menu-icon-bob 200ms ease-out 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -690,6 +718,20 @@ html[data-theme='dark'] {
     animation: none !important;
     transform: translate(-50%, -18px) !important;
     opacity: 1 !important;
+  }
+
+  .rt-menu-sticker {
+    transition: none !important;
+  }
+
+  .rt-menu-sticker:active {
+    transform: none !important;
+    box-shadow: 3px 3px 0 0 #0e0d15 !important;
+  }
+
+  .rt-menu-sticker:hover .rt-menu-sticker-icon {
+    animation: none !important;
+    transform: none !important;
   }
 }
 

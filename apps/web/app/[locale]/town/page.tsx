@@ -414,11 +414,11 @@ export default function TownPage() {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="font-display text-base font-black tracking-tight text-[#FFF7EC]">
                 RonTown
               </h1>
-              <span className="rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-0.5 font-mono text-[11px] font-black text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]">
+              <span className="whitespace-nowrap rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-0.5 font-mono text-[11px] font-black text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]">
                 {t('town.chips.level', { level })}
               </span>
               <button
@@ -426,7 +426,7 @@ export default function TownPage() {
                 onClick={() => openSheet('stats')}
                 aria-label={`${t('town.toolbar.stats')}: ${t('town.chips.population', { population, cap: populationCap })}`}
                 title={growthBottleneck ?? t('town.growth.maxCapacity')}
-                className="flex min-h-[44px] cursor-pointer items-center gap-1 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                className="flex min-h-[44px] cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <Users size={14} weight="fill" aria-hidden="true" />
                 <span className="font-mono tabular-nums">
@@ -442,7 +442,7 @@ export default function TownPage() {
                 aria-label={t('town.chips.coins', { count: walletBalance })}
                 className="flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
-                <RonCoinIcon size={20} />
+                <RonCoinIcon size={24} />
                 <span className="font-mono text-sm font-black tabular-nums text-[#0E0D15]">
                   {walletBalance}
                 </span>

@@ -22,6 +22,7 @@ import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { EmojiTiles } from '@/components/result/EmojiTiles';
 import { ScoreCountUp } from '@/components/result/ScoreCountUp';
+import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
@@ -758,7 +759,7 @@ export default function ResultPage() {
         {townEnabled && earnedCoins > 0 && (
           <div className="border-border bg-surface-2 space-y-3 rounded-[16px] border-2 p-4 text-center shadow-[3px_3px_0px_0px_#16131F]">
             <div className="flex items-center justify-center gap-2">
-              <span className="text-2xl">🏡</span>
+              <RonCoinIcon size={24} />
               <p className="text-ink text-sm font-black">
                 {t('town.postRoundCta', { coins: earnedCoins })}
               </p>
