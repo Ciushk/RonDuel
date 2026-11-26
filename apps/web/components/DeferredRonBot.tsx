@@ -5,6 +5,8 @@ import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { usePro } from './ProProvider';
+
 const RonBotMascot = dynamic(
   () => import('@/components/RonBotMascot').then((m) => m.RonBotMascot),
   { ssr: false },
@@ -33,23 +35,34 @@ export function shouldHideRonBot(pathname: string | null | undefined, locale?: s
 }
 
 /**
+ * Combined client visibility predicate: RonBot may only load and mount on allowed routes
+ * when Pro status has finished loading and is active (`isPro === true`).
+ */
+export function canShowRonBot(params: {
+  pathname: string | null | undefined;
+  locale?: string;
+  isPro: boolean;
+  loading: boolean;
+}): boolean {
+  if (shouldHideRonBot(params.pathname, params.locale)) return false;
+  if (params.loading || !params.isPro) return false;
+  return true;
+}
+
+/**
  * Defers loading and mounting the floating RonBot mascot chunk until after initial hydration
  * so it never blocks first paint or Lighthouse TBT on mobile, and skips loading completely
- * on hidden routes (RonTown, Play focus mode, Admin).
+ * for non-Pro users or on hidden routes (RonTown, Play focus mode, Admin).
  */
 export function DeferredRonBot() {
   const pathname = usePathname();
   const locale = useLocale();
-  const hidden = shouldHideRonBot(pathname, locale);
-
-  // TODO(pro): RonBot should render only for Pro users on non-town routes. No shared
-  // entitlement hook exists yet (use user.pro.active / isPro from /api/me/profile or
-  // /api/game/status). Also gate POST /api/chat and functions POST /chat once a hook
-  // exists. Do not add upsell UI in that follow-up unless product asks for it.
+  const { isPro, loading } = usePro();
+  const allowed = canShowRonBot({ pathname, locale, isPro, loading });
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (hidden) {
+    if (!allowed) {
       setReady(false);
       return;
     }
@@ -64,9 +77,9 @@ export function DeferredRonBot() {
     }
     const id = window.setTimeout(() => setReady(true), 300);
     return () => window.clearTimeout(id);
-  }, [hidden]);
+  }, [allowed]);
 
-  if (hidden || !ready) return null;
+  if (!allowed || !ready) return null;
 
   return <RonBotMascot />;
 }

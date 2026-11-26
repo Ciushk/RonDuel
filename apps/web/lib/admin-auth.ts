@@ -43,13 +43,19 @@ function decodeBase64UrlJson<T>(segment: string): T {
   return JSON.parse(json) as T;
 }
 
+export interface VerifiedFirebaseToken {
+  uid: string;
+  email?: string;
+  admin: boolean;
+}
+
 /**
- * Verifies a Firebase Auth ID token (RS256 JWT) and checks for the custom claim `admin: true`
- * (or verified email in ADMIN_BOOTSTRAP_EMAILS when signed in via Firebase Auth).
+ * Verifies a Firebase Auth ID token (RS256 JWT) against Google's public JWKS for this project.
+ * Does not require any custom claims; callers enforce role/entitlement checks on the verified uid.
  */
-export async function verifyFirebaseAdminIdToken(
+export async function verifyFirebaseIdToken(
   idToken: string,
-): Promise<VerifiedAdminIdentity | null> {
+): Promise<VerifiedFirebaseToken | null> {
   try {
     const parts = idToken.split('.');
     if (parts.length !== 3) return null;
@@ -89,14 +95,21 @@ export async function verifyFirebaseAdminIdToken(
     const uid = payload.user_id || payload.sub;
     if (!uid) return null;
 
-    if (payload.admin === true) {
-      return { uid, email: payload.email };
-    }
-
-    return null;
+    return { uid, email: payload.email, admin: payload.admin === true };
   } catch {
     return null;
   }
+}
+
+/**
+ * Verifies a Firebase Auth ID token (RS256 JWT) and checks for the custom claim `admin: true`.
+ */
+export async function verifyFirebaseAdminIdToken(
+  idToken: string,
+): Promise<VerifiedAdminIdentity | null> {
+  const decoded = await verifyFirebaseIdToken(idToken);
+  if (!decoded || !decoded.admin) return null;
+  return { uid: decoded.uid, email: decoded.email };
 }
 
 /**

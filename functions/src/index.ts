@@ -67,6 +67,7 @@ import {
 } from '../../apps/web/lib/server-store.js';
 import { generateLiveGeminiTemplates } from '../../apps/web/lib/ai-question-bank.js';
 import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
+import { authorizeRonBotChat } from '../../apps/web/lib/ronbot-auth.js';
 import {
   adoptAuthUid,
   deleteUserFromFirestore,
@@ -173,10 +174,31 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }) as typeof res.json;
 
     if (method === 'POST' && pathname === '/chat') {
+      const auth = await authorizeRonBotChat({
+        authHeader:
+          typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null,
+        testUidHeader:
+          typeof req.headers['x-test-uid'] === 'string' ? req.headers['x-test-uid'] : null,
+        verifyIdToken: async (token) => {
+          const decoded = await getAuth().verifyIdToken(token);
+          return { uid: decoded.uid };
+        },
+        loadUser: async (uid) => {
+          if (!getStore().users[uid]) {
+            await getUserFromFirestore(uid);
+          }
+          return getStore().users[uid];
+        },
+      });
+      if (!auth.ok) {
+        res.status(auth.status).json({ error: auth.error });
+        return;
+      }
+
       const chatRes = await runRonBotChat({
         message: String(body.message ?? ''),
         locale: body.locale ? String(body.locale) : 'ro',
-        uid: body.uid ? String(body.uid) : undefined,
+        uid: auth.uid,
         tz: body.tz ? String(body.tz) : undefined,
         nickname: body.nickname ? String(body.nickname) : undefined,
         isAdmin: Boolean(body.isAdmin),

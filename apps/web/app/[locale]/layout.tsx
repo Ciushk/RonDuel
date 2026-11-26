@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/AppShell';
 import { DeferredRonBot } from '@/components/DeferredRonBot';
+import { ProProvider } from '@/components/ProProvider';
 import { routing } from '@/i18n/routing';
 
 export function generateStaticParams() {
@@ -87,8 +88,10 @@ export default async function LocaleLayout({
           __html: `document.documentElement.lang = ${JSON.stringify(locale)};`,
         }}
       />
-      <AppShell>{children}</AppShell>
-      <DeferredRonBot />
+      <ProProvider>
+        <AppShell>{children}</AppShell>
+        <DeferredRonBot />
+      </ProProvider>
     </NextIntlClientProvider>
   );
 }

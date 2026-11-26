@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Chip } from '@/components/ui';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 const BotMarkdown = dynamic(
@@ -191,12 +192,30 @@ export function RonBotMascot() {
     setSending(true);
 
     try {
+      const auth = getFirebaseAuth();
+      const idToken = auth?.currentUser ? await auth.currentUser.getIdToken() : null;
+      if (!idToken) {
+        scrollModeRef.current = 'assistant';
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `err_${Date.now()}`,
+            role: 'assistant',
+            text: t('ronbot.errorGeneric'),
+          },
+        ]);
+        return;
+      }
+
       const session = getLocalSession();
       const tz = getBrowserTimeZone();
       const localeSeg = window.location.pathname.split('/')[1] || 'ro';
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({
           message: msg,
           locale: localeSeg,
