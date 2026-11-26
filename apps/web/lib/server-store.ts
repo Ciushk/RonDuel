@@ -28,6 +28,7 @@ import {
 import { pickCuratedTemplates, type GeneratedDraftTemplate } from './ai-question-bank';
 import { planAccountMerge, normalizeAuthProvider, type MergeUser } from './account-merge';
 import { anonExpiresAtIso } from './anon-retention';
+import { resolveLeagueDisplayName, type LeagueNameLike } from './league-name';
 import { normalizeLeagueThemeColor } from './league-theme';
 import {
   type DailyRoundRecord,
@@ -977,7 +978,7 @@ export function getLeagueLeaderboard(dateStr?: string) {
       const avgScore = playedTodayCount > 0 ? Math.round(totalPoints / playedTodayCount) : 0;
       return {
         id: l.id,
-        name: l.name,
+        name: resolveLeagueDisplayName(l as unknown as LeagueNameLike),
         themeEmoji: l.themeEmoji || '🏆',
         themeColor: l.themeColor || 'default',
         memberCount,
@@ -1139,7 +1140,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
 
     return {
       id: l.id,
-      name: l.name,
+      name: resolveLeagueDisplayName(l as unknown as LeagueNameLike),
       inviteCode: l.inviteCode,
       ownerUid: l.ownerUid,
       isOwner: l.ownerUid === uid,
@@ -1898,8 +1899,9 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
     isCurrentUser: Boolean(viewerUid && entry.uid === viewerUid),
   }));
 
-  let allTimeMembers = Object.values(league.members)
-    .sort((a, b) => (b.allTimeScore || 0) - (a.allTimeScore || 0));
+  let allTimeMembers = Object.values(league.members).sort(
+    (a, b) => (b.allTimeScore || 0) - (a.allTimeScore || 0),
+  );
 
   if (countryFilter) {
     allTimeMembers = allTimeMembers.filter((m) => {
@@ -1942,7 +1944,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
 
   return {
     id: league.id,
-    name: league.name,
+    name: resolveLeagueDisplayName(league as unknown as LeagueNameLike),
     inviteCode: showInviteCode ? league.inviteCode : '',
     ownerUid: league.ownerUid,
     adminName,
@@ -2521,7 +2523,7 @@ export function getUserDuels(uid: string) {
 
   let totalScore = 0;
   for (const d of finished) {
-    totalScore += (d.myScore ?? 0);
+    totalScore += d.myScore ?? 0;
   }
 
   const finishedWins = finished.filter((d) => d.isWinner).length;

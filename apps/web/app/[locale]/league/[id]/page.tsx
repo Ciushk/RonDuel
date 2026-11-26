@@ -12,13 +12,15 @@ import {
 } from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
 import { useFeatureFlag } from '@/lib/feature-flags';
+import { resolveLeagueDisplayName } from '@/lib/league-name';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { getBrowserTimeZone, getLocalSession, recordLeagueId } from '@/lib/session';
 
@@ -70,6 +72,7 @@ export default function LeaguePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams<{ id: string }>();
   const townEnabled = useFeatureFlag('town_enabled');
 
@@ -92,82 +95,105 @@ export default function LeaguePage() {
     if (s?.nickname) setSessionNickname(s.nickname);
   }, []);
 
-  const loadLeague = () => {
-    setLoading(true);
-    setError(null);
-    const s = getLocalSession();
-    if (s?.uid) setSessionUid(s.uid);
-    if (s?.nickname) setSessionNickname(s.nickname);
-
-    let resolvedId: string = params?.id || '';
-    if ((!resolvedId || resolvedId === '_shell') && typeof window !== 'undefined') {
-      const parts = window.location.pathname.split('/').filter(Boolean);
-      const lIdx = parts.indexOf('league');
-      if (lIdx !== -1 && parts[lIdx + 1]) {
-        resolvedId = decodeURIComponent(parts[lIdx + 1] as string);
-      } else {
-        resolvedId = parts.pop() || '';
+  const loadLeague = useCallback(
+    (opts?: { silent?: boolean }) => {
+      if (!opts?.silent) {
+        setLoading(true);
       }
-    }
+      setError(null);
+      const s = getLocalSession();
+      if (s?.uid) setSessionUid(s.uid);
+      if (s?.nickname) setSessionNickname(s.nickname);
 
-    if (!resolvedId || resolvedId === '_shell') {
-      setLoading(false);
-      setError(t('league.errorInvalidId'));
-      return;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-
-    fetch(`/api/leagues/${encodeURIComponent(resolvedId)}?uid=${encodeURIComponent(s.uid)}`, {
-      signal: controller.signal,
-    })
-      .then((r) => {
-        clearTimeout(timer);
-        if (!r.ok) {
-          throw new Error(`Status ${r.status}`);
-        }
-        return r.json();
-      })
-      .then((d: LeagueView | null) => {
-        if (d && d.id) {
-          setLeague(d);
-          setError(null);
+      let resolvedId: string = params?.id || '';
+      if ((!resolvedId || resolvedId === '_shell') && typeof window !== 'undefined') {
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        const lIdx = parts.indexOf('league');
+        if (lIdx !== -1 && parts[lIdx + 1]) {
+          resolvedId = decodeURIComponent(parts[lIdx + 1] as string);
         } else {
-          throw new Error('League not found');
+          resolvedId = parts.pop() || '';
         }
-      })
-      .catch((err) => {
-        clearTimeout(timer);
-        if (resolvedId === 'lg_world') {
-          setLeague({
-            id: 'lg_world',
-            name: 'RonDuel World',
-            inviteCode: 'WORLD1',
-            memberCount: 1,
-            maxMembers: 10_000_000,
-            themeEmoji: '🌍',
-            themeColor: 'default',
-            isWorld: true,
-            viewerFinishedToday: false,
-            todayScores: [],
-            allTime: [],
-          });
-          setError(null);
-        } else {
-          setError(
-            err?.name === 'AbortError' ? t('league.errorTimeout') : t('league.errorNotFound'),
-          );
-        }
-      })
-      .finally(() => {
+      }
+
+      if (!resolvedId || resolvedId === '_shell') {
         setLoading(false);
-      });
-  };
+        setError(t('league.errorInvalidId'));
+        return;
+      }
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+
+      fetch(`/api/leagues/${encodeURIComponent(resolvedId)}?uid=${encodeURIComponent(s.uid)}`, {
+        signal: controller.signal,
+        cache: 'no-store',
+      })
+        .then((r) => {
+          clearTimeout(timer);
+          if (!r.ok) {
+            throw new Error(`Status ${r.status}`);
+          }
+          return r.json();
+        })
+        .then((d: LeagueView | null) => {
+          if (d && d.id) {
+            setLeague({ ...d, name: resolveLeagueDisplayName(d) });
+            setError(null);
+          } else {
+            throw new Error('League not found');
+          }
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          if (resolvedId === 'lg_world') {
+            setLeague({
+              id: 'lg_world',
+              name: 'RonDuel World',
+              inviteCode: 'WORLD1',
+              memberCount: 1,
+              maxMembers: 10_000_000,
+              themeEmoji: '🌍',
+              themeColor: 'default',
+              isWorld: true,
+              viewerFinishedToday: false,
+              todayScores: [],
+              allTime: [],
+            });
+            setError(null);
+          } else if (!opts?.silent) {
+            setError(
+              err?.name === 'AbortError' ? t('league.errorTimeout') : t('league.errorNotFound'),
+            );
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [params?.id, t],
+  );
 
   useEffect(() => {
     loadLeague();
-  }, [params?.id]);
+  }, [loadLeague, pathname]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onRefocus = () => {
+      if (!document.hidden) {
+        loadLeague({ silent: true });
+      }
+    };
+    window.addEventListener('focus', onRefocus);
+    window.addEventListener('pageshow', onRefocus);
+    document.addEventListener('visibilitychange', onRefocus);
+    return () => {
+      window.removeEventListener('focus', onRefocus);
+      window.removeEventListener('pageshow', onRefocus);
+      document.removeEventListener('visibilitychange', onRefocus);
+    };
+  }, [loadLeague]);
 
   const getInviteUrl = () => {
     if (!league || typeof window === 'undefined') return '';
@@ -186,13 +212,14 @@ export default function LeaguePage() {
   const shareNative = async () => {
     const url = getInviteUrl();
     if (!url || !league) return;
-    const shareText = t('league.shareText', { name: league.name, link: url });
+    const safeName = resolveLeagueDisplayName(league);
+    const shareText = t('league.shareText', { name: safeName, link: url });
     trackEvent('invite_shared', { method: 'native', leagueId: league.id });
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `RonDuel — ${league.name}`,
+          title: `RonDuel — ${safeName}`,
           text: shareText,
           url,
         });
@@ -208,7 +235,7 @@ export default function LeaguePage() {
     const url = getInviteUrl();
     if (!url || !league) return;
     trackEvent('invite_shared', { method: 'whatsapp', leagueId: league.id });
-    const text = t('league.shareText', { name: league.name, link: url });
+    const text = t('league.shareText', { name: resolveLeagueDisplayName(league), link: url });
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
@@ -216,16 +243,36 @@ export default function LeaguePage() {
   const handleRename = async () => {
     if (!league) return;
     const s = getLocalSession();
-    const newName = window.prompt(t('league.renameTitle'), league.name);
-    if (!newName || newName.trim() === league.name) return;
-    const res = await fetch(`/api/leagues/${league.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'rename', actorUid: s.uid, name: newName.trim() }),
-    });
-    if (res.ok) {
-      setToast(t('league.renamedToast'));
-      loadLeague();
+    const currentName = resolveLeagueDisplayName(league);
+    const newName = window.prompt(t('league.renameTitle'), currentName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === currentName) return;
+    if (trimmed.length < 2 || trimmed.length > 30 || trimmed.toLowerCase() === 'undefined') {
+      setToast(t('errors.LEAGUE_NAME_INVALID'));
+      setTimeout(() => setToast(''), 3000);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/leagues/${encodeURIComponent(league.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'rename', actorUid: s.uid, name: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const updatedName = resolveLeagueDisplayName({ name: data.name ?? trimmed });
+        setLeague((prev) => (prev ? { ...prev, name: updatedName } : prev));
+        setToast(t('league.renamedToast'));
+        setTimeout(() => setToast(''), 3000);
+        loadLeague({ silent: true });
+      } else {
+        setToast(apiErrorMessage(t, data, 'league.renameError'));
+        setTimeout(() => setToast(''), 3000);
+      }
+    } catch {
+      setToast(t('league.renameError'));
+      setTimeout(() => setToast(''), 3000);
     }
   };
 
@@ -297,16 +344,16 @@ export default function LeaguePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setJoinCodeError(data.error || 'Cod incorect sau eroare la alăturare');
+        setJoinCodeError(apiErrorMessage(t, data, 'league.joinErrorGeneric'));
         return;
       }
       recordLeagueId(league.id);
-      setToast(t('league.joinedSuccess', { default: 'Te-ai alăturat ligii cu succes!' }));
+      setToast(t('league.joinedSuccess'));
       setJoinCodeModalOpen(false);
       setJoinCodeInput('');
-      loadLeague();
+      loadLeague({ silent: true });
     } catch {
-      setJoinCodeError(t('common.networkErrorRetry', { default: 'Eroare de rețea. Reîncearcă.' }));
+      setJoinCodeError(t('common.networkErrorRetry'));
     } finally {
       setActionLoading(false);
     }
@@ -414,7 +461,7 @@ export default function LeaguePage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 pt-2">
-            <Button variant="volt" fullWidth onClick={loadLeague}>
+            <Button variant="volt" fullWidth onClick={() => loadLeague()}>
               {t('common.retry')}
             </Button>
             <Link href={`/${locale}/leagues`} className="block">
@@ -463,9 +510,10 @@ export default function LeaguePage() {
               </span>
               <span
                 className="line-clamp-2 min-w-0 break-words [overflow-wrap:anywhere]"
-                title={league.name}
+                title={resolveLeagueDisplayName(league)}
+                data-testid="league-header-name"
               >
-                {league.name}
+                {resolveLeagueDisplayName(league)}
               </span>
             </h1>
             {league.intlRank != null && !isWorldLeague && (
@@ -551,16 +599,12 @@ export default function LeaguePage() {
           <div className="border-border bg-surface-2 space-y-3 rounded-2xl border-2 p-4 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]">
             <div className="space-y-1">
               <h3 className="font-display text-ink text-base font-black">
-                {t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+                {t('league.joinLeagueBtn')}
               </h3>
               <p className="text-muted text-xs font-medium">
                 {league.privateApproval
-                  ? t('league.joinLeaguePrivateHint', {
-                      default: 'Această ligă are aprobare privată activată. Este necesar codul de acces primit de la proprietar.',
-                    })
-                  : t('league.joinLeaguePublicHint', {
-                      default: 'Apasă butonul de mai jos pentru a intra în ligă și a concura zilnic alături de ceilalți membri!',
-                    })}
+                  ? t('league.joinLeaguePrivateHint')
+                  : t('league.joinLeaguePublicHint')}
               </p>
             </div>
             <Button
@@ -571,7 +615,7 @@ export default function LeaguePage() {
               onClick={handleJoinClick}
               className="font-black shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
             >
-              {actionLoading ? '...' : t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+              {actionLoading ? '...' : t('league.joinLeagueBtn')}
             </Button>
           </div>
         )}
@@ -971,14 +1015,14 @@ export default function LeaguePage() {
       <Sheet
         open={joinCodeModalOpen}
         onClose={() => setJoinCodeModalOpen(false)}
-        title={t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+        title={t('league.joinLeagueBtn')}
       >
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const clean = joinCodeInput.trim().toUpperCase();
             if (clean.length < 2) {
-              setJoinCodeError(t('splash.codeNotFound', { default: 'Introdu un cod valid' }));
+              setJoinCodeError(t('splash.codeNotFound'));
               return;
             }
             void executeJoin(clean);
@@ -986,17 +1030,13 @@ export default function LeaguePage() {
           className="space-y-4"
         >
           <div className="space-y-1">
-            <p className="text-ink text-sm font-bold">
-              {t('league.privateApproval', { default: 'Aprobare privată pentru membri noi' })}
-            </p>
-            <p className="text-muted text-xs leading-relaxed">
-              Această ligă este privată. Te rugăm să introduci codul primit de la proprietar pentru a te alătura:
-            </p>
+            <p className="text-ink text-sm font-bold">{t('league.privateApproval')}</p>
+            <p className="text-muted text-xs leading-relaxed">{t('league.privateJoinSheetHint')}</p>
           </div>
 
           <div>
             <label htmlFor="join-code-input" className="text-muted mb-1 block text-xs font-bold">
-              {t('splash.codeLabel', { default: 'Cod ligă' })}
+              {t('splash.codeLabel')}
             </label>
             <input
               id="join-code-input"
@@ -1011,7 +1051,7 @@ export default function LeaguePage() {
                 setJoinCodeInput(e.target.value.trim().toUpperCase());
                 setJoinCodeError('');
               }}
-              placeholder={t('splash.codePlaceholder', { default: 'Cod invitație' })}
+              placeholder={t('splash.codePlaceholder')}
               className="border-border bg-surface-2 text-ink rd-tabular w-full rounded-xl border-2 px-4 py-3 text-center text-xl font-extrabold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-[var(--rd-blue-strong)]"
             />
           </div>
@@ -1025,7 +1065,7 @@ export default function LeaguePage() {
               onClick={() => setJoinCodeModalOpen(false)}
               type="button"
             >
-              {t('league.cancel', { default: 'Anulează' })}
+              {t('league.cancel')}
             </Button>
             <Button
               variant="volt"
@@ -1034,7 +1074,7 @@ export default function LeaguePage() {
               disabled={joinCodeInput.trim().length < 2 || actionLoading}
               className="font-black"
             >
-              {actionLoading ? '...' : t('league.joinLeagueBtn', { default: 'Alătură-te ligii' })}
+              {actionLoading ? '...' : t('league.joinLeagueBtn')}
             </Button>
           </div>
         </form>

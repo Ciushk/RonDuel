@@ -17,6 +17,8 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { apiErrorMessage } from '@/lib/api-error';
+import { resolveLeagueDisplayName } from '@/lib/league-name';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
@@ -31,6 +33,8 @@ interface LeagueMember {
 interface LeagueAdminData {
   id: string;
   name: string;
+  title?: string;
+  leagueName?: string;
   inviteCode: string;
   ownerUid: string;
   adminName: string;
@@ -46,6 +50,7 @@ interface LeagueAdminData {
 
 export default function LeagueAdminPage() {
   const t = useTranslations('league');
+  const tAll = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -55,7 +60,7 @@ export default function LeagueAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
   const [sessionUid, setSessionUid] = useState('');
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
 
   // Rename state
   const [newName, setNewName] = useState('');
@@ -86,7 +91,9 @@ export default function LeagueAdminPage() {
           )
         : leagueId;
 
-    fetch(`/api/leagues/${encodeURIComponent(resolvedId)}?uid=${encodeURIComponent(s.uid)}`)
+    fetch(`/api/leagues/${encodeURIComponent(resolvedId)}?uid=${encodeURIComponent(s.uid)}`, {
+      cache: 'no-store',
+    })
       .then((r) => {
         if (!r.ok) throw new Error('Not found');
         return r.json();
@@ -96,8 +103,9 @@ export default function LeagueAdminPage() {
           router.replace(`/${locale}/league/${data.id}`);
           return;
         }
-        setLeague(data);
-        setNewName(data.name);
+        const safeName = resolveLeagueDisplayName(data);
+        setLeague({ ...data, name: safeName });
+        setNewName(safeName);
         setPrivateApproval(Boolean(data.privateApproval));
         if (data.maxMembers > 5) {
           setIsPro(true);
@@ -110,6 +118,7 @@ export default function LeagueAdminPage() {
 
     fetch(
       `/api/game/status?uid=${encodeURIComponent(s.uid)}&tz=${encodeURIComponent(getBrowserTimeZone())}`,
+      { cache: 'no-store' },
     )
       .then((r) => r.json())
       .then((d) => {
@@ -118,9 +127,9 @@ export default function LeagueAdminPage() {
       .catch(() => {});
   }, [leagueId, locale, router]);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+  const showToast = (message: string, tone: 'success' | 'error' = 'success') => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 3000);
   };
 
   const getInviteLink = () => {
@@ -133,16 +142,16 @@ export default function LeagueAdminPage() {
   const handleCopyLink = async () => {
     const link = getInviteLink();
     await navigator.clipboard.writeText(link).catch(() => {});
-    showToast(t('linkCopiedToast', { default: 'Link copiat' }));
+    showToast(t('linkCopiedToast'));
   };
 
   const handleShareInvite = async () => {
     if (!league) return;
     const link = getInviteLink();
+    const safeName = resolveLeagueDisplayName(league);
     const text = t('inviteShareText', {
-      name: league.name,
+      name: safeName,
       link,
-      default: `Hai în liga mea ${league.name} pe RonDuel! O rundă de trivia pe zi: ${link}`,
     });
 
     if (navigator.share) {
@@ -155,14 +164,17 @@ export default function LeagueAdminPage() {
       }
     }
     await navigator.clipboard.writeText(link).catch(() => {});
-    showToast(t('linkCopiedToast', { default: 'Link copiat' }));
+    showToast(t('linkCopiedToast'));
   };
 
   const handleRename = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!league) return;
     const trimmed = newName.trim();
-    if (trimmed.length < 2 || trimmed.length > 30) return;
+    if (trimmed.length < 2 || trimmed.length > 30 || trimmed.toLowerCase() === 'undefined') {
+      showToast(tAll('errors.LEAGUE_NAME_INVALID'), 'error');
+      return;
+    }
 
     setRenameLoading(true);
     try {
@@ -175,13 +187,17 @@ export default function LeagueAdminPage() {
           name: trimmed,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setLeague((prev) => (prev ? { ...prev, name: data.name ?? trimmed } : prev));
-        showToast(t('renameSuccess', { default: 'Numele ligii a fost actualizat!' }));
+        const updatedName = resolveLeagueDisplayName({ name: data.name ?? trimmed });
+        setLeague((prev) => (prev ? { ...prev, name: updatedName } : prev));
+        setNewName(updatedName);
+        showToast(t('renameSuccess'));
+      } else {
+        showToast(apiErrorMessage(tAll, data, 'league.renameError'), 'error');
       }
     } catch {
-      // Error
+      showToast(t('renameError'), 'error');
     } finally {
       setRenameLoading(false);
     }
@@ -189,12 +205,7 @@ export default function LeagueAdminPage() {
 
   const handleRegenerateCode = async () => {
     if (!league || !isPro) return;
-    const confirmed = window.confirm(
-      t('regenerateConfirm', {
-        default:
-          'Sigur vrei să generezi un cod nou de invitație? Vechiul link nu va mai funcționa.',
-      }),
-    );
+    const confirmed = window.confirm(t('regenerateConfirm'));
     if (!confirmed) return;
 
     setRegenLoading(true);
@@ -210,7 +221,7 @@ export default function LeagueAdminPage() {
       const data = await res.json();
       if (res.ok && data.inviteCode) {
         setLeague((prev) => (prev ? { ...prev, inviteCode: data.inviteCode } : prev));
-        showToast(t('codeRegeneratedToast', { default: 'Cod de invitație regenerat ✓' }));
+        showToast(t('codeRegeneratedToast'));
       }
     } catch {
       // Error
@@ -236,7 +247,7 @@ export default function LeagueAdminPage() {
       });
       if (res.ok) {
         setLeague((prev) => (prev ? { ...prev, privateApproval: nextVal } : prev));
-        showToast(nextVal ? 'Aprobare privată activată' : 'Aprobare privată dezactivată');
+        showToast(nextVal ? t('privateApprovalOn') : t('privateApprovalOff'));
       } else {
         setPrivateApproval(!nextVal);
       }
@@ -249,11 +260,7 @@ export default function LeagueAdminPage() {
 
   const handleRemoveMember = async (targetUid: string) => {
     if (!league || !isPro) return;
-    const confirmed = window.confirm(
-      t('removeMemberConfirm', {
-        default: 'Sigur vrei să elimini acest membru din ligă?',
-      }),
-    );
+    const confirmed = window.confirm(t('removeMemberConfirm'));
     if (!confirmed) return;
 
     setRemovingUid(targetUid);
@@ -277,7 +284,7 @@ export default function LeagueAdminPage() {
             allTime: filtered,
           };
         });
-        showToast(t('memberRemovedToast', { default: 'Membrul a fost eliminat' }));
+        showToast(t('memberRemovedToast'));
       }
     } catch {
       // Error
@@ -308,7 +315,7 @@ export default function LeagueAdminPage() {
   if (loading) {
     return (
       <main className="text-muted mx-auto max-w-[480px] px-4 py-16 text-center text-sm font-bold">
-        Se încarcă administrarea ligii…
+        {t('adminLoading')}
       </main>
     );
   }
@@ -316,9 +323,9 @@ export default function LeagueAdminPage() {
   if (!league) {
     return (
       <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-12 text-center">
-        <p className="font-display text-xl font-bold">Liga nu a fost găsită</p>
+        <p className="font-display text-xl font-bold">{t('errorNotFound')}</p>
         <Link href={`/${locale}`} className="text-duel-strong text-sm font-bold underline">
-          Înapoi la pagina principală
+          {t('backToHome')}
         </Link>
       </main>
     );
@@ -326,6 +333,7 @@ export default function LeagueAdminPage() {
 
   const isFullFreeLeague = !isPro && league.memberCount >= 5;
   const theme = getLeagueTheme(league.themeColor);
+  const safeLeagueName = resolveLeagueDisplayName(league);
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
@@ -336,7 +344,7 @@ export default function LeagueAdminPage() {
           className="text-muted hover:text-ink inline-flex items-center gap-1.5 text-xs font-extrabold"
         >
           <ArrowLeft size={16} weight="bold" aria-hidden="true" />
-          <span>{t('backToLeaderboard', { default: '← Înapoi la clasament' })}</span>
+          <span>{t('backToLeaderboard')}</span>
         </Link>
       </div>
 
@@ -351,7 +359,9 @@ export default function LeagueAdminPage() {
             >
               {league.themeEmoji ?? '🏆'}
             </span>
-            <h1 className="font-display text-xl font-extrabold">{league.name}</h1>
+            <h1 className="font-display text-xl font-extrabold" data-testid="admin-league-name">
+              {safeLeagueName}
+            </h1>
           </div>
           <Chip tone={isPro ? 'gold' : 'volt'}>
             {isPro
@@ -365,7 +375,9 @@ export default function LeagueAdminPage() {
           <div className="border-border bg-volt flex flex-col gap-2 rounded-xl border-2 p-3 text-xs font-bold text-[#16131F]">
             <p>
               {t('leagueFullOwnerBanner', {
-                default: 'Liga ta e plină (5/5). Cu Pro intră până la 200 de prieteni.',
+                count: league.memberCount,
+                max: 5,
+                proMax: 200,
               })}
             </p>
             <Button
@@ -376,7 +388,7 @@ export default function LeagueAdminPage() {
                 router.push(`/${locale}/pro`);
               }}
             >
-              {t('goProBtn', { default: 'Treci la Pro' })}
+              {t('goProBtn')}
             </Button>
           </div>
         )}
@@ -384,23 +396,23 @@ export default function LeagueAdminPage() {
 
       {/* Section 1: Invite code and share (§9) */}
       <Card className="space-y-3">
-        <h2 className="font-display text-base font-extrabold">
-          {t('inviteCodeSection', { default: 'Cod și link de invitație' })}
-        </h2>
+        <h2 className="font-display text-base font-extrabold">{t('inviteCodeSection')}</h2>
         <div className="border-border bg-surface-2 flex items-center justify-between rounded-xl border p-3">
           <div>
-            <p className="text-muted text-[11px] font-bold uppercase tracking-wider">Cod ligă</p>
+            <p className="text-muted text-[11px] font-bold uppercase tracking-wider">
+              {t('inviteCodeShort')}
+            </p>
             <p className="font-mono text-2xl font-extrabold tracking-widest">{league.inviteCode}</p>
           </div>
           <Button size="sm" variant="secondary" onClick={handleCopyLink}>
             <Copy size={16} weight="bold" aria-hidden="true" />
-            {t('copyInvite', { default: 'Copiază' })}
+            {t('copyInvite')}
           </Button>
         </div>
 
         <Button fullWidth size="lg" variant="primary" onClick={handleShareInvite}>
           <ShareNetwork size={20} weight="bold" aria-hidden="true" />
-          {t('sendInvite', { default: 'Trimite invitația' })}
+          {t('sendInvite')}
         </Button>
 
         {isPro ? (
@@ -413,22 +425,20 @@ export default function LeagueAdminPage() {
               onClick={handleRegenerateCode}
             >
               <ArrowClockwise size={16} weight="bold" aria-hidden="true" />
-              {t('regenerateCode', { default: 'Regenerează codul' })}
+              {t('regenerateCode')}
             </Button>
           </div>
         ) : (
-          <p className="text-muted text-xs">
-            Cu RonDuel Pro poți regenera codul oricând sau activa aprobarea privată a cererilor.
-          </p>
+          <p className="text-muted text-xs">{t('proRegenHint')}</p>
         )}
       </Card>
 
       {/* Section 2: Pro Settings (Private approval) */}
       {isPro && (
         <Card className="space-y-3">
-          <h2 className="font-display text-base font-extrabold">Setări Pro</h2>
+          <h2 className="font-display text-base font-extrabold">{t('proSettings')}</h2>
           <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold">
-            <span>{t('privateApproval', { default: 'Aprobare privată pentru membri noi' })}</span>
+            <span>{t('privateApproval')}</span>
             <input
               type="checkbox"
               checked={privateApproval}
@@ -444,10 +454,7 @@ export default function LeagueAdminPage() {
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-base font-extrabold">
-            {t('membersTitle', {
-              count: league.memberCount,
-              default: `Membrii ligii (${league.memberCount})`,
-            })}
+            {t('membersTitle', { count: league.memberCount })}
           </h2>
           <UsersThree size={20} weight="bold" className="text-muted" aria-hidden="true" />
         </div>
@@ -462,7 +469,7 @@ export default function LeagueAdminPage() {
                     <p className="truncate text-sm font-bold">{member.nickname}</p>
                     {isOwnerMember && (
                       <Chip tone="gold" className="px-1.5 py-0 text-[10px]">
-                        {t('roleOwner', { default: 'Proprietar' })}
+                        {t('roleOwner')}
                       </Chip>
                     )}
                   </div>
@@ -474,7 +481,6 @@ export default function LeagueAdminPage() {
                           month: 'short',
                           year: 'numeric',
                         }),
-                        default: `S-a alăturat pe ${new Date(member.joinedAt).toLocaleDateString(locale)}`,
                       })}
                     </p>
                   )}
@@ -487,10 +493,10 @@ export default function LeagueAdminPage() {
                     className="text-wrong min-h-8 px-2 text-xs"
                     disabled={removingUid === member.uid}
                     onClick={() => handleRemoveMember(member.uid)}
-                    aria-label={`Elimină ${member.nickname}`}
+                    aria-label={t('removeMemberAria', { name: member.nickname })}
                   >
                     <UserMinus size={14} weight="bold" aria-hidden="true" />
-                    <span>{t('removeMember', { default: 'Elimină' })}</span>
+                    <span>{t('removeMember')}</span>
                   </Button>
                 )}
               </div>
@@ -501,9 +507,7 @@ export default function LeagueAdminPage() {
 
       {/* Section 4: Rename League */}
       <Card className="space-y-3">
-        <h2 className="font-display text-base font-extrabold">
-          {t('renameTitle', { default: 'Redenumește liga' })}
-        </h2>
+        <h2 className="font-display text-base font-extrabold">{t('renameTitle')}</h2>
         <form onSubmit={handleRename} className="flex gap-2">
           <input
             type="text"
@@ -512,25 +516,26 @@ export default function LeagueAdminPage() {
             maxLength={30}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            data-testid="admin-rename-input"
             className="border-border bg-surface-2 text-ink flex-1 rounded-xl border px-3.5 py-2 text-sm font-bold"
             placeholder={t('namePlaceholder')}
           />
-          <Button size="md" variant="primary" type="submit" disabled={renameLoading}>
-            {renameLoading ? '...' : t('confirmRename', { default: 'Salvează' })}
+          <Button
+            size="md"
+            variant="primary"
+            type="submit"
+            disabled={renameLoading}
+            data-testid="admin-rename-submit"
+          >
+            {renameLoading ? '...' : t('confirmRename')}
           </Button>
         </form>
       </Card>
 
       {/* Section 5: Delete League */}
       <Card className="border-wrong/50 space-y-3">
-        <h2 className="font-display text-wrong text-base font-extrabold">
-          {t('delete', { default: 'Șterge liga' })}
-        </h2>
-        <p className="text-muted text-xs">
-          {t('deleteConfirm', {
-            default: 'Sigur vrei să ștergi această ligă? Toți membrii vor fi eliminați.',
-          })}
-        </p>
+        <h2 className="font-display text-wrong text-base font-extrabold">{t('delete')}</h2>
+        <p className="text-muted text-xs">{t('deleteConfirm')}</p>
         {showDeleteConfirm ? (
           <div className="flex gap-2">
             <Button
@@ -539,7 +544,7 @@ export default function LeagueAdminPage() {
               fullWidth
               onClick={() => setShowDeleteConfirm(false)}
             >
-              {t('cancel', { default: 'Anulează' })}
+              {t('cancel')}
             </Button>
             <Button
               size="sm"
@@ -549,7 +554,7 @@ export default function LeagueAdminPage() {
               disabled={deleteLoading}
               onClick={handleDeleteLeague}
             >
-              {deleteLoading ? '...' : t('delete', { default: 'Șterge liga' })}
+              {deleteLoading ? '...' : t('delete')}
             </Button>
           </div>
         ) : (
@@ -560,14 +565,14 @@ export default function LeagueAdminPage() {
             onClick={() => setShowDeleteConfirm(true)}
           >
             <Trash size={16} weight="bold" aria-hidden="true" />
-            {t('delete', { default: 'Șterge liga' })}
+            {t('delete')}
           </Button>
         )}
       </Card>
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-          <Toast message={toast} tone="success" />
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2" data-testid="admin-toast">
+          <Toast message={toast.message} tone={toast.tone} />
         </div>
       )}
     </main>

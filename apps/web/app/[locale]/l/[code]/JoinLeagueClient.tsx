@@ -11,6 +11,7 @@ import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
 import { loginWithGoogle } from '@/lib/firebase';
 import { generateReadableNickname } from '@/lib/format';
+import { resolveLeagueDisplayName } from '@/lib/league-name';
 import {
   getBrowserTimeZone,
   getLocalSession,
@@ -92,7 +93,9 @@ export function JoinLeagueClient({
 
     trackEvent('league_preview_viewed', { code: cleanCode, source: 'invite_link' });
 
-    fetch(`/api/leagues/${encodeURIComponent(cleanCode)}?uid=${encodeURIComponent(s.uid)}`)
+    fetch(`/api/leagues/${encodeURIComponent(cleanCode)}?uid=${encodeURIComponent(s.uid)}`, {
+      cache: 'no-store',
+    })
       .then((r) => {
         if (!r.ok) {
           setInvalidCode(true);
@@ -103,7 +106,7 @@ export function JoinLeagueClient({
       })
       .then((data: LeaguePreviewData | null) => {
         if (data) {
-          setLeague(data);
+          setLeague({ ...data, name: resolveLeagueDisplayName(data) });
         }
         setLoading(false);
       })

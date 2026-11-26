@@ -102,6 +102,7 @@ export default function LeaguesPage() {
     const leaguesParam = (session.leagueIds || []).join(',');
     fetch(
       `/api/game/status?uid=${encodeURIComponent(session.uid)}&tz=${encodeURIComponent(tz)}&leagues=${encodeURIComponent(leaguesParam)}`,
+      { cache: 'no-store' },
     )
       .then((r) => r.json())
       .then((data) => {
@@ -121,6 +122,17 @@ export default function LeaguesPage() {
       }
     }
     loadData();
+    const onRefocus = () => {
+      if (!document.hidden) loadData();
+    };
+    window.addEventListener('focus', onRefocus);
+    window.addEventListener('pageshow', onRefocus);
+    document.addEventListener('visibilitychange', onRefocus);
+    return () => {
+      window.removeEventListener('focus', onRefocus);
+      window.removeEventListener('pageshow', onRefocus);
+      document.removeEventListener('visibilitychange', onRefocus);
+    };
   }, []);
 
   const worldLeague = status?.worldLeague;
