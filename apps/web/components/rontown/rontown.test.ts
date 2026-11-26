@@ -26,9 +26,12 @@ import {
   Z_UI,
 } from './iso';
 import {
+  BUBBLE_KINDS,
+  BUBBLE_SPRITES,
   CATALOG_SPRITES,
   CROP_BUTTON_SPRITES,
   GROUND_SPRITES,
+  HEART_FLOAT_SPRITE,
   resolveCropSprite,
   resolveGroundSprite,
   resolveRoadSprite,
@@ -545,5 +548,32 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     // Straight street flips horizontally on odd rot
     expect(resolveGroundSprite('basic-block-street', 0).flipX).toBeUndefined();
     expect(resolveGroundSprite('basic-block-street', 1).flipX).toBe(true);
+  });
+
+  it('ships all 6 pixel-art joy bubbles (24x24 & 48x48) and heart-float particle (9x8 & 18x16)', () => {
+    expect(BUBBLE_KINDS).toHaveLength(6);
+    for (const kind of BUBBLE_KINDS) {
+      const spec = BUBBLE_SPRITES[kind];
+      expect(spec.src).toContain(`/rontown/ui/bubble-${kind}@2x.png`);
+      expect(spec.width).toBe(48);
+      expect(spec.height).toBe(48);
+
+      const f1 = path.join(PUBLIC_RONTOWN_UI_DIR, `bubble-${kind}.png`);
+      const f2 = path.join(PUBLIC_RONTOWN_UI_DIR, `bubble-${kind}@2x.png`);
+      expect(fs.existsSync(f1), `Missing bubble-${kind}.png`).toBe(true);
+      expect(fs.existsSync(f2), `Missing bubble-${kind}@2x.png`).toBe(true);
+      expect(readPngSize(f1)).toEqual({ width: 24, height: 24 });
+      expect(readPngSize(f2)).toEqual({ width: 48, height: 48 });
+    }
+
+    expect(HEART_FLOAT_SPRITE.src).toContain('/rontown/ui/heart-float@2x.png');
+    expect(HEART_FLOAT_SPRITE.width).toBe(18);
+    expect(HEART_FLOAT_SPRITE.height).toBe(16);
+    const h1 = path.join(PUBLIC_RONTOWN_UI_DIR, 'heart-float.png');
+    const h2 = path.join(PUBLIC_RONTOWN_UI_DIR, 'heart-float@2x.png');
+    expect(fs.existsSync(h1)).toBe(true);
+    expect(fs.existsSync(h2)).toBe(true);
+    expect(readPngSize(h1)).toEqual({ width: 9, height: 8 });
+    expect(readPngSize(h2)).toEqual({ width: 18, height: 16 });
   });
 });

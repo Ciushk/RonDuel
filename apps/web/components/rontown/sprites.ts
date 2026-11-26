@@ -463,6 +463,25 @@ export const RESIDENT_VILLAGER_KINDS: readonly VillagerKind[] = [
   'blacksmith-villager',
 ];
 
+export const BUBBLE_KINDS = ['heart', 'smile', 'star', 'wheat', 'exclaim', 'note'] as const;
+
+export type BubbleKind = (typeof BUBBLE_KINDS)[number];
+
+export const BUBBLE_SPRITES: Record<BubbleKind, SpriteSpec> = {
+  heart: { src: uiSpriteUrl('bubble-heart@2x.png'), width: 48, height: 48 },
+  smile: { src: uiSpriteUrl('bubble-smile@2x.png'), width: 48, height: 48 },
+  star: { src: uiSpriteUrl('bubble-star@2x.png'), width: 48, height: 48 },
+  wheat: { src: uiSpriteUrl('bubble-wheat@2x.png'), width: 48, height: 48 },
+  exclaim: { src: uiSpriteUrl('bubble-exclaim@2x.png'), width: 48, height: 48 },
+  note: { src: uiSpriteUrl('bubble-note@2x.png'), width: 48, height: 48 },
+};
+
+export const HEART_FLOAT_SPRITE: SpriteSpec = {
+  src: uiSpriteUrl('heart-float@2x.png'),
+  width: 18,
+  height: 16,
+};
+
 const preloadedUrls = new Set<string>();
 
 /**
@@ -479,6 +498,8 @@ export function preloadInitialSprites(extraUrls: string[] = []): void {
     GROUND_SPRITES['basic-block-intersection'].src,
     ...ROAD_VARIANT_KEYS.map((k) => GROUND_SPRITES[k].src),
     ...SHORE_ROTATION_KEYS.map((k) => GROUND_SPRITES[k].src),
+    ...BUBBLE_KINDS.map((k) => BUBBLE_SPRITES[k].src),
+    HEART_FLOAT_SPRITE.src,
     UI_SPRITES.expand.src,
     UI_SPRITES.build.src,
     UI_SPRITES.move.src,

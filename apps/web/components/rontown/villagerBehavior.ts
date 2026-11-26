@@ -5,7 +5,7 @@ import {
   type TownCatalogDoc,
 } from '@ronduel/shared';
 import { isoToScreen } from './iso';
-import type { VillagerKind } from './sprites';
+import type { BubbleKind, VillagerKind } from './sprites';
 
 export type VillagerRole =
   'farmer' | 'homebody' | 'stroller' | 'runner' | 'shopkeeper' | 'worker' | 'visitor';
@@ -29,10 +29,34 @@ export interface TownReactionEvent {
 }
 
 export type TargetArrivalAction =
-  | { kind: 'idle'; minMs: number; maxMs: number; bubble?: string }
-  | { kind: 'tending'; minMs: number; maxMs: number; bubble: string; faceTarget: GridCoord }
+  | { kind: 'idle'; minMs: number; maxMs: number; bubble?: BubbleKind }
+  | { kind: 'tending'; minMs: number; maxMs: number; bubble: BubbleKind; faceTarget: GridCoord }
   | { kind: 'inside'; minMs: number; maxMs: number; faceTarget: GridCoord }
   | { kind: 'lookAround'; minMs: number; maxMs: number };
+
+const HARVEST_BUBBLES: readonly BubbleKind[] = ['heart', 'smile', 'star', 'wheat'];
+const BUILD_BUBBLES: readonly BubbleKind[] = ['star', 'exclaim'];
+const PLANT_BUBBLES: readonly BubbleKind[] = ['wheat', 'smile'];
+
+/**
+ * Picks a deterministic pixel-art joy bubble for a town event, preferring a variant
+ * not already used by adjacent reacting villagers.
+ */
+export function pickReactionBubbleKind(
+  eventType: TownReactionEvent['type'],
+  rng: () => number,
+  exclude?: ReadonlySet<BubbleKind>,
+): BubbleKind {
+  const pool =
+    eventType === 'harvest'
+      ? HARVEST_BUBBLES
+      : eventType === 'build'
+        ? BUILD_BUBBLES
+        : PLANT_BUBBLES;
+  const candidates = exclude && exclude.size > 0 ? pool.filter((k) => !exclude.has(k)) : pool;
+  const list = candidates.length > 0 ? candidates : pool;
+  return list[Math.floor(rng() * list.length)]!;
+}
 
 export interface PickedTarget {
   goal: GridCoord;
@@ -506,7 +530,7 @@ export function pickNextTarget(params: {
               kind: 'tending',
               minMs: 2500,
               maxMs: 4000,
-              bubble: rng() < 0.5 ? '🌱' : '💧',
+              bubble: 'wheat',
               faceTarget: { x: plot.x, y: plot.y },
             },
           };
@@ -607,7 +631,7 @@ export function pickNextTarget(params: {
           kind: 'tending',
           minMs: 2000,
           maxMs: 3000,
-          bubble: '🔨',
+          bubble: 'exclaim',
           faceTarget: picked.building,
         },
       };
@@ -638,7 +662,7 @@ export function pickNextTarget(params: {
         kind: 'idle',
         minMs: 600,
         maxMs: 1500,
-        bubble: showBubble ? (rng() < 0.5 ? '❗' : '😄') : undefined,
+        bubble: showBubble ? (rng() < 0.5 ? 'note' : 'smile') : undefined,
       },
     });
   }

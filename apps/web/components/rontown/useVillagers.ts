@@ -8,7 +8,13 @@ import {
   type TownCatalogDoc,
 } from '@ronduel/shared';
 import { getVillagerFeetPoint, isoToScreen, objectZ, Z_LAYER } from './iso';
-import { RESIDENT_VILLAGER_KINDS, VILLAGER_SPRITES, type VillagerKind } from './sprites';
+import {
+  BUBBLE_SPRITES,
+  RESIDENT_VILLAGER_KINDS,
+  VILLAGER_SPRITES,
+  type BubbleKind,
+  type VillagerKind,
+} from './sprites';
 import {
   facingToward,
   findNearestFreeCell,
@@ -20,6 +26,7 @@ import {
   hashString,
   mulberry32,
   pickNextTarget,
+  pickReactionBubbleKind,
   pickSpreadSpawnCells,
   randRange,
   type BehaviorTileInfo,
@@ -49,7 +56,15 @@ export const VILLAGER_CONFIG = {
   reducedRelocateMaxMs: 30000,
   /** Inside/exiting opacity fade duration (ms). */
   doorFadeMs: 300,
+  /** Joy bubble timing: 180ms pop-in + 1200ms hold + 200ms fade-out = 1580ms. */
+  bubblePopInMs: 180,
+  bubbleReducedInMs: 120,
+  bubbleHoldMs: 1200,
+  bubbleFadeOutMs: 200,
 } as const;
+
+export const BUBBLE_TOTAL_MS =
+  VILLAGER_CONFIG.bubblePopInMs + VILLAGER_CONFIG.bubbleHoldMs + VILLAGER_CONFIG.bubbleFadeOutMs;
 
 export interface VillagerRenderItem {
   id: string;
@@ -86,7 +101,8 @@ interface VillagerRuntime {
   homeWanderRemaining: number;
   lookFlipsRemaining: number;
   nextLookFlipAtMs: number;
-  bubbleText: string;
+  bubbleKind: BubbleKind | null;
+  bubbleStartedAtMs: number;
   bubbleUntilMs: number;
   onHarvestComplete?: () => void;
   expiresAtMs?: number;
@@ -99,14 +115,15 @@ interface VillagerRuntime {
   lastWidth: number;
   lastHeight: number;
   lastFacing: string;
-  lastBubbleText: string;
-  lastBubbleVisible: boolean;
+  lastBubbleKind: BubbleKind | null;
+  lastBubbleOpacity: string;
+  lastBubbleTransform: string;
 }
 
 export interface VillagerDomHandles {
   wrap: HTMLDivElement | null;
   img: HTMLImageElement | null;
-  bubble: HTMLDivElement | null;
+  bubble: HTMLImageElement | null;
 }
 
 export function useReducedMotion(): boolean {
@@ -233,7 +250,7 @@ export function useVillagers({
       const existing = domRefs.current.get(id) ?? { wrap: null, img: null, bubble: null };
       if (part === 'wrap') existing.wrap = el as HTMLDivElement | null;
       if (part === 'img') existing.img = el as HTMLImageElement | null;
-      if (part === 'bubble') existing.bubble = el as HTMLDivElement | null;
+      if (part === 'bubble') existing.bubble = el as HTMLImageElement | null;
       if (!existing.wrap && !existing.img && !existing.bubble) {
         domRefs.current.delete(id);
       } else {
@@ -243,14 +260,14 @@ export function useVillagers({
     [],
   );
 
-  const tryShowBubble = useCallback((v: VillagerRuntime, text: string, nowMs: number) => {
+  const tryShowBubble = useCallback((v: VillagerRuntime, kind: BubbleKind, nowMs: number) => {
     const map = runtimesRef.current;
     let residentCount = 0;
     let activeBubbles = 0;
     for (const other of map.values()) {
       if (other.isArrivalVisitor) continue;
       residentCount += 1;
-      if (other.id !== v.id && other.bubbleUntilMs > nowMs && other.bubbleText) {
+      if (other.id !== v.id && other.bubbleUntilMs > nowMs && other.bubbleKind) {
         activeBubbles += 1;
       }
     }
@@ -258,8 +275,9 @@ export function useVillagers({
     if (activeBubbles >= maxBubbles && v.behavior !== 'react') {
       return;
     }
-    v.bubbleText = text;
-    v.bubbleUntilMs = nowMs + randRange(v.rng, 1200, 1800);
+    v.bubbleKind = kind;
+    v.bubbleStartedAtMs = nowMs;
+    v.bubbleUntilMs = nowMs + BUBBLE_TOTAL_MS;
   }, []);
 
   /**
@@ -370,20 +388,69 @@ export function useVillagers({
         v.lastFacing = nextFacing;
       }
 
-      // Sync emote/action bubble via cached opacity + transform writes only
+      // Sync pixel-art joy bubble via cached opacity + transform writes only
       if (handles.bubble && !v.isArrivalVisitor) {
-        const bubbleVisible =
-          Boolean(v.bubbleText) && v.bubbleUntilMs > nowMs && v.behavior !== 'inside';
-        if (bubbleVisible && v.lastBubbleText !== v.bubbleText) {
-          handles.bubble.textContent = v.bubbleText;
-          v.lastBubbleText = v.bubbleText;
-        }
-        if (v.lastBubbleVisible !== bubbleVisible) {
-          handles.bubble.style.opacity = bubbleVisible ? '1' : '0';
-          handles.bubble.style.transform = bubbleVisible
-            ? 'translate3d(-50%, 0, 0) scale(1)'
-            : 'translate3d(-50%, 4px, 0) scale(0.85)';
-          v.lastBubbleVisible = bubbleVisible;
+        const bubbleActive =
+          Boolean(v.bubbleKind) && v.bubbleUntilMs > nowMs && v.behavior !== 'inside';
+        if (bubbleActive && v.bubbleKind) {
+          if (v.lastBubbleKind !== v.bubbleKind) {
+            handles.bubble.setAttribute('src', BUBBLE_SPRITES[v.bubbleKind].src);
+            handles.bubble.setAttribute('data-bubble-kind', v.bubbleKind);
+            v.lastBubbleKind = v.bubbleKind;
+          }
+          const elapsed = Math.max(0, nowMs - v.bubbleStartedAtMs);
+          let bOpacity = 1;
+          let bTransform: string;
+          if (reduced) {
+            const inMs = VILLAGER_CONFIG.bubbleReducedInMs;
+            const fadeStart = inMs + VILLAGER_CONFIG.bubbleHoldMs;
+            if (elapsed < inMs) {
+              bOpacity = elapsed / inMs;
+            } else if (elapsed > fadeStart) {
+              bOpacity = Math.max(0, 1 - (elapsed - fadeStart) / VILLAGER_CONFIG.bubbleFadeOutMs);
+            }
+            bTransform = 'translate3d(-50%, 0, 0)';
+          } else {
+            const inMs = VILLAGER_CONFIG.bubblePopInMs;
+            const holdEnd = inMs + VILLAGER_CONFIG.bubbleHoldMs;
+            let bScale = 1;
+            let bTy = 0;
+            if (elapsed < inMs) {
+              const p = elapsed / inMs;
+              bOpacity = p;
+              bScale = 0.6 + 0.4 * p;
+            } else if (elapsed < holdEnd) {
+              const p = (elapsed - inMs) / VILLAGER_CONFIG.bubbleHoldMs;
+              bOpacity = 1;
+              bTy = -6 * p;
+            } else {
+              const p = Math.min(1, (elapsed - holdEnd) / VILLAGER_CONFIG.bubbleFadeOutMs);
+              bOpacity = 1 - p;
+              bTy = -6;
+            }
+            bTransform = `translate3d(-50%, ${bTy.toFixed(1)}px, 0) scale(${bScale.toFixed(3)})`;
+          }
+          const opStr = bOpacity <= 0 ? '0' : bOpacity >= 1 ? '1' : bOpacity.toFixed(2);
+          if (v.lastBubbleOpacity !== opStr) {
+            handles.bubble.style.opacity = opStr;
+            v.lastBubbleOpacity = opStr;
+          }
+          if (v.lastBubbleTransform !== bTransform) {
+            handles.bubble.style.transform = bTransform;
+            v.lastBubbleTransform = bTransform;
+          }
+        } else {
+          if (v.lastBubbleOpacity !== '0') {
+            handles.bubble.style.opacity = '0';
+            v.lastBubbleOpacity = '0';
+          }
+          const hiddenTransform = reduced
+            ? 'translate3d(-50%, 0, 0)'
+            : 'translate3d(-50%, 0, 0) scale(0.6)';
+          if (v.lastBubbleTransform !== hiddenTransform) {
+            handles.bubble.style.transform = hiddenTransform;
+            v.lastBubbleTransform = hiddenTransform;
+          }
         }
       }
     },
@@ -457,7 +524,8 @@ export function useVillagers({
           homeWanderRemaining: role === 'homebody' || role === 'shopkeeper' ? 1 : 0,
           lookFlipsRemaining: 0,
           nextLookFlipAtMs: Infinity,
-          bubbleText: '',
+          bubbleKind: null,
+          bubbleStartedAtMs: 0,
           bubbleUntilMs: 0,
           lastTransform: '',
           lastZIndex: '',
@@ -466,8 +534,9 @@ export function useVillagers({
           lastWidth: 0,
           lastHeight: 0,
           lastFacing: '',
-          lastBubbleText: '',
-          lastBubbleVisible: false,
+          lastBubbleKind: null,
+          lastBubbleOpacity: '0',
+          lastBubbleTransform: '',
         };
         reserveCell(runtime, spawn);
         map.set(id, runtime);
@@ -520,7 +589,8 @@ export function useVillagers({
         homeWanderRemaining: 0,
         lookFlipsRemaining: 0,
         nextLookFlipAtMs: Infinity,
-        bubbleText: '',
+        bubbleKind: null,
+        bubbleStartedAtMs: 0,
         bubbleUntilMs: 0,
         expiresAtMs: now + VILLAGER_CONFIG.visitorDurationMs,
         lastTransform: '',
@@ -530,8 +600,9 @@ export function useVillagers({
         lastWidth: 0,
         lastHeight: 0,
         lastFacing: '',
-        lastBubbleText: '',
-        lastBubbleVisible: false,
+        lastBubbleKind: null,
+        lastBubbleOpacity: '0',
+        lastBubbleTransform: '',
       });
       changed = true;
     }
@@ -666,10 +737,12 @@ export function useVillagers({
           needsContinuousFrame = true;
         }
 
-        if (v.bubbleUntilMs > now) {
+        if (v.bubbleUntilMs > now && v.bubbleKind) {
+          needsContinuousFrame = true;
           registerWake(v.bubbleUntilMs);
-        } else if (v.bubbleText) {
-          v.bubbleText = '';
+        } else if (v.bubbleKind) {
+          v.bubbleKind = null;
+          v.bubbleStartedAtMs = 0;
           v.bubbleUntilMs = 0;
         }
 
@@ -1039,6 +1112,7 @@ export function useVillagers({
   const notifyTownEvent = useCallback((event: TownReactionEvent) => {
     const now = performance.now();
     let reactedAny = false;
+    const usedKinds = new Set<BubbleKind>();
     for (const v of runtimesRef.current.values()) {
       if (v.isArrivalVisitor) continue;
       if (v.behavior === 'walking' || v.behavior === 'harvesting' || v.behavior === 'inside') {
@@ -1051,8 +1125,11 @@ export function useVillagers({
       v.stateStartedAtMs = now;
       v.stateUntilMs = now + randRange(v.rng, 900, 1400);
       v.facing = facingToward({ x: v.gridX, y: v.gridY }, { x: event.x, y: event.y }, v.facing);
-      v.bubbleText = event.type === 'harvest' ? '✨' : v.rng() < 0.5 ? '✨' : '👏';
-      v.bubbleUntilMs = now + randRange(v.rng, 1200, 1800);
+      const picked = pickReactionBubbleKind(event.type, v.rng, usedKinds);
+      usedKinds.add(picked);
+      v.bubbleKind = picked;
+      v.bubbleStartedAtMs = now;
+      v.bubbleUntilMs = now + BUBBLE_TOTAL_MS;
       reactedAny = true;
     }
     if (reactedAny) {

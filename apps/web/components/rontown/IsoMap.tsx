@@ -32,6 +32,7 @@ import {
   Z_UI,
 } from './iso';
 import {
+  BUBBLE_SPRITES,
   CATALOG_SPRITES,
   GROUND_SPRITES,
   preloadInitialSprites,
@@ -1467,15 +1468,23 @@ export function IsoMap({
                   +1!
                 </div>
               ) : (
-                <div
+                <img
                   ref={(el) => registerDom(v.id, 'bubble', el)}
-                  className="rt-pixel-bubble rt-pixel-bubble--tail absolute bottom-full left-1/2 mb-1.5 whitespace-nowrap px-1.5 py-0.5 text-[14px] font-black leading-none"
+                  data-villager-bubble={v.id}
+                  src={BUBBLE_SPRITES.smile.src}
+                  alt=""
+                  aria-hidden="true"
+                  width={48}
+                  height={48}
+                  decoding="async"
+                  draggable={false}
+                  className="pointer-events-none absolute bottom-full left-1/2 mb-1 block select-none will-change-transform"
                   style={{
+                    imageRendering: 'pixelated',
                     opacity: 0,
-                    transform: 'translate3d(-50%, 4px, 0) scale(0.85)',
-                    transition: reducedMotion
-                      ? undefined
-                      : 'opacity 160ms ease-out, transform 160ms ease-out',
+                    transform: reducedMotion
+                      ? 'translate3d(-50%, 0, 0)'
+                      : 'translate3d(-50%, 0, 0) scale(0.6)',
                   }}
                 />
               )}

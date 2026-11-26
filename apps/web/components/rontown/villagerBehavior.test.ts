@@ -10,9 +10,11 @@ import {
   hashString,
   mulberry32,
   pickNextTarget,
+  pickReactionBubbleKind,
   pickSpreadSpawnCells,
   type BehaviorTileInfo,
 } from './villagerBehavior';
+import { BUBBLE_KINDS, type BubbleKind } from './sprites';
 
 function makeGridLand(size: number): Record<string, GroundTileType> {
   const land: Record<string, GroundTileType> = {};
@@ -217,5 +219,25 @@ describe('villagerBehavior pure state machine helpers', () => {
 
     expect(door0).toEqual({ x: 2, y: 3 });
     expect(door1).toEqual({ x: 3, y: 2 });
+  });
+
+  it('pickReactionBubbleKind returns typed BubbleKind values and picks distinct icons for adjacent villagers', () => {
+    const valid = new Set<string>(BUBBLE_KINDS);
+    const rng = mulberry32(hashString('bubbles_test'));
+    const used = new Set<BubbleKind>();
+
+    for (let i = 0; i < 4; i++) {
+      const k = pickReactionBubbleKind('harvest', rng, used);
+      expect(valid.has(k)).toBe(true);
+      expect(['heart', 'smile', 'star', 'wheat']).toContain(k);
+      expect(used.has(k)).toBe(false);
+      used.add(k);
+    }
+
+    const buildKind = pickReactionBubbleKind('build', rng);
+    expect(['star', 'exclaim']).toContain(buildKind);
+
+    const plantKind = pickReactionBubbleKind('plant', rng);
+    expect(['wheat', 'smile']).toContain(plantKind);
   });
 });
