@@ -1075,6 +1075,11 @@
       "zoomControls": "Kortzoom-kontroller",
       "zoomIn": "Zoom ind",
       "zoomOut": "Zoom ud"
+    },
+    "status": {
+      "connecting": "Opretter forbindelse…",
+      "reconnectingFailed": "Kunne ikke oprette forbindelse til RonTown",
+      "retry": "Prøv igen"
     }
   },
   "pwa": {

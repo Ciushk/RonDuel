@@ -1075,6 +1075,11 @@
       "zoomControls": "Žemėlapio mastelio valdikliai",
       "zoomIn": "Priartinti",
       "zoomOut": "Atitolinti"
+    },
+    "status": {
+      "connecting": "Jungiamasi…",
+      "reconnectingFailed": "Nepavyko prisijungti prie RonTown",
+      "retry": "Bandyti dar kartą"
     }
   },
   "pwa": {

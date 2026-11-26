@@ -1075,6 +1075,11 @@
       "zoomControls": "Kaartzoombediening",
       "zoomIn": "Inzoomen",
       "zoomOut": "Uitzoomen"
+    },
+    "status": {
+      "connecting": "Verbinden…",
+      "reconnectingFailed": "Kan geen verbinding maken met RonTown",
+      "retry": "Opnieuw"
     }
   },
   "pwa": {

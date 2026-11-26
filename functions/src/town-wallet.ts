@@ -30,14 +30,21 @@ export interface CreditWalletResult {
   amount?: number;
 }
 
+export interface PreparedCreditWallet extends CreditWalletResult {
+  apply: () => void;
+}
+
 /**
- * Transaction-safe wallet credit. Idempotency is enforced by the ledger document id.
+ * Read/validate phase of a wallet credit inside a Firestore transaction.
+ * Performs all `transaction.get` calls without writing; call `apply()` during the write phase.
  */
-export async function creditWallet(params: CreditWalletParams): Promise<CreditWalletResult> {
+export async function prepareCreditWallet(
+  params: CreditWalletParams,
+): Promise<PreparedCreditWallet> {
   const { transaction, db, uid, amount, bucket, reason, refId, idempotencyKey } = params;
 
   if (amount <= 0) {
-    return { duplicate: false, amount: 0 };
+    return { duplicate: false, amount: 0, apply: () => {} };
   }
 
   // Idempotency check via unique document ID in ledger
@@ -45,7 +52,7 @@ export async function creditWallet(params: CreditWalletParams): Promise<CreditWa
   const ledgerRef = db.collection('ledger').doc(safeKey);
   const existingLedger = await transaction.get(ledgerRef);
   if (existingLedger.exists) {
-    return { duplicate: true };
+    return { duplicate: true, apply: () => {} };
   }
 
   const walletRef = db.collection('users').doc(uid).collection('wallet').doc('main');
@@ -62,7 +69,11 @@ export async function creditWallet(params: CreditWalletParams): Promise<CreditWa
       locked: false,
     };
   } else {
-    walletData = walletSnap.data() as WalletDoc;
+    const raw = walletSnap.data() as WalletDoc;
+    walletData = {
+      ...raw,
+      buckets: { ...raw.buckets },
+    };
     if (walletData.locked) {
       throw new Error(`WALLET_LOCKED: Wallet for ${uid} is locked.`);
     }
@@ -78,34 +89,47 @@ export async function creditWallet(params: CreditWalletParams): Promise<CreditWa
     walletData.monthPurchasedEUR = 0;
   }
 
-  transaction.set(
-    walletRef,
-    {
-      ...walletData,
-      updatedAt: FieldValue.serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const apply = () => {
+    transaction.set(
+      walletRef,
+      {
+        ...walletData,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
 
-  const ledgerEntry: LedgerEntry = {
-    uid,
-    delta: amount,
-    bucket,
-    reason,
-    refId,
-    idempotencyKey,
-    balanceAfter,
-    createdAt: FieldValue.serverTimestamp(),
+    const ledgerEntry: LedgerEntry = {
+      uid,
+      delta: amount,
+      bucket,
+      reason,
+      refId,
+      idempotencyKey,
+      balanceAfter,
+      createdAt: FieldValue.serverTimestamp(),
+    };
+
+    transaction.set(ledgerRef, ledgerEntry);
   };
-
-  transaction.set(ledgerRef, ledgerEntry);
 
   return {
     duplicate: false,
     balanceBefore,
     balanceAfter,
     amount,
+    apply,
   };
+}
+
+/**
+ * Transaction-safe wallet credit. Idempotency is enforced by the ledger document id.
+ */
+export async function creditWallet(params: CreditWalletParams): Promise<CreditWalletResult> {
+  const prepared = await prepareCreditWallet(params);
+  prepared.apply();
+  const { apply: _apply, ...result } = prepared;
+  return result;
 }
 
 export interface DebitWalletParams {
@@ -126,12 +150,17 @@ export interface DebitWalletResult {
   spentBuckets?: Partial<Record<CoinBucket, number>>;
 }
 
+export interface PreparedDebitWallet extends DebitWalletResult {
+  apply: () => void;
+}
+
 const DEFAULT_BUCKET_PRIORITY: CoinBucket[] = ['gift', 'town', 'purchased', 'trivia'];
 
 /**
- * Transaction-safe wallet debit. Deducts from buckets based on specified priority order.
+ * Read/validate phase of a wallet debit inside a Firestore transaction.
+ * Performs all `transaction.get` calls without writing; call `apply()` during the write phase.
  */
-export async function debitWallet(params: DebitWalletParams): Promise<DebitWalletResult> {
+export async function prepareDebitWallet(params: DebitWalletParams): Promise<PreparedDebitWallet> {
   const {
     transaction,
     db,
@@ -144,14 +173,14 @@ export async function debitWallet(params: DebitWalletParams): Promise<DebitWalle
   } = params;
 
   if (amount <= 0) {
-    return { duplicate: false };
+    return { duplicate: false, apply: () => {} };
   }
 
   const safeKey = encodeURIComponent(idempotencyKey);
   const ledgerRef = db.collection('ledger').doc(safeKey);
   const existingLedger = await transaction.get(ledgerRef);
   if (existingLedger.exists) {
-    return { duplicate: true };
+    return { duplicate: true, apply: () => {} };
   }
 
   const walletRef = db.collection('users').doc(uid).collection('wallet').doc('main');
@@ -160,7 +189,11 @@ export async function debitWallet(params: DebitWalletParams): Promise<DebitWalle
     throw new Error('INSUFFICIENT_FUNDS: Wallet does not exist.');
   }
 
-  const walletData = walletSnap.data() as WalletDoc;
+  const raw = walletSnap.data() as WalletDoc;
+  const walletData: WalletDoc = {
+    ...raw,
+    buckets: { ...raw.buckets },
+  };
   if (walletData.locked) {
     throw new Error(`WALLET_LOCKED: Wallet for ${uid} is locked.`);
   }
@@ -195,34 +228,47 @@ export async function debitWallet(params: DebitWalletParams): Promise<DebitWalle
   const balanceAfter = balanceBefore - amount;
   walletData.balance = balanceAfter;
 
-  transaction.set(
-    walletRef,
-    {
-      ...walletData,
-      updatedAt: FieldValue.serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const apply = () => {
+    transaction.set(
+      walletRef,
+      {
+        ...walletData,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
 
-  const ledgerEntry: LedgerEntry = {
-    uid,
-    delta: -amount,
-    bucket: primaryBucket,
-    reason,
-    refId,
-    idempotencyKey,
-    balanceAfter,
-    createdAt: FieldValue.serverTimestamp(),
+    const ledgerEntry: LedgerEntry = {
+      uid,
+      delta: -amount,
+      bucket: primaryBucket,
+      reason,
+      refId,
+      idempotencyKey,
+      balanceAfter,
+      createdAt: FieldValue.serverTimestamp(),
+    };
+
+    transaction.set(ledgerRef, ledgerEntry);
   };
-
-  transaction.set(ledgerRef, ledgerEntry);
 
   return {
     duplicate: false,
     balanceBefore,
     balanceAfter,
     spentBuckets,
+    apply,
   };
+}
+
+/**
+ * Transaction-safe wallet debit. Deducts from buckets based on specified priority order.
+ */
+export async function debitWallet(params: DebitWalletParams): Promise<DebitWalletResult> {
+  const prepared = await prepareDebitWallet(params);
+  prepared.apply();
+  const { apply: _apply, ...result } = prepared;
+  return result;
 }
 
 export interface ReconcileResult {

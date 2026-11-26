@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createStrictMockFirestore } from './test-firestore-helper.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import { initPlayerTown } from './town-init.js';
 
@@ -19,46 +20,7 @@ describe('town-init Cloud Function logic', () => {
       baseServiceCapacity: 4,
     });
 
-    mockDb = {
-      collection: (col: string) => ({
-        doc: (id: string) => ({
-          collection: (subCol: string) => ({
-            doc: (subId: string) => ({
-              path: `${col}/${id}/${subCol}/${subId}`,
-              get: async () => {
-                const data = store.get(`${col}/${id}/${subCol}/${subId}`);
-                return { exists: data !== undefined, data: () => data };
-              },
-            }),
-          }),
-          path: `${col}/${id}`,
-          get: async () => {
-            const data = store.get(`${col}/${id}`);
-            return { exists: data !== undefined, data: () => data };
-          },
-        }),
-      }),
-      runTransaction: async (fn: (tx: any) => Promise<any>) => {
-        const tx = {
-          get: async (ref: { path: string }) => {
-            const data = store.get(ref.path);
-            return { exists: data !== undefined, data: () => data };
-          },
-          set: (
-            ref: { path: string },
-            data: Record<string, unknown>,
-            options?: { merge?: boolean },
-          ) => {
-            if (options?.merge && store.has(ref.path)) {
-              store.set(ref.path, { ...store.get(ref.path), ...data });
-            } else {
-              store.set(ref.path, { ...data });
-            }
-          },
-        };
-        return fn(tx);
-      },
-    };
+    mockDb = createStrictMockFirestore(store);
   });
 
   it('initializes a brand new town with starting house, 2 plots, 2 villagers, and 100 starter coins', async () => {

@@ -1075,6 +1075,11 @@
       "zoomControls": "Zoomkontroller for kart",
       "zoomIn": "Zoom inn",
       "zoomOut": "Zoom ut"
+    },
+    "status": {
+      "connecting": "Kobler til…",
+      "reconnectingFailed": "Kunne ikke koble til RonTown",
+      "retry": "Prøv igjen"
     }
   },
   "pwa": {

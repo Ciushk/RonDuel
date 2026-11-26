@@ -1075,6 +1075,11 @@
       "zoomControls": "Térkép nagyításvezérlői",
       "zoomIn": "Nagyítás",
       "zoomOut": "Kicsinyítés"
+    },
+    "status": {
+      "connecting": "Csatlakozás…",
+      "reconnectingFailed": "Nem sikerült csatlakozni a RonTownhoz",
+      "retry": "Újra"
     }
   },
   "pwa": {

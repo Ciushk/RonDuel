@@ -1075,6 +1075,11 @@
       "zoomControls": "Rialtáin zúmála léarscáile",
       "zoomIn": "Zúmáil isteach",
       "zoomOut": "Zúmáil amach"
+    },
+    "status": {
+      "connecting": "Ag ceangal…",
+      "reconnectingFailed": "Níorbh fhéidir ceangal le RonTown",
+      "retry": "Bain triail eile as"
     }
   },
   "pwa": {

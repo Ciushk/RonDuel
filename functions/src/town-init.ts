@@ -6,7 +6,7 @@ import {
   type TownInventoryDoc,
 } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { creditWallet } from './town-wallet.js';
+import { prepareCreditWallet } from './town-wallet.js';
 
 export interface InitTownResult {
   created: boolean;
@@ -29,6 +29,7 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
   const plot2Ref = db.collection('users').doc(uid).collection('townTiles').doc('4_4');
 
   const result = await db.runTransaction(async (tx) => {
+    // Read phase: read town doc and prepare starter coin credit before any writes
     const existingSnap = await tx.get(townRef);
     if (existingSnap.exists) {
       return {
@@ -36,6 +37,18 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
         town: existingSnap.data() as TownDoc,
       };
     }
+
+    // Prepare 100 starter coins to 'town' bucket (one-time idempotent) before writes
+    const starterCredit = await prepareCreditWallet({
+      transaction: tx,
+      db,
+      uid,
+      amount: economy.starterCoins,
+      bucket: 'town',
+      reason: 'starter',
+      refId: 'starter_grant',
+      idempotencyKey: `starter:${uid}`,
+    });
 
     const starterLand = generateStarterLand(
       [
@@ -63,6 +76,7 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
       updatedAt: FieldValue.serverTimestamp(),
     };
 
+    // Write phase
     tx.set(townRef, newTown);
 
     const starterHouse: TownTileDoc = {
@@ -94,17 +108,7 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
     };
     tx.set(inventoryRef, inventory);
 
-    // Grant 100 starter coins to 'town' bucket (one-time idempotent)
-    await creditWallet({
-      transaction: tx,
-      db,
-      uid,
-      amount: economy.starterCoins,
-      bucket: 'town',
-      reason: 'starter',
-      refId: 'starter_grant',
-      idempotencyKey: `starter:${uid}`,
-    });
+    starterCredit.apply();
 
     return {
       created: true,

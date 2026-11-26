@@ -1,7 +1,7 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { creditWallet } from './town-wallet.js';
+import { prepareCreditWallet } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 import { getTodayDateString } from './town-transfer.js';
 import type { TownTileDoc } from '@ronduel/shared';
@@ -79,6 +79,7 @@ export async function waterFriendCrop(
     .doc(`${tileX}_${tileY}`);
 
   const result = await db.runTransaction(async (tx) => {
+    // Read phase: read daily caps, target tile, and prepare helper reward credit
     // 1. Check helper daily cap across all friends
     const helperDailySnap = await tx.get(helperDailyRef);
     const helperDailyTotal =
@@ -111,6 +112,21 @@ export async function waterFriendCrop(
       throw new Error('This crop is already fully grown and ready to harvest');
     }
 
+    const helperRewarded = helperDailyTotal < helpCfg.helperDailyCap;
+    const helperCredit = helperRewarded
+      ? await prepareCreditWallet({
+          transaction: tx,
+          db,
+          uid: helperUid,
+          amount: helpCfg.helperRewardCoins,
+          bucket: 'town',
+          reason: 'help_reward',
+          refId: `${hostUid}_${tileX}_${tileY}`,
+          idempotencyKey: `help_reward:${helperUid}:${hostUid}:${tileX}_${tileY}:${todayStr}_${friendActionsCount}`,
+        })
+      : null;
+
+    // Write phase
     // 4. Reduce grow time by waterReducesSeconds (1800s / 30m)
     const newReadyAtSeconds = Math.max(nowSeconds, readyAtSeconds - helpCfg.waterReducesSeconds);
     const newWaterCount = (tileData.waterCount ?? 0) + 1;
@@ -133,9 +149,7 @@ export async function waterFriendCrop(
     );
 
     // 6. Reward helper if under helperDailyCap (5 coins/day)
-    let helperRewarded = false;
-    if (helperDailyTotal < helpCfg.helperDailyCap) {
-      helperRewarded = true;
+    if (helperRewarded && helperCredit) {
       tx.set(
         helperDailyRef,
         {
@@ -146,16 +160,7 @@ export async function waterFriendCrop(
         { merge: true },
       );
 
-      await creditWallet({
-        transaction: tx,
-        db,
-        uid: helperUid,
-        amount: helpCfg.helperRewardCoins,
-        bucket: 'town',
-        reason: 'help_reward',
-        refId: `${hostUid}_${tileX}_${tileY}`,
-        idempotencyKey: `help_reward:${helperUid}:${hostUid}:${tileX}_${tileY}:${todayStr}_${friendActionsCount}`,
-      });
+      helperCredit.apply();
     }
 
     return {

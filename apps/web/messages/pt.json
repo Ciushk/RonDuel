@@ -1075,6 +1075,11 @@
       "zoomControls": "Controles de zoom do mapa",
       "zoomIn": "Ampliar",
       "zoomOut": "Reduzir"
+    },
+    "status": {
+      "connecting": "A ligar…",
+      "reconnectingFailed": "Não foi possível ligar ao RonTown",
+      "retry": "Tentar novamente"
     }
   },
   "pwa": {

@@ -1075,6 +1075,11 @@
       "zoomControls": "Kontrolli taż-żum tal-mappa",
       "zoomIn": "Kabbar",
       "zoomOut": "Ċekken"
+    },
+    "status": {
+      "connecting": "Qiegħed jikkonnettja…",
+      "reconnectingFailed": "Ma setax jikkonnettja ma' RonTown",
+      "retry": "Erġa' pprova"
     }
   },
   "pwa": {

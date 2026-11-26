@@ -1075,6 +1075,11 @@
       "zoomControls": "Керування масштабом карти",
       "zoomIn": "Збільшити",
       "zoomOut": "Зменшити"
+    },
+    "status": {
+      "connecting": "Підключення…",
+      "reconnectingFailed": "Не вдалося підключитися до RonTown",
+      "retry": "Повторити"
     }
   },
   "pwa": {

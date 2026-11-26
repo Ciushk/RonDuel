@@ -11,7 +11,7 @@ import {
   type TownTileDoc,
 } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { creditWallet, debitWallet } from './town-wallet.js';
+import { debitWallet, prepareCreditWallet } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 
 export async function plantCrop(
@@ -141,6 +141,7 @@ export async function harvestCrop(
   const inventoryRef = db.collection('users').doc(uid).collection('townInventory').doc('main');
 
   const result = await db.runTransaction(async (tx) => {
+    // Read phase: read tile and inventory before any writes
     const tileSnap = await tx.get(tileRef);
     if (!tileSnap.exists) {
       throw new Error(`No tile at (${params.x}, ${params.y})`);
@@ -163,15 +164,6 @@ export async function harvestCrop(
     const cropItem = catalog.items[cropId];
     const yieldCount = cropItem?.yieldCount ?? 2;
 
-    // Reset plot
-    tx.update(tileRef, {
-      cropId: FieldValue.delete(),
-      plantedAt: FieldValue.delete(),
-      readyAt: FieldValue.delete(),
-      waterCount: FieldValue.delete(),
-    });
-
-    // Add harvest to inventory
     const invSnap = await tx.get(inventoryRef);
     let cropsMap: Record<string, number> = {};
     if (invSnap.exists) {
@@ -179,6 +171,14 @@ export async function harvestCrop(
       cropsMap = { ...(invData.crops || {}) };
     }
     cropsMap[cropId] = (cropsMap[cropId] || 0) + yieldCount;
+
+    // Write phase: reset plot and credit inventory
+    tx.update(tileRef, {
+      cropId: FieldValue.delete(),
+      plantedAt: FieldValue.delete(),
+      readyAt: FieldValue.delete(),
+      waterCount: FieldValue.delete(),
+    });
 
     tx.set(inventoryRef, { crops: cropsMap }, { merge: true });
 
@@ -261,6 +261,7 @@ export async function deliverOrder(
   const townRef = db.collection('users').doc(uid).collection('town').doc('main');
 
   return await db.runTransaction(async (tx) => {
+    // Read phase: read orders, inventory, town, and prepare wallet credit before any writes
     const ordersSnap = await tx.get(ordersRef);
     if (!ordersSnap.exists) {
       throw new Error('Daily orders not generated for this date');
@@ -289,21 +290,10 @@ export async function deliverOrder(
       }
     }
 
-    // Deduct crops from inventory
-    const updatedInventory: Record<string, number> = { ...inventory };
-    for (const [cropId, reqQty] of Object.entries(order.items)) {
-      updatedInventory[cropId] = (updatedInventory[cropId] ?? 0) - reqQty;
-    }
-    tx.set(inventoryRef, { crops: updatedInventory }, { merge: true });
+    const townSnap = await tx.get(townRef);
 
-    // Mark order done
-    const updatedOrders = ordersData.orders.map((o) =>
-      o.id === params.orderId ? { ...o, done: true } : o,
-    );
-    tx.update(ordersRef, { orders: updatedOrders });
-
-    // Credit reward coins to 'town' bucket
-    await creditWallet({
+    // Prepare reward coins credit to 'town' bucket
+    const rewardCredit = await prepareCreditWallet({
       transaction: tx,
       db,
       uid,
@@ -314,8 +304,21 @@ export async function deliverOrder(
       idempotencyKey: `order:${uid}:${params.roundDate}:${params.orderId}`,
     });
 
+    // Write phase: deduct crops, mark order done, apply wallet credit, advance tutorial
+    const updatedInventory: Record<string, number> = { ...inventory };
+    for (const [cropId, reqQty] of Object.entries(order.items)) {
+      updatedInventory[cropId] = (updatedInventory[cropId] ?? 0) - reqQty;
+    }
+    tx.set(inventoryRef, { crops: updatedInventory }, { merge: true });
+
+    const updatedOrders = ordersData.orders.map((o) =>
+      o.id === params.orderId ? { ...o, done: true } : o,
+    );
+    tx.update(ordersRef, { orders: updatedOrders });
+
+    rewardCredit.apply();
+
     // Advance tutorial step 2 -> 3 if delivering order
-    const townSnap = await tx.get(townRef);
     if (townSnap.exists) {
       const townData = townSnap.data() as TownDoc;
       if (townData.tutorialStep === 2) {

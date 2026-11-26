@@ -48,6 +48,10 @@ export interface TransferStatusInfo {
   dailyCap: number;
 }
 
+export type TownConnectionStatus = 'connecting' | 'connected' | 'offline';
+
+export const TOWN_INIT_RETRY_DELAYS_MS = [1000, 3000, 7000] as const;
+
 interface LocalPersistedTown {
   town: TownDoc;
   tiles: Record<string, TileInfo>;
@@ -194,7 +198,18 @@ export function useTownState(params: {
 
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [floatingRewards, setFloatingRewards] = useState<FloatingReward[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<TownConnectionStatus>(
+    isVisitMode ? 'connected' : 'connecting',
+  );
+  const [initEpoch, setInitEpoch] = useState(0);
   const usingLocalFallbackRef = useRef(false);
+  const serverReadyRef = useRef<boolean>(isVisitMode);
+  serverReadyRef.current = isVisitMode || connectionStatus === 'connected';
+
+  const retryInit = useCallback(() => {
+    setConnectionStatus('connecting');
+    setInitEpoch((prev) => prev + 1);
+  }, []);
 
   const showToast = useCallback((msg: string) => {
     setActionMessage(msg);
@@ -224,7 +239,7 @@ export function useTownState(params: {
     }
   }, [isVisitMode, town, tiles, walletBalance, inventory]);
 
-  // Initialize town (or visit snapshot) on mount
+  // Initialize town (or visit snapshot) on mount with automatic retry/backoff
   useEffect(() => {
     if (!townEnabled) {
       setLoading(false);
@@ -232,6 +247,8 @@ export function useTownState(params: {
     }
 
     let active = true;
+    let retryTimer: number | null = null;
+    const controller = new AbortController();
     const session = getLocalSession();
     if (!session?.uid || session.uid === 'u_ssr' || session.uid === 'anon') {
       setLoading(false);
@@ -239,8 +256,11 @@ export function useTownState(params: {
     }
 
     if (isVisitMode && visitHostUid) {
+      setConnectionStatus('connected');
+      serverReadyRef.current = true;
       fetch(
         `/api/town/visit?hostUid=${encodeURIComponent(visitHostUid)}&viewerUid=${encodeURIComponent(session.uid)}`,
+        { signal: controller.signal },
       )
         .then((res) => {
           if (!res.ok) throw new Error('Visit fetch failed');
@@ -299,89 +319,120 @@ export function useTownState(params: {
         });
       return () => {
         active = false;
+        controller.abort();
       };
     }
 
-    if (!isVisitMode) {
-      try {
-        const raw = window.localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`);
-        if (raw) {
-          const restored = JSON.parse(raw) as LocalPersistedTown;
-          const restoredLand = ensureLandCoversTiles(
-            restored.town.land,
-            restored.tiles,
-            restored.town.gridSize ?? 8,
-          );
-          setTown({ ...restored.town, land: restoredLand });
-          setTiles(restored.tiles);
-          setWalletBalance(restored.walletBalance);
-          setInventory(restored.inventory ?? {});
-          setTutorialStep(restored.town.tutorialStep ?? 3);
-        }
-      } catch {
-        // Ignore corrupt local cache
+    setConnectionStatus('connecting');
+    serverReadyRef.current = false;
+
+    try {
+      const raw = window.localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`);
+      if (raw) {
+        const restored = JSON.parse(raw) as LocalPersistedTown;
+        const restoredLand = ensureLandCoversTiles(
+          restored.town.land,
+          restored.tiles,
+          restored.town.gridSize ?? 8,
+        );
+        setTown({ ...restored.town, land: restoredLand });
+        setTiles(restored.tiles);
+        setWalletBalance(restored.walletBalance);
+        setInventory(restored.inventory ?? {});
+        setTutorialStep(restored.town.tutorialStep ?? 3);
       }
+    } catch {
+      // Ignore corrupt local cache
     }
 
-    fetch(`/api/town/init?uid=${encodeURIComponent(session.uid)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Init failed');
-        return res.json();
+    const runInitAttempt = (retryIndex: number) => {
+      if (!active) return;
+      fetch(`/api/town/init?uid=${encodeURIComponent(session.uid)}`, {
+        cache: 'no-store',
+        signal: controller.signal,
       })
-      .then((data) => {
-        if (!active) return;
-        const serverTiles: Record<string, TileInfo> =
-          data.tiles && Object.keys(data.tiles).length > 0
-            ? data.tiles
-            : {
-                '3_3': { x: 3, y: 3, itemId: 'starter_house' },
-                '3_4': { x: 3, y: 4, itemId: 'plot' },
-                '4_4': { x: 4, y: 4, itemId: 'plot' },
-              };
-        const serverTown: TownDoc = data.town ?? createDefaultStarterState().town;
-        const land = ensureLandCoversTiles(serverTown.land, serverTiles, serverTown.gridSize ?? 8);
-        setTown({ ...serverTown, land });
-        setTiles(serverTiles);
-        setTutorialStep(serverTown.tutorialStep ?? 0);
-        if (typeof data.walletBalance === 'number') {
-          setWalletBalance(data.walletBalance);
-        }
-        usingLocalFallbackRef.current = false;
-        setLoading(false);
+        .then((res) => {
+          if (!res.ok) throw new Error(`Init failed (${res.status})`);
+          return res.json();
+        })
+        .then((data) => {
+          if (!active) return;
+          const serverTiles: Record<string, TileInfo> =
+            data.tiles && Object.keys(data.tiles).length > 0
+              ? data.tiles
+              : {
+                  '3_3': { x: 3, y: 3, itemId: 'starter_house' },
+                  '3_4': { x: 3, y: 4, itemId: 'plot' },
+                  '4_4': { x: 4, y: 4, itemId: 'plot' },
+                };
+          const serverTown: TownDoc = data.town ?? createDefaultStarterState().town;
+          const land = ensureLandCoversTiles(
+            serverTown.land,
+            serverTiles,
+            serverTown.gridSize ?? 8,
+          );
+          setTown({ ...serverTown, land });
+          setTiles(serverTiles);
+          setTutorialStep(serverTown.tutorialStep ?? 0);
+          if (typeof data.walletBalance === 'number') {
+            setWalletBalance(data.walletBalance);
+          }
+          usingLocalFallbackRef.current = false;
+          serverReadyRef.current = true;
+          setConnectionStatus('connected');
+          setLoading(false);
 
-        // Fetch inventory & daily orders only when town API is reachable
-        fetch(`/api/town/inventory?uid=${encodeURIComponent(session.uid)}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (active && d?.crops) setInventory(d.crops);
+          // Fetch inventory & daily orders only when town API is reachable
+          fetch(`/api/town/inventory?uid=${encodeURIComponent(session.uid)}`, {
+            signal: controller.signal,
           })
-          .catch(() => {});
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (active && d?.crops) setInventory(d.crops);
+            })
+            .catch(() => {});
 
-        fetch(`/api/town/orders?uid=${encodeURIComponent(session.uid)}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (active && d?.orders) {
-              setOrders(d.orders);
-              setOrdersUnlocked(Boolean(d.unlocked));
-            }
+          fetch(`/api/town/orders?uid=${encodeURIComponent(session.uid)}`, {
+            signal: controller.signal,
           })
-          .catch(() => {});
-      })
-      .catch(() => {
-        if (!active) return;
-        usingLocalFallbackRef.current = true;
-      });
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (active && d?.orders) {
+                setOrders(d.orders);
+                setOrdersUnlocked(Boolean(d.unlocked));
+              }
+            })
+            .catch(() => {});
+        })
+        .catch(() => {
+          if (!active || controller.signal.aborted) return;
+          if (retryIndex < TOWN_INIT_RETRY_DELAYS_MS.length) {
+            const delayMs = TOWN_INIT_RETRY_DELAYS_MS[retryIndex]!;
+            retryTimer = window.setTimeout(() => {
+              if (active) runInitAttempt(retryIndex + 1);
+            }, delayMs);
+            return;
+          }
+          usingLocalFallbackRef.current = true;
+          serverReadyRef.current = false;
+          setConnectionStatus('offline');
+          setLoading(false);
+        });
+    };
+
+    runInitAttempt(0);
 
     return () => {
       active = false;
+      controller.abort();
+      if (retryTimer !== null) {
+        window.clearTimeout(retryTimer);
+      }
     };
-  }, [townEnabled, isVisitMode, visitHostUid]);
+  }, [townEnabled, isVisitMode, visitHostUid, initEpoch]);
 
   const gridSize = town?.gridSize ?? 8;
-  const land = useMemo<Record<string, GroundTileType>>(
-    () => town?.land ?? {},
-    [town?.land],
-  );
+  const land = useMemo<Record<string, GroundTileType>>(() => town?.land ?? {}, [town?.land]);
 
   const expandRing = useMemo<GridCoord[]>(
     () => (isVisitMode ? [] : computeExpandRing(land, gridSize)),
@@ -456,7 +507,10 @@ export function useTownState(params: {
     (nextTiles: Record<string, TileInfo>, prevTown: TownDoc): TownDoc => {
       const mainTiles = Object.values(nextTiles).filter((t) => !t.parentTile);
       const caps = calculateTownCapacities(mainTiles, catalog, 4);
-      const nextPop = Math.min(Math.max(prevTown.population, Math.min(caps.populationCap, prevTown.population + 1)), caps.populationCap);
+      const nextPop = Math.min(
+        Math.max(prevTown.population, Math.min(caps.populationCap, prevTown.population + 1)),
+        caps.populationCap,
+      );
       const level = calculateTownLevel(nextPop);
       const maxLevelReached = Math.max(prevTown.maxLevelReached, level);
       return {
@@ -475,6 +529,7 @@ export function useTownState(params: {
 
   const executeBuyLand = useCallback(
     async (x: number, y: number, groundType: GroundTileType): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const cost = LAND_PRICES[groundType];
       if (walletBalance < cost) {
         return false;
@@ -503,9 +558,7 @@ export function useTownState(params: {
         // Local fallback
         setWalletBalance((prev) => Math.max(0, prev - cost));
         setTown((prev) =>
-          prev
-            ? { ...prev, land: { ...(prev.land ?? {}), [`${x}_${y}`]: groundType } }
-            : prev,
+          prev ? { ...prev, land: { ...(prev.land ?? {}), [`${x}_${y}`]: groundType } } : prev,
         );
         return true;
       } finally {
@@ -517,6 +570,7 @@ export function useTownState(params: {
 
   const executeBuild = useCallback(
     async (itemId: string, x: number, y: number): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const item = catalog.items[itemId];
       if (!item) return false;
       if (!canPlaceAt(x, y, item.footprint.w, item.footprint.h)) {
@@ -574,6 +628,7 @@ export function useTownState(params: {
 
   const executeMove = useCallback(
     async (fromX: number, fromY: number, toX: number, toY: number): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const fromKey = `${fromX}_${fromY}`;
       const current = tiles[fromKey];
       if (!current || current.parentTile) return false;
@@ -630,6 +685,7 @@ export function useTownState(params: {
 
   const executeRemove = useCallback(
     async (x: number, y: number): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const key = `${x}_${y}`;
       const tile = tiles[key];
       if (!tile || tile.itemId === 'starter_house' || tile.parentTile) return false;
@@ -676,6 +732,7 @@ export function useTownState(params: {
 
   const executePlantCrop = useCallback(
     async (x: number, y: number, cropId: string): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const cropItem = catalog.items[cropId];
       if (!cropItem || !canPlantAt(x, y)) return false;
       if (walletBalance < cropItem.priceCoins) {
@@ -734,6 +791,7 @@ export function useTownState(params: {
 
   const executeHarvestCrop = useCallback(
     async (x: number, y: number): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       const key = `${x}_${y}`;
       const tile = tiles[key];
       if (!tile?.cropId) return false;
@@ -780,6 +838,7 @@ export function useTownState(params: {
 
   const executeBuyPlot = useCallback(
     async (x: number, y: number): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
       if (!canPlaceAt(x, y, 1, 1)) {
         showToast('Cannot place plot here');
         return false;
@@ -805,7 +864,9 @@ export function useTownState(params: {
       }
       setTiles((prev) => ({ ...prev, [`${x}_${y}`]: { x, y, itemId: 'plot' } }));
       setTown((prev) =>
-        prev ? { ...prev, land: { ...(prev.land ?? {}), [`${x}_${y}`]: 'basic-block-dirt' } } : prev,
+        prev
+          ? { ...prev, land: { ...(prev.land ?? {}), [`${x}_${y}`]: 'basic-block-dirt' } }
+          : prev,
       );
       return true;
     },
@@ -814,6 +875,7 @@ export function useTownState(params: {
 
   const executeDeliverOrder = useCallback(
     async (orderId: string) => {
+      if (!serverReadyRef.current) return;
       const session = getLocalSession();
       try {
         const res = await fetch('/api/town/deliver-order', {
@@ -987,6 +1049,8 @@ export function useTownState(params: {
   return {
     catalog,
     loading,
+    connectionStatus,
+    retryInit,
     town,
     tiles,
     land,

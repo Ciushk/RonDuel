@@ -1075,6 +1075,11 @@
       "zoomControls": "Map zoom controls",
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out"
+    },
+    "status": {
+      "connecting": "Connecting…",
+      "reconnectingFailed": "Could not connect to RonTown",
+      "retry": "Retry"
     }
   },
   "pwa": {

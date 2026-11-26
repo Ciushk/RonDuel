@@ -18,7 +18,7 @@ import {
   type TownTileDoc,
 } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { creditWallet, debitWallet } from './town-wallet.js';
+import { debitWallet, prepareCreditWallet } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 
 export async function getTownCatalog(db: Firestore): Promise<TownCatalogDoc> {
@@ -121,7 +121,9 @@ export async function buildItem(
             throw new Error(`Tile (${params.x + dx}, ${params.y + dy}) is not owned land`);
           }
           if (!isGroundWalkable(ground)) {
-            throw new Error(`Cannot build on water or shoreline at (${params.x + dx}, ${params.y + dy})`);
+            throw new Error(
+              `Cannot build on water or shoreline at (${params.x + dx}, ${params.y + dy})`,
+            );
           }
         }
         if (occupiedKeys.has(coordKey)) {
@@ -249,6 +251,7 @@ export async function removeTile(
   const townRef = db.collection('users').doc(uid).collection('town').doc('main');
 
   const result = await db.runTransaction(async (tx) => {
+    // Read phase: read tile, all tiles, town doc, and prepare refund credit before any writes
     const tileSnap = await tx.get(tileRef);
     if (!tileSnap.exists) {
       throw new Error(`No tile found at (${params.x}, ${params.y})`);
@@ -265,54 +268,64 @@ export async function removeTile(
     const item = catalog.items[tileData.itemId];
     const refundCoins = item ? Math.floor(item.priceCoins * economy.removeRefundRate) : 0;
 
-    // Delete tile
-    tx.delete(tileRef);
+    const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
+    const townSnap = await tx.get(townRef);
+    if (!townSnap.exists) {
+      throw new Error('Town not initialized');
+    }
+    const townData = townSnap.data() as TownDoc;
 
-    // Delete multi-tile parts if any
+    // Prepare refund coins to 'town' bucket if applicable
+    const refundCredit =
+      refundCoins > 0
+        ? await prepareCreditWallet({
+            transaction: tx,
+            db,
+            uid,
+            amount: refundCoins,
+            bucket: 'town',
+            reason: 'remove_refund',
+            refId: tileData.itemId,
+            idempotencyKey: `remove_refund:${uid}:${params.x}_${params.y}_${Date.now()}`,
+          })
+        : null;
+
+    // Compute removed tile IDs (main + multi-tile children) and recalculate capacities
+    const removedIds = new Set<string>([`${params.x}_${params.y}`]);
+    const childRefs: Array<
+      ReturnType<typeof db.collection>['doc'] extends (...args: any[]) => infer R ? R : never
+    > = [];
     if (item && (item.footprint.w > 1 || item.footprint.h > 1)) {
       for (let dx = 0; dx < item.footprint.w; dx++) {
         for (let dy = 0; dy < item.footprint.h; dy++) {
           if (dx === 0 && dy === 0) continue;
-          const childRef = db
-            .collection('users')
-            .doc(uid)
-            .collection('townTiles')
-            .doc(`${params.x + dx}_${params.y + dy}`);
-          tx.delete(childRef);
+          const childId = `${params.x + dx}_${params.y + dy}`;
+          removedIds.add(childId);
+          childRefs.push(db.collection('users').doc(uid).collection('townTiles').doc(childId));
         }
       }
     }
 
-    // Refund coins to 'town' bucket if applicable
-    if (refundCoins > 0) {
-      await creditWallet({
-        transaction: tx,
-        db,
-        uid,
-        amount: refundCoins,
-        bucket: 'town',
-        reason: 'remove_refund',
-        refId: tileData.itemId,
-        idempotencyKey: `remove_refund:${uid}:${params.x}_${params.y}_${Date.now()}`,
-      });
-    }
-
-    // Recalculate town capacities
-    const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
     const remainingTiles: TownTileDoc[] = [];
     for (const doc of tilesSnap.docs) {
-      if (doc.id !== `${params.x}_${params.y}`) {
+      if (!removedIds.has(doc.id)) {
         remainingTiles.push(doc.data() as TownTileDoc);
       }
     }
 
     const caps = calculateTownCapacities(remainingTiles, catalog, economy.baseServiceCapacity);
-    const townSnap = await tx.get(townRef);
-    const townData = townSnap.data() as TownDoc;
 
     // If population exceeds new cap, immediately clamp to cap
     const newPopulation = Math.min(townData.population, caps.populationCap);
     const newLevel = calculateTownLevel(newPopulation);
+
+    // Write phase: delete tile(s), apply refund credit, update town capacities
+    tx.delete(tileRef);
+    for (const childRef of childRefs) {
+      tx.delete(childRef);
+    }
+
+    refundCredit?.apply();
 
     tx.update(townRef, {
       housingCapacity: caps.housingCapacity,
@@ -380,7 +393,9 @@ export async function moveTile(
           const destKey = `${params.toX + dx}_${params.toY + dy}`;
           const ground = townData.land?.[destKey];
           if (!ground) {
-            throw new Error(`Destination tile (${params.toX + dx}, ${params.toY + dy}) is not owned land`);
+            throw new Error(
+              `Destination tile (${params.toX + dx}, ${params.toY + dy}) is not owned land`,
+            );
           }
           if (!isGroundWalkable(ground)) {
             throw new Error(
@@ -590,10 +605,7 @@ export async function buyLandTile(
         const t = d.data() as TownTileDoc;
         return { x: t.x, y: t.y };
       });
-      currentLand = generateStarterLand(
-        seeds.length > 0 ? seeds : [{ x: 3, y: 3 }],
-        gridSize,
-      );
+      currentLand = generateStarterLand(seeds.length > 0 ? seeds : [{ x: 3, y: 3 }], gridSize);
     }
 
     if (!isCellInExpandRing(currentLand, gridSize, params.x, params.y)) {
@@ -638,4 +650,3 @@ export async function buyLandTile(
   await publishTownSnapshot(db, uid).catch(() => {});
   return result;
 }
-

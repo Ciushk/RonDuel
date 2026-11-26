@@ -1075,6 +1075,11 @@
       "zoomControls": "Zoomkontroller för kartan",
       "zoomIn": "Zooma in",
       "zoomOut": "Zooma ut"
+    },
+    "status": {
+      "connecting": "Ansluter…",
+      "reconnectingFailed": "Kunde inte ansluta till RonTown",
+      "retry": "Försök igen"
     }
   },
   "pwa": {

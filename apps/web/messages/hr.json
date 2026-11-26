@@ -1075,6 +1075,11 @@
       "zoomControls": "Kontrole zumiranja karte",
       "zoomIn": "Povećaj",
       "zoomOut": "Smanji"
+    },
+    "status": {
+      "connecting": "Povezivanje…",
+      "reconnectingFailed": "Povezivanje s RonTownom nije uspjelo",
+      "retry": "Pokušaj ponovno"
     }
   },
   "pwa": {

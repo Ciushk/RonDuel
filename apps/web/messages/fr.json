@@ -1075,6 +1075,11 @@
       "zoomControls": "Commandes de zoom de la carte",
       "zoomIn": "Zoomer",
       "zoomOut": "Dézoomer"
+    },
+    "status": {
+      "connecting": "Connexion…",
+      "reconnectingFailed": "Impossible de se connecter à RonTown",
+      "retry": "Réessayer"
     }
   },
   "pwa": {

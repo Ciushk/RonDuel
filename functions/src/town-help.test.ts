@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createStrictMockFirestore } from './test-firestore-helper.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import { getFriendWaterStatus, waterFriendCrop } from './town-help.js';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -24,93 +25,7 @@ describe('town-help crop watering business logic', () => {
       },
     });
 
-    mockDb = {
-      collection: (col: string) => ({
-        doc: (id: string) => {
-          const docPath = `${col}/${id}`;
-          return {
-            path: docPath,
-            get: async () => {
-              const data = store.get(docPath);
-              return { exists: data !== undefined, data: () => data };
-            },
-            set: async (val: any, opts?: any) => {
-              if (opts?.merge) {
-                const prev = store.get(docPath) || {};
-                store.set(docPath, { ...prev, ...val });
-              } else {
-                store.set(docPath, val);
-              }
-            },
-            update: async (val: any) => {
-              const prev = store.get(docPath) || {};
-              store.set(docPath, { ...prev, ...val });
-            },
-            collection: (subCol: string) => {
-              const subPrefix = `${docPath}/${subCol}`;
-              return {
-                doc: (subId: string) => {
-                  const subDocPath = `${subPrefix}/${subId}`;
-                  return {
-                    path: subDocPath,
-                    get: async () => {
-                      const data = store.get(subDocPath);
-                      return { exists: data !== undefined, data: () => data };
-                    },
-                    set: async (val: any, opts?: any) => {
-                      if (opts?.merge) {
-                        const prev = store.get(subDocPath) || {};
-                        store.set(subDocPath, { ...prev, ...val });
-                      } else {
-                        store.set(subDocPath, val);
-                      }
-                    },
-                    update: async (val: any) => {
-                      const prev = store.get(subDocPath) || {};
-                      store.set(subDocPath, { ...prev, ...val });
-                    },
-                  };
-                },
-                get: async () => {
-                  const docs: any[] = [];
-                  for (const [p, d] of store.entries()) {
-                    if (p.startsWith(`${subPrefix}/`)) {
-                      docs.push({ id: p.slice(subPrefix.length + 1), data: () => d });
-                    }
-                  }
-                  return { docs };
-                },
-              };
-            },
-          };
-        },
-      }),
-      runTransaction: async (fn: (tx: any) => Promise<any>) => {
-        const tx = {
-          get: async (ref: any) => {
-            const data = store.get(ref.path);
-            return { exists: data !== undefined, data: () => data };
-          },
-          set: (ref: any, val: any, opts?: any) => {
-            if (opts?.merge) {
-              const prev = store.get(ref.path) || {};
-              store.set(ref.path, { ...prev, ...val });
-            } else {
-              store.set(ref.path, val);
-            }
-          },
-          update: (ref: any, val: any) => {
-            const prev = store.get(ref.path) || {};
-            const next = { ...prev };
-            for (const [k, v] of Object.entries(val)) {
-              next[k] = v;
-            }
-            store.set(ref.path, next);
-          },
-        };
-        return fn(tx);
-      },
-    };
+    mockDb = createStrictMockFirestore(store);
   });
 
   it('rejects watering when helpEnabled kill-switch is false', async () => {

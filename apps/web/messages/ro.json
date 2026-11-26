@@ -1075,6 +1075,11 @@
       "zoomControls": "Controale de zoom ale hărții",
       "zoomIn": "Mărește",
       "zoomOut": "Micșorează"
+    },
+    "status": {
+      "connecting": "Se conectează…",
+      "reconnectingFailed": "Nu ne-am putut conecta la RonTown",
+      "retry": "Reîncearcă"
     }
   },
   "pwa": {

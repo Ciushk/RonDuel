@@ -1,7 +1,7 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import { FieldValue } from 'firebase-admin/firestore';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { creditWallet, debitWallet } from './town-wallet.js';
+import { prepareCreditWallet, prepareDebitWallet } from './town-wallet.js';
 import type { WalletDoc } from '@ronduel/shared';
 
 export interface TransferCoinsParams {
@@ -126,6 +126,7 @@ export async function transferCoins(
   const transferRecordRef = db.collection('townTransfers').doc(transferDocId);
 
   return await db.runTransaction(async (tx) => {
+    // Read phase: all tx.get calls (caps + sender debit + receiver credit) before any writes
     // 5. Check sender trivia bucket balance
     const senderWalletSnap = await tx.get(senderWalletRef);
     const senderWallet = (senderWalletSnap.exists ? senderWalletSnap.data() : {}) as WalletDoc;
@@ -158,8 +159,8 @@ export async function transferCoins(
       );
     }
 
-    // 8. Atomic Debit from sender's 'trivia' bucket ONLY
-    const debitRes = await debitWallet({
+    // 8. Prepare atomic Debit from sender's 'trivia' bucket ONLY
+    const debitPrepared = await prepareDebitWallet({
       transaction: tx,
       db,
       uid: senderUid,
@@ -170,8 +171,8 @@ export async function transferCoins(
       idempotencyKey: `transfer_out:${transferDocId}`,
     });
 
-    // 9. Atomic Credit to receiver's 'gift' bucket
-    await creditWallet({
+    // 9. Prepare atomic Credit to receiver's 'gift' bucket
+    const creditPrepared = await prepareCreditWallet({
       transaction: tx,
       db,
       uid: receiverUid,
@@ -181,6 +182,10 @@ export async function transferCoins(
       refId: senderUid,
       idempotencyKey: `transfer_in:${transferDocId}`,
     });
+
+    // Write phase
+    debitPrepared.apply();
+    creditPrepared.apply();
 
     // 10. Update sender daily sent tracker
     tx.set(
@@ -213,7 +218,7 @@ export async function transferCoins(
 
     return {
       success: true,
-      senderBalanceAfter: debitRes.balanceAfter ?? 0,
+      senderBalanceAfter: debitPrepared.balanceAfter ?? 0,
       receiverUid,
       amount,
     };

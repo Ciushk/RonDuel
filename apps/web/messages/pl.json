@@ -1075,6 +1075,11 @@
       "zoomControls": "Sterowanie powiększeniem mapy",
       "zoomIn": "Powiększ",
       "zoomOut": "Pomniejsz"
+    },
+    "status": {
+      "connecting": "Łączenie…",
+      "reconnectingFailed": "Nie udało się połączyć z RonTown",
+      "retry": "Ponów"
     }
   },
   "pwa": {

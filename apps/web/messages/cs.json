@@ -1075,6 +1075,11 @@
       "zoomControls": "Ovládání přiblížení mapy",
       "zoomIn": "Přiblížit",
       "zoomOut": "Oddálit"
+    },
+    "status": {
+      "connecting": "Připojování…",
+      "reconnectingFailed": "Nepodařilo se připojit k RonTown",
+      "retry": "Zkusit znovu"
     }
   },
   "pwa": {

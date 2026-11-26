@@ -1,8 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  createStrictMockFirestore,
+  FIRESTORE_READ_AFTER_WRITE_ERROR,
+} from './test-firestore-helper.js';
+import {
   batchReconcileLedgers,
   creditWallet,
   debitWallet,
+  prepareCreditWallet,
+  prepareDebitWallet,
   reconcileUserLedger,
 } from './town-wallet.js';
 
@@ -304,5 +310,64 @@ describe('town-wallet transaction functions', () => {
     expect(page2.results).toHaveLength(1);
     expect(page2.lastUid).toBe('u2');
     expect(page2.mismatchCount).toBe(1);
+  });
+
+  it('prepareDebitWallet and prepareCreditWallet perform all reads before any writes', async () => {
+    const strictStore = new Map<string, Record<string, unknown>>();
+    strictStore.set('users/sender/wallet/main', {
+      balance: 60,
+      buckets: { trivia: 60, town: 0, purchased: 0, gift: 0 },
+      monthPurchasedEUR: 0,
+      monthKey: '2026-11',
+      locked: false,
+    });
+    const strictDb = createStrictMockFirestore(strictStore) as any;
+
+    // Two prepared operations in one transaction succeed because neither writes until apply()
+    await strictDb.runTransaction(async (tx: any) => {
+      const debit = await prepareDebitWallet({
+        transaction: tx,
+        db: strictDb,
+        uid: 'sender',
+        amount: 25,
+        bucketPriority: ['trivia'],
+        reason: 'transfer_out',
+        refId: 'receiver',
+        idempotencyKey: 'prep_out:1',
+      });
+      const credit = await prepareCreditWallet({
+        transaction: tx,
+        db: strictDb,
+        uid: 'receiver',
+        amount: 25,
+        bucket: 'gift',
+        reason: 'transfer_in',
+        refId: 'sender',
+        idempotencyKey: 'prep_in:1',
+      });
+      debit.apply();
+      credit.apply();
+    });
+
+    expect((strictStore.get('users/sender/wallet/main') as any).balance).toBe(35);
+    expect((strictStore.get('users/receiver/wallet/main') as any).balance).toBe(25);
+
+    // Reading after apply() must fail with the exact Firestore SDK error
+    await expect(
+      strictDb.runTransaction(async (tx: any) => {
+        const credit = await prepareCreditWallet({
+          transaction: tx,
+          db: strictDb,
+          uid: 'receiver',
+          amount: 5,
+          bucket: 'town',
+          reason: 'order',
+          refId: 'ord_1',
+          idempotencyKey: 'prep_after_write:1',
+        });
+        credit.apply();
+        await tx.get(strictDb.collection('users').doc('receiver').collection('town').doc('main'));
+      }),
+    ).rejects.toThrow(FIRESTORE_READ_AFTER_WRITE_ERROR);
   });
 });

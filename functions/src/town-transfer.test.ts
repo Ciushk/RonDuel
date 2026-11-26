@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createStrictMockFirestore } from './test-firestore-helper.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import { getTransferStatus, transferCoins } from './town-transfer.js';
 
@@ -25,76 +26,7 @@ describe('town-transfer business logic', () => {
       },
     });
 
-    mockDb = {
-      collection: (col: string) => ({
-        doc: (id: string) => {
-          const docPath = `${col}/${id}`;
-          return {
-            path: docPath,
-            get: async () => {
-              const data = store.get(docPath);
-              return { exists: data !== undefined, data: () => data };
-            },
-            set: async (val: any, opts?: any) => {
-              if (opts?.merge) {
-                const prev = store.get(docPath) || {};
-                store.set(docPath, { ...prev, ...val });
-              } else {
-                store.set(docPath, val);
-              }
-            },
-            collection: (subCol: string) => {
-              const subPrefix = `${docPath}/${subCol}`;
-              return {
-                doc: (subId: string) => {
-                  const subDocPath = `${subPrefix}/${subId}`;
-                  return {
-                    path: subDocPath,
-                    get: async () => {
-                      const data = store.get(subDocPath);
-                      return { exists: data !== undefined, data: () => data };
-                    },
-                    set: async (val: any, opts?: any) => {
-                      if (opts?.merge) {
-                        const prev = store.get(subDocPath) || {};
-                        store.set(subDocPath, { ...prev, ...val });
-                      } else {
-                        store.set(subDocPath, val);
-                      }
-                    },
-                  };
-                },
-              };
-            },
-          };
-        },
-      }),
-      runTransaction: async (fn: (tx: any) => Promise<any>) => {
-        const tx = {
-          get: async (ref: any) => {
-            const data = store.get(ref.path);
-            return { exists: data !== undefined, data: () => data };
-          },
-          set: (ref: any, val: any, opts?: any) => {
-            if (opts?.merge) {
-              const prev = store.get(ref.path) || {};
-              store.set(ref.path, { ...prev, ...val });
-            } else {
-              store.set(ref.path, val);
-            }
-          },
-          update: (ref: any, val: any) => {
-            const prev = store.get(ref.path) || {};
-            const next = { ...prev };
-            for (const [k, v] of Object.entries(val)) {
-              next[k] = v;
-            }
-            store.set(ref.path, next);
-          },
-        };
-        return fn(tx);
-      },
-    };
+    mockDb = createStrictMockFirestore(store);
   });
 
   const tenDaysAgo = new Date(Date.now() - 10 * 86_400_000).toISOString();

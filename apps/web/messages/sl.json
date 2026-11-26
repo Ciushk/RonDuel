@@ -1075,6 +1075,11 @@
       "zoomControls": "Kontrole povečave zemljevida",
       "zoomIn": "Povečaj",
       "zoomOut": "Pomanjšaj"
+    },
+    "status": {
+      "connecting": "Povezovanje…",
+      "reconnectingFailed": "Povezava z RonTownom ni uspela",
+      "retry": "Poskusi znova"
     }
   },
   "pwa": {

@@ -1075,6 +1075,11 @@
       "zoomControls": "Έλεγχοι ζουμ χάρτη",
       "zoomIn": "Μεγέθυνση",
       "zoomOut": "Σμίκρυνση"
+    },
+    "status": {
+      "connecting": "Σύνδεση…",
+      "reconnectingFailed": "Αποτυχία σύνδεσης στο RonTown",
+      "retry": "Δοκιμή ξανά"
     }
   },
   "pwa": {

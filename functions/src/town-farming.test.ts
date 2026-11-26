@@ -1,5 +1,6 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createStrictMockFirestore } from './test-firestore-helper.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import { deliverOrder, getOrCreateDailyOrders, harvestCrop, plantCrop } from './town-farming.js';
 
@@ -18,60 +19,7 @@ describe('town-farming server business logic', () => {
       dailyOrders: { free: 3, pro: 5 },
     });
 
-    mockDb = {
-      collection: (col: string) => ({
-        doc: (id: string) => ({
-          collection: (subCol: string) => ({
-            doc: (subId: string) => ({
-              path: `${col}/${id}/${subCol}/${subId}`,
-              get: async () => {
-                const data = store.get(`${col}/${id}/${subCol}/${subId}`);
-                return { exists: data !== undefined, data: () => data };
-              },
-            }),
-          }),
-          path: `${col}/${id}`,
-          get: async () => {
-            const data = store.get(`${col}/${id}`);
-            return { exists: data !== undefined, data: () => data };
-          },
-        }),
-      }),
-      runTransaction: async (fn: (tx: any) => Promise<any>) => {
-        const tx = {
-          get: async (ref: any) => {
-            const data = store.get(ref.path);
-            return { exists: data !== undefined, data: () => data };
-          },
-          set: (
-            ref: { path: string },
-            data: Record<string, unknown>,
-            options?: { merge?: boolean },
-          ) => {
-            if (options?.merge && store.has(ref.path)) {
-              store.set(ref.path, { ...store.get(ref.path), ...data });
-            } else {
-              store.set(ref.path, { ...data });
-            }
-          },
-          update: (ref: { path: string }, data: Record<string, unknown>) => {
-            const existing = { ...(store.get(ref.path) || {}) };
-            for (const [k, v] of Object.entries(data)) {
-              if (v && typeof v === 'object' && v.constructor?.name?.includes('Delete')) {
-                delete existing[k];
-              } else {
-                existing[k] = v;
-              }
-            }
-            store.set(ref.path, existing);
-          },
-          delete: (ref: { path: string }) => {
-            store.delete(ref.path);
-          },
-        };
-        return fn(tx);
-      },
-    };
+    mockDb = createStrictMockFirestore(store);
 
     // User setup
     store.set('users/u1', { pro: { active: false } });

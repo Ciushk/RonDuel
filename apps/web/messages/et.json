@@ -1075,6 +1075,11 @@
       "zoomControls": "Kaardi suumi juhtnupud",
       "zoomIn": "Suurenda",
       "zoomOut": "Vähenda"
+    },
+    "status": {
+      "connecting": "Ühendamine…",
+      "reconnectingFailed": "RonTowniga ei saadud ühendust",
+      "retry": "Proovi uuesti"
     }
   },
   "pwa": {

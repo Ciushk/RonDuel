@@ -1075,6 +1075,11 @@
       "zoomControls": "Kartes tālummaiņas vadīklas",
       "zoomIn": "Tuvināt",
       "zoomOut": "Tālināt"
+    },
+    "status": {
+      "connecting": "Savienojas…",
+      "reconnectingFailed": "Neizdevās izveidot savienojumu ar RonTown",
+      "retry": "Mēģināt vēlreiz"
     }
   },
   "pwa": {

@@ -67,6 +67,8 @@ export default function TownPage() {
   const {
     catalog,
     loading,
+    connectionStatus,
+    retryInit,
     town,
     tiles,
     land,
@@ -206,14 +208,16 @@ export default function TownPage() {
     return Object.values(catalog.items).filter((item) => item.type === 'crop');
   }, [catalog]);
 
+  const isServerReady = isVisitMode || connectionStatus === 'connected';
+
   const handleExpandTap = useCallback(
     (x: number, y: number) => {
-      if (isVisitMode) return;
+      if (isVisitMode || !isServerReady) return;
       clearModes();
       closeSheet();
       setExpandTarget({ x, y });
     },
-    [isVisitMode, clearModes, closeSheet],
+    [isVisitMode, isServerReady, clearModes, closeSheet],
   );
 
   const handleConfirmBuyLand = useCallback(
@@ -237,6 +241,10 @@ export default function TownPage() {
           setSelectedTile(tile);
           openSheet('tile');
         }
+        return;
+      }
+
+      if (!isServerReady) {
         return;
       }
 
@@ -283,6 +291,7 @@ export default function TownPage() {
     [
       tiles,
       isVisitMode,
+      isServerReady,
       placingItemId,
       movingTile,
       moveModeActive,
@@ -310,7 +319,7 @@ export default function TownPage() {
         <div className="border-border flex h-20 w-20 items-center justify-center rounded-3xl border-2 bg-[#C6FF3D] text-[#0E0D15] shadow-[4px_4px_0px_0px_#0E0D15]">
           <Buildings size={40} weight="fill" aria-hidden="true" />
         </div>
-        <h1 className="text-ink mt-6 font-display text-2xl font-black">{t('nav.town')}</h1>
+        <h1 className="text-ink font-display mt-6 text-2xl font-black">{t('nav.town')}</h1>
         <p className="text-muted mt-2 max-w-sm text-sm">
           RonTown is launching soon! Build your town, grow crops, and unlock rewards with your
           RonCoins.
@@ -355,7 +364,7 @@ export default function TownPage() {
                 <span className="hidden sm:inline">{t('nav.town')}</span>
               </Link>
               <div className="min-w-0">
-                <h1 className="truncate font-display text-sm font-black text-[#FFF7EC]">
+                <h1 className="font-display truncate text-sm font-black text-[#FFF7EC]">
                   {t('town.visit.title', { name: hostInfo?.displayName || 'Friend' })}
                 </h1>
                 <p className="truncate text-[11px] font-semibold text-[#FFF7EC]/75">
@@ -383,11 +392,7 @@ export default function TownPage() {
                     : 'bg-[#FFF7EC] text-[#0E0D15] hover:bg-[#FFF7EC]/90'
                 }`}
               >
-                <Heart
-                  size={16}
-                  weight={hostInfo?.hasLiked ? 'fill' : 'bold'}
-                  aria-hidden="true"
-                />
+                <Heart size={16} weight={hostInfo?.hasLiked ? 'fill' : 'bold'} aria-hidden="true" />
                 <span>
                   {hostInfo?.hasLiked
                     ? t('town.visit.liked', { count: hostInfo.likesCount })
@@ -426,7 +431,7 @@ export default function TownPage() {
                 onClick={() => openSheet('stats')}
                 aria-label={`${t('town.toolbar.stats')}: ${t('town.chips.population', { population, cap: populationCap })}`}
                 title={growthBottleneck ?? t('town.growth.maxCapacity')}
-                className="flex min-h-[44px] cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <Users size={14} weight="fill" aria-hidden="true" />
                 <span className="font-mono tabular-nums">
@@ -440,7 +445,7 @@ export default function TownPage() {
                 type="button"
                 onClick={() => openSheet(coinsPurchaseEnabled ? 'coins' : 'orders')}
                 aria-label={t('town.chips.coins', { count: walletBalance })}
-                className="flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <RonCoinIcon size={24} />
                 <span className="font-mono text-sm font-black tabular-nums text-[#0E0D15]">
@@ -453,7 +458,7 @@ export default function TownPage() {
                 onClick={() => openSheet('menu')}
                 aria-label={t('town.toolbar.more')}
                 title={t('town.toolbar.more')}
-                className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                className="focus-visible:outline-3 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <List size={20} weight="bold" aria-hidden="true" />
               </button>
@@ -461,6 +466,39 @@ export default function TownPage() {
           </>
         )}
       </div>
+
+      {/* Connection status pill while syncing/retrying /api/town/init */}
+      {!isVisitMode && connectionStatus !== 'connected' && (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="town-connection-status"
+          className="relative z-20 flex items-center justify-center gap-2 border-b-2 border-[#0E0D15] bg-[#FFF7EC] px-3 py-1.5 text-xs font-extrabold text-[#16131F]"
+        >
+          <span
+            aria-hidden="true"
+            className={`inline-block h-2 w-2 rounded-full border border-[#16131F] ${
+              connectionStatus === 'connecting'
+                ? 'animate-pulse bg-[#C6FF3D] motion-reduce:animate-none'
+                : 'bg-[#FFC53D]'
+            }`}
+          />
+          <span>
+            {connectionStatus === 'connecting'
+              ? t('town.status.connecting')
+              : t('town.status.reconnectingFailed')}
+          </span>
+          {connectionStatus === 'offline' && (
+            <button
+              type="button"
+              onClick={retryInit}
+              className="min-h-[30px] cursor-pointer rounded-lg border-2 border-[#16131F] bg-[#C6FF3D] px-2.5 text-xs font-black text-[#16131F] shadow-[1px_1px_0px_0px_#16131F]"
+            >
+              {t('town.status.retry')}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Action toast banner */}
       {actionMessage && (
@@ -505,19 +543,20 @@ export default function TownPage() {
       {/* 2. ISOMETRIC PIXEL-ART MAP VIEWPORT */}
       <div className="relative isolate z-0 flex min-h-0 flex-1 flex-col">
         {!isVisitMode &&
+          isServerReady &&
           tutorialStep >= 3 &&
           !placingItemId &&
           !moveModeActive &&
           !movingTile &&
           !selectedSeed && (
-          <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
-            {t('town.map.helpBody')}
-          </p>
-        )}
+            <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
+              {t('town.map.helpBody')}
+            </p>
+          )}
         <IsoMap
           land={land}
           tiles={tiles}
-          expandRing={expandRing}
+          expandRing={isServerReady ? expandRing : []}
           blockedKeys={blockedKeys}
           catalog={catalog}
           population={population}
@@ -536,7 +575,7 @@ export default function TownPage() {
       </div>
 
       {/* 3. RIGHT VERTICAL PIXEL-ART ACTION BAR */}
-      {!isVisitMode && (
+      {!isVisitMode && isServerReady && (
         <ActionBar
           visible={toolbarVisible}
           onToggleVisible={toggleToolbar}
@@ -582,7 +621,7 @@ export default function TownPage() {
       )}
 
       {/* 4. TUTORIAL PIXEL-ART SPEECH BUBBLE */}
-      {!isVisitMode && tutorialStep < 3 && !activeSheet && !expandTarget && (
+      {!isVisitMode && isServerReady && tutorialStep < 3 && !activeSheet && !expandTarget && (
         <div className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-16 z-20 max-w-[260px] p-3">
           <div className="flex items-center justify-between gap-2">
             <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">

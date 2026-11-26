@@ -1075,6 +1075,11 @@
       "zoomControls": "Kartan zoom-säätimet",
       "zoomIn": "Lähennä",
       "zoomOut": "Loitonna"
+    },
+    "status": {
+      "connecting": "Yhdistetään…",
+      "reconnectingFailed": "Yhteys RonTowniin epäonnistui",
+      "retry": "Yritä uudelleen"
     }
   },
   "pwa": {

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createStrictMockFirestore } from './test-firestore-helper.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import { buildItem, buyFarmPlot, buyLandTile, moveTile, removeTile } from './town-actions.js';
 
@@ -20,73 +21,8 @@ describe('town-actions server business logic', () => {
       arrivalIntervalSeconds: 7200,
     });
 
-    // Mock DB setup
-    mockDb = {
-      collection: (col: string) => ({
-        doc: (id: string) => ({
-          collection: (subCol: string) => {
-            const subHandler = {
-              doc: (subId: string) => ({
-                path: `${col}/${id}/${subCol}/${subId}`,
-                get: async () => {
-                  const data = store.get(`${col}/${id}/${subCol}/${subId}`);
-                  return { exists: data !== undefined, data: () => data };
-                },
-              }),
-              get: async () => {
-                const docs: any[] = [];
-                const prefix = `${col}/${id}/${subCol}/`;
-                for (const [p, d] of store.entries()) {
-                  if (p.startsWith(prefix)) {
-                    docs.push({ id: p.slice(prefix.length), data: () => d });
-                  }
-                }
-                return { docs };
-              },
-            };
-            return subHandler;
-          },
-          path: `${col}/${id}`,
-          get: async () => {
-            const data = store.get(`${col}/${id}`);
-            return { exists: data !== undefined, data: () => data };
-          },
-        }),
-      }),
-      runTransaction: async (fn: (tx: any) => Promise<any>) => {
-        const tx = {
-          get: async (ref: any) => {
-            if (ref.docs !== undefined) {
-              return ref; // query snapshot
-            }
-            if (typeof ref.get === 'function') {
-              return ref.get();
-            }
-            const data = store.get(ref.path);
-            return { exists: data !== undefined, data: () => data };
-          },
-          set: (
-            ref: { path: string },
-            data: Record<string, unknown>,
-            options?: { merge?: boolean },
-          ) => {
-            if (options?.merge && store.has(ref.path)) {
-              store.set(ref.path, { ...store.get(ref.path), ...data });
-            } else {
-              store.set(ref.path, { ...data });
-            }
-          },
-          update: (ref: { path: string }, data: Record<string, unknown>) => {
-            const existing = store.get(ref.path) || {};
-            store.set(ref.path, { ...existing, ...data });
-          },
-          delete: (ref: { path: string }) => {
-            store.delete(ref.path);
-          },
-        };
-        return fn(tx);
-      },
-    };
+    // Strict mock DB enforcing read-before-write transaction invariant
+    mockDb = createStrictMockFirestore(store);
 
     // Setup user with 500 coins and basic town
     store.set('users/u1', { pro: { active: false }, streak: { length: 0 } });
@@ -322,4 +258,3 @@ describe('town-actions server business logic', () => {
     });
   });
 });
-
