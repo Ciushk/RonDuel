@@ -181,7 +181,9 @@ test.describe('RonTown Rotate mode + pixel-art Rotate toolbar button', () => {
     // Non-rotatable grass (1,1): toast shown, no extra POST
     const grassBtn = page.locator('button[aria-label*="(1, 1)"]');
     await grassBtn.click({ force: true });
-    await expect(page.getByRole('alert')).toContainText(/cannot be rotated/i);
+    await expect(page.locator('[role="alert"]:not(#__next-route-announcer__)')).toContainText(
+      /cannot be rotated/i,
+    );
     expect(rotatePayloads).toHaveLength(5);
   });
 

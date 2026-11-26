@@ -973,6 +973,13 @@ export function IsoMap({
     };
   }, [hasPlantedCrops]);
 
+  // Immediately refresh nowMs when a crop speed-up completes so Ready badge/state flips on the next frame
+  useEffect(() => {
+    if (speedupSparkleKey) {
+      setNowMs(Date.now());
+    }
+  }, [speedupSparkleKey]);
+
   // Apply zoom anchored at a viewport-local point (anchorX, anchorY)
   const applyZoomAtPoint = useCallback(
     (targetZoom: number, anchorX: number, anchorY: number, animate: boolean) => {
@@ -1534,8 +1541,10 @@ export function IsoMap({
                 data-testid="family-hearts-overlay"
                 className="pointer-events-none absolute"
                 style={{
-                  left: roofCenterX,
-                  top: roofTopY,
+                  left: roofCenterX - 32,
+                  top: roofTopY - 24,
+                  width: 84,
+                  height: 64,
                   zIndex: Z_UI + 5,
                 }}
               >
@@ -1550,10 +1559,12 @@ export function IsoMap({
                     height={HEART_FLOAT_SPRITE.height * 2}
                     decoding="async"
                     draggable={false}
-                    className="rt-heart-float pointer-events-none absolute block select-none"
+                    className="rt-heart-float pointer-events-none absolute block max-w-none select-none"
                     style={{
-                      left: h.dx,
-                      top: h.dy,
+                      left: h.dx + 32,
+                      top: h.dy + 24,
+                      width: HEART_FLOAT_SPRITE.width * 2,
+                      height: HEART_FLOAT_SPRITE.height * 2,
                       imageRendering: 'pixelated',
                       animationDelay: `${h.delay}ms`,
                     }}

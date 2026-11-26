@@ -1141,7 +1141,11 @@ export function useTownState(params: {
           showErrorToast(data.error, 'town.toast.speedupFailed');
           return { ok: false, error: data.error };
         }
-        const readyAt = typeof data.readyAt === 'string' ? data.readyAt : new Date().toISOString();
+        const serverReadyMs = typeof data.readyAt === 'string' ? Date.parse(data.readyAt) : NaN;
+        const effectiveReadyMs = Number.isFinite(serverReadyMs)
+          ? Math.min(serverReadyMs, Date.now() - 1000)
+          : Date.now() - 1000;
+        const readyAt = new Date(effectiveReadyMs).toISOString();
         setTiles((prev) => {
           const cur = prev[key];
           if (!cur) return prev;

@@ -919,7 +919,7 @@ html[data-theme='dark'] {
 }
 
 .rt-heart-float {
-  animation: rt-heart-float 1200ms ease-out both;
+  animation: rt-heart-float 1200ms ease-out infinite both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -985,7 +985,7 @@ html[data-theme='dark'] {
   }
 
   .rt-heart-float {
-    animation: rt-heart-float-reduced 1200ms ease-out both !important;
+    animation: rt-heart-float-reduced 1200ms ease-out infinite both !important;
     transform: none !important;
   }
 }
