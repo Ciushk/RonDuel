@@ -78,17 +78,19 @@ export function getBuildingPlacement(
 }
 
 /**
- * Bottom-aligns a crop sprite (which may be taller than 76px) with the 128x76 tile bottom.
+ * Bottom-aligns a crop sprite (which may be taller than 76px) with the 128x76 tile bottom,
+ * applying an optional vertical offset (positive = down) so crop slabs sit flush with neighbors.
  */
 export function getCropPlacement(
   col: number,
   row: number,
   spriteH: number,
+  groundOffsetY = 0,
 ): { x: number; y: number } {
   const origin = isoToScreen(col, row);
   return {
     x: origin.x,
-    y: origin.y + TILE_H - spriteH,
+    y: origin.y + TILE_H - spriteH + groundOffsetY,
   };
 }
 

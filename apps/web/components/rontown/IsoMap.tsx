@@ -312,7 +312,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
             nowMs,
           });
           const cropSpec = resolveCropSprite(tile.cropId, growth.stage);
-          const pos = getCropPlacement(tile.x, tile.y, cropSpec.height);
+          const pos = getCropPlacement(tile.x, tile.y, cropSpec.height, cropSpec.groundOffsetY);
           const badgeOrigin = isoToScreen(tile.x, tile.y);
           const badgeCenterX = badgeOrigin.x + TILE_W / 2 - boundsMinX;
           const badgeTopY = badgeOrigin.y - 34 - boundsMinY;

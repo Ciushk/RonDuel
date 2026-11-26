@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { GROUND_TILE_TYPES } from '@ronduel/shared';
 import {
@@ -313,6 +314,86 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
           }
         }
       }
+    }
+  });
+
+  it('aligns all six crop sprites flush with basic-block corners (y = 43 ± 1) via groundOffsetY', () => {
+    const readCornerBottoms = (filename: string): { left: number; right: number; h: number } => {
+      const buf = fs.readFileSync(path.join(PUBLIC_RONTOWN_DIR, filename));
+      const w = buf.readUInt32BE(16);
+      const h = buf.readUInt32BE(20);
+      const idatChunks: Buffer[] = [];
+      let off = 8;
+      while (off < buf.length) {
+        const len = buf.readUInt32BE(off);
+        const type = buf.toString('ascii', off + 4, off + 8);
+        if (type === 'IDAT') idatChunks.push(buf.subarray(off + 8, off + 8 + len));
+        if (type === 'IEND') break;
+        off += 12 + len;
+      }
+      const raw = zlib.inflateSync(Buffer.concat(idatChunks));
+      const bpp = 4;
+      const stride = w * bpp;
+      const out = Buffer.alloc(h * stride);
+      const paeth = (a: number, b: number, c: number) => {
+        const p = a + b - c;
+        const pa = Math.abs(p - a);
+        const pb = Math.abs(p - b);
+        const pc = Math.abs(p - c);
+        return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      };
+      for (let y = 0; y < h; y++) {
+        const f = raw[y * (stride + 1)]!;
+        for (let i = 0; i < stride; i++) {
+          const cur = raw[y * (stride + 1) + 1 + i]!;
+          const a = i >= bpp ? out[y * stride + i - bpp]! : 0;
+          const b = y > 0 ? out[(y - 1) * stride + i]! : 0;
+          const c = y > 0 && i >= bpp ? out[(y - 1) * stride + i - bpp]! : 0;
+          let val = cur;
+          if (f === 1) val = (cur + a) & 0xff;
+          else if (f === 2) val = (cur + b) & 0xff;
+          else if (f === 3) val = (cur + ((a + b) >> 1)) & 0xff;
+          else if (f === 4) val = (cur + paeth(a, b, c)) & 0xff;
+          out[y * stride + i] = val;
+        }
+      }
+      const lastOpaqueY = (x: number) => {
+        for (let y = h - 1; y >= 0; y--) {
+          if (out[y * stride + x * 4 + 3]! > 0) return y;
+        }
+        return -1;
+      };
+      return { left: lastOpaqueY(0), right: lastOpaqueY(w - 1), h };
+    };
+
+    const base = readCornerBottoms('basic-block.png');
+    expect(Math.abs(base.left - 43)).toBeLessThanOrEqual(1);
+    expect(Math.abs(base.right - 43)).toBeLessThanOrEqual(1);
+
+    const cropCases: Array<{
+      cropId: string;
+      stage: 'half' | 'done';
+      file: string;
+      expectedOffset: number;
+    }> = [
+      { cropId: 'wheat', stage: 'half', file: 'block-wheat-half.png', expectedOffset: 3 },
+      { cropId: 'wheat', stage: 'done', file: 'block-wheat-done.png', expectedOffset: 1 },
+      { cropId: 'cabbage', stage: 'half', file: 'block-cabage-half.png', expectedOffset: 3 },
+      { cropId: 'cabbage', stage: 'done', file: 'block-cabage-done.png', expectedOffset: 2 },
+      { cropId: 'pumpkin', stage: 'half', file: 'block-pumpkin-half.png', expectedOffset: 2 },
+      { cropId: 'pumpkin', stage: 'done', file: 'block-pumpkin-done.png', expectedOffset: 1 },
+    ];
+
+    for (const { cropId, stage, file, expectedOffset } of cropCases) {
+      const spec = resolveCropSprite(cropId, stage);
+      expect(spec.groundOffsetY).toBe(expectedOffset);
+      const placed = getCropPlacement(0, 0, spec.height, spec.groundOffsetY);
+      const corners = readCornerBottoms(file);
+      expect(corners.h).toBe(spec.height);
+      const placedLeft = placed.y + corners.left;
+      const placedRight = placed.y + corners.right;
+      expect(Math.abs(placedLeft - 43), `${file} left=${placedLeft}`).toBeLessThanOrEqual(1);
+      expect(Math.abs(placedRight - 43), `${file} right=${placedRight}`).toBeLessThanOrEqual(1);
     }
   });
 });

@@ -6,6 +6,8 @@ export interface SpriteSpec {
   height: number;
   /** Optional horizontal mirror for opposite iso diagonal. */
   flipX?: boolean;
+  /** Optional vertical alignment tweak in source px (positive = down) so crop slabs sit flush. */
+  groundOffsetY?: number;
   /** True when art is missing and UI should render a placeholder silhouette. */
   isPlaceholder?: boolean;
   note?: string;
@@ -139,24 +141,26 @@ export const CROP_BUTTON_SPRITES: Record<string, SpriteSpec> = {
   sunflower: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
 };
 
+// TODO(art): Re-export the crop PNGs so the bottom 76 rows match basic-block-dirt.png's
+// silhouette exactly, with the plants overflowing upward. groundOffsetY can then go back to 0.
 export function resolveCropSprite(cropId: string, stage: CropGrowthStage): SpriteSpec {
   if (stage === 'sprout') {
     return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
   }
   if (cropId === 'wheat') {
     return stage === 'done'
-      ? { src: spriteUrl('block-wheat-done.png'), width: 128, height: 88 }
-      : { src: spriteUrl('block-wheat-half.png'), width: 128, height: 85 };
+      ? { src: spriteUrl('block-wheat-done.png'), width: 128, height: 88, groundOffsetY: 1 }
+      : { src: spriteUrl('block-wheat-half.png'), width: 128, height: 85, groundOffsetY: 3 };
   }
   if (cropId === 'cabbage') {
     return stage === 'done'
-      ? { src: spriteUrl('block-cabage-done.png'), width: 128, height: 81 }
-      : { src: spriteUrl('block-cabage-half.png'), width: 128, height: 80 };
+      ? { src: spriteUrl('block-cabage-done.png'), width: 128, height: 81, groundOffsetY: 2 }
+      : { src: spriteUrl('block-cabage-half.png'), width: 128, height: 80, groundOffsetY: 3 };
   }
   if (cropId === 'pumpkin') {
     return stage === 'done'
-      ? { src: spriteUrl('block-pumpkin-done.png'), width: 128, height: 79 }
-      : { src: spriteUrl('block-pumpkin-half.png'), width: 128, height: 79 };
+      ? { src: spriteUrl('block-pumpkin-done.png'), width: 128, height: 79, groundOffsetY: 1 }
+      : { src: spriteUrl('block-pumpkin-half.png'), width: 128, height: 79, groundOffsetY: 2 };
   }
   // TODO(art): oats, carrots, sunflower use land-farm-one stand-in until crop PNGs arrive.
   return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
