@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-import { AuthModal } from '@/components/AuthModal';
 import { BottomNav } from '@/components/BottomNav';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { PaymentAuthGateProvider } from '@/components/PaymentAuthGate';
@@ -16,12 +15,15 @@ import { Button, Wordmark } from '@/components/ui';
 import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
-import { ensureInactivityCheckOnce, startActivityTracker } from '@/lib/session-activity';
 
 const SplashScreen = dynamic(
   () => import('@/components/SplashScreen').then((m) => m.SplashScreen),
   { ssr: false },
 );
+
+const AuthModal = dynamic(() => import('@/components/AuthModal').then((m) => m.AuthModal), {
+  ssr: false,
+});
 
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
@@ -43,18 +45,25 @@ export function AppShell({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle('dark', s.theme === 'dark');
 
     let cancelled = false;
-    void ensureInactivityCheckOnce().then(({ expired }) => {
-      if (cancelled) return;
-      if (expired) {
-        setSession(getLocalSession());
-        setSessionExpiredToast(true);
-      }
-    });
+    let stopTracker: (() => void) | null = null;
 
-    const stopTracker = startActivityTracker();
+    void import('@/lib/session-activity').then(
+      ({ ensureInactivityCheckOnce, startActivityTracker }) => {
+        if (cancelled) return;
+        void ensureInactivityCheckOnce().then(({ expired }) => {
+          if (cancelled) return;
+          if (expired) {
+            setSession(getLocalSession());
+            setSessionExpiredToast(true);
+          }
+        });
+        stopTracker = startActivityTracker();
+      },
+    );
+
     return () => {
       cancelled = true;
-      stopTracker();
+      stopTracker?.();
     };
   }, []);
 
@@ -279,15 +288,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <AuthModal
-          open={expiredAuthOpen}
-          onClose={() => setExpiredAuthOpen(false)}
-          initialMode="login"
-          onSuccess={() => {
-            setSession(getLocalSession());
-            setExpiredAuthOpen(false);
-          }}
-        />
+        {expiredAuthOpen && (
+          <AuthModal
+            open={expiredAuthOpen}
+            onClose={() => setExpiredAuthOpen(false)}
+            initialMode="login"
+            onSuccess={() => {
+              setSession(getLocalSession());
+              setExpiredAuthOpen(false);
+            }}
+          />
+        )}
 
         {/* PWA update toast (registers /sw.js?v=2 and prompts for new builds) */}
         <PwaUpdateToast hasConsentBanner={Boolean(showConsent)} hideBottomNav={hideBottomNav} />

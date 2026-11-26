@@ -2,13 +2,13 @@ import { expect, test } from '@playwright/test';
 
 const FIREBASE_API_KEY = 'AIzaSyC1xcAcVnO71-zdXjQE_7RYurgGw-bnE0o';
 
-test.describe('PaymentAuthGate on /en/pro', () => {
-  test.use({
-    viewport: { width: 390, height: 844 },
-    serviceWorkers: 'block',
-    launchOptions: { args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu'] },
-  });
+test.use({
+  viewport: { width: 390, height: 844 },
+  serviceWorkers: 'block',
+  launchOptions: { args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu'] },
+});
 
+test.describe('PaymentAuthGate on /en/pro', () => {
   test('guest mode opens PaymentAuthGate on Activate and does not call checkout', async ({
     page,
   }) => {

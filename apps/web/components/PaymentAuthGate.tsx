@@ -9,6 +9,7 @@ import {
   WarningCircle,
   X,
 } from '@phosphor-icons/react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import {
@@ -23,13 +24,13 @@ import {
   type ReactNode,
 } from 'react';
 
-import { AuthModal } from '@/components/AuthModal';
 import { Button, Chip, Sheet } from '@/components/ui';
-import { hasRealAccount } from '@/lib/account-state';
 import { trackEvent } from '@/lib/analytics';
 import { getFriendlyAuthErrorMessage } from '@/lib/auth-errors';
-import { linkSessionWithGoogle, linkSessionWithPassword } from '@/lib/link-account';
-import { stampLastActive } from '@/lib/session-activity';
+
+const AuthModal = dynamic(() => import('@/components/AuthModal').then((m) => m.AuthModal), {
+  ssr: false,
+});
 
 export type PaymentIntentKind = 'pro_checkout' | 'pro_trial' | 'town_coins' | 'shield_pack';
 
@@ -186,14 +187,16 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    void hasRealAccount().then((real) => {
-      if (cancelled) return;
-      if (real) {
-        setReloadResume(stored);
-      } else {
-        setReloadResume(null);
-      }
-    });
+    void import('@/lib/account-state')
+      .then(({ hasRealAccount }) => hasRealAccount())
+      .then((real) => {
+        if (cancelled) return;
+        if (real) {
+          setReloadResume(stored);
+        } else {
+          setReloadResume(null);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -251,6 +254,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
 
   const requireAccount = useCallback(
     async (nextIntent: PaymentIntent, action?: () => void | Promise<void>): Promise<boolean> => {
+      const { hasRealAccount } = await import('@/lib/account-state');
       const real = await hasRealAccount();
       if (real) {
         setReloadResume(null);
@@ -274,7 +278,11 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   );
 
   const handleAuthSuccess = useCallback(() => {
-    stampLastActive();
+    try {
+      window.localStorage.setItem('rd_last_active_at', String(Date.now()));
+    } catch {
+      // ignore
+    }
     setLoadingMethod(null);
     setError('');
     setSuccess(true);
@@ -298,6 +306,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
     setError('');
     setLoadingMethod('google');
     try {
+      const { linkSessionWithGoogle } = await import('@/lib/link-account');
       await linkSessionWithGoogle();
       trackEvent('login_completed', { method: 'google', source: 'payment_gate' });
       handleAuthSuccess();
@@ -326,6 +335,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
 
     setLoadingMethod('email');
     try {
+      const { linkSessionWithPassword } = await import('@/lib/link-account');
       await linkSessionWithPassword({
         email: cleanEmail,
         password,
@@ -708,7 +718,9 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
         </div>
       </Sheet>
 
-      <AuthModal open={forgotOpen} onClose={() => setForgotOpen(false)} initialMode="forgot" />
+      {forgotOpen && (
+        <AuthModal open={forgotOpen} onClose={() => setForgotOpen(false)} initialMode="forgot" />
+      )}
     </PaymentAuthGateContext.Provider>
   );
 }
@@ -720,6 +732,7 @@ export function usePaymentAuthGate(): PaymentAuthGateContextValue {
   // Graceful fallback when a component is rendered outside AppShell (e.g. isolated unit tests)
   return {
     requireAccount: async (_intent, action) => {
+      const { hasRealAccount } = await import('@/lib/account-state');
       const real = await hasRealAccount();
       if (real && action) {
         void action();

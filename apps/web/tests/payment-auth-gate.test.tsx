@@ -201,6 +201,7 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     fireEvent.click(trigger);
     await waitFor(() => {
       expect(screen.getByTestId('payment-auth-gate')).not.toBeNull();
+      expect(document.activeElement).toBe(screen.getByTestId('payment-gate-google-btn'));
     });
 
     fireEvent.keyDown(window, { key: 'Escape' });

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Chip, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { cn } from '@/lib/cn';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 export interface SplashRoundStatus {
@@ -302,9 +303,11 @@ export function SplashScreen() {
       aria-live="polite"
       aria-label={tRoot('a11y.splash')}
       onClick={dismissSplash}
-      className={`${reducedMotion ? '' : 'rd-splash-overlay'}bg-bg text-ink fixed inset-0 z-50 flex select-none flex-col items-center justify-center px-6 text-center ${
-        fading ? 'pointer-events-none opacity-0' : 'opacity-100'
-      }`}
+      className={cn(
+        !reducedMotion && 'rd-splash-overlay',
+        'bg-bg text-ink fixed inset-0 z-50 flex select-none flex-col items-center justify-center px-6 text-center',
+        fading ? 'pointer-events-none opacity-0' : 'opacity-100',
+      )}
     >
       <div className="flex w-full max-w-[360px] flex-col items-center">
         {/* Decorative logo with 300ms opacity+scale entrance, subtle pulse only after entrance */}
@@ -314,13 +317,17 @@ export function SplashScreen() {
           className={
             reducedMotion
               ? 'opacity-100'
-              : `transition-[opacity,transform] duration-300 ease-out ${
-                  logoVisible ? 'scale-100 opacity-100' : 'scale-[0.96] opacity-0'
-                }`
+              : cn(
+                  'transition-[opacity,transform] duration-300 ease-out',
+                  logoVisible ? 'scale-100 opacity-100' : 'scale-[0.96] opacity-0',
+                )
           }
         >
           <div
-            className={`${pulseActive && !reducedMotion ? 'rd-splash-logo' : ''}flex flex-col items-center gap-2`}
+            className={cn(
+              pulseActive && !reducedMotion && 'rd-splash-logo',
+              'flex flex-col items-center gap-2',
+            )}
           >
             <Wordmark size="lg" />
           </div>
