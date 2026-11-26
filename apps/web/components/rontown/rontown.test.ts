@@ -467,4 +467,13 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
       }
     }
   });
+
+  it('ships pixel-art rotate-button.png at 128x128 RGBA and registers UI_SPRITES.rotate', () => {
+    expect(UI_SPRITES.rotate.src).toContain('/rontown/rotate-button.png');
+    expect(UI_SPRITES.rotate.width).toBe(128);
+    expect(UI_SPRITES.rotate.height).toBe(128);
+    const diskPath = path.join(PUBLIC_RONTOWN_DIR, 'rotate-button.png');
+    expect(fs.existsSync(diskPath)).toBe(true);
+    expect(readPngSize(diskPath)).toEqual({ width: 128, height: 128 });
+  });
 });
