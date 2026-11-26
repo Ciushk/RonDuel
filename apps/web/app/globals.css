@@ -591,10 +591,59 @@ html[data-theme='dark'] {
   }
 }
 
-/* RonTown isometric pixel-art helpers (transform & opacity animations only) */
-.rt-pixelated {
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
+/* RonTown isometric helpers (transform & opacity animations only; smooth hi-res sprites) */
+@layer components {
+  .rt-pixel-bubble {
+    position: relative;
+    border-radius: 0;
+    border: 2px solid #0e0d15;
+    background-color: #fff7ec;
+    color: #0e0d15;
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    box-shadow: 3px 3px 0 0 #0e0d15;
+  }
+
+  .rt-pixel-bubble--volt {
+    background-color: #c6ff3d;
+  }
+
+  /* Stepped pixel-art tail pointing downward (pure CSS, zero image assets) */
+  .rt-pixel-bubble--tail::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 10px;
+    height: 8px;
+    transform: translateX(-50%);
+    background-color: #0e0d15;
+    clip-path: polygon(
+      0% 0%,
+      100% 0%,
+      100% 25%,
+      80% 25%,
+      80% 50%,
+      60% 50%,
+      60% 100%,
+      40% 100%,
+      40% 50%,
+      20% 50%,
+      20% 25%,
+      0% 25%
+    );
+  }
+
+  .rt-pixel-bubble--tail::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: calc(100% - 2px);
+    width: 6px;
+    height: 6px;
+    transform: translateX(-50%);
+    background-color: inherit;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 34%, 66% 34%, 66% 100%, 34% 100%, 34% 34%, 0% 34%);
+  }
 }
 
 @keyframes rt-harvest-pulse {
@@ -618,7 +667,7 @@ html[data-theme='dark'] {
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -26px);
+    transform: translate(-50%, -36px);
   }
 }
 
@@ -639,7 +688,7 @@ html[data-theme='dark'] {
 
   .rt-float-reward {
     animation: none !important;
-    transform: translate(-50%, -12px) !important;
+    transform: translate(-50%, -18px) !important;
     opacity: 1 !important;
   }
 }

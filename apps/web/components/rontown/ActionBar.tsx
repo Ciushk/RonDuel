@@ -22,7 +22,10 @@ interface ActionBarProps {
 
 const FAN_OUT_SEEDS: ReadonlyArray<{
   id: SeedChoiceId;
-  sprite: (typeof UI_SPRITES)['seedWheat'] | (typeof UI_SPRITES)['seedCabbage'] | (typeof UI_SPRITES)['seedPumpkin'];
+  sprite:
+    | (typeof UI_SPRITES)['seedWheat']
+    | (typeof UI_SPRITES)['seedCabbage']
+    | (typeof UI_SPRITES)['seedPumpkin'];
   unlockLevel: number;
   labelKey: string;
   staggerMs: number;
@@ -50,6 +53,9 @@ const FAN_OUT_SEEDS: ReadonlyArray<{
   },
 ];
 
+const ACTION_BTN_CLASS =
+  'pointer-events-auto flex h-14 w-14 min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16';
+
 export function ActionBar({
   visible,
   onToggleVisible,
@@ -69,15 +75,15 @@ export function ActionBar({
   return (
     <aside
       aria-label={t('town.toolbar.ariaLabel')}
-      className="pointer-events-none fixed end-2.5 top-[48%] z-20 flex -translate-y-1/2 flex-col items-end gap-1.5 lg:end-4"
+      className="pointer-events-none absolute end-2 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-1.5 lg:end-4 lg:gap-2"
     >
-      {/* Main vertical stack of 5 pixel-art controls (slides off-screen when collapsed) */}
+      {/* Main vertical stack of 5 hi-res controls (slides off-screen when collapsed) */}
       <div
         aria-hidden={!visible}
-        className={`flex flex-col items-end gap-1.5 transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none ${
+        className={`pointer-events-none flex flex-col items-end gap-1.5 transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none lg:gap-2 ${
           visible
-            ? 'pointer-events-auto translate-x-0 opacity-100'
-            : 'pointer-events-none invisible translate-x-20 opacity-0'
+            ? 'translate-x-0 opacity-100'
+            : 'invisible translate-x-24 opacity-0'
         }`}
       >
         {/* 1. Build */}
@@ -87,14 +93,14 @@ export function ActionBar({
           onClick={onOpenBuild}
           aria-label={t('town.toolbar.build')}
           title={t('town.toolbar.build')}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none"
+          className={ACTION_BTN_CLASS}
         >
           <img
             src={UI_SPRITES.build.src}
             alt=""
-            width={32}
-            height={32}
-            className="rt-pixelated block select-none"
+            width={UI_SPRITES.build.width}
+            height={UI_SPRITES.build.height}
+            className="block h-full w-full select-none object-contain"
             draggable={false}
           />
         </button>
@@ -107,16 +113,14 @@ export function ActionBar({
           aria-label={t('town.toolbar.move')}
           aria-pressed={moveModeActive}
           title={t('town.toolbar.move')}
-          className={`flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
-            moveModeActive ? 'bg-[#C6FF3D]' : 'bg-[#FFF7EC]'
-          }`}
+          className={`${ACTION_BTN_CLASS} ${moveModeActive ? 'bg-[#C6FF3D]' : 'bg-[#FFF7EC]'}`}
         >
           <img
             src={UI_SPRITES.move.src}
             alt=""
-            width={32}
-            height={32}
-            className="rt-pixelated block select-none"
+            width={UI_SPRITES.move.width}
+            height={UI_SPRITES.move.height}
+            className="block h-full w-full select-none object-contain"
             draggable={false}
           />
         </button>
@@ -127,7 +131,7 @@ export function ActionBar({
             role="group"
             aria-label={t('town.toolbar.seedMenu')}
             aria-hidden={!farmMenuOpen || !visible}
-            className={`me-2 flex items-center gap-1.5 ${
+            className={`me-2 flex items-center gap-1.5 lg:gap-2 ${
               farmMenuOpen && visible ? 'pointer-events-auto visible' : 'pointer-events-none invisible'
             }`}
           >
@@ -153,7 +157,7 @@ export function ActionBar({
                   style={{
                     transitionDelay: farmMenuOpen ? `${seed.staggerMs}ms` : '0ms',
                   }}
-                  className={`relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
+                  className={`relative flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16 ${
                     locked
                       ? 'cursor-not-allowed bg-[#E7E2D8]'
                       : isSelected
@@ -170,15 +174,15 @@ export function ActionBar({
                   <img
                     src={seed.sprite.src}
                     alt=""
-                    width={32}
-                    height={32}
+                    width={seed.sprite.width}
+                    height={seed.sprite.height}
                     loading="lazy"
                     decoding="async"
-                    className="rt-pixelated block select-none"
+                    className="block h-full w-full select-none object-contain"
                     draggable={false}
                   />
                   {locked && (
-                    <span className="absolute -bottom-1 rounded bg-[#0E0D15] px-1 font-mono text-[9px] font-black text-[#FFF7EC]">
+                    <span className="absolute -bottom-1 rounded bg-[#0E0D15] px-1 font-mono text-[10px] font-black text-[#FFF7EC]">
                       Lv{seed.unlockLevel}
                     </span>
                   )}
@@ -194,16 +198,16 @@ export function ActionBar({
             aria-label={t('town.toolbar.farm')}
             aria-expanded={farmMenuOpen}
             title={t('town.toolbar.farm')}
-            className={`flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
+            className={`${ACTION_BTN_CLASS} ${
               farmMenuOpen || selectedSeed ? 'bg-[#C6FF3D]' : 'bg-[#FFF7EC]'
             }`}
           >
             <img
               src={UI_SPRITES.plant.src}
               alt=""
-              width={32}
-              height={32}
-              className="rt-pixelated block select-none"
+              width={UI_SPRITES.plant.width}
+              height={UI_SPRITES.plant.height}
+              className="block h-full w-full select-none object-contain"
               draggable={false}
             />
           </button>
@@ -216,14 +220,14 @@ export function ActionBar({
           onClick={onOpenVisit}
           aria-label={t('town.toolbar.visit')}
           title={t('town.toolbar.visit')}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none"
+          className={ACTION_BTN_CLASS}
         >
           <img
             src={UI_SPRITES.visit.src}
             alt=""
-            width={32}
-            height={32}
-            className="rt-pixelated block select-none"
+            width={UI_SPRITES.visit.width}
+            height={UI_SPRITES.visit.height}
+            className="block h-full w-full select-none object-contain"
             draggable={false}
           />
         </button>
@@ -235,14 +239,14 @@ export function ActionBar({
           onClick={onOpenShop}
           aria-label={t('town.toolbar.shop')}
           title={t('town.toolbar.shop')}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none"
+          className={ACTION_BTN_CLASS}
         >
           <img
             src={UI_SPRITES.coinsShop.src}
             alt=""
-            width={32}
-            height={32}
-            className="rt-pixelated block select-none"
+            width={UI_SPRITES.coinsShop.width}
+            height={UI_SPRITES.coinsShop.height}
+            className="block h-full w-full select-none object-contain"
             draggable={false}
           />
         </button>
@@ -255,14 +259,14 @@ export function ActionBar({
         aria-label={visible ? t('town.toolbar.hideBar') : t('town.toolbar.showBar')}
         aria-expanded={visible}
         title={visible ? t('town.toolbar.hideBar') : t('town.toolbar.showBar')}
-        className="pointer-events-auto flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none"
+        className={`pointer-events-auto ${ACTION_BTN_CLASS}`}
       >
         <img
           src={UI_SPRITES.hideBar.src}
           alt=""
-          width={32}
-          height={32}
-          className="rt-pixelated block select-none"
+          width={UI_SPRITES.hideBar.width}
+          height={UI_SPRITES.hideBar.height}
+          className="block h-full w-full select-none object-contain"
           style={{ transform: visible ? 'scaleX(1)' : 'scaleX(-1)' }}
           draggable={false}
         />

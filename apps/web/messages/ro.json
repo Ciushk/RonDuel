@@ -1068,7 +1068,10 @@
       "movingDestBanner": "Apasă pe un teren liber pentru a muta ({x}, {y})",
       "plantingBanner": "Apasă pe iarbă, pământ sau o parcelă liberă pentru a planta {crop}",
       "cancel": "Anulează",
-      "helpBody": "Apasă pe terenurile cu X verde pentru a te extinde, folosește Construiește pentru case și servicii, Recoltează pentru semințe și apasă secera aurie pentru a trimite sătenii la cules."
+      "helpBody": "Apasă pe terenurile cu X verde pentru a te extinde, folosește Construiește pentru case și servicii, Recoltează pentru semințe și apasă secera aurie pentru a trimite sătenii la cules.",
+      "zoomControls": "Controale de zoom ale hărții",
+      "zoomIn": "Mărește",
+      "zoomOut": "Micșorează"
     }
   }
 }

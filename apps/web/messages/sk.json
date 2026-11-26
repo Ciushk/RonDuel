@@ -1068,7 +1068,10 @@
       "movingDestBanner": "Tap a free tile to move ({x}, {y})",
       "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
       "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting."
+      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "zoomControls": "Ovládanie priblíženia mapy",
+      "zoomIn": "Priblížiť",
+      "zoomOut": "Oddialiť"
     }
   }
 }

@@ -4,6 +4,9 @@ import { useTranslations } from 'next-intl';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GridCoord, GroundTileType, TownCatalogDoc } from '@ronduel/shared';
 import {
+  applyRubberBand,
+  clampPanPosition,
+  computeDisplayZoomRange,
   computeMapBounds,
   DIAMOND_H,
   formatDurationShort,
@@ -11,6 +14,7 @@ import {
   getCropGrowthInfo,
   getCropPlacement,
   getCursorPlacement,
+  getPanAxisLimits,
   getVillagerFeetPoint,
   isoToScreen,
   TILE_H,
@@ -27,6 +31,10 @@ import {
 } from './sprites';
 import type { FloatingReward, TileInfo } from './useTownState';
 import { useReducedMotion, useVillagers } from './useVillagers';
+
+const DRAG_THRESHOLD_PX = 6;
+const KEYBOARD_PAN_STEP_PX = 48;
+const ZOOM_BUTTON_FACTOR = 1.25;
 
 interface IsoMapProps {
   land: Record<string, GroundTileType>;
@@ -61,7 +69,6 @@ interface StaticWorldProps {
   catalog: TownCatalogDoc;
   boundsMinX: number;
   boundsMinY: number;
-  scale: number;
   isVisitMode: boolean;
   nowMs: number;
   reducedMotion: boolean;
@@ -78,7 +85,6 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   catalog,
   boundsMinX,
   boundsMinY,
-  scale,
   isVisitMode,
   nowMs,
   reducedMotion,
@@ -146,11 +152,11 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
   return (
     <>
-      {/* 1. Owned ground slabs */}
+      {/* 1. Owned ground slabs (128x76 source pixels, smoothly scaled by camera transform) */}
       {ownedCells.map(({ x, y, key, ground }) => {
         const origin = isoToScreen(x, y);
-        const left = (origin.x - boundsMinX) * scale;
-        const top = (origin.y - boundsMinY) * scale;
+        const left = origin.x - boundsMinX;
+        const top = origin.y - boundsMinY;
         const spec = GROUND_SPRITES[ground] ?? GROUND_SPRITES['basic-block'];
         const tile = tiles[key];
         const cellLabel = tile
@@ -164,17 +170,18 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
             style={{
               left,
               top,
-              width: TILE_W * scale,
-              height: TILE_H * scale,
+              width: TILE_W,
+              height: TILE_H,
               zIndex: (x + y) * 10,
             }}
           >
             <img
               src={spec.src}
               alt=""
-              width={spec.width * scale}
-              height={spec.height * scale}
-              className="rt-pixelated pointer-events-none block select-none"
+              width={spec.width}
+              height={spec.height}
+              decoding="async"
+              className="pointer-events-none block select-none"
               draggable={false}
             />
             <button
@@ -187,8 +194,8 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               aria-label={cellLabel}
               className="pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-3 focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
               style={{
-                width: TILE_W * scale,
-                height: DIAMOND_H * scale,
+                width: TILE_W,
+                height: DIAMOND_H,
                 clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
               }}
             />
@@ -200,8 +207,8 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
       {!isVisitMode &&
         expandRing.map(({ x, y }) => {
           const origin = isoToScreen(x, y);
-          const left = (origin.x - boundsMinX) * scale;
-          const top = (origin.y - boundsMinY) * scale;
+          const left = origin.x - boundsMinX;
+          const top = origin.y - boundsMinY;
           return (
             <div
               key={`expand_${x}_${y}`}
@@ -209,17 +216,18 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               style={{
                 left,
                 top,
-                width: TILE_W * scale,
-                height: TILE_H * scale,
+                width: TILE_W,
+                height: TILE_H,
                 zIndex: (x + y) * 10,
               }}
             >
               <img
                 src={UI_SPRITES.expand.src}
                 alt=""
-                width={UI_SPRITES.expand.width * scale}
-                height={UI_SPRITES.expand.height * scale}
-                className="rt-pixelated pointer-events-none block select-none"
+                width={UI_SPRITES.expand.width}
+                height={UI_SPRITES.expand.height}
+                decoding="async"
+                className="pointer-events-none block select-none"
                 draggable={false}
               />
               <button
@@ -232,8 +240,8 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 aria-label={t('town.land.expandAria', { x, y })}
                 className="pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-3 focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
                 style={{
-                  width: TILE_W * scale,
-                  height: DIAMOND_H * scale,
+                  width: TILE_W,
+                  height: DIAMOND_H,
                   clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
                 }}
               />
@@ -252,12 +260,14 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               key={`obj_${key}`}
               src={spec.src}
               alt=""
-              width={spec.width * scale}
-              height={spec.height * scale}
-              className="rt-pixelated pointer-events-none absolute block select-none"
+              width={spec.width}
+              height={spec.height}
+              loading="lazy"
+              decoding="async"
+              className="pointer-events-none absolute block select-none"
               style={{
-                left: (origin.x - boundsMinX) * scale,
-                top: (origin.y - boundsMinY) * scale,
+                left: origin.x - boundsMinX,
+                top: origin.y - boundsMinY,
                 zIndex: sortKey * 10 + 2,
                 transform: spec.flipX ? 'scaleX(-1)' : undefined,
               }}
@@ -276,12 +286,13 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 key={`obj_${key}`}
                 src={spec.src}
                 alt=""
-                width={spec.width * scale}
-                height={spec.height * scale}
-                className="rt-pixelated pointer-events-none absolute block select-none"
+                width={spec.width}
+                height={spec.height}
+                decoding="async"
+                className="pointer-events-none absolute block select-none"
                 style={{
-                  left: (origin.x - boundsMinX) * scale,
-                  top: (origin.y - boundsMinY) * scale,
+                  left: origin.x - boundsMinX,
+                  top: origin.y - boundsMinY,
                   zIndex: sortKey * 10 + 2,
                 }}
                 draggable={false}
@@ -299,26 +310,28 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           const cropSpec = resolveCropSprite(tile.cropId, growth.stage);
           const pos = getCropPlacement(tile.x, tile.y, cropSpec.height);
           const badgeOrigin = isoToScreen(tile.x, tile.y);
-          const badgeCenterX = (badgeOrigin.x + TILE_W / 2 - boundsMinX) * scale;
-          const badgeTopY = (badgeOrigin.y - 12 - boundsMinY) * scale;
+          const badgeCenterX = badgeOrigin.x + TILE_W / 2 - boundsMinX;
+          const badgeTopY = badgeOrigin.y - 34 - boundsMinY;
 
           return (
             <div key={`obj_${key}`}>
               <img
                 src={cropSpec.src}
                 alt=""
-                width={cropSpec.width * scale}
-                height={cropSpec.height * scale}
-                className="rt-pixelated pointer-events-none absolute block select-none"
+                width={cropSpec.width}
+                height={cropSpec.height}
+                loading="lazy"
+                decoding="async"
+                className="pointer-events-none absolute block select-none"
                 style={{
-                  left: (pos.x - boundsMinX) * scale,
-                  top: (pos.y - boundsMinY) * scale,
+                  left: pos.x - boundsMinX,
+                  top: pos.y - boundsMinY,
                   zIndex: sortKey * 10 + 2,
                 }}
                 draggable={false}
               />
 
-              {/* Harvest / Growth badge above plot — shape + text (never colour alone) */}
+              {/* Harvest / Growth badge above plot: 56px source -> >= 28px on screen, >= 44px hit area */}
               {growth.isReady ? (
                 <button
                   type="button"
@@ -333,21 +346,20 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     left: badgeCenterX,
                     top: badgeTopY,
                     zIndex: sortKey * 10 + 8,
-                    transform: 'translate(-50%, -40%)',
+                    transform: 'translate(-50%, -35%)',
                   }}
-                  className="absolute flex min-h-[44px] min-w-[44px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl bg-transparent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default"
+                  className="absolute flex min-h-[88px] min-w-[88px] cursor-pointer flex-col items-center justify-center gap-1 bg-transparent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default"
                 >
                   <img
                     src={UI_SPRITES.farmReady.src}
                     alt=""
-                    width={UI_SPRITES.farmReady.width * 2}
-                    height={UI_SPRITES.farmReady.height * 2}
-                    className={`rt-pixelated block select-none ${
-                      reducedMotion ? '' : 'rt-harvest-pulse'
-                    }`}
+                    width={UI_SPRITES.farmReady.width}
+                    height={UI_SPRITES.farmReady.height}
+                    decoding="async"
+                    className={`block select-none ${reducedMotion ? '' : 'rt-harvest-pulse'}`}
                     draggable={false}
                   />
-                  <span className="rounded-md border border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]">
+                  <span className="rt-pixel-bubble rt-pixel-bubble--volt rt-pixel-bubble--tail whitespace-nowrap px-2 py-0.5 text-[15px] font-black leading-tight">
                     {t('town.map.readyShort')} +{cropMeta?.yieldCount ?? 2}
                   </span>
                 </button>
@@ -359,17 +371,19 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     zIndex: sortKey * 10 + 8,
                     transform: 'translate(-50%, -25%)',
                   }}
-                  className="pointer-events-none absolute flex flex-col items-center gap-0.5"
+                  className="pointer-events-none absolute flex flex-col items-center gap-1"
                 >
                   <img
                     src={UI_SPRITES.farmGrowing.src}
                     alt=""
-                    width={UI_SPRITES.farmGrowing.width * 2}
-                    height={UI_SPRITES.farmGrowing.height * 2}
-                    className="rt-pixelated block select-none"
+                    width={UI_SPRITES.farmGrowing.width}
+                    height={UI_SPRITES.farmGrowing.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="block select-none"
                     draggable={false}
                   />
-                  <span className="rounded border border-[#0E0D15] bg-[#FFF7EC]/95 px-1 py-0.5 font-mono text-[9px] font-bold leading-none text-[#0E0D15]">
+                  <span className="rt-pixel-bubble rt-pixel-bubble--tail whitespace-nowrap px-1.5 py-0.5 text-[14px] font-bold leading-tight">
                     {formatDurationShort(growth.remainingSeconds)}
                   </span>
                 </div>
@@ -381,17 +395,17 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         // Buildings & other decor
         const spec = CATALOG_SPRITES[tile.itemId];
         if (!spec || spec.isPlaceholder) {
-          const anchor = getBuildingPlacement(tile.x, tile.y, w, h, 24, 24);
+          const anchor = getBuildingPlacement(tile.x, tile.y, w, h, 96, 96);
           return (
             <div
               key={`obj_${key}`}
               aria-hidden="true"
-              className="pointer-events-none absolute flex items-center justify-center rounded-lg border-2 border-[#0E0D15] bg-[#FFF7EC]/90 px-1 text-[9px] font-black uppercase text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+              className="rt-pixel-bubble pointer-events-none absolute flex items-center justify-center px-2 text-sm font-black uppercase"
               style={{
-                left: (anchor.x - boundsMinX) * scale,
-                top: (anchor.y - boundsMinY) * scale,
-                width: 24 * scale,
-                height: 24 * scale,
+                left: anchor.x - boundsMinX,
+                top: anchor.y - boundsMinY,
+                width: 96,
+                height: 96,
                 zIndex: anchor.sortKey * 10 + 4,
               }}
             >
@@ -401,17 +415,20 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         }
 
         const placement = getBuildingPlacement(tile.x, tile.y, w, h, spec.width, spec.height);
+        const isStarter = tile.itemId === 'starter_house';
         return (
           <img
             key={`obj_${key}`}
             src={spec.src}
             alt=""
-            width={spec.width * scale}
-            height={spec.height * scale}
-            className="rt-pixelated pointer-events-none absolute block select-none"
+            width={spec.width}
+            height={spec.height}
+            loading={isStarter ? 'eager' : 'lazy'}
+            decoding="async"
+            className="pointer-events-none absolute block select-none"
             style={{
-              left: (placement.x - boundsMinX) * scale,
-              top: (placement.y - boundsMinY) * scale,
+              left: placement.x - boundsMinX,
+              top: placement.y - boundsMinY,
               zIndex: placement.sortKey * 10 + 4,
             }}
             draggable={false}
@@ -443,30 +460,212 @@ export function IsoMap({
 }: IsoMapProps) {
   const t = useTranslations();
   const reducedMotion = useReducedMotion();
-  const [scale, setScale] = useState<number>(2);
   const [hoveredCell, setHoveredCell] = useState<GridCoord | null>(null);
   const [nowMs, setNowMs] = useState<number>(0);
   const [tabHidden, setTabHidden] = useState<boolean>(false);
+  const [viewportSize, setViewportSize] = useState<{ w: number; h: number }>({ w: 390, h: 660 });
+  const [zoomLimitsState, setZoomLimitsState] = useState<{
+    zoom: number;
+    minZoom: number;
+    maxZoom: number;
+  }>({ zoom: 0.5, minZoom: 0.5, maxZoom: 1.0 });
+
   const viewportRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ active: boolean; startX: number; startY: number; scrollLeft: number; scrollTop: number }>({
-    active: false,
-    startX: 0,
-    startY: 0,
-    scrollLeft: 0,
-    scrollTop: 0,
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Compute source-pixel content bounds around owned land + expand ring (~1 tile padding)
+  const bounds = useMemo(() => {
+    const coords: GridCoord[] = [];
+    for (const key of Object.keys(land)) {
+      const [xs, ys] = key.split('_');
+      const x = Number(xs);
+      const y = Number(ys);
+      if (Number.isInteger(x) && Number.isInteger(y)) coords.push({ x, y });
+    }
+    for (const cell of expandRing) {
+      coords.push(cell);
+    }
+    return computeMapBounds(coords);
+  }, [land, expandRing]);
+
+  const stageW = Math.ceil(bounds.width);
+  const stageH = Math.ceil(bounds.height);
+
+  // Compute fit-to-view scale & zoom range whenever viewport or map bounds change
+  const zoomRange = useMemo(
+    () => computeDisplayZoomRange(viewportSize.w, viewportSize.h, stageW, stageH),
+    [viewportSize.w, viewportSize.h, stageW, stageH],
+  );
+
+  // Camera state stored in ref for zero-re-render rAF transforms
+  const cameraRef = useRef<{
+    panX: number;
+    panY: number;
+    zoom: number;
+    initialized: boolean;
+  }>({
+    panX: 0,
+    panY: 0,
+    zoom: zoomRange.fitScale,
+    initialized: false,
   });
 
-  // Strict integer scale: 2x on mobile/standard, 3x on wide desktop screens
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(min-width: 1024px)');
-    const update = () => setScale(mq.matches ? 3 : 2);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
+  const rafWriteRef = useRef<number | null>(null);
+  const transitionTimerRef = useRef<number | null>(null);
+  const reducedMotionRef = useRef(reducedMotion);
+  reducedMotionRef.current = reducedMotion;
+
+  const viewportSizeRef = useRef(viewportSize);
+  viewportSizeRef.current = viewportSize;
+
+  const stageSizeRef = useRef({ w: stageW, h: stageH });
+  stageSizeRef.current = { w: stageW, h: stageH };
+
+  const zoomRangeRef = useRef(zoomRange);
+  zoomRangeRef.current = zoomRange;
+
+  // Active pointers for 1-finger pan & 2-finger pinch
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const panGestureRef = useRef<{
+    pointerId: number | null;
+    startClientX: number;
+    startClientY: number;
+    startPanX: number;
+    startPanY: number;
+    exceededThreshold: boolean;
+  }>({
+    pointerId: null,
+    startClientX: 0,
+    startClientY: 0,
+    startPanX: 0,
+    startPanY: 0,
+    exceededThreshold: false,
+  });
+  const pinchGestureRef = useRef<{
+    active: boolean;
+    startDist: number;
+    startZoom: number;
+    worldX: number;
+    worldY: number;
+  }>({
+    active: false,
+    startDist: 0,
+    startZoom: 1,
+    worldX: 0,
+    worldY: 0,
+  });
+  const suppressClickUntilRef = useRef<number>(0);
+
+  const flushTransformNow = useCallback((transitionCss?: string) => {
+    const el = stageRef.current;
+    if (!el) return;
+    if (transitionTimerRef.current !== null) {
+      window.clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    if (transitionCss && !reducedMotionRef.current) {
+      el.style.transition = transitionCss;
+      const ms = transitionCss.includes('200ms') ? 210 : 160;
+      transitionTimerRef.current = window.setTimeout(() => {
+        if (stageRef.current) stageRef.current.style.transition = '';
+        transitionTimerRef.current = null;
+      }, ms);
+    } else {
+      el.style.transition = '';
+    }
+    const { panX, panY, zoom } = cameraRef.current;
+    el.style.transform = `translate3d(${panX.toFixed(2)}px, ${panY.toFixed(2)}px, 0) scale(${zoom.toFixed(4)})`;
   }, []);
 
-  // Preload initial sprites during idle time so they never block first paint / LCP
+  const scheduleTransformWrite = useCallback(() => {
+    if (rafWriteRef.current !== null) return;
+    rafWriteRef.current = window.requestAnimationFrame(() => {
+      rafWriteRef.current = null;
+      flushTransformNow();
+    });
+  }, [flushTransformNow]);
+
+  const syncZoomButtons = useCallback(() => {
+    const zr = zoomRangeRef.current;
+    const z = cameraRef.current.zoom;
+    setZoomLimitsState((prev) => {
+      if (
+        Math.abs(prev.zoom - z) < 0.002 &&
+        Math.abs(prev.minZoom - zr.minZoom) < 0.002 &&
+        Math.abs(prev.maxZoom - zr.maxZoom) < 0.002
+      ) {
+        return prev;
+      }
+      return { zoom: z, minZoom: zr.minZoom, maxZoom: zr.maxZoom };
+    });
+  }, []);
+
+  // Measure viewport via ResizeObserver (zero forced reflow during render)
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setViewportSize((prev) =>
+          Math.abs(prev.w - rect.width) < 1 && Math.abs(prev.h - rect.height) < 1
+            ? prev
+            : { w: rect.width, h: rect.height },
+        );
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Initialize / re-clamp camera when viewport size or map bounds change
+  useEffect(() => {
+    const cam = cameraRef.current;
+    if (!cam.initialized) {
+      cam.zoom = zoomRange.fitScale;
+      const centeredX = (viewportSize.w - stageW * cam.zoom) / 2;
+      const centeredY = (viewportSize.h - stageH * cam.zoom) / 2;
+      const clamped = clampPanPosition(
+        centeredX,
+        centeredY,
+        viewportSize.w,
+        viewportSize.h,
+        stageW,
+        stageH,
+        cam.zoom,
+      );
+      cam.panX = clamped.x;
+      cam.panY = clamped.y;
+      cam.initialized = true;
+    } else {
+      cam.zoom = Math.max(zoomRange.minZoom, Math.min(zoomRange.maxZoom, cam.zoom));
+      const clamped = clampPanPosition(
+        cam.panX,
+        cam.panY,
+        viewportSize.w,
+        viewportSize.h,
+        stageW,
+        stageH,
+        cam.zoom,
+      );
+      cam.panX = clamped.x;
+      cam.panY = clamped.y;
+    }
+    flushTransformNow();
+    syncZoomButtons();
+  }, [viewportSize.w, viewportSize.h, stageW, stageH, zoomRange, flushTransformNow, syncZoomButtons]);
+
+  // Cleanup rAF & transition timers on unmount
+  useEffect(() => {
+    return () => {
+      if (rafWriteRef.current !== null) window.cancelAnimationFrame(rafWriteRef.current);
+      if (transitionTimerRef.current !== null) window.clearTimeout(transitionTimerRef.current);
+    };
+  }, []);
+
+  // Preload first-paint sprites during idle time so they never block LCP
   useEffect(() => {
     const win = window as Window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
@@ -516,28 +715,82 @@ export function IsoMap({
     };
   }, [hasPlantedCrops]);
 
-  // Compute tight map bounds around owned land + expand ring
-  const bounds = useMemo(() => {
-    const coords: GridCoord[] = [];
-    for (const key of Object.keys(land)) {
-      const [xs, ys] = key.split('_');
-      const x = Number(xs);
-      const y = Number(ys);
-      if (Number.isInteger(x) && Number.isInteger(y)) coords.push({ x, y });
-    }
-    for (const cell of expandRing) {
-      coords.push(cell);
-    }
-    return computeMapBounds(coords);
-  }, [land, expandRing]);
+  // Apply zoom anchored at a viewport-local point (anchorX, anchorY)
+  const applyZoomAtPoint = useCallback(
+    (targetZoom: number, anchorX: number, anchorY: number, animate: boolean) => {
+      const zr = zoomRangeRef.current;
+      const vp = viewportSizeRef.current;
+      const st = stageSizeRef.current;
+      const cam = cameraRef.current;
 
+      const clampedZoom = Math.max(zr.minZoom, Math.min(zr.maxZoom, targetZoom));
+      if (Math.abs(clampedZoom - cam.zoom) < 0.0005) return;
+
+      const worldX = (anchorX - cam.panX) / cam.zoom;
+      const worldY = (anchorY - cam.panY) / cam.zoom;
+      const nextPanX = anchorX - worldX * clampedZoom;
+      const nextPanY = anchorY - worldY * clampedZoom;
+      const clampedPan = clampPanPosition(
+        nextPanX,
+        nextPanY,
+        vp.w,
+        vp.h,
+        st.w,
+        st.h,
+        clampedZoom,
+      );
+
+      cam.zoom = clampedZoom;
+      cam.panX = clampedPan.x;
+      cam.panY = clampedPan.y;
+
+      if (animate) {
+        flushTransformNow('transform 150ms ease-out');
+      } else {
+        scheduleTransformWrite();
+      }
+      syncZoomButtons();
+    },
+    [flushTransformNow, scheduleTransformWrite, syncZoomButtons],
+  );
+
+  // Desktop ctrl/cmd + wheel & Safari gesture zoom disabled inside map container only
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const anchorX = e.clientX - rect.left;
+      const anchorY = e.clientY - rect.top;
+      const factor = Math.exp(-e.deltaY * 0.0025);
+      applyZoomAtPoint(cameraRef.current.zoom * factor, anchorX, anchorY, false);
+    };
+
+    const onGesture = (e: Event) => {
+      e.preventDefault();
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('gesturestart', onGesture, { passive: false });
+    el.addEventListener('gesturechange', onGesture, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('gesturestart', onGesture);
+      el.removeEventListener('gesturechange', onGesture);
+    };
+  }, [applyZoomAtPoint]);
+
+  // Villagers operate in 1:1 source pixels inside the scaled world stage (zero DOM rewrite on zoom)
   const { villagerList, registerDom, dispatchHarvest } = useVillagers({
     population,
     land,
     blockedKeys,
     boundsMinX: bounds.minX,
     boundsMinY: bounds.minY,
-    scale,
+    scale: 1,
     reducedMotion,
   });
 
@@ -549,19 +802,206 @@ export function IsoMap({
     [isVisitMode, dispatchHarvest, onHarvestComplete],
   );
 
-  // Center map scroll position asynchronously on next frame to avoid forced layout reflow during hydration
-  useEffect(() => {
-    const id = window.requestAnimationFrame(() => {
+  // Pointer handlers for 1-pointer drag + 2-pointer pinch
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Ignore clicks on zoom controls
+    if ((e.target as HTMLElement).closest('[data-zoom-control="true"]')) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointersRef.current.size === 1) {
+      const cam = cameraRef.current;
+      panGestureRef.current = {
+        pointerId: e.pointerId,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startPanX: cam.panX,
+        startPanY: cam.panY,
+        exceededThreshold: false,
+      };
+      pinchGestureRef.current.active = false;
+    } else if (pointersRef.current.size === 2) {
       const el = viewportRef.current;
       if (!el) return;
-      const targetLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
-      const targetTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
-      if (targetLeft > 0 || targetTop > 0) {
-        el.scrollTo({ left: targetLeft, top: targetTop });
+      const rect = el.getBoundingClientRect();
+      const [p1, p2] = Array.from(pointersRef.current.values());
+      if (!p1 || !p2) return;
+      const midX = (p1.x + p2.x) / 2 - rect.left;
+      const midY = (p1.y + p2.y) / 2 - rect.top;
+      const dist = Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y));
+      const cam = cameraRef.current;
+      pinchGestureRef.current = {
+        active: true,
+        startDist: dist,
+        startZoom: cam.zoom,
+        worldX: (midX - cam.panX) / cam.zoom,
+        worldY: (midY - cam.panY) / cam.zoom,
+      };
+      panGestureRef.current.pointerId = null;
+      panGestureRef.current.exceededThreshold = true;
+      suppressClickUntilRef.current = performance.now() + 300;
+    }
+  }, []);
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!pointersRef.current.has(e.pointerId)) return;
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      // Two-pointer pinch-to-zoom anchored at midpoint
+      if (pinchGestureRef.current.active && pointersRef.current.size >= 2) {
+        const el = viewportRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const [p1, p2] = Array.from(pointersRef.current.values());
+        if (!p1 || !p2) return;
+        const midX = (p1.x + p2.x) / 2 - rect.left;
+        const midY = (p1.y + p2.y) / 2 - rect.top;
+        const dist = Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y));
+        const zr = zoomRangeRef.current;
+        const vp = viewportSizeRef.current;
+        const st = stageSizeRef.current;
+        const pinch = pinchGestureRef.current;
+
+        const nextZoom = Math.max(
+          zr.minZoom,
+          Math.min(zr.maxZoom, pinch.startZoom * (dist / pinch.startDist)),
+        );
+        const rawPanX = midX - pinch.worldX * nextZoom;
+        const rawPanY = midY - pinch.worldY * nextZoom;
+        const clamped = clampPanPosition(rawPanX, rawPanY, vp.w, vp.h, st.w, st.h, nextZoom);
+
+        cameraRef.current.zoom = nextZoom;
+        cameraRef.current.panX = clamped.x;
+        cameraRef.current.panY = clamped.y;
+        scheduleTransformWrite();
+        syncZoomButtons();
+        return;
       }
-    });
-    return () => window.cancelAnimationFrame(id);
-  }, [scale]);
+
+      // Single-pointer drag pan with 6px tap threshold + 24px rubber-band resistance
+      const drag = panGestureRef.current;
+      if (drag.pointerId !== e.pointerId) return;
+
+      const dx = e.clientX - drag.startClientX;
+      const dy = e.clientY - drag.startClientY;
+      if (!drag.exceededThreshold) {
+        if (Math.hypot(dx, dy) <= DRAG_THRESHOLD_PX) return;
+        drag.exceededThreshold = true;
+        suppressClickUntilRef.current = performance.now() + 300;
+        try {
+          viewportRef.current?.setPointerCapture(e.pointerId);
+        } catch {
+          // Ignore pointer capture error on synthetic/mouse events
+        }
+      }
+
+      const vp = viewportSizeRef.current;
+      const st = stageSizeRef.current;
+      const cam = cameraRef.current;
+      const limX = getPanAxisLimits(vp.w, st.w, cam.zoom);
+      const limY = getPanAxisLimits(vp.h, st.h, cam.zoom);
+
+      cam.panX = applyRubberBand(drag.startPanX + dx, limX.min, limX.max, reducedMotionRef.current);
+      cam.panY = applyRubberBand(drag.startPanY + dy, limY.min, limY.max, reducedMotionRef.current);
+      scheduleTransformWrite();
+    },
+    [scheduleTransformWrite, syncZoomButtons],
+  );
+
+  const finishPointer = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      pointersRef.current.delete(e.pointerId);
+
+      if (pinchGestureRef.current.active && pointersRef.current.size < 2) {
+        pinchGestureRef.current.active = false;
+        suppressClickUntilRef.current = performance.now() + 250;
+      }
+
+      const drag = panGestureRef.current;
+      if (drag.pointerId === e.pointerId) {
+        const wasDragged = drag.exceededThreshold;
+        drag.pointerId = null;
+        drag.exceededThreshold = false;
+
+        if (wasDragged) {
+          suppressClickUntilRef.current = performance.now() + 250;
+          try {
+            if (viewportRef.current?.hasPointerCapture(e.pointerId)) {
+              viewportRef.current.releasePointerCapture(e.pointerId);
+            }
+          } catch {
+            // Ignore
+          }
+
+          // Spring back into clamped content bounds (200ms ease-out, instant under reduced motion)
+          const vp = viewportSizeRef.current;
+          const st = stageSizeRef.current;
+          const cam = cameraRef.current;
+          const clamped = clampPanPosition(cam.panX, cam.panY, vp.w, vp.h, st.w, st.h, cam.zoom);
+          if (Math.abs(clamped.x - cam.panX) > 0.5 || Math.abs(clamped.y - cam.panY) > 0.5) {
+            cam.panX = clamped.x;
+            cam.panY = clamped.y;
+            flushTransformNow('transform 200ms ease-out');
+          }
+        }
+      }
+    },
+    [flushTransformNow],
+  );
+
+  // Suppress tile/button clicks immediately after a >6px drag or pinch
+  const handleClickCapture = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('[data-zoom-control="true"]')) return;
+    if (performance.now() < suppressClickUntilRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClickUntilRef.current = 0;
+    }
+  }, []);
+
+  // Keyboard panning (Arrow keys) & zooming (+ / -) when map has focus
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const vp = viewportSizeRef.current;
+      const st = stageSizeRef.current;
+      const cam = cameraRef.current;
+
+      let dx = 0;
+      let dy = 0;
+      if (e.key === 'ArrowLeft') dx = KEYBOARD_PAN_STEP_PX;
+      else if (e.key === 'ArrowRight') dx = -KEYBOARD_PAN_STEP_PX;
+      else if (e.key === 'ArrowUp') dy = KEYBOARD_PAN_STEP_PX;
+      else if (e.key === 'ArrowDown') dy = -KEYBOARD_PAN_STEP_PX;
+      else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        applyZoomAtPoint(cam.zoom * ZOOM_BUTTON_FACTOR, vp.w / 2, vp.h / 2, true);
+        return;
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        applyZoomAtPoint(cam.zoom / ZOOM_BUTTON_FACTOR, vp.w / 2, vp.h / 2, true);
+        return;
+      } else {
+        return;
+      }
+
+      e.preventDefault();
+      const clamped = clampPanPosition(
+        cam.panX + dx,
+        cam.panY + dy,
+        vp.w,
+        vp.h,
+        st.w,
+        st.h,
+        cam.zoom,
+      );
+      cam.panX = clamped.x;
+      cam.panY = clamped.y;
+      flushTransformNow('transform 150ms ease-out');
+    },
+    [applyZoomAtPoint, flushTransformNow],
+  );
 
   // Evaluate placement / move / plant cursor validity for hovered/focused cell
   const cursorOverlay = useMemo(() => {
@@ -589,10 +1029,10 @@ export function IsoMap({
     const pos = getCursorPlacement(x, y);
     const spec = isValid ? UI_SPRITES.freeSpot : UI_SPRITES.takenSpot;
     return {
-      left: (pos.x - bounds.minX) * scale,
-      top: (pos.y - bounds.minY) * scale,
-      width: spec.width * scale,
-      height: spec.height * scale,
+      left: pos.x - bounds.minX,
+      top: pos.y - bounds.minY,
+      width: spec.width,
+      height: spec.height,
       src: spec.src,
       zIndex: (x + y) * 10 + 9,
     };
@@ -609,49 +1049,76 @@ export function IsoMap({
     tiles,
     bounds.minX,
     bounds.minY,
-    scale,
   ]);
 
-  const stageW = Math.ceil(bounds.width * scale);
-  const stageH = Math.ceil(bounds.height * scale);
+  // Pixel-art tile info tooltip on hover/focus in explore mode (placed buildings/crops)
+  const hoverTooltip = useMemo(() => {
+    if (!hoveredCell) return null;
+    const isInteractiveMode = Boolean(placingItemId || movingTile || moveModeActive || selectedSeed);
+    if (isInteractiveMode) return null;
+
+    const raw = tiles[`${hoveredCell.x}_${hoveredCell.y}`];
+    const tile = raw?.parentTile ? tiles[raw.parentTile] : raw;
+    if (!tile) return null;
+
+    const item = catalog.items[tile.itemId];
+    const label = tile.cropId
+      ? t(`town.crops.${tile.cropId}.name`)
+      : item?.nameKey
+        ? t(item.nameKey)
+        : tile.itemId;
+
+    const origin = isoToScreen(tile.x, tile.y);
+    return {
+      left: origin.x + TILE_W / 2 - bounds.minX,
+      top: origin.y - 26 - bounds.minY,
+      label,
+    };
+  }, [hoveredCell, placingItemId, movingTile, moveModeActive, selectedSeed, tiles, catalog, bounds.minX, bounds.minY, t]);
+
+  const canZoomIn = zoomLimitsState.zoom < zoomLimitsState.maxZoom - 0.005;
+  const canZoomOut = zoomLimitsState.zoom > zoomLimitsState.minZoom + 0.005;
+
+  // Compute deterministic initial transform for SSR / pre-hydration frame (zero layout shift)
+  const initialCam = useMemo(() => {
+    const z = zoomRange.fitScale;
+    const clamped = clampPanPosition(
+      (viewportSize.w - stageW * z) / 2,
+      (viewportSize.h - stageH * z) / 2,
+      viewportSize.w,
+      viewportSize.h,
+      stageW,
+      stageH,
+      z,
+    );
+    return { x: clamped.x, y: clamped.y, z };
+  }, [viewportSize.w, viewportSize.h, stageW, stageH, zoomRange.fitScale]);
 
   return (
     <div
       ref={viewportRef}
       role="region"
+      tabIndex={0}
       aria-label={t('town.map.regionAria')}
-      onPointerDown={(e) => {
-        if ((e.target as HTMLElement).closest('button')) return;
-        const el = viewportRef.current;
-        if (!el) return;
-        dragRef.current = {
-          active: true,
-          startX: e.clientX,
-          startY: e.clientY,
-          scrollLeft: el.scrollLeft,
-          scrollTop: el.scrollTop,
-        };
-      }}
-      onPointerMove={(e) => {
-        if (!dragRef.current.active || !viewportRef.current) return;
-        viewportRef.current.scrollLeft = dragRef.current.scrollLeft - (e.clientX - dragRef.current.startX);
-        viewportRef.current.scrollTop = dragRef.current.scrollTop - (e.clientY - dragRef.current.startY);
-      }}
-      onPointerUp={() => {
-        dragRef.current.active = false;
-      }}
-      onPointerCancel={() => {
-        dragRef.current.active = false;
-      }}
-      className={`relative flex flex-1 touch-pan-x touch-pan-y select-none items-center justify-center overflow-auto bg-[#132013] p-6 ${
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishPointer}
+      onPointerCancel={finishPointer}
+      onClickCapture={handleClickCapture}
+      onKeyDown={handleKeyDown}
+      className={`relative h-full w-full flex-1 touch-none select-none overflow-hidden overscroll-none bg-[#132013] focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-[#C6FF3D] ${
         tabHidden ? 'rt-paused' : ''
       }`}
     >
+      {/* Scaled world stage (1:1 128px source coordinates, single GPU transform) */}
       <div
-        className="relative shrink-0"
+        ref={stageRef}
+        data-rontown-stage="true"
+        className="absolute left-0 top-0 origin-top-left will-change-transform"
         style={{
           width: stageW,
           height: stageH,
+          transform: `translate3d(${initialCam.x.toFixed(2)}px, ${initialCam.y.toFixed(2)}px, 0) scale(${initialCam.z.toFixed(4)})`,
         }}
       >
         {/* Memoized static world layer (ground, expand ring, crops, buildings, badges) */}
@@ -662,7 +1129,6 @@ export function IsoMap({
           catalog={catalog}
           boundsMinX={bounds.minX}
           boundsMinY={bounds.minY}
-          scale={scale}
           isVisitMode={isVisitMode}
           nowMs={nowMs}
           reducedMotion={reducedMotion}
@@ -676,8 +1142,8 @@ export function IsoMap({
         {villagerList.map((v) => {
           const spec = VILLAGER_SPRITES[v.kind].idle;
           const feet = getVillagerFeetPoint(v.initialX, v.initialY);
-          const initX = Math.round((feet.x - bounds.minX - spec.width / 2) * scale);
-          const initY = Math.round((feet.y - bounds.minY - spec.height) * scale);
+          const initX = Math.round(feet.x - bounds.minX - spec.width / 2);
+          const initY = Math.round(feet.y - bounds.minY - spec.height);
           return (
             <div
               key={v.id}
@@ -690,13 +1156,19 @@ export function IsoMap({
                 transition: reducedMotion ? 'opacity 180ms linear' : undefined,
               }}
             >
+              {v.isArrivalVisitor && (
+                <div className="rt-pixel-bubble rt-pixel-bubble--tail absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 text-[14px] font-black">
+                  +1!
+                </div>
+              )}
               <img
                 ref={(el) => registerDom(v.id, 'img', el)}
                 src={spec.src}
                 alt=""
-                width={spec.width * scale}
-                height={spec.height * scale}
-                className="rt-pixelated block select-none"
+                width={spec.width}
+                height={spec.height}
+                decoding="async"
+                className="block select-none"
                 draggable={false}
               />
             </div>
@@ -710,7 +1182,8 @@ export function IsoMap({
             alt=""
             width={cursorOverlay.width}
             height={cursorOverlay.height}
-            className="rt-pixelated pointer-events-none absolute block select-none"
+            decoding="async"
+            className="pointer-events-none absolute block select-none"
             style={{
               left: cursorOverlay.left,
               top: cursorOverlay.top,
@@ -720,17 +1193,33 @@ export function IsoMap({
           />
         )}
 
-        {/* Floating +N harvest feedback labels (600ms transform + opacity) */}
+        {/* Pixel-art tile info tooltip on hover/focus */}
+        {hoverTooltip && (
+          <div
+            role="tooltip"
+            className="rt-pixel-bubble rt-pixel-bubble--tail pointer-events-none absolute whitespace-nowrap px-2.5 py-1 text-[16px] font-black"
+            style={{
+              left: hoverTooltip.left,
+              top: hoverTooltip.top,
+              transform: 'translate(-50%, -100%)',
+              zIndex: 990,
+            }}
+          >
+            {hoverTooltip.label}
+          </div>
+        )}
+
+        {/* Floating +N harvest feedback pixel-art speech bubbles (600ms transform + opacity) */}
         {floatingRewards.map((reward) => {
           const origin = isoToScreen(reward.x, reward.y);
           return (
             <div
               key={reward.id}
               role="status"
-              className="rt-float-reward pointer-events-none absolute rounded-full border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-0.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+              className="rt-pixel-bubble rt-pixel-bubble--volt rt-pixel-bubble--tail rt-float-reward pointer-events-none absolute whitespace-nowrap px-2.5 py-1 text-[18px] font-black"
               style={{
-                left: (origin.x + TILE_W / 2 - bounds.minX) * scale,
-                top: (origin.y - 10 - bounds.minY) * scale,
+                left: origin.x + TILE_W / 2 - bounds.minX,
+                top: origin.y - 36 - bounds.minY,
                 zIndex: 999,
               }}
             >
@@ -738,6 +1227,51 @@ export function IsoMap({
             </div>
           );
         })}
+      </div>
+
+      {/* Corner pixel-art Zoom + / - controls */}
+      <div
+        data-zoom-control="true"
+        role="group"
+        aria-label={t('town.map.zoomControls')}
+        className="absolute bottom-3 start-3 z-20 flex flex-col gap-1.5"
+      >
+        <button
+          type="button"
+          data-zoom-control="true"
+          disabled={!canZoomIn}
+          onClick={() =>
+            applyZoomAtPoint(
+              cameraRef.current.zoom * ZOOM_BUTTON_FACTOR,
+              viewportSizeRef.current.w / 2,
+              viewportSizeRef.current.h / 2,
+              true,
+            )
+          }
+          aria-label={t('town.map.zoomIn')}
+          title={t('town.map.zoomIn')}
+          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          data-zoom-control="true"
+          disabled={!canZoomOut}
+          onClick={() =>
+            applyZoomAtPoint(
+              cameraRef.current.zoom / ZOOM_BUTTON_FACTOR,
+              viewportSizeRef.current.w / 2,
+              viewportSizeRef.current.h / 2,
+              true,
+            )
+          }
+          aria-label={t('town.map.zoomOut')}
+          title={t('town.map.zoomOut')}
+          className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-2 border-[#0E0D15] bg-[#FFF7EC] font-mono text-xl font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:scale-100 motion-reduce:transition-none"
+        >
+          −
+        </button>
       </div>
     </div>
   );

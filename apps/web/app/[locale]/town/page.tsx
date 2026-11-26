@@ -36,6 +36,28 @@ export default function TownPage() {
     if (v) setVisitHostUid(v);
   }, []);
 
+  // Lock page/body scroll & rubber-band overscroll while on /[locale]/town
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverscroll = html.style.overscrollBehavior;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
+    body.style.overscrollBehavior = 'none';
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      html.style.overscrollBehavior = prevHtmlOverscroll;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+    };
+  }, []);
+
   const townEnabled = useFeatureFlag('town_enabled');
   const coinsPurchaseEnabled = useFeatureFlag('coins_purchase_enabled');
   const coinsTransferEnabled = useFeatureFlag('coins_transfer_enabled');
@@ -317,7 +339,7 @@ export default function TownPage() {
   }
 
   return (
-    <main className="relative flex h-[calc(100dvh-3.5rem-4rem)] flex-col overflow-hidden bg-[#132013] lg:h-[calc(100dvh-3.5rem)]">
+    <main className="relative flex h-full w-full flex-col overflow-hidden overscroll-none bg-[#132013]">
       {/* 1. TOP BAR: Split Court chrome matching sample-map.png */}
       <div className="relative z-10 flex shrink-0 items-center justify-between gap-2 border-b-2 border-[#0E0D15] bg-[#14131E] px-3 py-2 text-[#FFF7EC]">
         {isVisitMode ? (
@@ -482,7 +504,12 @@ export default function TownPage() {
 
       {/* 2. ISOMETRIC PIXEL-ART MAP VIEWPORT */}
       <div className="relative isolate z-0 flex min-h-0 flex-1 flex-col">
-        {!isVisitMode && !placingItemId && !moveModeActive && !movingTile && !selectedSeed && (
+        {!isVisitMode &&
+          tutorialStep >= 3 &&
+          !placingItemId &&
+          !moveModeActive &&
+          !movingTile &&
+          !selectedSeed && (
           <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
             {t('town.map.helpBody')}
           </p>
@@ -554,27 +581,27 @@ export default function TownPage() {
         />
       )}
 
-      {/* 4. TUTORIAL CARD */}
+      {/* 4. TUTORIAL PIXEL-ART SPEECH BUBBLE */}
       {!isVisitMode && tutorialStep < 3 && !activeSheet && !expandTarget && (
-        <div className="border-border bg-surface absolute start-3 top-16 z-20 max-w-[260px] rounded-2xl border-2 p-3 shadow-[3px_3px_0px_0px_#0E0D15]">
+        <div className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-16 z-20 max-w-[260px] p-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full border border-[#0E0D15] bg-[#C6FF3D] px-2 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
+            <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
               {tutorialStep + 1}/3
             </span>
             <button
               type="button"
               onClick={() => setTutorialStep(3)}
-              className="text-muted hover:text-ink min-h-[32px] cursor-pointer px-1 text-xs font-bold"
+              className="min-h-[32px] cursor-pointer px-1 font-mono text-xs font-bold text-[#0E0D15]/70 hover:text-[#0E0D15]"
             >
               {t('town.tutorial.skip')}
             </button>
           </div>
-          <h2 className="text-ink mt-1.5 font-display text-sm font-black">
+          <h2 className="mt-1.5 font-mono text-sm font-black text-[#0E0D15]">
             {tutorialStep === 0 && t('town.tutorial.step1Title')}
             {tutorialStep === 1 && t('town.tutorial.step2Title')}
             {tutorialStep === 2 && t('town.tutorial.step3Title')}
           </h2>
-          <p className="text-muted mt-1 text-xs leading-snug">
+          <p className="mt-1 font-mono text-xs leading-snug text-[#0E0D15]/80">
             {tutorialStep === 0 && t('town.tutorial.step1Desc')}
             {tutorialStep === 1 && t('town.tutorial.step2Desc')}
             {tutorialStep === 2 && t('town.tutorial.step3Desc')}
@@ -591,7 +618,7 @@ export default function TownPage() {
                 }
                 setTutorialStep((prev) => prev + 1);
               }}
-              className="min-h-[36px] cursor-pointer rounded-xl border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+              className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
             >
               {tutorialStep === 2 ? t('town.tutorial.finish') : t('town.tutorial.next')}
             </button>

@@ -50,11 +50,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const hideBottomNav = isPlayFocusMode || isLeaguePreview || isAdmin || isCheckoutReturn;
 
   const isHomeRoute = pathname === `/${locale}` || pathname === `/${locale}/`;
+  const isTownRoute = pathname === `/${locale}/town`;
 
   const isTopLevelPage =
     isHomeRoute ||
     pathname === `/${locale}/leagues` ||
-    pathname === `/${locale}/town` ||
+    isTownRoute ||
     pathname === `/${locale}/duels` ||
     pathname === `/${locale}/me` ||
     pathname === '/';
@@ -89,12 +90,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="bg-bg text-ink flex min-h-dvh flex-col">
+    <div
+      className={`bg-bg text-ink flex flex-col ${
+        isTownRoute ? 'h-dvh overflow-hidden overscroll-none' : 'min-h-dvh'
+      }`}
+    >
       {isHomeRoute && <SplashScreen />}
 
       {/* A. Clean Header */}
       {!isPlayFocusMode && (
-        <header className="border-border bg-surface/95 sticky top-0 z-30 border-b-2 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <header className="border-border bg-surface/95 sticky top-0 z-30 shrink-0 border-b-2 pt-[env(safe-area-inset-top)] backdrop-blur-md">
           <div className="flex h-14 w-full items-center justify-between px-4">
             {/* Left: Back button (if sub-page) + Logo mark (28px) & Wordmark */}
             <div className="flex items-center gap-2">
@@ -140,10 +145,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content Area with Desktop Sidebar */}
-      <div className="flex w-full flex-1">
+      <div className={`flex w-full flex-1 ${isTownRoute ? 'min-h-0 overflow-hidden' : ''}`}>
         {!hideBottomNav && <BottomNav desktopSidebar />}
 
-        <div className={`min-w-0 flex-1 ${hideBottomNav ? '' : 'pb-24 lg:pb-8 lg:pl-60'}`}>
+        <div
+          className={`min-w-0 flex-1 ${
+            isTownRoute
+              ? 'h-full min-h-0 overflow-hidden pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0 lg:pl-60'
+              : hideBottomNav
+                ? ''
+                : 'pb-24 lg:pb-8 lg:pl-60'
+          }`}
+        >
           {children}
         </div>
       </div>
@@ -152,7 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!hideBottomNav && <BottomNav />}
 
       {/* Footer (links) */}
-      {!isPlayFocusMode && (
+      {!isPlayFocusMode && !isTownRoute && (
         <footer
           className={`text-muted mx-auto flex w-full max-w-[480px] flex-wrap items-center justify-center gap-4 px-4 pt-6 text-xs ${
             !hideBottomNav ? 'lg:pl-60' : ''
