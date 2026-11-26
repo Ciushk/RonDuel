@@ -9,7 +9,7 @@ import {
   type GridCoord,
   type GroundTileType,
 } from '@ronduel/shared';
-import { GROUND_SPRITES } from './sprites';
+import { GROUND_LABEL_KEY, GROUND_SPRITES } from './sprites';
 import { RonCoinIcon } from './RonCoinIcon';
 
 interface BuyLandSheetProps {
@@ -19,21 +19,6 @@ interface BuyLandSheetProps {
   onConfirm: (x: number, y: number, groundType: GroundTileType) => Promise<void> | void;
   onClose: () => void;
 }
-
-const GROUND_LABEL_KEY: Record<GroundTileType, string> = {
-  'basic-block': 'town.land.types.grass',
-  'basic-block-flowers': 'town.land.types.flowers',
-  'basic-block-flowers-two': 'town.land.types.flowersTwo',
-  'basic-block-dirt': 'town.land.types.dirt',
-  'basic-block-street': 'town.land.types.street',
-  'basic-block-street-curve': 'town.land.types.streetCurve',
-  'basic-block-intersection': 'town.land.types.intersection',
-  'basic-block-wather': 'town.land.types.water',
-  'basic-block-wather-two': 'town.land.types.waterTwo',
-  'basic-block-wather-grass-50-50': 'town.land.types.shoreHalf',
-  'basic-block-water-grass-20-80': 'town.land.types.shoreCorner',
-  'basic-block-water-grass-80-20': 'town.land.types.shoreEdge',
-};
 
 export function BuyLandSheet({
   targetCell,
@@ -110,7 +95,7 @@ export function BuyLandSheet({
               type="button"
               onClick={onClose}
               aria-label={t('town.land.close')}
-              className="border-border bg-surface-2 text-ink hover:bg-surface flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+              className="border-border bg-surface-2 text-ink hover:bg-surface focus-visible:outline-3 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
             >
               <X size={18} weight="bold" aria-hidden="true" />
             </button>
@@ -138,7 +123,7 @@ export function BuyLandSheet({
                 aria-checked={isSelected}
                 aria-label={`${label} — ${t('town.shop.priceCoins', { coins: price })}`}
                 onClick={() => setSelectedGround(groundType)}
-                className={`flex min-h-[112px] w-28 shrink-0 cursor-pointer flex-col items-center justify-between rounded-2xl border-2 p-2.5 text-center transition-transform focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
+                className={`focus-visible:outline-3 flex min-h-[112px] w-28 shrink-0 cursor-pointer flex-col items-center justify-between rounded-2xl border-2 p-2.5 text-center transition-transform focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
                   isSelected
                     ? 'border-[#0E0D15] bg-[#C6FF3D]/30 shadow-[2px_2px_0px_0px_#0E0D15]'
                     : 'border-border bg-surface-2 hover:bg-surface'
@@ -188,7 +173,7 @@ export function BuyLandSheet({
             type="button"
             disabled={!canAfford || purchasing}
             onClick={() => void onConfirm(targetCell.x, targetCell.y, selectedGround)}
-            className={`flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[#0E0D15] px-4 py-2.5 text-sm font-black transition-transform focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
+            className={`focus-visible:outline-3 flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[#0E0D15] px-4 py-2.5 text-sm font-black transition-transform focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
               !canAfford || purchasing
                 ? 'bg-surface-2 text-muted cursor-not-allowed opacity-60'
                 : 'cursor-pointer bg-[#C6FF3D] text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] active:translate-y-0.5'

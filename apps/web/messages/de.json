@@ -802,16 +802,16 @@
       "coins": "Münzen",
       "help": "Hilfe",
       "toggle": "Menüleiste",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTown-Aktionen",
+      "move": "Bewegen",
+      "farm": "Anbau",
+      "visit": "Besuchen",
+      "hideBar": "Aktionsleiste ausblenden",
+      "showBar": "Aktionsleiste einblenden",
+      "seedMenu": "Saatgut",
+      "plantSeed": "{crop} pflanzen",
+      "more": "Stadtmenü",
+      "rotate": "Drehen"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Prächtiges Denkmal für eine 100-Tage-Serie."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Straßenlaterne",
+        "desc": "Warme Holzlaterne entlang der Stadtwege."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Prachtvoller Riese. Wächst in 48 Stunden."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kohl",
+        "desc": "Knackige grüne Kohlköpfe. Wächst in 6 Stunden."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Verbleibend in diesem Monat: {remaining} € von {max} €",
       "nonCompetitiveDisclaimer": "RonCoins können nicht in echtes Geld ausgezahlt werden.",
       "buyPack": "Paket für {price} holen",
-      "termsLink": "Münzbedingungen"
+      "termsLink": "Münzbedingungen",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "RonCoins übertragen",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Betrag",
       "recipientLabel": "Freund in deiner Liga",
       "send": "Münzen senden",
-      "dailyCapNotice": "Tageslimit: noch {remaining} Münzen heute"
+      "dailyCapNotice": "Tageslimit: noch {remaining} Münzen heute",
+      "recipientPlaceholder": "Benutzer-ID des Freundes"
     },
     "visit": {
       "title": "Stadt von {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# Tag} other {# Tage}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Land kaufen",
+      "subtitle": "Auf Feld ({x}, {y}) erweitern",
+      "close": "Landkauf schließen",
+      "chooseGround": "Bodentyp wählen",
+      "expandAria": "Land bei ({x}, {y}) erweitern",
+      "buyButton": "{label} kaufen · {price} RonCoins",
+      "buying": "Kaufe…",
+      "shortCoins": "Es fehlen {needed} RonCoins (kostet {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Wiese",
+        "flowers": "Blumenwiese",
+        "flowersTwo": "Wildblumen",
+        "dirt": "Erde",
+        "street": "Weg",
+        "streetCurve": "Kurvenweg",
+        "intersection": "Kreuzung",
+        "water": "Wasser",
+        "waterTwo": "Wellenwasser",
+        "shoreHalf": "Uferlinie",
+        "shoreCorner": "Strandecke",
+        "shoreEdge": "Uferkante"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Isometrische RonTown-Karte",
+      "groundCell": "Bodenfeld ({x}, {y})",
+      "readyShort": "Fertig",
+      "harvestBadgeAria": "Erntereife {crop} bei ({x}, {y}) ernten",
+      "placingBanner": "Tippe auf ein eigenes grünes Feld, um {item} zu platzieren",
+      "movingPickBanner": "Tippe auf ein Gebäude oder Deko zum Bewegen",
+      "movingDestBanner": "Tippe auf ein freies Feld, um ({x}, {y}) zu bewegen",
+      "plantingBanner": "Tippe auf Wiese, Erde oder ein leeres Beet für {crop}",
+      "cancel": "Abbrechen",
+      "helpBody": "Tippe auf grüne X-Randfelder zum Erweitern, nutze Bauen für Häuser und Dienste, Anbau für Saatgut und goldene Sicheln zum Ernten.",
       "zoomControls": "Karten-Zoom-Steuerung",
       "zoomIn": "Vergrößern",
       "zoomOut": "Verkleinern",
       "loading": "RonTown wird geladen…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Tippe auf ein Feld oder Gebäude zum Drehen"
     },
     "status": {
       "connecting": "Verbindet…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Straßenachse: Ost–West"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Dieses Feld kann nicht gedreht werden",
+      "cellAria": "{item} bei ({x}, {y}) drehen",
+      "announce": "{item} nach {dir} gedreht",
+      "dir0": "Nordost",
+      "dir1": "Südost",
+      "dir2": "Südwest",
+      "dir3": "Nordwest"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Ernte beschleunigen",
+      "subtitle": "{crop} · noch {time}",
+      "costLabel": "Beschleunigungskosten",
+      "confirm": "Jetzt fertig · {cost}",
+      "balanceAfter": "Guthaben danach: {balance} RonCoins",
+      "insufficient": "Benötigt {needed} RonCoins (du hast {balance})",
+      "chipAria": "{crop} für {cost} RonCoins beschleunigen"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Eine glückliche Familie in RonTown begrüßt ein Kind!"
+    },
+    "comingSoon": "RonTown startet bald! Baue deine Stadt, ernte Pflanzen und schalte Belohnungen mit RonCoins frei.",
+    "toast": {
+      "landPurchaseFailed": "Landkauf fehlgeschlagen",
+      "cannotPlaceHere": "Kann hier nicht platziert werden",
+      "buildFailed": "Bau fehlgeschlagen",
+      "destOccupiedOrInvalid": "Zielfeld ist belegt oder ungültig",
+      "moveFailed": "Verschieben fehlgeschlagen",
+      "rotateFailed": "Drehen fehlgeschlagen",
+      "removeFailed": "Entfernen fehlgeschlagen",
+      "notEnoughCoins": "Nicht genug RonCoins",
+      "plantingFailed": "Pflanzen fehlgeschlagen",
+      "harvestFailed": "Ernte fehlgeschlagen",
+      "speedupFailed": "Beschleunigung fehlgeschlagen",
+      "cannotPlacePlotHere": "Beet kann hier nicht platziert werden",
+      "buyPlotFailed": "Beetkauf fehlgeschlagen",
+      "deliveryFailed": "Lieferung fehlgeschlagen",
+      "likeFailed": "Stadt konnte nicht gelikt werden",
+      "waterFailed": "Gießen fehlgeschlagen",
+      "signInBeforePurchase": "Bitte melde dich an, bevor du Münzen kaufst",
+      "checkoutFailed": "Bezahlung fehlgeschlagen",
+      "checkoutRequestFailed": "Zahlungsanfrage fehlgeschlagen",
+      "transferFailed": "Überweisung fehlgeschlagen",
+      "transferredCoins": "{amount} RonCoins gesendet!"
+    },
+    "errors": {
+      "insufficientFunds": "Nicht genug RonCoins",
+      "priceChanged": "Preis geändert, bitte erneut versuchen",
+      "notRotatable": "Dieses Feld kann nicht gedreht werden",
+      "disabled": "Diese Funktion ist derzeit deaktiviert",
+      "walletLocked": "Dein RonCoins-Guthaben ist vorübergehend gesperrt",
+      "townNotFound": "Stadt noch nicht initialisiert",
+      "plotNotFound": "Ackerfeld nicht gefunden",
+      "notReady": "Pflanze ist noch nicht erntereif",
+      "alreadyUsed": "Bereits abgeschlossen",
+      "dailyCap": "Tageslimit erreicht",
+      "generic": "Etwas ist schiefgelaufen, bitte erneut versuchen"
     }
   },
   "pwa": {

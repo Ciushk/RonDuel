@@ -802,16 +802,16 @@
       "coins": "Mince",
       "help": "Pomoc",
       "toggle": "Panel",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Akcie RonTown",
+      "move": "Presunúť",
+      "farm": "Farma",
+      "visit": "Navštíviť",
+      "hideBar": "Skryť lištu",
+      "showBar": "Zobraziť lištu",
+      "seedMenu": "Semená",
+      "plantSeed": "Zasadiť {crop}",
+      "more": "Menu mesta",
+      "rotate": "Otočiť"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Veľkolepá socha za 100 dní série."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Pouličná lampa",
+        "desc": "Teplá drevená lampa pozdĺž mestských ciest."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Obrovská úroda. Rastie 48 hodín."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kapusta",
+        "desc": "Chrumkavé hlávky kapusty. Rastie 6 hodín."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Tento mesiac zostáva: {remaining} € z {max} €",
       "nonCompetitiveDisclaimer": "RonCoins nie je možné zameniť za skutočné peniaze.",
       "buyPack": "Kúpiť balíček za {price}",
-      "termsLink": "Podmienky mincí"
+      "termsLink": "Podmienky mincí",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Prevod RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Suma",
       "recipientLabel": "Priateľ z ligy",
       "send": "Odoslať mince",
-      "dailyCapNotice": "Denný limit: dnes zostáva {remaining} mincí"
+      "dailyCapNotice": "Denný limit: dnes zostáva {remaining} mincí",
+      "recipientPlaceholder": "ID priateľa"
     },
     "visit": {
       "title": "Mesto hráča {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# deň} few {# dni} other {# dní}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Kúpiť pozemok",
+      "subtitle": "Rozšíriť na pole ({x}, {y})",
+      "close": "Zavrieť nákup pozemku",
+      "chooseGround": "Vyber typ povrchu",
+      "expandAria": "Rozšíriť pozemok na ({x}, {y})",
+      "buyButton": "Kúpiť {label} · {price} RonCoins",
+      "buying": "Kupujem…",
+      "shortCoins": "Chýba {needed} RonCoins (stojí {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Tráva",
+        "flowers": "Lúka",
+        "flowersTwo": "Poľné kvety",
+        "dirt": "Hlina",
+        "street": "Cesta",
+        "streetCurve": "Zákruta",
+        "intersection": "Križovatka",
+        "water": "Voda",
+        "waterTwo": "Zvlnená voda",
+        "shoreHalf": "Breh",
+        "shoreCorner": "Roh pláže",
+        "shoreEdge": "Nábrežie"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Izometrická mapa RonTown",
+      "groundCell": "Pole terénu ({x}, {y})",
+      "readyShort": "Hotovo",
+      "harvestBadgeAria": "Zozbierať hotovú plodinu {crop} na ({x}, {y})",
+      "placingBanner": "Ťukni na vlastné zelené pole pre umiestnenie {item}",
+      "movingPickBanner": "Ťukni na budovu alebo dekoráciu pre presun",
+      "movingDestBanner": "Ťukni na voľné pole pre presun ({x}, {y})",
+      "plantingBanner": "Ťukni na trávu, hlinu alebo voľný záhon pre {crop}",
+      "cancel": "Zrušiť",
+      "helpBody": "Ťukni na zelené polia X pre rozšírenie, Stavať pre domy a služby, Farma pre siatie a zlaté kosáky pre zber.",
       "zoomControls": "Ovládanie priblíženia mapy",
       "zoomIn": "Priblížiť",
       "zoomOut": "Oddialiť",
       "loading": "Načítava sa RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Ťukni na pole alebo budovu pre otočenie"
     },
     "status": {
       "connecting": "Pripája sa…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Os cesty: Východ–Západ"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Toto pole sa nedá otočiť",
+      "cellAria": "Otočiť {item} na ({x}, {y})",
+      "announce": "{item} otočené na {dir}",
+      "dir0": "Severovýchod",
+      "dir1": "Juhovýchod",
+      "dir2": "Juhozápad",
+      "dir3": "Severozápad"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Urýchliť zber",
+      "subtitle": "{crop} · zostáva {time}",
+      "costLabel": "Cena urýchlenia",
+      "confirm": "Dokončiť teraz · {cost}",
+      "balanceAfter": "Zostatok po: {balance} RonCoins",
+      "insufficient": "Potrebuješ {needed} RonCoins (máš {balance})",
+      "chipAria": "Urýchliť {crop} za {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Šťastná rodina v RonTown privítala dieťa!"
+    },
+    "comingSoon": "RonTown čoskoro štartuje! Postav svoje mesto, pestuj plodiny a získavaj odmeny za RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Nákup pozemku zlyhal",
+      "cannotPlaceHere": "Sem sa nedá umiestniť",
+      "buildFailed": "Stavba zlyhala",
+      "destOccupiedOrInvalid": "Cieľové pole je obsadené alebo neplatné",
+      "moveFailed": "Presun zlyhal",
+      "rotateFailed": "Otočenie zlyhalo",
+      "removeFailed": "Odstránenie zlyhalo",
+      "notEnoughCoins": "Nedostatok RonCoins",
+      "plantingFailed": "Sadenie zlyhalo",
+      "harvestFailed": "Zber zlyhal",
+      "speedupFailed": "Urýchlenie zlyhalo",
+      "cannotPlacePlotHere": "Sem sa nedá umiestniť záhon",
+      "buyPlotFailed": "Nákup záhonu zlyhal",
+      "deliveryFailed": "Doručenie zlyhalo",
+      "likeFailed": "Nepodarilo sa oceniť mesto",
+      "waterFailed": "Polievanie zlyhalo",
+      "signInBeforePurchase": "Pred nákupom mincí sa prosím prihlás",
+      "checkoutFailed": "Platba zlyhala",
+      "checkoutRequestFailed": "Požiadavka na platbu zlyhala",
+      "transferFailed": "Prevod zlyhal",
+      "transferredCoins": "Odoslaných {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Nedostatok RonCoins",
+      "priceChanged": "Cena sa zmenila, skús to znova",
+      "notRotatable": "Toto pole sa nedá otočiť",
+      "disabled": "Táto funkcia je dočasne vypnutá",
+      "walletLocked": "Tvoja peňaženka RonCoins je dočasne zamknutá",
+      "townNotFound": "Mesto ešte nie je inicializované",
+      "plotNotFound": "Záhon nenájdený",
+      "notReady": "Úroda ešte nie je zrelá",
+      "alreadyUsed": "Už dokončené",
+      "dailyCap": "Denný limit dosiahnutý",
+      "generic": "Niečo sa pokazilo, skús to znova"
     }
   },
   "pwa": {

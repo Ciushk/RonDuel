@@ -18,7 +18,7 @@ import { ActionBar, type SeedChoiceId } from '@/components/rontown/ActionBar';
 import { IsoMap, type RotatingTarget } from '@/components/rontown/IsoMap';
 import { isoToScreen, TILE_H, TILE_W } from '@/components/rontown/iso';
 import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
-import { GROUND_SPRITES } from '@/components/rontown/sprites';
+import { GROUND_LABEL_KEY, GROUND_SPRITES } from '@/components/rontown/sprites';
 import type { ActiveSheet } from '@/components/rontown/TownSheets';
 import { useTownState, type TileInfo } from '@/components/rontown/useTownState';
 import { useReducedMotion } from '@/components/rontown/useVillagers';
@@ -450,7 +450,7 @@ export default function TownPage() {
             flushedPrev.y === y
               ? flushedPrev.rot
               : (((landRot[key] ?? 0) % 4) as 0 | 1 | 2 | 3);
-          itemLabel = t(`town.land.types.${ground}`);
+          itemLabel = t(GROUND_LABEL_KEY[ground]);
         }
       }
 
@@ -674,10 +674,7 @@ export default function TownPage() {
           <Buildings size={40} weight="fill" aria-hidden="true" />
         </div>
         <h1 className="text-ink font-display mt-6 text-2xl font-black">{t('nav.town')}</h1>
-        <p className="text-muted mt-2 max-w-sm text-sm">
-          RonTown is launching soon! Build your town, grow crops, and unlock rewards with your
-          RonCoins.
-        </p>
+        <p className="text-muted mt-2 max-w-sm text-sm">{t('town.comingSoon')}</p>
         <Link
           href={`/${locale}`}
           prefetch={false}

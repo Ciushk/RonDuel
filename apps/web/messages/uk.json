@@ -802,16 +802,16 @@
       "coins": "Монети",
       "help": "Довідка",
       "toggle": "Панель",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Дії RonTown",
+      "move": "Перемістити",
+      "farm": "Ферма",
+      "visit": "Відвідати",
+      "hideBar": "Сховати панель",
+      "showBar": "Показати панель",
+      "seedMenu": "Насіння",
+      "plantSeed": "Посадити {crop}",
+      "more": "Меню міста",
+      "rotate": "Повернути"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Велична статуя за серію зі 100 днів."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Вуличний ліхтар",
+        "desc": "Теплий дерев’яний ліхтар уздовж міських доріжок."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Гігантський плід. Достигає за 48 годин."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Капуста",
+        "desc": "Хрустка зелена капуста. Росте 6 годин."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Залишок цього місяця: {remaining} € з {max} €",
       "nonCompetitiveDisclaimer": "RonCoins не можна обміняти на справжні гроші.",
       "buyPack": "Купити пакунок за {price}",
-      "termsLink": "Умови щодо монет"
+      "termsLink": "Умови щодо монет",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Переказати RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Сума для переказу",
       "recipientLabel": "Друг з ліги",
       "send": "Надіслати монети",
-      "dailyCapNotice": "Денний ліміт: сьогодні залишилося {remaining} монет"
+      "dailyCapNotice": "Денний ліміт: сьогодні залишилося {remaining} монет",
+      "recipientPlaceholder": "ID користувача друга"
     },
     "visit": {
       "title": "Місто гравця {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Купити землю",
+      "subtitle": "Розширити на клітинку ({x}, {y})",
+      "close": "Закрити купівлю землі",
+      "chooseGround": "Виберіть тип ґрунту",
+      "expandAria": "Розширити землю в ({x}, {y})",
+      "buyButton": "Купити {label} · {price} RonCoins",
+      "buying": "Купівля…",
+      "shortCoins": "Потрібно ще {needed} RonCoins (коштує {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Трава",
+        "flowers": "Лука",
+        "flowersTwo": "Польові квіти",
+        "dirt": "Ґрунт",
+        "street": "Стежка",
+        "streetCurve": "Поворот",
+        "intersection": "Перехрестя",
+        "water": "Вода",
+        "waterTwo": "Хвиляста вода",
+        "shoreHalf": "Берег",
+        "shoreCorner": "Кут пляжу",
+        "shoreEdge": "Набережна"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Ізометрична карта RonTown",
+      "groundCell": "Клітинка ґрунту ({x}, {y})",
+      "readyShort": "Готово",
+      "harvestBadgeAria": "Зібрати готове {crop} у ({x}, {y})",
+      "placingBanner": "Торкніться своєї зеленої клітинки, щоб поставити {item}",
+      "movingPickBanner": "Торкніться будівлі чи декору, щоб перемістити",
+      "movingDestBanner": "Торкніться вільної клітинки для переміщення ({x}, {y})",
+      "plantingBanner": "Торкніться трави, ґрунту чи порожньої грядки для {crop}",
+      "cancel": "Скасувати",
+      "helpBody": "Торкніться зелених клітинок X для розширення, Будувати для будинків, Ферма для насіння і золотих серпів для збору врожаю.",
       "zoomControls": "Керування масштабом карти",
       "zoomIn": "Збільшити",
       "zoomOut": "Зменшити",
       "loading": "Завантаження RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Торкніться клітинки чи будівлі, щоб повернути"
     },
     "status": {
       "connecting": "Підключення…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Вісь дороги: Схід–Захід"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Цю клітинку не можна повернути",
+      "cellAria": "Повернути {item} у ({x}, {y})",
+      "announce": "{item} повернуто на {dir}",
+      "dir0": "Північний схід",
+      "dir1": "Південний схід",
+      "dir2": "Південний захід",
+      "dir3": "Північний захід"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Прискорити врожай",
+      "subtitle": "{crop} · залишилось {time}",
+      "costLabel": "Вартість прискорення",
+      "confirm": "Готово зараз · {cost}",
+      "balanceAfter": "Баланс після: {balance} RonCoins",
+      "insufficient": "Потрібно {needed} RonCoins (у вас {balance})",
+      "chipAria": "Прискорити {crop} за {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Щаслива родина в RonTown зустрічає дитину!"
+    },
+    "comingSoon": "RonTown скоро відкриється! Будуйте місто, вирощуйте врожай і отримуйте нагороди за RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Не вдалося купити землю",
+      "cannotPlaceHere": "Тут не можна розмістити",
+      "buildFailed": "Помилка будівництва",
+      "destOccupiedOrInvalid": "Цільова клітинка зайнята або непридатна",
+      "moveFailed": "Не вдалося перемістити",
+      "rotateFailed": "Не вдалося повернути",
+      "removeFailed": "Не вдалося видалити",
+      "notEnoughCoins": "Недостатньо RonCoins",
+      "plantingFailed": "Не вдалося посадити",
+      "harvestFailed": "Не вдалося зібрати врожай",
+      "speedupFailed": "Не вдалося прискорити",
+      "cannotPlacePlotHere": "Тут не можна розмістити грядку",
+      "buyPlotFailed": "Не вдалося купити грядку",
+      "deliveryFailed": "Не вдалося доставити замовлення",
+      "likeFailed": "Не вдалося вподобати місто",
+      "waterFailed": "Не вдалося полити врожай",
+      "signInBeforePurchase": "Увійдіть в акаунт перед покупкою монет",
+      "checkoutFailed": "Оплата не вдалася",
+      "checkoutRequestFailed": "Помилка запиту на оплату",
+      "transferFailed": "Переказ не вдався",
+      "transferredCoins": "Надіслано {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Недостатньо RonCoins",
+      "priceChanged": "Ціна змінилася, спробуйте ще раз",
+      "notRotatable": "Цю клітинку не можна повернути",
+      "disabled": "Ця функція тимчасово вимкнена",
+      "walletLocked": "Ваш гаманець RonCoins тимчасово заблоковано",
+      "townNotFound": "Місто ще не створено",
+      "plotNotFound": "Грядку не знайдено",
+      "notReady": "Урожай ще не готовий",
+      "alreadyUsed": "Уже виконано",
+      "dailyCap": "Досягнуто денного ліміту",
+      "generic": "Щось пішло не так, спробуйте ще раз"
     }
   },
   "pwa": {

@@ -802,16 +802,16 @@
       "coins": "Kolikot",
       "help": "Ohjeet",
       "toggle": "Valikkopalkki",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTown-toiminnot",
+      "move": "Siirrä",
+      "farm": "Viljely",
+      "visit": "Vieraile",
+      "hideBar": "Piilota työkalupalkki",
+      "showBar": "Näytä työkalupalkki",
+      "seedMenu": "Siemenet",
+      "plantSeed": "Kylvä {crop}",
+      "more": "Kaupunkivalikko",
+      "rotate": "Käännä"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Upea monumentti 100 päivän putkella."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Katulyhty",
+        "desc": "Lämmin puulyhty kaupungin polkujen varrella."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Valtava jättisato. Kasvaa 48 tunnissa."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kaali",
+        "desc": "Rapeita vihreitä kaaleja. Kasvaa 6 tunnissa."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Jäljellä tässä kuussa: {remaining} € / {max} €",
       "nonCompetitiveDisclaimer": "RonCoins-kolikoita ei voi vaihtaa oikeaksi rahaksi.",
       "buyPack": "Osta paketti hintaan {price}",
-      "termsLink": "Kolikkoehdot"
+      "termsLink": "Kolikkoehdot",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Siirrä RonCoins-kolikoita",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Lähetettävä määrä",
       "recipientLabel": "Ystävä liigassasi",
       "send": "Lähetä kolikoita",
-      "dailyCapNotice": "Päiväraja: {remaining} kolikkoa jäljellä tänään"
+      "dailyCapNotice": "Päiväraja: {remaining} kolikkoa jäljellä tänään",
+      "recipientPlaceholder": "Ystävän käyttäjätunnus"
     },
     "visit": {
       "title": "Pelaajan {name} kylä",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# päivä} other {# päivää}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Osta maata",
+      "subtitle": "Laajenna ruutuun ({x}, {y})",
+      "close": "Sulje maan osto",
+      "chooseGround": "Valitse maastotyyppi",
+      "expandAria": "Laajenna maata ruutuun ({x}, {y})",
+      "buyButton": "Osta {label} · {price} RonCoins",
+      "buying": "Ostetaan…",
+      "shortCoins": "Tarvitaan vielä {needed} RonCoins (hinta {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Nurmi",
+        "flowers": "Niitty",
+        "flowersTwo": "Kukkaniitty",
+        "dirt": "Multa",
+        "street": "Polku",
+        "streetCurve": "Kaareva polku",
+        "intersection": "Risteys",
+        "water": "Vesi",
+        "waterTwo": "Aaltoileva vesi",
+        "shoreHalf": "Rantaviiva",
+        "shoreCorner": "Rantakulma",
+        "shoreEdge": "Ranta"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Isometrinen RonTown-kartta",
+      "groundCell": "Maastoruutu ({x}, {y})",
+      "readyShort": "Valmis",
+      "harvestBadgeAria": "Korjaa valmis {crop} ruudusta ({x}, {y})",
+      "placingBanner": "Napauta omaa vihreää ruutua sijoittaaksesi: {item}",
+      "movingPickBanner": "Napauta rakennusta tai koristetta siirtääksesi",
+      "movingDestBanner": "Napauta vapaata ruutua siirtääksesi ({x}, {y})",
+      "plantingBanner": "Napauta nurmea, multaa tai tyhjää peltoa kylvääksesi {crop}",
+      "cancel": "Peruuta",
+      "helpBody": "Napauta vihreitä X-ruutuja laajentaaksesi, Rakenna taloille, Viljely siemenille ja kultaisia sirppejä sadonkorjuuseen.",
       "zoomControls": "Kartan zoom-säätimet",
       "zoomIn": "Lähennä",
       "zoomOut": "Loitonna",
       "loading": "Ladataan RonTownia…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Napauta ruutua tai rakennusta kääntääksesi sen"
     },
     "status": {
       "connecting": "Yhdistetään…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Tien suunta: Itä–Länsi"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Tätä ruutua ei voi kääntää",
+      "cellAria": "Käännä {item} ruudussa ({x}, {y})",
+      "announce": "{item} käännetty suuntaan {dir}",
+      "dir0": "Koillinen",
+      "dir1": "Kaakko",
+      "dir2": "Lounas",
+      "dir3": "Luode"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Nopeuta satoa",
+      "subtitle": "{crop} · jäljellä {time}",
+      "costLabel": "Nopeutuksen hinta",
+      "confirm": "Valmis nyt · {cost}",
+      "balanceAfter": "Saldo jälkeen: {balance} RonCoins",
+      "insufficient": "Tarvitaan {needed} RonCoins (sinulla on {balance})",
+      "chipAria": "Nopeuta {crop} hintaan {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Onnellinen perhe RonTownissa toivottaa lapsen tervetulleeksi!"
+    },
+    "comingSoon": "RonTown avautuu pian! Rakenna kaupunkisi, viljele satoa ja avaa palkintoja RonCoins-kolikoilla.",
+    "toast": {
+      "landPurchaseFailed": "Maan osto epäonnistui",
+      "cannotPlaceHere": "Ei voi sijoittaa tähän",
+      "buildFailed": "Rakentaminen epäonnistui",
+      "destOccupiedOrInvalid": "Kohderuutu on varattu tai virheellinen",
+      "moveFailed": "Siirto epäonnistui",
+      "rotateFailed": "Kääntäminen epäonnistui",
+      "removeFailed": "Poistaminen epäonnistui",
+      "notEnoughCoins": "Ei tarpeeksi RonCoins-kolikoita",
+      "plantingFailed": "Kylvö epäonnistui",
+      "harvestFailed": "Sadonkorjuu epäonnistui",
+      "speedupFailed": "Nopeutus epäonnistui",
+      "cannotPlacePlotHere": "Peltoa ei voi sijoittaa tähän",
+      "buyPlotFailed": "Pellon osto epäonnistui",
+      "deliveryFailed": "Toimitus epäonnistui",
+      "likeFailed": "Tykkäys epäonnistui",
+      "waterFailed": "Kastelu epäonnistui",
+      "signInBeforePurchase": "Kirjaudu sisään ennen kolikoiden ostoa",
+      "checkoutFailed": "Maksu epäonnistui",
+      "checkoutRequestFailed": "Maksupyyntö epäonnistui",
+      "transferFailed": "Siirto epäonnistui",
+      "transferredCoins": "Lähetettiin {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Ei tarpeeksi RonCoins-kolikoita",
+      "priceChanged": "Hinta muuttui, yritä uudelleen",
+      "notRotatable": "Tätä ruutua ei voi kääntää",
+      "disabled": "Tämä toiminto on poissa käytöstä",
+      "walletLocked": "RonCoins-lompakkosi on tilapäisesti lukittu",
+      "townNotFound": "Kaupunkia ei ole vielä alustettu",
+      "plotNotFound": "Peltoa ei löytynyt",
+      "notReady": "Sato ei ole vielä valmis",
+      "alreadyUsed": "Jo suoritettu",
+      "dailyCap": "Päivittäinen raja saavutettu",
+      "generic": "Jokin meni pieleen, yritä uudelleen"
     }
   },
   "pwa": {

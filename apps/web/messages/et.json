@@ -802,16 +802,16 @@
       "coins": "Mündid",
       "help": "Abi",
       "toggle": "Menüüriba",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTowni tegevused",
+      "move": "Teisalda",
+      "farm": "Talu",
+      "visit": "Külasta",
+      "hideBar": "Peida tegevusriba",
+      "showBar": "Kuva tegevusriba",
+      "seedMenu": "Seemned",
+      "plantSeed": "Külva {crop}",
+      "more": "Linnamenüü",
+      "rotate": "Pööra"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Suursugune mälestusmärk 100-päevase seeria eest."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Tänavalatern",
+        "desc": "Soe puidust latern linnaradade ääres."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Hiiglaslik saak. Valmib 48 tunniga."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kapsas",
+        "desc": "Krõmpsuvad kapsapead. Kasvab 6 tundi."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Sel kuul jäänud: {remaining} € / {max} €",
       "nonCompetitiveDisclaimer": "RonCoins münte ei saa vahetada pärisraha vastu.",
       "buyPack": "Osta pakk hinnaga {price}",
-      "termsLink": "Müntide tingimused"
+      "termsLink": "Müntide tingimused",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Kanna RonCoins münte",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Summa",
       "recipientLabel": "Sõber sinu liigast",
       "send": "Saada mündid",
-      "dailyCapNotice": "Päevalimiit: täna jäänud {remaining} münti"
+      "dailyCapNotice": "Päevalimiit: täna jäänud {remaining} münti",
+      "recipientPlaceholder": "Sõbra kasutaja-ID"
     },
     "visit": {
       "title": "Mängija {name} linn",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# päev} other {# päeva}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Osta maad",
+      "subtitle": "Laienda ruudule ({x}, {y})",
+      "close": "Sulge maa ost",
+      "chooseGround": "Vali pinnasetüüp",
+      "expandAria": "Laienda maad ruudul ({x}, {y})",
+      "buyButton": "Osta {label} · {price} RonCoins",
+      "buying": "Ostmine…",
+      "shortCoins": "Puudu on {needed} RonCoins (maksab {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Muru",
+        "flowers": "Aas",
+        "flowersTwo": "Metsslilled",
+        "dirt": "Muld",
+        "street": "Rada",
+        "streetCurve": "Kurviline rada",
+        "intersection": "Ristmik",
+        "water": "Vesi",
+        "waterTwo": "Virvendav vesi",
+        "shoreHalf": "Rannajoon",
+        "shoreCorner": "Rannanurk",
+        "shoreEdge": "Veepiir"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "RonTowni isomeetriline kaart",
+      "groundCell": "Maaruut ({x}, {y})",
+      "readyShort": "Valmis",
+      "harvestBadgeAria": "Korista valmis {crop} ruudult ({x}, {y})",
+      "placingBanner": "Puuduta oma rohelist ruutu, et paigutada {item}",
+      "movingPickBanner": "Puuduta hoonet või kaunistust teisaldamiseks",
+      "movingDestBanner": "Puuduta vaba ruutu, et teisaldada ({x}, {y})",
+      "plantingBanner": "Puuduta muru, mulda või tühja peenart, et külvata {crop}",
+      "cancel": "Tühista",
+      "helpBody": "Puuduta rohelisi X-ruute laiendamiseks, Ehita majade jaoks, Talu külvamiseks ja kuldseid sirpe koristamiseks.",
       "zoomControls": "Kaardi suumi juhtnupud",
       "zoomIn": "Suurenda",
       "zoomOut": "Vähenda",
       "loading": "RonTowni laadimine…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Puuduta ruutu või hoonet selle pööramiseks"
     },
     "status": {
       "connecting": "Ühendamine…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Tee telg: Ida–Lääs"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Seda ruutu ei saa pöörata",
+      "cellAria": "Pööra {item} ruudul ({x}, {y})",
+      "announce": "{item} pöörati suunda {dir}",
+      "dir0": "Kirre",
+      "dir1": "Kagu",
+      "dir2": "Edel",
+      "dir3": "Loe"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Kiirenda saaki",
+      "subtitle": "{crop} · jäänud {time}",
+      "costLabel": "Kiirenduse hind",
+      "confirm": "Valmis nüüd · {cost}",
+      "balanceAfter": "Jääk pärast: {balance} RonCoins",
+      "insufficient": "Vaja on {needed} RonCoins (sul on {balance})",
+      "chipAria": "Kiirenda {crop} hinnaga {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Õnnelik pere RonTownis tervitab uut last!"
+    },
+    "comingSoon": "RonTown avaneb peagi! Ehita oma linn, kasvata saaki ja ava auhindu RonCoins-müntidega.",
+    "toast": {
+      "landPurchaseFailed": "Maa ost ebaõnnestus",
+      "cannotPlaceHere": "Siia ei saa paigutada",
+      "buildFailed": "Ehitamine ebaõnnestus",
+      "destOccupiedOrInvalid": "Sihtruut on hõivatud või sobimatu",
+      "moveFailed": "Teisaldamine ebaõnnestus",
+      "rotateFailed": "Pööramine ebaõnnestus",
+      "removeFailed": "Eemaldamine ebaõnnestus",
+      "notEnoughCoins": "Pole piisavalt RonCoins",
+      "plantingFailed": "Külvamine ebaõnnestus",
+      "harvestFailed": "Koristamine ebaõnnestus",
+      "speedupFailed": "Kiirendamine ebaõnnestus",
+      "cannotPlacePlotHere": "Siia ei saa peenart panna",
+      "buyPlotFailed": "Peenra ost ebaõnnestus",
+      "deliveryFailed": "Tarne ebaõnnestus",
+      "likeFailed": "Linna meeldimine ebaõnnestus",
+      "waterFailed": "Kastmine ebaõnnestus",
+      "signInBeforePurchase": "Logi enne müntide ostmist sisse",
+      "checkoutFailed": "Makse ebaõnnestus",
+      "checkoutRequestFailed": "Maksepäring ebaõnnestus",
+      "transferFailed": "Ülekanne ebaõnnestus",
+      "transferredCoins": "Saadetud {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Pole piisavalt RonCoins",
+      "priceChanged": "Hind muutus, proovi uuesti",
+      "notRotatable": "Seda ruutu ei saa pöörata",
+      "disabled": "See funktsioon on praegu keelatud",
+      "walletLocked": "Sinu RonCoins rahakott on ajutiselt lukus",
+      "townNotFound": "Linn pole veel loodud",
+      "plotNotFound": "Peenart ei leitud",
+      "notReady": "Saak pole veel valmis",
+      "alreadyUsed": "Juba tehtud",
+      "dailyCap": "Päevalimiit täis",
+      "generic": "Midagi läks valesti, proovi uuesti"
     }
   },
   "pwa": {

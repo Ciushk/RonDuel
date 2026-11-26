@@ -802,16 +802,16 @@
       "coins": "Muniti",
       "help": "Għajnuna",
       "toggle": "Għodod",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Azzjonijiet ta’ RonTown",
+      "move": "Mexxi",
+      "farm": "Razzett",
+      "visit": "Żur",
+      "hideBar": "Aħbi l-istrixxa",
+      "showBar": "Uri l-istrixxa",
+      "seedMenu": "Żerriegħa",
+      "plantSeed": "Ħawwel {crop}",
+      "more": "Menu tal-belt",
+      "rotate": "Dawwar"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Statwa maestuża għal serje ta' 100 jum."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Fanal tat-triq",
+        "desc": "Fanal tal-injam sħun mal-mogħdijiet tal-belt."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Uċuh ġganteski. Tikber fi 48 siegħa."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kaboċċa",
+        "desc": "Kaboċċi ħodor iqarmċu. Tikber f’6 sigħat."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Fadal dan ix-xahar: {remaining} € minn {max} €",
       "nonCompetitiveDisclaimer": "RonCoins ma jistgħux jissarrfu fi flus reali.",
       "buyPack": "Ixtri Pakkett għal {price}",
-      "termsLink": "Kundizzjonijiet tal-muniti"
+      "termsLink": "Kundizzjonijiet tal-muniti",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Ittrasferixxi RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Ammont",
       "recipientLabel": "Ħabib fil-kampjonat",
       "send": "Ibgħat il-muniti",
-      "dailyCapNotice": "Limitu ta' kuljum: fadal {remaining} muniti llum"
+      "dailyCapNotice": "Limitu ta' kuljum: fadal {remaining} muniti llum",
+      "recipientPlaceholder": "ID tal-utent tal-ħabib"
     },
     "visit": {
       "title": "Il-Belt ta' {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# jum} few {# ijiem} many {#-il jum} other {# jum}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Ixtri art",
+      "subtitle": "Espandi fuq il-maduma ({x}, {y})",
+      "close": "Agħlaq ix-xiri tal-art",
+      "chooseGround": "Agħżel it-tip ta’ art",
+      "expandAria": "Espandi l-art f’({x}, {y})",
+      "buyButton": "Ixtri {label} · {price} RonCoins",
+      "buying": "Qed jixtri…",
+      "shortCoins": "Jonqsok {needed} RonCoins (tiswa {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Ħaxix",
+        "flowers": "Mergħa",
+        "flowersTwo": "Fjuri selvaġġi",
+        "dirt": "Ħamrija",
+        "street": "Mogħdija",
+        "streetCurve": "Mogħdija mgħawġa",
+        "intersection": "Salib it-toroq",
+        "water": "Ilma",
+        "waterTwo": "Ilma bil-mewġ",
+        "shoreHalf": "Xatt",
+        "shoreCorner": "Rokna tal-bajja",
+        "shoreEdge": "Xatt il-baħar"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Mappa iżometrika ta’ RonTown",
+      "groundCell": "Maduma tal-art ({x}, {y})",
+      "readyShort": "Lest",
+      "harvestBadgeAria": "Aħsad {crop} lest f’({x}, {y})",
+      "placingBanner": "Agħfas maduma ħadra tiegħek biex tpoġġi {item}",
+      "movingPickBanner": "Agħfas bini jew dekorazzjoni biex tmexxiha",
+      "movingDestBanner": "Agħfas maduma vojta biex tmexxi ({x}, {y})",
+      "plantingBanner": "Agħfas ħaxix, ħamrija jew għalqa vojta biex tħawwel {crop}",
+      "cancel": "Ikkanċella",
+      "helpBody": "Agħfas il-madum aħdar X biex tespandi, Ibni għad-djar, Razzett għaż-żerriegħa u l-minġel tad-deheb biex taħsad.",
       "zoomControls": "Kontrolli taż-żum tal-mappa",
       "zoomIn": "Kabbar",
       "zoomOut": "Ċekken",
       "loading": "Qed jgħabbi RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Agħfas maduma jew bini biex iddawwru"
     },
     "status": {
       "connecting": "Qiegħed jikkonnettja…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Assi tat-triq: Lvant–Punent"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Din il-maduma ma tistax tiddawwar",
+      "cellAria": "Dawwar {item} f’({x}, {y})",
+      "announce": "{item} imdawwar lejn {dir}",
+      "dir0": "Grigal",
+      "dir1": "Xlokk",
+      "dir2": "Lbiċ",
+      "dir3": "Majjistral"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Ħaffef il-ħsad",
+      "subtitle": "{crop} · fadal {time}",
+      "costLabel": "Spiża tat-tħaffif",
+      "confirm": "Lesti issa · {cost}",
+      "balanceAfter": "Bilanċ wara: {balance} RonCoins",
+      "insufficient": "Hemm bżonn {needed} RonCoins (għandek {balance})",
+      "chipAria": "Ħaffef {crop} għal {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Familja ferħana f’RonTown laqgħet tarbija!"
+    },
+    "comingSoon": "RonTown dalwaqt jibda! Ibni beltek, kabbar uċuħ tar-raba’ u iftaħ premjijiet b’RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Ix-xiri tal-art falla",
+      "cannotPlaceHere": "Ma tistax tpoġġi hawn",
+      "buildFailed": "Il-bini falla",
+      "destOccupiedOrInvalid": "Il-maduma tad-destinazzjoni hija okkupata jew invalida",
+      "moveFailed": "It-tmexxija falliet",
+      "rotateFailed": "It-tidwir falla",
+      "removeFailed": "It-tneħħija falliet",
+      "notEnoughCoins": "M’għandekx biżżejjed RonCoins",
+      "plantingFailed": "It-tħawwil falla",
+      "harvestFailed": "Il-ħsad falla",
+      "speedupFailed": "It-tħaffif falla",
+      "cannotPlacePlotHere": "Ma tistax tpoġġi għalqa hawn",
+      "buyPlotFailed": "Ix-xiri tal-għalqa falla",
+      "deliveryFailed": "Il-kunsinna falliet",
+      "likeFailed": "Ma rnexxiex tagħti like lill-belt",
+      "waterFailed": "It-tisqija falliet",
+      "signInBeforePurchase": "Idħol qabel tixtri muniti",
+      "checkoutFailed": "Il-ħlas falla",
+      "checkoutRequestFailed": "It-talba għall-ħlas falliet",
+      "transferFailed": "It-trasferiment falla",
+      "transferredCoins": "Intbagħtu {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "M’għandekx biżżejjed RonCoins",
+      "priceChanged": "Il-prezz inbidel, erġa’ pprova",
+      "notRotatable": "Din il-maduma ma tistax tiddawwar",
+      "disabled": "Din il-funzjoni hija mitfija bħalissa",
+      "walletLocked": "Il-kartiera RonCoins tiegħek hija msakkra temporanjament",
+      "townNotFound": "Il-belt għadha mhix inizjalizzata",
+      "plotNotFound": "L-għalqa ma nstabitx",
+      "notReady": "L-uċuħ għadhom mhumiex lesti",
+      "alreadyUsed": "Diġà lest",
+      "dailyCap": "Il-limitu ta’ kuljum intlaħaq",
+      "generic": "Xi ħaġa marret ħażin, erġa’ pprova"
     }
   },
   "pwa": {

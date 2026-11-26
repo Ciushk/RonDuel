@@ -802,16 +802,16 @@
       "coins": "Mynt",
       "help": "Hjälp",
       "toggle": "Menyrad",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTown-åtgärder",
+      "move": "Flytta",
+      "farm": "Gård",
+      "visit": "Besök",
+      "hideBar": "Dölj åtgärdsrad",
+      "showBar": "Visa åtgärdsrad",
+      "seedMenu": "Frön",
+      "plantSeed": "Plantera {crop}",
+      "more": "Stadsmeny",
+      "rotate": "Rotera"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Ståtlig staty vid 100 dagars svit."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Gatlykta",
+        "desc": "Varm trälykta längs stadens stigar."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Jätteväxt. Växer på 48 timmar."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kål",
+        "desc": "Krispiga gröna kålhuvuden. Växer på 6 timmar."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Kvar denna månad: {remaining} € av {max} €",
       "nonCompetitiveDisclaimer": "RonCoins kan inte växlas mot riktiga pengar.",
       "buyPack": "Köp paket för {price}",
-      "termsLink": "Myntvillkor"
+      "termsLink": "Myntvillkor",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Överför RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Belopp att skicka",
       "recipientLabel": "Vän i din liga",
       "send": "Skicka mynt",
-      "dailyCapNotice": "Dagsgräns: {remaining} mynt kvar idag"
+      "dailyCapNotice": "Dagsgräns: {remaining} mynt kvar idag",
+      "recipientPlaceholder": "Vännens användar-ID"
     },
     "visit": {
       "title": "{name}s stad",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# dag} other {# dagar}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Köp mark",
+      "subtitle": "Utöka till ruta ({x}, {y})",
+      "close": "Stäng markköp",
+      "chooseGround": "Välj marktyp",
+      "expandAria": "Utöka mark vid ({x}, {y})",
+      "buyButton": "Köp {label} · {price} RonCoins",
+      "buying": "Köper…",
+      "shortCoins": "Behöver {needed} fler RonCoins (kostar {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Gräs",
+        "flowers": "Äng",
+        "flowersTwo": "Vildblommor",
+        "dirt": "Jord",
+        "street": "Stig",
+        "streetCurve": "Svängd stig",
+        "intersection": "Korsning",
+        "water": "Vatten",
+        "waterTwo": "Krusigt vatten",
+        "shoreHalf": "Strandlinje",
+        "shoreCorner": "Strandhörn",
+        "shoreEdge": "Strandkant"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Isometrisk RonTown-karta",
+      "groundCell": "Markruta ({x}, {y})",
+      "readyShort": "Klar",
+      "harvestBadgeAria": "Skörda klar {crop} vid ({x}, {y})",
+      "placingBanner": "Tryck på en egen grön ruta för att placera {item}",
+      "movingPickBanner": "Tryck på en byggnad eller dekoration att flytta",
+      "movingDestBanner": "Tryck på en ledig ruta för att flytta ({x}, {y})",
+      "plantingBanner": "Tryck på gräs, jord eller tom odling för att så {crop}",
+      "cancel": "Avbryt",
+      "helpBody": "Tryck på gröna X-rutor för att utöka, Bygg för hus och service, Gård för frön och gyllene skäror för att skörda.",
       "zoomControls": "Zoomkontroller för kartan",
       "zoomIn": "Zooma in",
       "zoomOut": "Zooma ut",
       "loading": "Laddar RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Tryck på en ruta eller byggnad för att rotera"
     },
     "status": {
       "connecting": "Ansluter…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Vägaxel: Öst–Väst"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Denna ruta kan inte roteras",
+      "cellAria": "Rotera {item} vid ({x}, {y})",
+      "announce": "{item} roterad mot {dir}",
+      "dir0": "Nordöst",
+      "dir1": "Sydöst",
+      "dir2": "Sydväst",
+      "dir3": "Nordväst"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Snabba upp skörd",
+      "subtitle": "{crop} · {time} kvar",
+      "costLabel": "Kostnad",
+      "confirm": "Klar nu · {cost}",
+      "balanceAfter": "Saldo efter: {balance} RonCoins",
+      "insufficient": "Behöver {needed} RonCoins (du har {balance})",
+      "chipAria": "Snabba upp {crop} för {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "En lycklig familj i RonTown välkomnar ett barn!"
+    },
+    "comingSoon": "RonTown lanseras snart! Bygg din stad, odla grödor och lås upp belöningar med RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Markköp misslyckades",
+      "cannotPlaceHere": "Kan inte placeras här",
+      "buildFailed": "Byggnation misslyckades",
+      "destOccupiedOrInvalid": "Målrutan är upptagen eller ogiltig",
+      "moveFailed": "Flytt misslyckades",
+      "rotateFailed": "Rotering misslyckades",
+      "removeFailed": "Borttagning misslyckades",
+      "notEnoughCoins": "Inte tillräckligt med RonCoins",
+      "plantingFailed": "Plantering misslyckades",
+      "harvestFailed": "Skörd misslyckades",
+      "speedupFailed": "Uppnabbning misslyckades",
+      "cannotPlacePlotHere": "Kan inte placera odlingslott här",
+      "buyPlotFailed": "Köp av odlingslott misslyckades",
+      "deliveryFailed": "Leverans misslyckades",
+      "likeFailed": "Kunde inte gilla staden",
+      "waterFailed": "Vattning misslyckades",
+      "signInBeforePurchase": "Logga in innan du köper mynt",
+      "checkoutFailed": "Betalning misslyckades",
+      "checkoutRequestFailed": "Betalningsbegäran misslyckades",
+      "transferFailed": "Överföring misslyckades",
+      "transferredCoins": "Skickade {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Inte tillräckligt med RonCoins",
+      "priceChanged": "Priset ändrades, försök igen",
+      "notRotatable": "Denna ruta kan inte roteras",
+      "disabled": "Denna funktion är tillfälligt avstängd",
+      "walletLocked": "Din RonCoins-plånbok är tillfälligt låst",
+      "townNotFound": "Staden är inte skapad ännu",
+      "plotNotFound": "Odlingslott hittades inte",
+      "notReady": "Grödan är inte redo att skördas ännu",
+      "alreadyUsed": "Redan klart",
+      "dailyCap": "Daglig gräns nådd",
+      "generic": "Något gick fel, försök igen"
     }
   },
   "pwa": {

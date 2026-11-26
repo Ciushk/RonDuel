@@ -802,16 +802,16 @@
       "coins": "Kovanci",
       "help": "Pomoč",
       "toggle": "Orodna vrstica",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Dejanja RonTown",
+      "move": "Premakni",
+      "farm": "Kmetija",
+      "visit": "Obišči",
+      "hideBar": "Skrij vrstico",
+      "showBar": "Prikaži vrstico",
+      "seedMenu": "Semena",
+      "plantSeed": "Posadi {crop}",
+      "more": "Meni mesta",
+      "rotate": "Zavrti"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Veličasten kip za 100-dnevni niz."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Ulična svetilka",
+        "desc": "Topla lesena svetilka ob mestnih poteh."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Velikanski pridelek. Zraste v 48 urah."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Zelje",
+        "desc": "Hrustljave zeljne glave. Raste 6 ur."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Ta mesec ostaja: {remaining} € od {max} €",
       "nonCompetitiveDisclaimer": "Kovancev RonCoins ni mogoče zamenjati za pravi denar.",
       "buyPack": "Kupi paket za {price}",
-      "termsLink": "Pogoji za kovance"
+      "termsLink": "Pogoji za kovance",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Prenos RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Znesek",
       "recipientLabel": "Prijatelj v ligi",
       "send": "Pošlji kovance",
-      "dailyCapNotice": "Dnevna omejitev: danes ostaja še {remaining} kovancev"
+      "dailyCapNotice": "Dnevna omejitev: danes ostaja še {remaining} kovancev",
+      "recipientPlaceholder": "ID prijatelja"
     },
     "visit": {
       "title": "Mesto igralca {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# dan} two {# dneva} few {# dnevi} other {# dni}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Kupi zemljišče",
+      "subtitle": "Razširi na polje ({x}, {y})",
+      "close": "Zapri nakup zemljišča",
+      "chooseGround": "Izberi vrsto tal",
+      "expandAria": "Razširi zemljišče na ({x}, {y})",
+      "buyButton": "Kupi {label} · {price} RonCoins",
+      "buying": "Kupovanje…",
+      "shortCoins": "Manjka {needed} RonCoins (stane {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Trava",
+        "flowers": "Travnik",
+        "flowersTwo": "Travniško cvetje",
+        "dirt": "Zemlja",
+        "street": "Pot",
+        "streetCurve": "Ovinkasta pot",
+        "intersection": "Križišče",
+        "water": "Voda",
+        "waterTwo": "Valovita voda",
+        "shoreHalf": "Obala",
+        "shoreCorner": "Kot plaže",
+        "shoreEdge": "Nabirje"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Izometrični zemljevid RonTown",
+      "groundCell": "Polje tal ({x}, {y})",
+      "readyShort": "Pripravljeno",
+      "harvestBadgeAria": "Požanji pripravljeno {crop} na ({x}, {y})",
+      "placingBanner": "Tapni svoje zeleno polje za postavitev {item}",
+      "movingPickBanner": "Tapni stavbo ali okras za premik",
+      "movingDestBanner": "Tapni prosto polje za premik ({x}, {y})",
+      "plantingBanner": "Tapni travo, zemljo ali prazno gredico za {crop}",
+      "cancel": "Prekliči",
+      "helpBody": "Tapni zelena polja X za širitev, Gradi za hiše in storitve, Kmetija za setev ter zlate srpe za žetev.",
       "zoomControls": "Kontrole povečave zemljevida",
       "zoomIn": "Povečaj",
       "zoomOut": "Pomanjšaj",
       "loading": "Nalaganje RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Tapni polje ali stavbo za vrtenje"
     },
     "status": {
       "connecting": "Povezovanje…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Os ceste: Vzhod–Zahod"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Tega polja ni mogoče zavrteti",
+      "cellAria": "Zavrti {item} na ({x}, {y})",
+      "announce": "{item} obrnjeno proti: {dir}",
+      "dir0": "Severovzhod",
+      "dir1": "Jugovzhod",
+      "dir2": "Jugozahod",
+      "dir3": "Severozahod"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Pospeši žetev",
+      "subtitle": "{crop} · še {time}",
+      "costLabel": "Cena pospešitve",
+      "confirm": "Končaj zdaj · {cost}",
+      "balanceAfter": "Stanje po tem: {balance} RonCoins",
+      "insufficient": "Potrebuješ {needed} RonCoins (imaš {balance})",
+      "chipAria": "Pospeši {crop} za {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Srečna družina v RonTownu je dobila otroka!"
+    },
+    "comingSoon": "RonTown prihaja kmalu! Gradi svoje mesto, goji pridelke in odkleni nagrade z RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Nakup zemljišča ni uspel",
+      "cannotPlaceHere": "Sem ni mogoče postaviti",
+      "buildFailed": "Gradnja ni uspela",
+      "destOccupiedOrInvalid": "Ciljno polje je zasedeno ali neveljavno",
+      "moveFailed": "Premik ni uspel",
+      "rotateFailed": "Vrtenje ni uspelo",
+      "removeFailed": "Odstranitev ni uspela",
+      "notEnoughCoins": "Premalo RonCoins",
+      "plantingFailed": "Sajenje ni uspelo",
+      "harvestFailed": "Žetev ni uspela",
+      "speedupFailed": "Pospešitev ni uspela",
+      "cannotPlacePlotHere": "Sem ni mogoče postaviti gredice",
+      "buyPlotFailed": "Nakup gredice ni uspel",
+      "deliveryFailed": "Dostava ni uspela",
+      "likeFailed": "Všečkanje mesta ni uspelo",
+      "waterFailed": "Zalivanje ni uspelo",
+      "signInBeforePurchase": "Prijavi se pred nakupom kovancev",
+      "checkoutFailed": "Plačilo ni uspelo",
+      "checkoutRequestFailed": "Zahteva za plačilo ni uspela",
+      "transferFailed": "Prenos ni uspel",
+      "transferredCoins": "Poslano {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Premalo RonCoins",
+      "priceChanged": "Cena se je spremenila, poskusi znova",
+      "notRotatable": "Tega polja ni mogoče zavrteti",
+      "disabled": "Ta funkcija je začasno onemogočena",
+      "walletLocked": "Tvoja denarnica RonCoins je začasno zaklenjena",
+      "townNotFound": "Mesto še ni inicializirano",
+      "plotNotFound": "Gredica ni najdena",
+      "notReady": "Pridelek še ni zrel",
+      "alreadyUsed": "Že dokončano",
+      "dailyCap": "Dnevna omejitev dosežena",
+      "generic": "Nekaj je šlo narobe, poskusi znova"
     }
   },
   "pwa": {

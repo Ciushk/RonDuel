@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Remaining this month: €{remaining} / €{max}",
       "nonCompetitiveDisclaimer": "RonCoins can never be converted to real money and never affect competitive trivia scores.",
       "buyPack": "Get Pack for {price}",
-      "termsLink": "Coins terms and conditions"
+      "termsLink": "Coins terms and conditions",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Transfer RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Amount to send",
       "recipientLabel": "Friend in your league",
       "send": "Send RonCoins",
-      "dailyCapNotice": "Daily cap: {remaining} coins left today"
+      "dailyCapNotice": "Daily cap: {remaining} coins left today",
+      "recipientPlaceholder": "Friend's user ID"
     },
     "visit": {
       "title": "Town of {name}",
@@ -1109,6 +1111,43 @@
     },
     "family": {
       "announce": "A happy family in RonTown has welcomed a child!"
+    },
+    "comingSoon": "RonTown is launching soon! Build your town, grow crops, and unlock rewards with your RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Land purchase failed",
+      "cannotPlaceHere": "Cannot place here",
+      "buildFailed": "Build failed",
+      "destOccupiedOrInvalid": "Destination tile is occupied or invalid",
+      "moveFailed": "Move failed",
+      "rotateFailed": "Rotate failed",
+      "removeFailed": "Remove failed",
+      "notEnoughCoins": "Not enough RonCoins",
+      "plantingFailed": "Planting failed",
+      "harvestFailed": "Harvest failed",
+      "speedupFailed": "Speed-up failed",
+      "cannotPlacePlotHere": "Cannot place plot here",
+      "buyPlotFailed": "Failed to buy plot",
+      "deliveryFailed": "Delivery failed",
+      "likeFailed": "Failed to like town",
+      "waterFailed": "Failed to water crop",
+      "signInBeforePurchase": "Please sign in or link your account before purchasing coins",
+      "checkoutFailed": "Checkout failed",
+      "checkoutRequestFailed": "Checkout request failed",
+      "transferFailed": "Transfer failed",
+      "transferredCoins": "Transferred {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Not enough RonCoins",
+      "priceChanged": "Price changed, please try again",
+      "notRotatable": "This tile cannot be rotated",
+      "disabled": "This feature is currently disabled",
+      "walletLocked": "Your RonCoins wallet is temporarily locked",
+      "townNotFound": "Town not initialized yet",
+      "plotNotFound": "Farm plot not found",
+      "notReady": "Crop is not ready to harvest yet",
+      "alreadyUsed": "Already completed",
+      "dailyCap": "Daily limit reached",
+      "generic": "Something went wrong, please try again"
     }
   },
   "pwa": {

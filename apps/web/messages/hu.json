@@ -802,16 +802,16 @@
       "coins": "Érmék",
       "help": "Súgó",
       "toggle": "Eszköztár",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTown műveletek",
+      "move": "Mozgatás",
+      "farm": "Gazdaság",
+      "visit": "Látogatás",
+      "hideBar": "Sáv elrejtése",
+      "showBar": "Sáv megjelenítése",
+      "seedMenu": "Vetőmagok",
+      "plantSeed": "{crop} ültetése",
+      "more": "Város menü",
+      "rotate": "Forgatás"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Fenséges szobor 100 napos sorozatért."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Utcai lámpás",
+        "desc": "Meleg fényű fa lámpás az utak mentén."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Hatalmas termés. 48 óra alatt nő meg."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Káposzta",
+        "desc": "Ropogós zöld káposzta. 6 óra alatt nő meg."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "E havi keret: {remaining} € a {max} €-ból",
       "nonCompetitiveDisclaimer": "A RonCoins nem váltható valódi pénzre.",
       "buyPack": "Csomag vásárlása ({price})",
-      "termsLink": "Érmék feltételei"
+      "termsLink": "Érmék feltételei",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "RonCoins Átutalása",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Küldendő összeg",
       "recipientLabel": "Barát a ligádból",
       "send": "Érmék küldése",
-      "dailyCapNotice": "Napi limit: még {remaining} érme maradt ma"
+      "dailyCapNotice": "Napi limit: még {remaining} érme maradt ma",
+      "recipientPlaceholder": "Barát felhasználói azonosítója"
     },
     "visit": {
       "title": "{name} városa",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# nap} other {# nap}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Terület vásárlása",
+      "subtitle": "Bővítés a(z) ({x}, {y}) mezőre",
+      "close": "Területvásárlás bezárása",
+      "chooseGround": "Válassz talajtípust",
+      "expandAria": "Terület bővítése itt: ({x}, {y})",
+      "buyButton": "{label} vásárlása · {price} RonCoins",
+      "buying": "Vásárlás…",
+      "shortCoins": "Még {needed} RonCoins kell (ára: {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Fű",
+        "flowers": "Rét",
+        "flowersTwo": "Vadvirágok",
+        "dirt": "Föld",
+        "street": "Ösvény",
+        "streetCurve": "Kanyarodó út",
+        "intersection": "Kereszteződés",
+        "water": "Víz",
+        "waterTwo": "Fodrozódó víz",
+        "shoreHalf": "Partvonal",
+        "shoreCorner": "Partsarok",
+        "shoreEdge": "Vízpart"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "RonTown izometrikus térkép",
+      "groundCell": "Talajmező ({x}, {y})",
+      "readyShort": "Kész",
+      "harvestBadgeAria": "Érett {crop} aratása itt: ({x}, {y})",
+      "placingBanner": "Érints egy saját zöld mezőt {item} elhelyezéséhez",
+      "movingPickBanner": "Érints egy épületet vagy díszt a mozgatáshoz",
+      "movingDestBanner": "Érints egy szabad mezőt ({x}, {y}) mozgatásához",
+      "plantingBanner": "Érints füvet, földet vagy üres parcellát {crop} ültetéséhez",
+      "cancel": "Mégse",
+      "helpBody": "Érintsd a zöld X mezőket a bővítéshez, az Építés menüt házakhoz, a Gazdaságot vetéshez és az arany sarlót aratáshoz.",
       "zoomControls": "Térkép nagyításvezérlői",
       "zoomIn": "Nagyítás",
       "zoomOut": "Kicsinyítés",
       "loading": "RonTown betöltése…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Érints egy mezőt vagy épületet a forgatáshoz"
     },
     "status": {
       "connecting": "Csatlakozás…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Út iránya: Kelet–Nyugat"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Ez a mező nem forgatható",
+      "cellAria": "{item} forgatása itt: ({x}, {y})",
+      "announce": "{item} elforgatva: {dir}",
+      "dir0": "Északkelet",
+      "dir1": "Délkelet",
+      "dir2": "Délnyugat",
+      "dir3": "Északnyugat"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Aratás gyorsítása",
+      "subtitle": "{crop} · {time} van hátra",
+      "costLabel": "Gyorsítás ára",
+      "confirm": "Kész most · {cost}",
+      "balanceAfter": "Egyenleg utána: {balance} RonCoins",
+      "insufficient": "{needed} RonCoins szükséges (egyenleged: {balance})",
+      "chipAria": "{crop} gyorsítása {cost} RonCoins-ért"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Egy boldog RonTown család gyermeket köszönthet!"
+    },
+    "comingSoon": "A RonTown hamarosan indul! Építsd fel városodat, termessz növényeket és szerezz jutalmakat RonCoins-szal.",
+    "toast": {
+      "landPurchaseFailed": "A területvásárlás sikertelen",
+      "cannotPlaceHere": "Ide nem helyezhető",
+      "buildFailed": "Az építés sikertelen",
+      "destOccupiedOrInvalid": "A célmező foglalt vagy érvénytelen",
+      "moveFailed": "A mozgatás sikertelen",
+      "rotateFailed": "A forgatás sikertelen",
+      "removeFailed": "Az eltávolítás sikertelen",
+      "notEnoughCoins": "Nincs elég RonCoins",
+      "plantingFailed": "Az ültetés sikertelen",
+      "harvestFailed": "Az aratás sikertelen",
+      "speedupFailed": "A gyorsítás sikertelen",
+      "cannotPlacePlotHere": "Ide nem helyezhető parcella",
+      "buyPlotFailed": "A parcella vásárlása sikertelen",
+      "deliveryFailed": "A szállítás sikertelen",
+      "likeFailed": "A város kedvelése sikertelen",
+      "waterFailed": "Az öntözés sikertelen",
+      "signInBeforePurchase": "Jelentkezz be érmevásárlás előtt",
+      "checkoutFailed": "A fizetés sikertelen",
+      "checkoutRequestFailed": "A fizetési kérelem sikertelen",
+      "transferFailed": "Az átutalás sikertelen",
+      "transferredCoins": "{amount} RonCoins elküldve!"
+    },
+    "errors": {
+      "insufficientFunds": "Nincs elég RonCoins",
+      "priceChanged": "Az ár megváltozott, próbáld újra",
+      "notRotatable": "Ez a mező nem forgatható",
+      "disabled": "Ez a funkció jelenleg ki van kapcsolva",
+      "walletLocked": "A RonCoins tárcád átmenetileg zárolva van",
+      "townNotFound": "A város még nincs inicializálva",
+      "plotNotFound": "A parcella nem található",
+      "notReady": "A termés még nem érett meg",
+      "alreadyUsed": "Már teljesítve",
+      "dailyCap": "Napi limit elérve",
+      "generic": "Valami hiba történt, próbáld újra"
     }
   },
   "pwa": {

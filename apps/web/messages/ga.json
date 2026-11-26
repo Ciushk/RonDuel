@@ -802,16 +802,16 @@
       "coins": "Boinn",
       "help": "Cabhair",
       "toggle": "Barra uirlisí",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Gníomhartha RonTown",
+      "move": "Bog",
+      "farm": "Feirm",
+      "visit": "Tabhair cuairt",
+      "hideBar": "Folaigh an barra",
+      "showBar": "Taispeáin an barra",
+      "seedMenu": "Síolta",
+      "plantSeed": "Cuir {crop}",
+      "more": "Roghchlár an bhaile",
+      "rotate": "Rothlaigh"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Dealbh mhór do shraith 100 lá."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Laindéar sráide",
+        "desc": "Laindéar te adhmaid cois chosáin an bhaile."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Buaic-bharr ollmhór. Fásann sé i 48 n-uaire."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Cabáiste",
+        "desc": "Cabáiste glas briosc. Fásann i 6 uair."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Fágtha an mhí seo: {remaining} € as {max} €",
       "nonCompetitiveDisclaimer": "Ní féidir RonCoins a mhalartú ar airgead fíor.",
       "buyPack": "Ceannaigh Pacáiste ar {price}",
-      "termsLink": "Téarmaí na mBonn"
+      "termsLink": "Téarmaí na mBonn",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Aistrigh RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Méid le seoladh",
       "recipientLabel": "Cara i do léig",
       "send": "Seol Boinn",
-      "dailyCapNotice": "Teorainn laethúil: {remaining} bonn fágtha inniu"
+      "dailyCapNotice": "Teorainn laethúil: {remaining} bonn fágtha inniu",
+      "recipientPlaceholder": "Aitheantas úsáideora an chara"
     },
     "visit": {
       "title": "Baile {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# lá} two {# lá} few {# lá} many {# lá} other {# lá}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Ceannaigh talamh",
+      "subtitle": "Leathnaigh ar chearnóg ({x}, {y})",
+      "close": "Dún ceannach talún",
+      "chooseGround": "Roghnaigh cineál talún",
+      "expandAria": "Leathnaigh talamh ag ({x}, {y})",
+      "buyButton": "Ceannaigh {label} · {price} RonCoins",
+      "buying": "Ag ceannach…",
+      "shortCoins": "Teastaíonn {needed} RonCoins eile (cosnaíonn {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Féar",
+        "flowers": "Móinéar",
+        "flowersTwo": "Bláthanna fiáine",
+        "dirt": "Cré",
+        "street": "Cosán",
+        "streetCurve": "Cosán cuartha",
+        "intersection": "Crosbhóthar",
+        "water": "Uisce",
+        "waterTwo": "Uisce tonnach",
+        "shoreHalf": "Cladach",
+        "shoreCorner": "Cúinne trá",
+        "shoreEdge": "Cois uisce"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Léarscáil isoméadrach RonTown",
+      "groundCell": "Cearnóg talún ({x}, {y})",
+      "readyShort": "Réidh",
+      "harvestBadgeAria": "Bain {crop} réidh ag ({x}, {y})",
+      "placingBanner": "Tapáil ar chearnóg ghlas de do chuid chun {item} a chur",
+      "movingPickBanner": "Tapáil ar fhoirgneamh nó maisiúchán chun é a bhogadh",
+      "movingDestBanner": "Tapáil ar chearnóg shaor chun ({x}, {y}) a bhogadh",
+      "plantingBanner": "Tapáil ar fhéar, chré nó cheapach fholamh chun {crop} a chur",
+      "cancel": "Cealaigh",
+      "helpBody": "Tapáil ar chearnóga glasa X le leathnú, Tóg do thithe, Feirm do shíolta, agus corrán órga chun fómhar a bhaint.",
       "zoomControls": "Rialtáin zúmála léarscáile",
       "zoomIn": "Zúmáil isteach",
       "zoomOut": "Zúmáil amach",
       "loading": "Ag lódáil RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Tapáil ar chearnóg nó foirgneamh chun é a rothlú"
     },
     "status": {
       "connecting": "Ag ceangal…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Ais an bhóthair: Thoir–Thiar"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Ní féidir an chearnóg seo a rothlú",
+      "cellAria": "Rothlaigh {item} ag ({x}, {y})",
+      "announce": "{item} rothlaithe i dtreo {dir}",
+      "dir0": "Oirthuaisceart",
+      "dir1": "Oirdheisceart",
+      "dir2": "Iardheisceart",
+      "dir3": "Iarthuaisceart"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Brostaigh an fómhar",
+      "subtitle": "{crop} · {time} fágtha",
+      "costLabel": "Costas brostaithe",
+      "confirm": "Críochnaigh anois · {cost}",
+      "balanceAfter": "Iarmhéid ina dhiaidh: {balance} RonCoins",
+      "insufficient": "Teastaíonn {needed} RonCoins (tá {balance} agat)",
+      "chipAria": "Brostaigh {crop} ar {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Tá leanbh nua ag teaghlach sona i RonTown!"
+    },
+    "comingSoon": "Beidh RonTown ar fáil go luath! Tóg do bhaile, fás barra agus faigh duaiseanna le RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Theip ar cheannach talún",
+      "cannotPlaceHere": "Ní féidir é a chur anseo",
+      "buildFailed": "Theip ar thógáil",
+      "destOccupiedOrInvalid": "Tá an chearnóg sprice tógtha nó neamhbhailí",
+      "moveFailed": "Theip ar bhogadh",
+      "rotateFailed": "Theip ar rothlú",
+      "removeFailed": "Theip ar bhaint",
+      "notEnoughCoins": "Níl go leor RonCoins agat",
+      "plantingFailed": "Theip ar chur",
+      "harvestFailed": "Theip ar bhaint",
+      "speedupFailed": "Theip ar bhrostú",
+      "cannotPlacePlotHere": "Ní féidir ceapach a chur anseo",
+      "buyPlotFailed": "Theip ar cheannach ceapaí",
+      "deliveryFailed": "Theip ar sheachadadh",
+      "likeFailed": "Theip ar thaitin a thabhairt",
+      "waterFailed": "Theip ar uisciú",
+      "signInBeforePurchase": "Sínigh isteach sula gceannaíonn tú boinn",
+      "checkoutFailed": "Theip ar an íocaíocht",
+      "checkoutRequestFailed": "Theip ar an iarratas íocaíochta",
+      "transferFailed": "Theip ar an aistriú",
+      "transferredCoins": "Aistríodh {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Níl go leor RonCoins agat",
+      "priceChanged": "D’athraigh an praghas, bain triail eile as",
+      "notRotatable": "Ní féidir an chearnóg seo a rothlú",
+      "disabled": "Tá an ghné seo díchumasaithe faoi láthair",
+      "walletLocked": "Tá do sparán RonCoins faoi ghlas go sealadach",
+      "townNotFound": "Níl an baile tosaithe fós",
+      "plotNotFound": "Níor aimsíodh an cheapach",
+      "notReady": "Níl an barr réidh fós",
+      "alreadyUsed": "Críochnaithe cheana",
+      "dailyCap": "Teorainn laethúil bainte amach",
+      "generic": "Tharla earráid, bain triail eile as"
     }
   },
   "pwa": {

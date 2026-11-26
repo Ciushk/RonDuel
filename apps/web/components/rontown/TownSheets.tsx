@@ -764,7 +764,9 @@ export function TownSheets({
                         <span className="text-ink font-mono text-base font-black tabular-nums">
                           {pack.coins.toLocaleString()}
                         </span>
-                        <span className="text-muted ml-1 text-xs font-bold">RonCoins</span>
+                        <span className="text-muted ml-1 text-xs font-bold">
+                          {t('town.coinStore.unit')}
+                        </span>
                       </div>
                     </div>
 
@@ -808,7 +810,7 @@ export function TownSheets({
                     type="text"
                     value={transferRecipient}
                     onChange={(e) => setTransferRecipient(e.target.value)}
-                    placeholder="uid"
+                    placeholder={t('town.transfer.recipientPlaceholder')}
                     className="border-border bg-surface text-ink min-h-[44px] w-full rounded-xl border-2 px-3 text-xs font-bold"
                   />
                 </div>

@@ -802,16 +802,16 @@
       "coins": "Νομίσματα",
       "help": "Βοήθεια",
       "toggle": "Γραμμή εργαλείων",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Ενέργειες RonTown",
+      "move": "Μετακίνηση",
+      "farm": "Φάρμα",
+      "visit": "Επίσκεψη",
+      "hideBar": "Απόκρυψη γραμμής",
+      "showBar": "Εμφάνιση γραμμής",
+      "seedMenu": "Σπόροι",
+      "plantSeed": "Φύτευση {crop}",
+      "more": "Μενού πόλης",
+      "rotate": "Περιστροφή"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Μεγαλοπρεπές άγαλμα για σερί 100 ημερών."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Φανάρι δρόμου",
+        "desc": "Ζεστό ξύλινο φανάρι στα μονοπάτια της πόλης."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Γιγάντια σοδειά. Αναπτύσσεται σε 48 ώρες."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Λάχανο",
+        "desc": "Τραγανά πράσινα λάχανα. Μεγαλώνει σε 6 ώρες."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Υπόλοιπο μηνός: {remaining} € από {max} €",
       "nonCompetitiveDisclaimer": "Τα RonCoins δεν ανταλλάσσονται με πραγματικά χρήματα.",
       "buyPack": "Αγορά πακέτου για {price}",
-      "termsLink": "Όροι νομισμάτων"
+      "termsLink": "Όροι νομισμάτων",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Μεταφορά RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Ποσό προς αποστολή",
       "recipientLabel": "Φίλος από το πρωτάθλημα",
       "send": "Αποστολή νομισμάτων",
-      "dailyCapNotice": "Ημερήσιο όριο: απομένουν {remaining} νομίσματα σήμερα"
+      "dailyCapNotice": "Ημερήσιο όριο: απομένουν {remaining} νομίσματα σήμερα",
+      "recipientPlaceholder": "ID χρήστη φίλου"
     },
     "visit": {
       "title": "Πόλη του/της {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# ημέρα} other {# ημέρες}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Αγορά γης",
+      "subtitle": "Επέκταση στο πλακίδιο ({x}, {y})",
+      "close": "Κλείσιμο αγοράς γης",
+      "chooseGround": "Επίλεξε τύπο εδάφους",
+      "expandAria": "Επέκταση γης σε ({x}, {y})",
+      "buyButton": "Αγορά {label} · {price} RonCoins",
+      "buying": "Αγορά…",
+      "shortCoins": "Χρειάζονται {needed} ακόμη RonCoins (κοστίζει {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Γρασίδι",
+        "flowers": "Λιβάδι",
+        "flowersTwo": "Αγριολούλουδα",
+        "dirt": "Χώμα",
+        "street": "Μονοπάτι",
+        "streetCurve": "Καμπύλος δρόμος",
+        "intersection": "Διασταύρωση",
+        "water": "Νερό",
+        "waterTwo": "Κυματιστό νερό",
+        "shoreHalf": "Ακτογραμμή",
+        "shoreCorner": "Γωνία παραλίας",
+        "shoreEdge": "Παραλία"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Ισομετρικός χάρτης RonTown",
+      "groundCell": "Πλακίδιο εδάφους ({x}, {y})",
+      "readyShort": "Έτοιμο",
+      "harvestBadgeAria": "Συγκομιδή έτοιμου {crop} σε ({x}, {y})",
+      "placingBanner": "Πάτησε ένα δικό σου πράσινο πλακίδιο για {item}",
+      "movingPickBanner": "Πάτησε ένα κτίριο ή διακοσμητικό για μετακίνηση",
+      "movingDestBanner": "Πάτησε ένα ελεύθερο πλακίδιο για μετακίνηση ({x}, {y})",
+      "plantingBanner": "Πάτησε γρασίδι, χώμα ή άδειο παρτέρι για {crop}",
+      "cancel": "Ακύρωση",
+      "helpBody": "Πάτησε τα πράσινα X για επέκταση, Κατασκευή για σπίτια, Φάρμα για σπόρους και χρυσά δρεπάνια για συγκομιδή.",
       "zoomControls": "Έλεγχοι ζουμ χάρτη",
       "zoomIn": "Μεγέθυνση",
       "zoomOut": "Σμίκρυνση",
       "loading": "Φόρτωση RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Πάτησε ένα πλακίδιο ή κτίριο για περιστροφή"
     },
     "status": {
       "connecting": "Σύνδεση…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Άξονας δρόμου: Ανατολή–Δύση"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Αυτό το πλακίδιο δεν περιστρέφεται",
+      "cellAria": "Περιστροφή {item} σε ({x}, {y})",
+      "announce": "Το {item} περιστράφηκε προς {dir}",
+      "dir0": "Βορειοανατολικά",
+      "dir1": "Νοτιοανατολικά",
+      "dir2": "Νοτιοδυτικά",
+      "dir3": "Βορειοδυτικά"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Επιτάχυνση συγκομιδής",
+      "subtitle": "{crop} · απομένει {time}",
+      "costLabel": "Κόστος επιτάχυνσης",
+      "confirm": "Ολοκλήρωση · {cost}",
+      "balanceAfter": "Υπόλοιπο μετά: {balance} RonCoins",
+      "insufficient": "Απαιτούνται {needed} RonCoins (έχεις {balance})",
+      "chipAria": "Επιτάχυνση {crop} για {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Μια ευτυχισμένη οικογένεια στο RonTown υποδέχεται ένα παιδί!"
+    },
+    "comingSoon": "Το RonTown έρχεται σύντομα! Χτίσε την πόλη σου, καλλιέργησε και ξεκλείδωσε ανταμοιβές με RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Η αγορά γης απέτυχε",
+      "cannotPlaceHere": "Δεν μπορεί να τοποθετηθεί εδώ",
+      "buildFailed": "Η κατασκευή απέτυχε",
+      "destOccupiedOrInvalid": "Η θέση προορισμού είναι κατειλημμένη ή άκυρη",
+      "moveFailed": "Η μετακίνηση απέτυχε",
+      "rotateFailed": "Η περιστροφή απέτυχε",
+      "removeFailed": "Η αφαίρεση απέτυχε",
+      "notEnoughCoins": "Δεν υπάρχουν αρκετά RonCoins",
+      "plantingFailed": "Η φύτευση απέτυχε",
+      "harvestFailed": "Η συγκομιδή απέτυχε",
+      "speedupFailed": "Η επιτάχυνση απέτυχε",
+      "cannotPlacePlotHere": "Δεν μπορεί να μπει παρτέρι εδώ",
+      "buyPlotFailed": "Η αγορά παρτεριού απέτυχε",
+      "deliveryFailed": "Η παράδοση απέτυχε",
+      "likeFailed": "Το like απέτυχε",
+      "waterFailed": "Το πότισμα απέτυχε",
+      "signInBeforePurchase": "Συνδέσου πριν αγοράσεις νομίσματα",
+      "checkoutFailed": "Η πληρωμή απέτυχε",
+      "checkoutRequestFailed": "Το αίτημα πληρωμής απέτυχε",
+      "transferFailed": "Η μεταφορά απέτυχε",
+      "transferredCoins": "Στάλθηκαν {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Δεν υπάρχουν αρκετά RonCoins",
+      "priceChanged": "Η τιμή άλλαξε, δοκίμασε ξανά",
+      "notRotatable": "Αυτό το πλακίδιο δεν περιστρέφεται",
+      "disabled": "Αυτή η λειτουργία είναι απενεργοποιημένη",
+      "walletLocked": "Το πορτοφόλι RonCoins είναι προσωρινά κλειδωμένο",
+      "townNotFound": "Η πόλη δεν έχει αρχικοποιηθεί ακόμα",
+      "plotNotFound": "Το παρτέρι δεν βρέθηκε",
+      "notReady": "Η σοδειά δεν είναι ακόμη έτοιμη",
+      "alreadyUsed": "Έχει ήδη ολοκληρωθεί",
+      "dailyCap": "Επιτεύχθηκε το ημερήσιο όριο",
+      "generic": "Κάτι πήγε στραβά, δοκίμασε ξανά"
     }
   },
   "pwa": {

@@ -56,6 +56,21 @@ export const SHORE_ROTATION_KEYS = [
 
 export type ShoreRotationKey = (typeof SHORE_ROTATION_KEYS)[number];
 
+export const GROUND_LABEL_KEY: Record<GroundTileType, string> = {
+  'basic-block': 'town.land.types.grass',
+  'basic-block-flowers': 'town.land.types.flowers',
+  'basic-block-flowers-two': 'town.land.types.flowersTwo',
+  'basic-block-dirt': 'town.land.types.dirt',
+  'basic-block-street': 'town.land.types.street',
+  'basic-block-street-curve': 'town.land.types.streetCurve',
+  'basic-block-intersection': 'town.land.types.intersection',
+  'basic-block-wather': 'town.land.types.water',
+  'basic-block-wather-two': 'town.land.types.waterTwo',
+  'basic-block-wather-grass-50-50': 'town.land.types.shoreHalf',
+  'basic-block-water-grass-20-80': 'town.land.types.shoreCorner',
+  'basic-block-water-grass-80-20': 'town.land.types.shoreEdge',
+};
+
 export const GROUND_SPRITES: Record<
   GroundTileType | RoadVariantKey | ShoreRotationKey,
   SpriteSpec

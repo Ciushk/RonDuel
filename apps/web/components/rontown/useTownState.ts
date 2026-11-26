@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateTownCapacities,
@@ -23,6 +24,10 @@ import { trackEvent } from '@/lib/analytics';
 import { getLocalSession } from '@/lib/session';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+import { townErrorKey } from './townErrors';
+
+export { townErrorKey };
 
 export interface TileInfo extends TownTileDoc {
   x: number;
@@ -230,6 +235,7 @@ export function useTownState(params: {
   visitHostUid: string | null;
 }) {
   const { townEnabled, isVisitMode, visitHostUid } = params;
+  const t = useTranslations();
 
   const [catalog] = useState<TownCatalogDoc>(DEFAULT_TOWN_CATALOG);
   const [loading, setLoading] = useState<boolean>(true);
@@ -306,6 +312,14 @@ export function useTownState(params: {
       setActionMessage((prev) => (prev === msg ? null : prev));
     }, 2800);
   }, []);
+
+  const showErrorToast = useCallback(
+    (serverError: unknown, fallbackKey: string) => {
+      const mapped = townErrorKey(typeof serverError === 'string' ? serverError : undefined);
+      showToast(t(mapped ?? fallbackKey));
+    },
+    [showToast, t],
+  );
 
   const pushFloatingReward = useCallback((x: number, y: number, text: string) => {
     const id = `${x}_${y}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -726,7 +740,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Land purchase failed');
+          showErrorToast(data.error, 'town.toast.landPurchaseFailed');
           return false;
         }
         setWalletBalance((prev) => Math.max(0, prev - (data.cost ?? cost)));
@@ -747,7 +761,7 @@ export function useTownState(params: {
         setLandPurchasing(false);
       }
     },
-    [walletBalance, showToast],
+    [walletBalance, showErrorToast],
   );
 
   const executeBuild = useCallback(
@@ -756,7 +770,7 @@ export function useTownState(params: {
       const item = catalog.items[itemId];
       if (!item) return false;
       if (!canPlaceAt(x, y, item.footprint.w, item.footprint.h)) {
-        showToast('Cannot place here');
+        showToast(t('town.toast.cannotPlaceHere'));
         return false;
       }
 
@@ -807,7 +821,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Build failed');
+          showErrorToast(data.error, 'town.toast.buildFailed');
           return false;
         }
         applyLocal(data.town, data.tile);
@@ -818,7 +832,7 @@ export function useTownState(params: {
         return true;
       }
     },
-    [catalog, canPlaceAt, tiles, town, recomputeLocalTownStats, showToast],
+    [catalog, canPlaceAt, tiles, town, recomputeLocalTownStats, showToast, showErrorToast, t],
   );
 
   const executeMove = useCallback(
@@ -832,7 +846,7 @@ export function useTownState(params: {
       const h = item?.footprint.h ?? 1;
 
       if (!canPlaceAt(toX, toY, w, h, { x: fromX, y: fromY, w, h })) {
-        showToast('Destination tile is occupied or invalid');
+        showToast(t('town.toast.destOccupiedOrInvalid'));
         return false;
       }
 
@@ -845,7 +859,7 @@ export function useTownState(params: {
         });
         if (!res.ok) {
           const err = await res.json();
-          showToast(err.error || 'Move failed');
+          showErrorToast(err.error, 'town.toast.moveFailed');
           return false;
         }
       } catch {
@@ -875,7 +889,7 @@ export function useTownState(params: {
       });
       return true;
     },
-    [tiles, catalog, canPlaceAt, showToast],
+    [tiles, catalog, canPlaceAt, showToast, showErrorToast, t],
   );
 
   const executeRotate = useCallback(
@@ -938,7 +952,7 @@ export function useTownState(params: {
           } else if (prevTile) {
             setTiles((prev) => ({ ...prev, [key]: prevTile }));
           }
-          showToast(err.error || 'Rotate failed');
+          showErrorToast(err.error, 'town.toast.rotateFailed');
           return false;
         }
         return true;
@@ -947,7 +961,7 @@ export function useTownState(params: {
         return true;
       }
     },
-    [tiles, town, showToast],
+    [tiles, town, showErrorToast],
   );
 
   const executeRemove = useCallback(
@@ -970,7 +984,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Remove failed');
+          showErrorToast(data.error, 'town.toast.removeFailed');
           return false;
         }
         if (typeof data.refundCoins === 'number') {
@@ -994,7 +1008,7 @@ export function useTownState(params: {
       });
       return true;
     },
-    [tiles, catalog, showToast],
+    [tiles, catalog, showErrorToast],
   );
 
   const executePlantCrop = useCallback(
@@ -1003,7 +1017,7 @@ export function useTownState(params: {
       const cropItem = catalog.items[cropId];
       if (!cropItem || !canPlantAt(x, y)) return false;
       if (walletBalance < cropItem.priceCoins) {
-        showToast('Not enough RonCoins');
+        showToast(t('town.toast.notEnoughCoins'));
         return false;
       }
 
@@ -1043,7 +1057,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Planting failed');
+          showErrorToast(data.error, 'town.toast.plantingFailed');
           return false;
         }
         applyPlanted(plantedIso, readyIso);
@@ -1053,7 +1067,7 @@ export function useTownState(params: {
         return true;
       }
     },
-    [catalog, canPlantAt, walletBalance, showToast],
+    [catalog, canPlantAt, walletBalance, showToast, showErrorToast, t],
   );
 
   const executeHarvestCrop = useCallback(
@@ -1077,7 +1091,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Harvest failed');
+          showErrorToast(data.error, 'town.toast.harvestFailed');
           return false;
         }
         yieldCount = data.yieldCount ?? expectedYield;
@@ -1097,10 +1111,10 @@ export function useTownState(params: {
       setTown((prev) =>
         prev ? { ...prev, land: { ...(prev.land ?? {}), [key]: 'basic-block-dirt' } } : prev,
       );
-      pushFloatingReward(x, y, `+${yieldCount} ${cropId}`);
+      pushFloatingReward(x, y, `+${yieldCount} ${t(`town.crops.${cropId}.name`)}`);
       return true;
     },
-    [tiles, catalog, showToast, pushFloatingReward],
+    [tiles, catalog, showErrorToast, pushFloatingReward, t],
   );
 
   const executeSpeedup = useCallback(
@@ -1124,7 +1138,7 @@ export function useTownState(params: {
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          showToast(data.error || 'Speed-up failed');
+          showErrorToast(data.error, 'town.toast.speedupFailed');
           return { ok: false, error: data.error };
         }
         const readyAt = typeof data.readyAt === 'string' ? data.readyAt : new Date().toISOString();
@@ -1147,20 +1161,20 @@ export function useTownState(params: {
           cost: typeof data.cost === 'number' ? data.cost : 0,
         };
       } catch {
-        showToast('Speed-up failed');
+        showToast(t('town.toast.speedupFailed'));
         return { ok: false };
       } finally {
         setSpeedupLoading(false);
       }
     },
-    [tiles, speedupLoading, showToast],
+    [tiles, speedupLoading, showToast, showErrorToast, t],
   );
 
   const executeBuyPlot = useCallback(
     async (x: number, y: number): Promise<boolean> => {
       if (!serverReadyRef.current) return false;
       if (!canPlaceAt(x, y, 1, 1)) {
-        showToast('Cannot place plot here');
+        showToast(t('town.toast.cannotPlacePlotHere'));
         return false;
       }
       const session = getLocalSession();
@@ -1173,7 +1187,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Failed to buy plot');
+          showErrorToast(data.error, 'town.toast.buyPlotFailed');
           return false;
         }
         if (data.cost) setWalletBalance((prev) => Math.max(0, prev - data.cost));
@@ -1190,7 +1204,7 @@ export function useTownState(params: {
       );
       return true;
     },
-    [canPlaceAt, town, showToast],
+    [canPlaceAt, town, showToast, showErrorToast, t],
   );
 
   const executeDeliverOrder = useCallback(
@@ -1205,7 +1219,7 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Delivery failed');
+          showErrorToast(data.error, 'town.toast.deliveryFailed');
           return;
         }
         if (data.rewardCoins) {
@@ -1222,7 +1236,7 @@ export function useTownState(params: {
         // ignore offline
       }
     },
-    [showToast],
+    [showErrorToast],
   );
 
   const executeLike = useCallback(async () => {
@@ -1244,14 +1258,14 @@ export function useTownState(params: {
             : null,
         );
       } else {
-        showToast(data.error || 'Failed to like town');
+        showErrorToast(data.error, 'town.toast.likeFailed');
       }
     } catch {
       // ignore
     } finally {
       setLikeLoading(false);
     }
-  }, [visitHostUid, likeLoading, hostInfo?.hasLiked, showToast]);
+  }, [visitHostUid, likeLoading, hostInfo?.hasLiked, showErrorToast]);
 
   const executeWaterCrop = useCallback(
     async (x: number, y: number, successLabel: string): Promise<boolean> => {
@@ -1275,23 +1289,23 @@ export function useTownState(params: {
           showToast(successLabel);
           return true;
         }
-        showToast(data.error || 'Failed to water crop');
+        showErrorToast(data.error, 'town.toast.waterFailed');
         return false;
       } catch {
-        showToast('Failed to water crop');
+        showToast(t('town.toast.waterFailed'));
         return false;
       } finally {
         setWaterLoading(false);
       }
     },
-    [visitHostUid, waterLoading, showToast],
+    [visitHostUid, waterLoading, showToast, showErrorToast, t],
   );
 
   const executeCoinCheckout = useCallback(
     async (packId: string) => {
       const session = getLocalSession();
       if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') {
-        showToast('Please sign in or link your account before purchasing coins');
+        showToast(t('town.toast.signInBeforePurchase'));
         return;
       }
       try {
@@ -1306,17 +1320,17 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Checkout failed');
+          showErrorToast(data.error, 'town.toast.checkoutFailed');
           return;
         }
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         }
       } catch {
-        showToast('Checkout request failed');
+        showToast(t('town.toast.checkoutRequestFailed'));
       }
     },
-    [showToast],
+    [showToast, showErrorToast, t],
   );
 
   const loadTransferStatus = useCallback(async () => {
@@ -1348,22 +1362,22 @@ export function useTownState(params: {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.error || 'Transfer failed');
+          showErrorToast(data.error, 'town.toast.transferFailed');
           return false;
         }
         if (data.senderBalanceAfter !== undefined) {
           setWalletBalance(data.senderBalanceAfter);
         }
-        showToast(`Transferred ${amount} RonCoins!`);
+        showToast(t('town.toast.transferredCoins', { amount }));
         return true;
       } catch {
-        showToast('Transfer failed');
+        showToast(t('town.toast.transferFailed'));
         return false;
       } finally {
         setTransferLoading(false);
       }
     },
-    [showToast],
+    [showToast, showErrorToast, t],
   );
 
   const executeCompleteFamilyEvent = useCallback(async (): Promise<boolean> => {

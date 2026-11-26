@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Disponibil luna aceasta: {remaining} € din {max} €",
       "nonCompetitiveDisclaimer": "Monedele RonCoins nu pot fi convertite în bani reali și nu afectează scorul de la trivia.",
       "buyPack": "Cumpără Pachetul pentru {price}",
-      "termsLink": "Termeni și condiții RonCoins"
+      "termsLink": "Termeni și condiții RonCoins",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Trimite RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Sumă de trimis",
       "recipientLabel": "Prieten din liga ta",
       "send": "Trimite RonCoins",
-      "dailyCapNotice": "Limită zilnică: mai poți trimite {remaining} monede azi"
+      "dailyCapNotice": "Limită zilnică: mai poți trimite {remaining} monede azi",
+      "recipientPlaceholder": "ID-ul prietenului"
     },
     "visit": {
       "title": "Orașul lui {name}",
@@ -1109,6 +1111,43 @@
     },
     "family": {
       "announce": "O familie fericită din RonTown are un nou copil!"
+    },
+    "comingSoon": "RonTown se lansează în curând! Construiește-ți orașul, cultivă recolte și deblochează recompense cu RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Cumpărarea terenului a eșuat",
+      "cannotPlaceHere": "Nu poți plasa aici",
+      "buildFailed": "Construcția a eșuat",
+      "destOccupiedOrInvalid": "Parcela de destinație este ocupată sau invalidă",
+      "moveFailed": "Mutarea a eșuat",
+      "rotateFailed": "Rotirea a eșuat",
+      "removeFailed": "Ștergerea a eșuat",
+      "notEnoughCoins": "Nu ai destui RonCoins",
+      "plantingFailed": "Plantarea a eșuat",
+      "harvestFailed": "Recoltarea a eșuat",
+      "speedupFailed": "Grăbirea a eșuat",
+      "cannotPlacePlotHere": "Nu poți plasa o parcelă aici",
+      "buyPlotFailed": "Cumpărarea parcelei a eșuat",
+      "deliveryFailed": "Livrarea a eșuat",
+      "likeFailed": "Aprecierea orașului a eșuat",
+      "waterFailed": "Udarea culturii a eșuat",
+      "signInBeforePurchase": "Conectează-te sau leagă-ți contul înainte de a cumpăra monede",
+      "checkoutFailed": "Plata a eșuat",
+      "checkoutRequestFailed": "Cererea de plată a eșuat",
+      "transferFailed": "Transferul a eșuat",
+      "transferredCoins": "Ai transferat {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Nu ai destui RonCoins",
+      "priceChanged": "Prețul s-a schimbat, încearcă din nou",
+      "notRotatable": "Această parcelă nu poate fi rotită",
+      "disabled": "Această funcție este dezactivată momentan",
+      "walletLocked": "Portofelul tău RonCoins este blocat temporar",
+      "townNotFound": "Orașul nu a fost inițializat încă",
+      "plotNotFound": "Parcela agricolă nu a fost găsită",
+      "notReady": "Cultura nu este încă gata de recoltare",
+      "alreadyUsed": "Deja finalizat",
+      "dailyCap": "Limita zilnică a fost atinsă",
+      "generic": "A apărut o eroare, încearcă din nou"
     }
   },
   "pwa": {

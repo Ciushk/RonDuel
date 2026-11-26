@@ -802,16 +802,16 @@
       "coins": "Monētas",
       "help": "Palīdzība",
       "toggle": "Rīkjosla",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "RonTown darbības",
+      "move": "Pārvietot",
+      "farm": "Ferma",
+      "visit": "Apmeklēt",
+      "hideBar": "Paslēpt joslu",
+      "showBar": "Rādīt joslu",
+      "seedMenu": "Sēklas",
+      "plantSeed": "Stādīt {crop}",
+      "more": "Pilsētas izvēlne",
+      "rotate": "Pagriezt"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Izcila statuja par 100 dienu sēriju."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Ielas laterna",
+        "desc": "Silta koka laterna gar pilsētas takām."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Milzu raža. Izaug 48 stundās."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Kāposti",
+        "desc": "Kraukšķīgas kāpostu galviņas. Aug 6 stundas."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Atlicis šomēnes: {remaining} € no {max} €",
       "nonCompetitiveDisclaimer": "RonCoins nevar apmainīt pret īstu naudu.",
       "buyPack": "Pirkt paku par {price}",
-      "termsLink": "Monētu noteikumi"
+      "termsLink": "Monētu noteikumi",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Pārskaitīt RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Sūtāmā summa",
       "recipientLabel": "Līgas biedrs",
       "send": "Sūtīt monētas",
-      "dailyCapNotice": "Dienas limits: šodien atlikušas {remaining} monētas"
+      "dailyCapNotice": "Dienas limits: šodien atlikušas {remaining} monētas",
+      "recipientPlaceholder": "Drauga lietotāja ID"
     },
     "visit": {
       "title": "{name} pilsēta",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, zero {# dienu} one {# diena} other {# dienas}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Pirkt zemi",
+      "subtitle": "Paplašināt uz lauciņu ({x}, {y})",
+      "close": "Aizvērt zemes pirkšanu",
+      "chooseGround": "Izvēlies seguma veidu",
+      "expandAria": "Paplašināt zemi pie ({x}, {y})",
+      "buyButton": "Pirkt {label} · {price} RonCoins",
+      "buying": "Pērk…",
+      "shortCoins": "Trūkst {needed} RonCoins (maksā {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Zāle",
+        "flowers": "Pļava",
+        "flowersTwo": "Savvaļas puķes",
+        "dirt": "Zeme",
+        "street": "Taka",
+        "streetCurve": "Līkumota taka",
+        "intersection": "Krustojums",
+        "water": "Ūdens",
+        "waterTwo": "Viļņains ūdens",
+        "shoreHalf": "Krasts",
+        "shoreCorner": "Pludmales stūris",
+        "shoreEdge": "Krastmala"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "RonTown izometriskā karte",
+      "groundCell": "Zemes lauciņš ({x}, {y})",
+      "readyShort": "Gatavs",
+      "harvestBadgeAria": "Novākt gatavu {crop} pie ({x}, {y})",
+      "placingBanner": "Pieskaries savam zaļajam lauciņam, lai novietotu {item}",
+      "movingPickBanner": "Pieskaries ēkai vai dekoram, lai pārvietotu",
+      "movingDestBanner": "Pieskaries brīvam lauciņam, lai pārvietotu ({x}, {y})",
+      "plantingBanner": "Pieskaries zālei, zemei vai tukšai dobei, lai stādītu {crop}",
+      "cancel": "Atcelt",
+      "helpBody": "Pieskaries zaļajiem X lauciņiem paplašināšanai, Būvēt mājām, Ferma sēklām un zelta sirpjiem ražas novākšanai.",
       "zoomControls": "Kartes tālummaiņas vadīklas",
       "zoomIn": "Tuvināt",
       "zoomOut": "Tālināt",
       "loading": "Ielādē RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Pieskaries lauciņam vai ēkai, lai pagrieztu"
     },
     "status": {
       "connecting": "Savienojas…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Ceļa ass: Austrumi–Rietumi"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Šo lauciņu nevar pagriezt",
+      "cellAria": "Pagriezt {item} pie ({x}, {y})",
+      "announce": "{item} pagriezts virzienā: {dir}",
+      "dir0": "Ziemeļaustrumi",
+      "dir1": "Dienvidaustrumi",
+      "dir2": "Dienvidrietumi",
+      "dir3": "Ziemeļrietumi"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Paātrināt ražu",
+      "subtitle": "{crop} · atlikušas {time}",
+      "costLabel": "Paātrināšanas maksa",
+      "confirm": "Pabeigt tūlīt · {cost}",
+      "balanceAfter": "Atlikums pēc tam: {balance} RonCoins",
+      "insufficient": "Nepieciešami {needed} RonCoins (tev ir {balance})",
+      "chipAria": "Paātrināt {crop} par {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Laimīga RonTown ģimene sagaida bērnu!"
+    },
+    "comingSoon": "RonTown drīz sāksies! Būvē savu pilsētu, audzē ražu un saņem balvas par RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Zemes pirkšana neizdevās",
+      "cannotPlaceHere": "Šeit nevar novietot",
+      "buildFailed": "Būvniecība neizdevās",
+      "destOccupiedOrInvalid": "Mērķa lauciņš ir aizņemts vai nederīgs",
+      "moveFailed": "Pārvietošana neizdevās",
+      "rotateFailed": "Pagriešana neizdevās",
+      "removeFailed": "Noņemšana neizdevās",
+      "notEnoughCoins": "Nepietiek RonCoins",
+      "plantingFailed": "Stādīšana neizdevās",
+      "harvestFailed": "Novākšana neizdevās",
+      "speedupFailed": "Paātrināšana neizdevās",
+      "cannotPlacePlotHere": "Šeit nevar novietot dobi",
+      "buyPlotFailed": "Dobes pirkšana neizdevās",
+      "deliveryFailed": "Piegāde neizdevās",
+      "likeFailed": "Neizdevās novērtēt pilsētu",
+      "waterFailed": "Laistīšana neizdevās",
+      "signInBeforePurchase": "Piesakies pirms monētu iegādes",
+      "checkoutFailed": "Maksājums neizdevās",
+      "checkoutRequestFailed": "Maksājuma pieprasījums neizdevās",
+      "transferFailed": "Pārskaitījums neizdevās",
+      "transferredCoins": "Nosūtīti {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Nepietiek RonCoins",
+      "priceChanged": "Cena mainījās, mēģini vēlreiz",
+      "notRotatable": "Šo lauciņu nevar pagriezt",
+      "disabled": "Šī funkcija pašlaik ir atspējota",
+      "walletLocked": "Tavs RonCoins maks īslaicīgi ir bloķēts",
+      "townNotFound": "Pilsēta vēl nav izveidota",
+      "plotNotFound": "Dobe netika atrasta",
+      "notReady": "Raža vēl nav gatava",
+      "alreadyUsed": "Jau pabeigts",
+      "dailyCap": "Sasniegts dienas limits",
+      "generic": "Kaut kas nogāja greizi, mēģini vēlreiz"
     }
   },
   "pwa": {

@@ -802,16 +802,16 @@
       "coins": "Монети",
       "help": "Помощ",
       "toggle": "Лента с инструменти",
-      "ariaLabel": "RonTown actions",
-      "move": "Move",
-      "farm": "Farm",
-      "visit": "Visit",
-      "hideBar": "Hide action bar",
-      "showBar": "Show action bar",
-      "seedMenu": "Crop seeds",
-      "plantSeed": "Plant {crop}",
-      "more": "Town menu",
-      "rotate": "Rotate"
+      "ariaLabel": "Действия в RonTown",
+      "move": "Премести",
+      "farm": "Ферма",
+      "visit": "Посети",
+      "hideBar": "Скрий лентата",
+      "showBar": "Покажи лентата",
+      "seedMenu": "Семена",
+      "plantSeed": "Засади {crop}",
+      "more": "Меню на града",
+      "rotate": "Завърти"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -921,8 +921,8 @@
         "desc": "Величествена статуя за серия от 100 дни."
       },
       "lantern": {
-        "name": "Street Lantern",
-        "desc": "Warm wooden post lantern glowing along town paths."
+        "name": "Уличен фенер",
+        "desc": "Топъл дървен фенер по градските пътеки."
       }
     },
     "crops": {
@@ -947,8 +947,8 @@
         "desc": "Гигантска реколта. Расте за 48 часа."
       },
       "cabbage": {
-        "name": "Cabbage",
-        "desc": "Crisp green cabbage heads. Grows in 6 hours."
+        "name": "Зеле",
+        "desc": "Хрупкави зелени зелки. Расте за 6 часа."
       }
     },
     "orders": {
@@ -1010,7 +1010,8 @@
       "monthlyCapNotice": "Остават за този месец: {remaining} € от {max} €",
       "nonCompetitiveDisclaimer": "RonCoins не могат да се обменят за истински пари.",
       "buyPack": "Купи пакет за {price}",
-      "termsLink": "Условия за монетите"
+      "termsLink": "Условия за монетите",
+      "unit": "RonCoins"
     },
     "transfer": {
       "title": "Прехвърли RonCoins",
@@ -1018,7 +1019,8 @@
       "amountLabel": "Сума за изпращане",
       "recipientLabel": "Приятел от лигата",
       "send": "Изпрати монети",
-      "dailyCapNotice": "Дневен лимит: остават {remaining} монети днес"
+      "dailyCapNotice": "Дневен лимит: остават {remaining} монети днес",
+      "recipientPlaceholder": "Потребителско ID на приятел"
     },
     "visit": {
       "title": "Градът на {name}",
@@ -1039,45 +1041,45 @@
       "days": "{count, plural, one {# ден} other {# дни}}"
     },
     "land": {
-      "title": "Buy land",
-      "subtitle": "Expand onto tile ({x}, {y})",
-      "close": "Close buy land sheet",
-      "chooseGround": "Choose ground tile type",
-      "expandAria": "Expand land at ({x}, {y})",
-      "buyButton": "Buy {label} · {price} RonCoins",
-      "buying": "Buying...",
-      "shortCoins": "Need {needed} more RonCoins (costs {price} RonCoins).",
+      "title": "Купи земя",
+      "subtitle": "Разшири към поле ({x}, {y})",
+      "close": "Затвори покупка на земя",
+      "chooseGround": "Избери тип терен",
+      "expandAria": "Разшири земята на ({x}, {y})",
+      "buyButton": "Купи {label} · {price} RonCoins",
+      "buying": "Купуване…",
+      "shortCoins": "Нужни са още {needed} RonCoins (струва {price} RonCoins).",
       "types": {
-        "grass": "Grass",
-        "flowers": "Meadow",
-        "flowersTwo": "Wildflowers",
-        "dirt": "Dirt",
-        "street": "Path",
-        "streetCurve": "Curved Path",
-        "intersection": "Crossroads",
-        "water": "Water",
-        "waterTwo": "Rippled Water",
-        "shoreHalf": "Shoreline",
-        "shoreCorner": "Beach Corner",
-        "shoreEdge": "Waterfront"
+        "grass": "Трева",
+        "flowers": "Ливада",
+        "flowersTwo": "Полски цветя",
+        "dirt": "Пръст",
+        "street": "Пътека",
+        "streetCurve": "Извита пътека",
+        "intersection": "Кръстовище",
+        "water": "Вода",
+        "waterTwo": "Вълниста вода",
+        "shoreHalf": "Брегова линия",
+        "shoreCorner": "Ъгъл на плажа",
+        "shoreEdge": "Крайбрежие"
       }
     },
     "map": {
-      "regionAria": "RonTown isometric map",
-      "groundCell": "Ground tile ({x}, {y})",
-      "readyShort": "Ready",
-      "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
-      "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
-      "movingDestBanner": "Tap a free tile to move ({x}, {y})",
-      "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
-      "cancel": "Cancel",
-      "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
+      "regionAria": "Изометрична карта на RonTown",
+      "groundCell": "Поле на терена ({x}, {y})",
+      "readyShort": "Готово",
+      "harvestBadgeAria": "Събери готово {crop} на ({x}, {y})",
+      "placingBanner": "Докосни свое зелено поле, за да поставиш {item}",
+      "movingPickBanner": "Докосни сграда или декорация за преместване",
+      "movingDestBanner": "Докосни свободно поле за преместване на ({x}, {y})",
+      "plantingBanner": "Докосни трева, пръст или празна леха за {crop}",
+      "cancel": "Отказ",
+      "helpBody": "Докосни зелените X полета за разширяване, Строй за къщи и услуги, Ферма за семена и златните сърпове за жътва.",
       "zoomControls": "Контроли за мащабиране на картата",
       "zoomIn": "Увеличаване",
       "zoomOut": "Намаляване",
       "loading": "Зареждане на RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Докосни поле или сграда за завъртане"
     },
     "status": {
       "connecting": "Свързване…",
@@ -1090,25 +1092,62 @@
       "axisEw": "Ос на пътя: Изток–Запад"
     },
     "rotate": {
-      "notRotatable": "This tile cannot be rotated",
-      "cellAria": "Rotate {item} at ({x}, {y})",
-      "announce": "Rotated {item} to {dir}",
-      "dir0": "North-East",
-      "dir1": "South-East",
-      "dir2": "South-West",
-      "dir3": "North-West"
+      "notRotatable": "Това поле не може да се завърта",
+      "cellAria": "Завърти {item} на ({x}, {y})",
+      "announce": "{item} е завъртяно към {dir}",
+      "dir0": "Североизток",
+      "dir1": "Югоизток",
+      "dir2": "Югозапад",
+      "dir3": "Северозапад"
     },
     "speedup": {
-      "title": "Speed up harvest",
-      "subtitle": "{crop} · {time} left",
-      "costLabel": "Speed-up cost",
-      "confirm": "Finish now · {cost}",
-      "balanceAfter": "Balance after: {balance} RonCoins",
-      "insufficient": "Need {needed} RonCoins (you have {balance})",
-      "chipAria": "Speed up {crop} for {cost} RonCoins"
+      "title": "Ускори реколтата",
+      "subtitle": "{crop} · остават {time}",
+      "costLabel": "Цена за ускоряване",
+      "confirm": "Готово сега · {cost}",
+      "balanceAfter": "Баланс след това: {balance} RonCoins",
+      "insufficient": "Нужни са {needed} RonCoins (имаш {balance})",
+      "chipAria": "Ускори {crop} за {cost} RonCoins"
     },
     "family": {
-      "announce": "A happy family in RonTown has welcomed a child!"
+      "announce": "Щастливо семейство в RonTown посрещна дете!"
+    },
+    "comingSoon": "RonTown стартира скоро! Построй своя град, отглеждай култури и отключвай награди с RonCoins.",
+    "toast": {
+      "landPurchaseFailed": "Покупката на земя е неуспешна",
+      "cannotPlaceHere": "Не може да се постави тук",
+      "buildFailed": "Строежът е неуспешен",
+      "destOccupiedOrInvalid": "Целевото поле е заето или невалидно",
+      "moveFailed": "Преместването е неуспешно",
+      "rotateFailed": "Завъртането е неуспешно",
+      "removeFailed": "Премахването е неуспешно",
+      "notEnoughCoins": "Нямаш достатъчно RonCoins",
+      "plantingFailed": "Засаждането е неуспешно",
+      "harvestFailed": "Жътвата е неуспешна",
+      "speedupFailed": "Ускоряването е неуспешно",
+      "cannotPlacePlotHere": "Тук не може да се постави леха",
+      "buyPlotFailed": "Покупката на леха е неуспешна",
+      "deliveryFailed": "Доставката е неуспешна",
+      "likeFailed": "Харесването на града е неуспешно",
+      "waterFailed": "Поливането е неуспешно",
+      "signInBeforePurchase": "Влез в профила си преди да купуваш монети",
+      "checkoutFailed": "Плащането е неуспешно",
+      "checkoutRequestFailed": "Заявката за плащане е неуспешна",
+      "transferFailed": "Преводът е неуспешен",
+      "transferredCoins": "Изпратени {amount} RonCoins!"
+    },
+    "errors": {
+      "insufficientFunds": "Нямаш достатъчно RonCoins",
+      "priceChanged": "Цената се промени, опитай отново",
+      "notRotatable": "Това поле не може да се завърта",
+      "disabled": "Тази функция е временно изключена",
+      "walletLocked": "Портфейлът ти за RonCoins е временно заключен",
+      "townNotFound": "Градът все още не е създаден",
+      "plotNotFound": "Лехата не е намерена",
+      "notReady": "Реколтата все още не е готова",
+      "alreadyUsed": "Вече е завършено",
+      "dailyCap": "Дневният лимит е достигнат",
+      "generic": "Нещо се обърка, опитай отново"
     }
   },
   "pwa": {

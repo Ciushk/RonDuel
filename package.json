@@ -21,7 +21,7 @@
     "test:unit:watch": "vitest",
     "test:rules": "firebase emulators:exec --project demo-ronduel --only firestore \"vitest run apps/web/tests/town-rules.test.ts\"",
     "test:e2e": "playwright test",
-    "i18n:check": "node scripts/check-i18n.mjs && node scripts/check-hardcoded-ro.mjs",
+    "i18n:check": "node scripts/check-i18n.mjs && node scripts/check-hardcoded-ro.mjs && node scripts/check-town-i18n.mjs",
     "seed": "node scripts/seed.mjs",
     "clean": "pnpm -r clean"
   },

@@ -34,6 +34,7 @@ import {
 import {
   BUBBLE_SPRITES,
   CATALOG_SPRITES,
+  GROUND_LABEL_KEY,
   GROUND_SPRITES,
   HEART_FLOAT_SPRITE,
   preloadInitialSprites,
@@ -242,7 +243,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               ? itemMeta?.nameKey
                 ? t(itemMeta.nameKey)
                 : tile.itemId
-              : t(`town.land.types.${ground}`);
+              : t(GROUND_LABEL_KEY[ground]);
           cellLabel = t('town.rotate.cellAria', { item: itemLabel, x, y });
         } else {
           cellLabel = rawTile
