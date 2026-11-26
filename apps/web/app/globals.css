@@ -1101,3 +1101,32 @@ html[data-theme='dark'] {
 .rd-gate-step {
   animation: rd-gate-step-fade 150ms ease-out forwards;
 }
+
+/* --- Home "done for today" card & sticker tiles (transform & opacity only) --- */
+@keyframes rd-home-done-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rd-home-done-card {
+  animation: rd-home-done-enter 250ms ease-out both;
+}
+
+.rd-home-done-tiles {
+  animation: rd-home-done-enter 220ms ease-out 80ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-home-done-card,
+  .rd-home-done-tiles {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

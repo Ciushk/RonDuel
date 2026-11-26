@@ -688,7 +688,18 @@
     "myDuels": "Mijn duels",
     "challengeFriend": "Daag een vriend uit",
     "duelAnytime": "Maar je kunt altijd een duel met een vriend doen.",
-    "createDuel": "Duel maken"
+    "createDuel": "Duel maken",
+    "roundComplete": "Ronde van vandaag voltooid",
+    "nextRoundLabel": "Volgende ronde over",
+    "nextRoundAt": "Ronde #{number} start om middernacht (jouw tijd)",
+    "nextRoundSr": "Volgende ronde over {hours} u {minutes} min",
+    "seeResults": "Bekijk resultaten →",
+    "townTile": "RonTown",
+    "townTileSub": "Oogst en bouw",
+    "duelsTile": "Duels",
+    "duelsTileSub": "Daag een vriend uit",
+    "townCardBadge": "SPEL",
+    "townCardSub": "Bouw je stad, oogst gewassen en verdien munten!"
   },
   "account": {
     "saveTitle": "Behoud je reeks en je plek in RonDuel World",

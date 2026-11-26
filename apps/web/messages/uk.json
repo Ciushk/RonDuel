@@ -688,7 +688,18 @@
     "myDuels": "Мої дуелі",
     "challengeFriend": "Кинути виклик другу",
     "duelAnytime": "Але ти завжди можеш влаштувати дуель із другом.",
-    "createDuel": "Створити дуель"
+    "createDuel": "Створити дуель",
+    "roundComplete": "Сьогоднішній раунд завершено",
+    "nextRoundLabel": "Наступний раунд через",
+    "nextRoundAt": "Раунд #{number} почнеться опівночі (ваш час)",
+    "nextRoundSr": "Наступний раунд через {hours} год {minutes} хв",
+    "seeResults": "Переглянути результати →",
+    "townTile": "RonTown",
+    "townTileSub": "Збирай урожай і будуй",
+    "duelsTile": "Дуелі",
+    "duelsTileSub": "Кинути виклик другу",
+    "townCardBadge": "ГРА",
+    "townCardSub": "Будуй своє місто, збирай урожай і заробляй монети!"
   },
   "account": {
     "saveTitle": "Збережи свою серію та місце в RonDuel World",

@@ -688,7 +688,18 @@
     "myDuels": "Οι μονομαχίες μου",
     "challengeFriend": "Προκάλεσε έναν φίλο",
     "duelAnytime": "Αλλά μπορείς πάντα να κάνεις μονομαχία με έναν φίλο.",
-    "createDuel": "Δημιούργησε μονομαχία"
+    "createDuel": "Δημιούργησε μονομαχία",
+    "roundComplete": "Ο σημερινός γύρος ολοκληρώθηκε",
+    "nextRoundLabel": "Επόμενος γύρος σε",
+    "nextRoundAt": "Ο γύρος #{number} ξεκινά τα μεσάνυχτα (ώρα σου)",
+    "nextRoundSr": "Επόμενος γύρος σε {hours} ώρ. {minutes} λεπ.",
+    "seeResults": "Δες τα αποτελέσματα →",
+    "townTile": "RonTown",
+    "townTileSub": "Θέρισε και χτίσε",
+    "duelsTile": "Μονομαχίες",
+    "duelsTileSub": "Προκάλεσε έναν φίλο",
+    "townCardBadge": "ΠΑΙΧΝΙΔΙ",
+    "townCardSub": "Χτίσε την πόλη σου, μάζεψε σοδειές και κέρδισε νομίσματα!"
   },
   "account": {
     "saveTitle": "Αποθήκευσε το σερί σου και τη θέση σου στο RonDuel World",

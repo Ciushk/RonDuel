@@ -688,7 +688,18 @@
     "myDuels": "Id-dwellijiet tiegħi",
     "challengeFriend": "Sfida lil ħabib",
     "duelAnytime": "Imma tista' dejjem tagħmel dwell ma' ħabib.",
-    "createDuel": "Oħloq dwell"
+    "createDuel": "Oħloq dwell",
+    "roundComplete": "Ir-rawnd tal-lum lest",
+    "nextRoundLabel": "Ir-rawnd li jmiss f’",
+    "nextRoundAt": "Rawnd #{number} jibda f’nofsillejl (il-ħin tiegħek)",
+    "nextRoundSr": "Ir-rawnd li jmiss f’{hours} s {minutes} min",
+    "seeResults": "Ara r-riżultati →",
+    "townTile": "RonTown",
+    "townTileSub": "Aħsad u ibni",
+    "duelsTile": "Dwellijiet",
+    "duelsTileSub": "Sfida lil ħabib",
+    "townCardBadge": "LOGĦBA",
+    "townCardSub": "Ibni l-belt tiegħek, aħsad l-uċuħ u aqla’ l-muniti!"
   },
   "account": {
     "saveTitle": "Salva s-serje tiegħek u l-post tiegħek f'RonDuel World",

@@ -688,7 +688,18 @@
     "myDuels": "Моите дуели",
     "challengeFriend": "Предизвикай приятел",
     "duelAnytime": "Но винаги можеш да имаш дуел с приятел.",
-    "createDuel": "Създай дуел"
+    "createDuel": "Създай дуел",
+    "roundComplete": "Днешният рунд е завършен",
+    "nextRoundLabel": "Следващият рунд след",
+    "nextRoundAt": "Рунд #{number} започва в полунощ (местно време)",
+    "nextRoundSr": "Следващият рунд след {hours} ч {minutes} мин",
+    "seeResults": "Виж резултатите →",
+    "townTile": "RonTown",
+    "townTileSub": "Прибирай реколта и строй",
+    "duelsTile": "Дуели",
+    "duelsTileSub": "Предизвикай приятел",
+    "townCardBadge": "ИГРА",
+    "townCardSub": "Построй своя град, прибирай реколта и печели монети!"
   },
   "account": {
     "saveTitle": "Запази серията си и мястото си в RonDuel World",

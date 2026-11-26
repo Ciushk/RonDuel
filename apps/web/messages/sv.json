@@ -688,7 +688,18 @@
     "myDuels": "Mina dueller",
     "challengeFriend": "Utmana en vän",
     "duelAnytime": "Men du kan alltid ta en duell med en vän.",
-    "createDuel": "Skapa en duell"
+    "createDuel": "Skapa en duell",
+    "roundComplete": "Dagens runda klar",
+    "nextRoundLabel": "Nästa runda om",
+    "nextRoundAt": "Runda #{number} startar vid midnatt (din tid)",
+    "nextRoundSr": "Nästa runda om {hours} tim {minutes} min",
+    "seeResults": "Se resultat →",
+    "townTile": "RonTown",
+    "townTileSub": "Skörda och bygg",
+    "duelsTile": "Dueller",
+    "duelsTileSub": "Utmana en vän",
+    "townCardBadge": "SPEL",
+    "townCardSub": "Bygg din stad, skörda grödor och samla mynt!"
   },
   "account": {
     "saveTitle": "Spara din svit och din plats i RonDuel World",

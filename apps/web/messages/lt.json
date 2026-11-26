@@ -688,7 +688,18 @@
     "myDuels": "Mano dvikovos",
     "challengeFriend": "Mesti iššūkį draugui",
     "duelAnytime": "Bet visada gali surengti dvikovą su draugu.",
-    "createDuel": "Sukurti dvikovą"
+    "createDuel": "Sukurti dvikovą",
+    "roundComplete": "Šiandienos raundas baigtas",
+    "nextRoundLabel": "Kitas raundas po",
+    "nextRoundAt": "Raundas #{number} prasideda vidurnaktį (tavo laiku)",
+    "nextRoundSr": "Kitas raundas po {hours} val. {minutes} min.",
+    "seeResults": "Žiūrėti rezultatus →",
+    "townTile": "RonTown",
+    "townTileSub": "Nuimk derlių ir statyk",
+    "duelsTile": "Dvikovos",
+    "duelsTileSub": "Mesti iššūkį draugui",
+    "townCardBadge": "ŽAIDIMAS",
+    "townCardSub": "Statyk savo miestą, nuimk derlių ir rink monetas!"
   },
   "account": {
     "saveTitle": "Išsaugok savo seriją ir vietą RonDuel World",

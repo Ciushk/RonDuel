@@ -688,7 +688,18 @@
     "myDuels": "My duels",
     "challengeFriend": "Challenge a friend",
     "duelAnytime": "But you can always play a duel with a friend.",
-    "createDuel": "Create a duel"
+    "createDuel": "Create a duel",
+    "roundComplete": "Today's round complete",
+    "nextRoundLabel": "Next round in",
+    "nextRoundAt": "Round #{number} starts at midnight (your time)",
+    "nextRoundSr": "Next round in {hours} h {minutes} min",
+    "seeResults": "See results →",
+    "townTile": "RonTown",
+    "townTileSub": "Harvest & build",
+    "duelsTile": "Duels",
+    "duelsTileSub": "Challenge a friend",
+    "townCardBadge": "GAME",
+    "townCardSub": "Build your town, harvest crops, and earn coins!"
   },
   "account": {
     "saveTitle": "Save your streak and your spot in RonDuel World",

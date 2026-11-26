@@ -688,7 +688,18 @@
     "myDuels": "Mine dueller",
     "challengeFriend": "Udfordr en ven",
     "duelAnytime": "Men du kan altid tage en duel med en ven.",
-    "createDuel": "Opret en duel"
+    "createDuel": "Opret en duel",
+    "roundComplete": "Dagens runde er færdig",
+    "nextRoundLabel": "Næste runde om",
+    "nextRoundAt": "Runde #{number} starter ved midnat (din tid)",
+    "nextRoundSr": "Næste runde om {hours} t {minutes} min",
+    "seeResults": "Se resultater →",
+    "townTile": "RonTown",
+    "townTileSub": "Høst og byg",
+    "duelsTile": "Dueller",
+    "duelsTileSub": "Udfordr en ven",
+    "townCardBadge": "SPIL",
+    "townCardSub": "Byg din by, høst afgrøder og tjen mønter!"
   },
   "account": {
     "saveTitle": "Gem din stime og din plads i RonDuel World",

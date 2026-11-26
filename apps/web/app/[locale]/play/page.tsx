@@ -76,7 +76,7 @@ export default function PlayPage() {
       router.replace(
         returnTo
           ? `/${locale}/result/${encodeURIComponent(data.playId)}?returnTo=${encodeURIComponent(returnTo)}`
-          : `/${locale}/result/${encodeURIComponent(data.playId)}`,
+          : `/${locale}`,
       );
       return;
     }
@@ -100,7 +100,15 @@ export default function PlayPage() {
           setTodayInfo({ roundNumber: d.roundNumber, theme: d.topicOfTheDay || d.theme });
         }
         if (d.played && d.playId) {
-          router.replace(`/${locale}/result/${encodeURIComponent(d.playId)}`);
+          const returnTo =
+            typeof window !== 'undefined'
+              ? new URLSearchParams(window.location.search).get('returnTo')
+              : null;
+          router.replace(
+            returnTo
+              ? `/${locale}/result/${encodeURIComponent(d.playId)}?returnTo=${encodeURIComponent(returnTo)}`
+              : `/${locale}`,
+          );
         } else if (d.inProgress) {
           void beginRound();
         }

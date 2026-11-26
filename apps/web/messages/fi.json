@@ -688,7 +688,18 @@
     "myDuels": "Kaksintaisteluni",
     "challengeFriend": "Haasta ystävä",
     "duelAnytime": "Mutta voit aina käydä kaksintaistelun ystävän kanssa.",
-    "createDuel": "Luo kaksintaistelu"
+    "createDuel": "Luo kaksintaistelu",
+    "roundComplete": "Päivän kierros suoritettu",
+    "nextRoundLabel": "Seuraava kierros",
+    "nextRoundAt": "Kierros #{number} alkaa keskiyöllä (oma aikasi)",
+    "nextRoundSr": "Seuraava kierros {hours} t {minutes} min kuluttua",
+    "seeResults": "Katso tulokset →",
+    "townTile": "RonTown",
+    "townTileSub": "Korjaa sato & rakenna",
+    "duelsTile": "Kaksintaistelu",
+    "duelsTileSub": "Haasta ystävä",
+    "townCardBadge": "PELI",
+    "townCardSub": "Rakenna kaupunkisi, korjaa satoa ja kerää kolikoita!"
   },
   "account": {
     "saveTitle": "Tallenna voittoputkesi ja paikkasi RonDuel Worldissa",

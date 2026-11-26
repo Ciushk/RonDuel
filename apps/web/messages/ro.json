@@ -688,7 +688,18 @@
     "myDuels": "Duelurile mele",
     "challengeFriend": "Provoacă un prieten",
     "duelAnytime": "Dar poți oricând să ai un duel cu un prieten.",
-    "createDuel": "Creează un duel"
+    "createDuel": "Creează un duel",
+    "roundComplete": "Runda de azi e gata",
+    "nextRoundLabel": "Următoarea rundă în",
+    "nextRoundAt": "Runda #{number} începe la miezul nopții (ora ta)",
+    "nextRoundSr": "Următoarea rundă în {hours} h {minutes} min",
+    "seeResults": "Vezi rezultatele →",
+    "townTile": "RonTown",
+    "townTileSub": "Recoltează și construiește",
+    "duelsTile": "Dueluri",
+    "duelsTileSub": "Provoacă un prieten",
+    "townCardBadge": "JOC",
+    "townCardSub": "Construiește-ți orașul, recoltează și adună bănuți!"
   },
   "account": {
     "saveTitle": "Salvează-ți seria și locul în RonDuel World",

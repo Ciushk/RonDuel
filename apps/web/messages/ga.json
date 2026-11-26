@@ -688,7 +688,18 @@
     "myDuels": "Mo chomhraic",
     "challengeFriend": "Tabhair dúshlán do chara",
     "duelAnytime": "Ach is féidir leat comhrac a dhéanamh le cara am ar bith.",
-    "createDuel": "Cruthaigh comhrac"
+    "createDuel": "Cruthaigh comhrac",
+    "roundComplete": "Babhta an lae inniu críochnaithe",
+    "nextRoundLabel": "An chéad bhabhta eile i",
+    "nextRoundAt": "Tosaíonn Babhta #{number} ag meán oíche (do chuid ama)",
+    "nextRoundSr": "An chéad bhabhta eile i {hours} u {minutes} nóim",
+    "seeResults": "Féach ar na torthaí →",
+    "townTile": "RonTown",
+    "townTileSub": "Bain fómhar & tóg",
+    "duelsTile": "Comhraic",
+    "duelsTileSub": "Tabhair dúshlán do chara",
+    "townCardBadge": "CLUICHE",
+    "townCardSub": "Tóg do bhaile, bain barraí agus saothraigh boinn!"
   },
   "account": {
     "saveTitle": "Sábháil do stéig agus d'áit i RonDuel World",

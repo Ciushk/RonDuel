@@ -688,7 +688,18 @@
     "myDuels": "Manas divcīņas",
     "challengeFriend": "Izaicināt draugu",
     "duelAnytime": "Bet tu vienmēr vari sarīkot divcīņu ar draugu.",
-    "createDuel": "Izveidot divcīņu"
+    "createDuel": "Izveidot divcīņu",
+    "roundComplete": "Šodienas kārta pabeigta",
+    "nextRoundLabel": "Nākamā kārta pēc",
+    "nextRoundAt": "Kārta #{number} sākas pusnaktī (pēc tava laika)",
+    "nextRoundSr": "Nākamā kārta pēc {hours} st. {minutes} min.",
+    "seeResults": "Skatīt rezultātus →",
+    "townTile": "RonTown",
+    "townTileSub": "Novāc ražu un būvē",
+    "duelsTile": "Dueļi",
+    "duelsTileSub": "Izaicināt draugu",
+    "townCardBadge": "SPĒLE",
+    "townCardSub": "Uzbūvē savu pilsētu, novāc ražu un krāj monētas!"
   },
   "account": {
     "saveTitle": "Saglabā savu sēriju un vietu RonDuel World",

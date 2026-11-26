@@ -688,7 +688,18 @@
     "myDuels": "Os meus duelos",
     "challengeFriend": "Desafiar um amigo",
     "duelAnytime": "Mas podes sempre fazer um duelo com um amigo.",
-    "createDuel": "Criar um duelo"
+    "createDuel": "Criar um duelo",
+    "roundComplete": "Ronda de hoje concluída",
+    "nextRoundLabel": "Próxima ronda em",
+    "nextRoundAt": "A ronda #{number} começa à meia-noite (tua hora)",
+    "nextRoundSr": "Próxima ronda em {hours} h {minutes} min",
+    "seeResults": "Ver resultados →",
+    "townTile": "RonTown",
+    "townTileSub": "Colhe e constrói",
+    "duelsTile": "Duelos",
+    "duelsTileSub": "Desafiar um amigo",
+    "townCardBadge": "JOGO",
+    "townCardSub": "Constrói a tua cidade, colhe culturas e ganha moedas!"
   },
   "account": {
     "saveTitle": "Salva a tua sequência e o teu lugar no RonDuel World",

@@ -688,7 +688,18 @@
     "myDuels": "Párbajaim",
     "challengeFriend": "Hívd ki egy barátodat",
     "duelAnytime": "De mindig játszhatsz párbajt egy barátoddal.",
-    "createDuel": "Párbaj létrehozása"
+    "createDuel": "Párbaj létrehozása",
+    "roundComplete": "A mai forduló teljesítve",
+    "nextRoundLabel": "Következő forduló",
+    "nextRoundAt": "A(z) #{number}. forduló éjfélkor indul (helyi idő)",
+    "nextRoundSr": "Következő forduló {hours} óra {minutes} perc múlva",
+    "seeResults": "Eredmények megtekintése →",
+    "townTile": "RonTown",
+    "townTileSub": "Arass és építs",
+    "duelsTile": "Párbajok",
+    "duelsTileSub": "Hívd ki egy barátodat",
+    "townCardBadge": "JÁTÉK",
+    "townCardSub": "Építsd meg a városodat, arass és gyűjts érméket!"
   },
   "account": {
     "saveTitle": "Mentsd el a sorozatodat és a helyedet a RonDuel Worldben",

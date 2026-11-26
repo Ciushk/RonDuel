@@ -688,7 +688,18 @@
     "myDuels": "Moji dvoboji",
     "challengeFriend": "Izzovi prijatelja",
     "duelAnytime": "Vedno pa se lahko dvobojaš s prijateljem.",
-    "createDuel": "Ustvari dvoboj"
+    "createDuel": "Ustvari dvoboj",
+    "roundComplete": "Današnji krog je končan",
+    "nextRoundLabel": "Naslednji krog čez",
+    "nextRoundAt": "Krog #{number} se začne opolnoči (tvoj čas)",
+    "nextRoundSr": "Naslednji krog čez {hours} h {minutes} min",
+    "seeResults": "Poglej rezultate →",
+    "townTile": "RonTown",
+    "townTileSub": "Žanji in gradi",
+    "duelsTile": "Dvoboji",
+    "duelsTileSub": "Izzovi prijatelja",
+    "townCardBadge": "IGRA",
+    "townCardSub": "Zgradi svoje mesto, pobiraj pridelke in zbiraj kovance!"
   },
   "account": {
     "saveTitle": "Shrani svoj niz in svoje mesto v RonDuel World",

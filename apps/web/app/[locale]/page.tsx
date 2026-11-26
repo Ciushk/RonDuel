@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  Clock,
+  Check,
   Crown,
   Flame,
   GlobeHemisphereWest,
@@ -18,7 +18,7 @@ import { buildShareCardText, validateNickname } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
@@ -31,6 +31,12 @@ import { getLeagueTheme } from '@/lib/league-theme';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
 import { serverProfileToApply } from '@/lib/onboarding-profile';
+import {
+  formatCountdown,
+  getCountdownParts,
+  getLocalDateKey,
+  getSecondsUntilMidnight,
+} from '@/lib/round-clock';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
 
 interface ActiveDuel {
@@ -91,19 +97,6 @@ interface TodayStatus {
   hasFullFreeLeague?: boolean;
 }
 
-function getSecondsUntilMidnight(): number {
-  const now = new Date();
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-  return Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
-}
-
-function formatCountdown(sec: number): string {
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
 export default function LocaleHomePage() {
   const t = useTranslations();
   const locale = useLocale();
@@ -120,11 +113,16 @@ export default function LocaleHomePage() {
   const [ageOk, setAgeOk] = useState(false);
   const [nickError, setNickError] = useState('');
   const [countdown, setCountdown] = useState<string>('');
+  const [srCountdown, setSrCountdown] = useState<{ hours: number; minutes: number }>({
+    hours: 0,
+    minutes: 0,
+  });
   const [duelError, setDuelError] = useState('');
+  const lastDateKeyRef = useRef<string | null>(null);
 
   // The account is the source of truth: a nickname confirmed earlier (here or on another device)
   // is adopted instead of asking the player to pick one again after signing in.
-  const applyServerProfile = (data: TodayStatus) => {
+  const applyServerProfile = useCallback((data: TodayStatus) => {
     const session = getLocalSession();
     const next = serverProfileToApply({
       sessionNickname: session.nickname,
@@ -134,9 +132,9 @@ export default function LocaleHomePage() {
     });
     if (!next) return;
     saveLocalSession({ ...session, ...next });
-  };
+  }, []);
 
-  const loadStatus = () => {
+  const loadStatus = useCallback(() => {
     const session = getLocalSession();
     const tz = getBrowserTimeZone();
     fetch(`/api/game/status?uid=${encodeURIComponent(session.uid)}&tz=${encodeURIComponent(tz)}`)
@@ -163,7 +161,7 @@ export default function LocaleHomePage() {
         }
       })
       .catch(() => {});
-  };
+  }, [applyServerProfile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -176,15 +174,60 @@ export default function LocaleHomePage() {
     return () => {
       cancelled = true;
     };
-  }, [locale]);
+  }, [locale, loadStatus]);
 
-  // Countdown timer to midnight
+  // Timezone-accurate countdown to local midnight; pauses when tab is hidden and refreshes status at 0
   useEffect(() => {
-    const update = () => setCountdown(formatCountdown(getSecondsUntilMidnight()));
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const tz = getBrowserTimeZone();
+
+    const tick = () => {
+      const now = new Date();
+      const dateKey = getLocalDateKey(now, tz);
+      const sec = getSecondsUntilMidnight(now, tz);
+      setCountdown(formatCountdown(sec));
+
+      const parts = getCountdownParts(sec);
+      setSrCountdown((prev) =>
+        prev.hours === parts.hours && prev.minutes === parts.minutes
+          ? prev
+          : { hours: parts.hours, minutes: parts.minutes },
+      );
+
+      const prevDateKey = lastDateKeyRef.current;
+      lastDateKeyRef.current = dateKey;
+      if (prevDateKey !== null && prevDateKey !== dateKey) {
+        loadStatus();
+      }
+    };
+
+    const start = () => {
+      if (timer !== null || document.hidden) return;
+      tick();
+      timer = setInterval(() => {
+        if (!document.hidden) tick();
+      }, 1000);
+    };
+
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [loadStatus]);
 
   const handleDismissBanner = () => {
     setShowSlimBanner(false);
@@ -303,7 +346,7 @@ export default function LocaleHomePage() {
     (status?.finishedPlaysCount ?? 0) === 0 && (status?.privateLeagues?.length ?? 0) === 0;
 
   return (
-    <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
+    <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-4">
       <h1 className="sr-only">{t('home.heroTitle')}</h1>
 
       {/* Streak badge for returning player */}
@@ -368,12 +411,29 @@ export default function LocaleHomePage() {
       )}
 
       {/* Hero Card */}
-      <Card className="space-y-4">
-        <div className="flex items-center justify-between gap-2">
+      <Card
+        data-testid={status?.played ? 'home-done-card' : 'home-play-card'}
+        className={status?.played ? 'rd-home-done-card space-y-3 p-4' : 'space-y-4'}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
           {status ? (
             <>
-              <Chip tone="volt">{t('brand.roundBadge', { number: status.roundNumber })}</Chip>
-              <Chip tone="neutral">
+              {status.played ? (
+                <Chip
+                  tone="volt"
+                  data-testid="home-round-complete-chip"
+                  className="whitespace-nowrap px-2 py-0.5 text-[11px]"
+                >
+                  <Check size={13} weight="bold" aria-hidden="true" />
+                  <span>{t('home.roundComplete')}</span>
+                </Chip>
+              ) : (
+                <Chip tone="volt">{t('brand.roundBadge', { number: status.roundNumber })}</Chip>
+              )}
+              <Chip
+                tone="neutral"
+                className={status.played ? 'whitespace-nowrap px-2 py-0.5 text-[11px]' : undefined}
+              >
                 {status.themeKey
                   ? t(`themes.${status.themeKey}` as Parameters<typeof t>[0])
                   : t('themes.worldScience')}
@@ -394,43 +454,55 @@ export default function LocaleHomePage() {
         </div>
 
         {status?.played ? (
-          <div className="space-y-3 py-2 text-center">
-            <h2 className="font-display text-ink text-xl font-extrabold">
-              {t('home.playedToday')}
-            </h2>
-            <p className="rd-tabular font-display text-ink text-5xl font-extrabold">
-              {(status.score ?? status.totalScore ?? 0).toLocaleString()}
-            </p>
-            {status.emojiLine && (
-              <p className="text-2xl tracking-widest" aria-label={status.emojiLine}>
-                {status.emojiLine}
+          <div className="space-y-2.5 text-center">
+            <div className="space-y-1">
+              <p
+                data-testid="home-done-score"
+                className="rd-tabular font-display text-ink text-[44px] font-extrabold leading-none"
+              >
+                {(status.score ?? status.totalScore ?? 0).toLocaleString()}
               </p>
-            )}
-            <div className="text-muted flex items-center justify-center gap-1.5 pt-1 text-xs font-bold">
-              <Clock size={16} weight="bold" />
-              <span>{t('home.nextRoundIn', { time: countdown })}</span>
+              {status.emojiLine && (
+                <p className="text-xl tracking-widest" aria-label={status.emojiLine}>
+                  {status.emojiLine}
+                </p>
+              )}
             </div>
 
-            <div className="border-border-subtle bg-surface-2 space-y-2.5 rounded-2xl border p-3.5">
-              <p className="text-muted text-xs font-bold leading-snug">{t('home.duelAnytime')}</p>
-              <Button fullWidth size="lg" variant="blue" onClick={() => void handleCreateDuel()}>
-                <Sword size={20} weight="bold" aria-hidden="true" />
-                {t('home.createDuel')}
-              </Button>
-              {duelError && <p className="text-wrong text-xs font-bold">{duelError}</p>}
+            <div className="border-border-subtle bg-surface-2 space-y-1 rounded-2xl border-2 px-3.5 py-2.5">
+              <p className="text-muted text-[11px] font-black uppercase tracking-widest">
+                {t('home.nextRoundLabel')}
+              </p>
+              <p
+                data-testid="home-next-countdown"
+                aria-hidden="true"
+                className="rd-tabular text-ink text-[34px] font-extrabold leading-none tracking-tight"
+              >
+                {countdown || '00:00:00'}
+              </p>
+              <span className="sr-only" aria-live="off" data-testid="home-next-countdown-sr">
+                {t('home.nextRoundSr', {
+                  hours: srCountdown.hours,
+                  minutes: srCountdown.minutes,
+                })}
+              </span>
+              <p className="text-muted text-xs font-medium">
+                {t('home.nextRoundAt', { number: status.roundNumber + 1 })}
+              </p>
             </div>
 
-            <div className="space-y-2 pt-2">
-              <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
-                <ShareNetwork size={20} weight="bold" aria-hidden="true" />
+            <div className="space-y-1 pt-0.5">
+              <Button fullWidth size="md" variant="primary" onClick={handleShareClick}>
+                <ShareNetwork size={19} weight="bold" aria-hidden="true" />
                 {t('result.shareCta')}
               </Button>
               {status.playId && (
                 <Link
                   href={`/${locale}/result/${encodeURIComponent(status.playId)}`}
-                  className="text-muted hover:text-ink block py-1 text-xs font-bold underline"
+                  data-testid="home-see-results-link"
+                  className="text-duel-strong hover:text-ink inline-flex min-h-10 items-center justify-center px-3 text-sm font-extrabold underline underline-offset-4"
                 >
-                  {t('home.viewDetailedResult')}
+                  {t('home.seeResults')}
                 </Link>
               )}
             </div>
@@ -459,16 +531,58 @@ export default function LocaleHomePage() {
           </div>
         )}
 
-        <div className="border-border-subtle flex justify-center border-t pt-1">
+        <div className="border-border-subtle flex justify-center border-t pt-0.5">
           <Link
             href={`/${locale}/regulament`}
             data-testid="hero-rules-link"
-            className="text-muted hover:text-duel-strong inline-flex min-h-11 items-center justify-center px-3 text-xs font-bold underline underline-offset-4"
+            className="text-muted hover:text-duel-strong inline-flex min-h-10 items-center justify-center px-3 text-xs font-bold underline underline-offset-4"
           >
             {t('rules.heroLink')}
           </Link>
         </div>
       </Card>
+
+      {/* Two big sticker tiles (RonTown + Duels) in the "done for today" state */}
+      {status?.played && (
+        <div
+          data-testid="home-done-tiles"
+          className="rd-home-done-tiles grid grid-cols-2 gap-3.5 py-0.5"
+        >
+          <Link
+            href={`/${locale}/town`}
+            data-testid="home-town-tile"
+            className="flex min-h-[116px] -rotate-[1.5deg] flex-col items-start justify-between rounded-[20px] border-2 border-[#0E0D15] bg-[#C6FF3D] p-3.5 text-left text-[#0E0D15] shadow-[0_4px_0_0_#0E0D15] transition-transform duration-150 ease-out active:translate-y-[2px] active:shadow-[0_2px_0_0_#0E0D15] motion-reduce:rotate-0 motion-reduce:transition-none"
+          >
+            <span className="text-3xl leading-none" aria-hidden="true">
+              🏡
+            </span>
+            <div className="space-y-0.5">
+              <span className="font-display block text-lg font-extrabold leading-tight">
+                {t('home.townTile')}
+              </span>
+              <span className="block text-xs font-bold text-[#0E0D15]/80">
+                {t('home.townTileSub')}
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            href={`/${locale}/duels`}
+            data-testid="home-duels-tile"
+            className="bg-duel-strong flex min-h-[116px] rotate-[1.5deg] flex-col items-start justify-between rounded-[20px] border-2 border-[#0E0D15] p-3.5 text-left text-[var(--rd-on-blue)] shadow-[0_4px_0_0_#0E0D15] transition-transform duration-150 ease-out active:translate-y-[2px] active:shadow-[0_2px_0_0_#0E0D15] motion-reduce:rotate-0 motion-reduce:transition-none"
+          >
+            <span className="text-3xl leading-none" aria-hidden="true">
+              ⚔️
+            </span>
+            <div className="space-y-0.5">
+              <span className="font-display block text-lg font-extrabold leading-tight">
+                {t('home.duelsTile')}
+              </span>
+              <span className="block text-xs font-bold opacity-90">{t('home.duelsTileSub')}</span>
+            </div>
+          </Link>
+        </div>
+      )}
 
       {/* Prominent Action Button: Leaderboards */}
       <Link href={`/${locale}/leagues?tab=leaderboard`} className="block">
@@ -483,26 +597,30 @@ export default function LocaleHomePage() {
         </Button>
       </Link>
 
-      {/* RonTown Entry Card */}
-      <Link href={`/${locale}/town`} className="block">
-        <div className="border-border bg-surface text-ink hover:border-volt hover:bg-surface-2 flex items-center justify-between gap-3 rounded-2xl border-2 p-3.5 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-border bg-[#C6FF3D] text-2xl shadow-sm">
-              🏡
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-display font-black text-sm text-ink truncate">RonTown</span>
-                <span className="bg-[#C6FF3D] text-[#0E0D15] text-[10px] font-black px-1.5 py-0.2 rounded border border-border">JOC</span>
+      {/* RonTown Entry Card (hidden in played state where the RonTown sticker tile is shown above) */}
+      {!status?.played && (
+        <Link href={`/${locale}/town`} data-testid="home-town-entry-card" className="block">
+          <div className="border-border bg-surface text-ink hover:border-volt hover:bg-surface-2 flex items-center justify-between gap-3 rounded-2xl border-2 p-3.5 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="border-border flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 bg-[#C6FF3D] text-2xl shadow-sm">
+                🏡
               </div>
-              <p className="text-muted text-xs font-medium truncate">Construiește-ți orașul, recoltează și adună bănuți!</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display text-ink truncate text-sm font-black">RonTown</span>
+                  <span className="border-border rounded border bg-[#C6FF3D] px-1.5 py-0.5 text-[10px] font-black text-[#0E0D15]">
+                    {t('home.townCardBadge')}
+                  </span>
+                </div>
+                <p className="text-muted truncate text-xs font-medium">{t('home.townCardSub')}</p>
+              </div>
             </div>
+            <Button size="sm" variant="volt" className="h-9 shrink-0 px-3 text-xs font-black">
+              {t('common.playNow')}
+            </Button>
           </div>
-          <Button size="sm" variant="volt" className="shrink-0 h-9 px-3 text-xs font-black">
-            {t('common.playNow')}
-          </Button>
-        </div>
-      </Link>
+        </Link>
+      )}
 
       {/* Two Equal Action Buttons: Create league & Join league */}
       <div className="grid grid-cols-2 gap-3">

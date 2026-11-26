@@ -688,7 +688,18 @@
     "myDuels": "Moje duely",
     "challengeFriend": "Vyzvi priateľa",
     "duelAnytime": "Ale vždy môžeš mať duel s priateľom.",
-    "createDuel": "Vytvoriť duel"
+    "createDuel": "Vytvoriť duel",
+    "roundComplete": "Dnešné kolo je hotové",
+    "nextRoundLabel": "Ďalšie kolo o",
+    "nextRoundAt": "Kolo #{number} začína o polnoci (tvoj čas)",
+    "nextRoundSr": "Ďalšie kolo o {hours} h {minutes} min",
+    "seeResults": "Zobraziť výsledky →",
+    "townTile": "RonTown",
+    "townTileSub": "Zberaj a stavaj",
+    "duelsTile": "Duely",
+    "duelsTileSub": "Vyzvi priateľa",
+    "townCardBadge": "HRA",
+    "townCardSub": "Postav si mesto, zberaj úrodu a získavaj mince!"
   },
   "account": {
     "saveTitle": "Ulož si svoju sériu a miesto v RonDuel World",

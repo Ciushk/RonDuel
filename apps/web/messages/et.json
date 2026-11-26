@@ -688,7 +688,18 @@
     "myDuels": "Minu duellid",
     "challengeFriend": "Esita sõbrale väljakutse",
     "duelAnytime": "Aga saad alati sõbraga duelli pidada.",
-    "createDuel": "Loo duell"
+    "createDuel": "Loo duell",
+    "roundComplete": "Tänane voor on tehtud",
+    "nextRoundLabel": "Järgmine voor",
+    "nextRoundAt": "Voor #{number} algab südaööl (sinu aeg)",
+    "nextRoundSr": "Järgmine voor {hours} t {minutes} min pärast",
+    "seeResults": "Vaata tulemusi →",
+    "townTile": "RonTown",
+    "townTileSub": "Korja ja ehita",
+    "duelsTile": "Duellid",
+    "duelsTileSub": "Esita sõbrale väljakutse",
+    "townCardBadge": "MÄNG",
+    "townCardSub": "Ehita oma linn, korja saaki ja kogu münte!"
   },
   "account": {
     "saveTitle": "Salvesta oma seeria ja koht RonDuel Worldis",
