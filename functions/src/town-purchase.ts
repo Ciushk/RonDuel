@@ -1,12 +1,17 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getStripe, isFunctionsEmulator, mapToStripeCheckoutLocale } from './stripe-client.js';
 import { assertTownFeatureEnabled } from './town-economy.js';
 import { creditWallet } from './town-wallet.js';
-import type { TownEconomyConfig, WalletDoc } from '@ronduel/shared';
+import type { WalletDoc } from '@ronduel/shared';
+
+const DEFAULT_PUBLIC_BASE_URL = 'https://ronduel.web.app';
 
 export interface CreateCoinCheckoutParams {
   uid: string;
   packId: string;
+  locale?: string;
+  publicBaseUrl?: string;
   successUrl?: string;
   cancelUrl?: string;
   simulateImmediately?: boolean;
@@ -57,57 +62,51 @@ export async function createCoinCheckoutSession(
     );
   }
 
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  const baseUrl = (params.publicBaseUrl || DEFAULT_PUBLIC_BASE_URL).replace(/\/+$/, '');
+  const stripe = getStripe();
 
-  if (stripeSecretKey) {
-    // Live Stripe integration via runtime dynamic load
-    try {
-      const stripePkg = await (Function('return import("stripe")')() as Promise<any>);
-      const Stripe = stripePkg.default;
-      const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-12-18.acacia' as any });
-
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        client_reference_id: uid,
-        metadata: {
-          type: 'town_coin_purchase',
-          uid,
-          packId: pack.id,
-          coins: String(pack.coins),
-          eur: String(pack.eur),
-        },
-        line_items: [
-          {
-            price_data: {
-              currency: 'eur',
-              unit_amount: Math.round(pack.eur * 100),
-              product_data: {
-                name: `${pack.coins.toLocaleString()} RonCoins`,
-                description:
-                  'RonTown in-game cosmetic currency. Non-refundable and non-convertible.',
-              },
+  if (stripe) {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      locale: mapToStripeCheckoutLocale(params.locale),
+      client_reference_id: uid,
+      metadata: {
+        type: 'town_coin_purchase',
+        uid,
+        packId: pack.id,
+        coins: String(pack.coins),
+        eur: String(pack.eur),
+      },
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            unit_amount: Math.round(pack.eur * 100),
+            product_data: {
+              name: `${pack.coins.toLocaleString()} RonCoins`,
+              description: 'RonTown in-game cosmetic currency. Non-refundable and non-convertible.',
             },
-            quantity: 1,
           },
-        ],
-        success_url:
-          params.successUrl ||
-          `https://ronduel.com/town?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: params.cancelUrl || `https://ronduel.com/town?checkout=canceled`,
-      });
+          quantity: 1,
+        },
+      ],
+      success_url:
+        params.successUrl || `${baseUrl}/town?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: params.cancelUrl || `${baseUrl}/town?checkout=canceled`,
+    });
 
-      return {
-        mode: 'stripe_checkout',
-        sessionId: session.id,
-        checkoutUrl: session.url ?? undefined,
-      };
-    } catch {
-      // Fallback to simulation if stripe module is unavailable
-    }
+    return {
+      mode: 'stripe_checkout',
+      sessionId: session.id,
+      checkoutUrl: session.url ?? undefined,
+    };
   }
 
-  // Local / test mode simulation
+  if (!isFunctionsEmulator()) {
+    throw new Error('STRIPE_NOT_CONFIGURED');
+  }
+
+  // Local emulator simulation only
   const mockSessionId = `cs_test_${Date.now()}_${uid}`;
 
   if (params.simulateImmediately) {

@@ -8,5 +8,11 @@ await build({
   format: 'esm',
   outfile: 'lib/index.js',
   sourcemap: true,
-  external: ['firebase-admin', 'firebase-functions', 'firebase-functions/*', '@google/genai'],
+  external: [
+    'firebase-admin',
+    'firebase-functions',
+    'firebase-functions/*',
+    '@google/genai',
+    'stripe',
+  ],
 });

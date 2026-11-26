@@ -19,6 +19,7 @@ import { setGlobalOptions } from 'firebase-functions/v2';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+import { defineSecret, defineString } from 'firebase-functions/params';
 
 if (getApps().length === 0) {
   initializeApp();
@@ -46,6 +47,7 @@ import {
   getUserProfile,
   joinLeague,
   leaveOrRemoveLeagueMember,
+  markUserDirty,
   processStripeWebhook,
   publishAdminRound,
   regenerateLeagueInviteCode,
@@ -79,6 +81,8 @@ import {
   syncUserToFirestore,
 } from './firestore-users.js';
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
+import { createProCheckout, handleStripeWebhook } from './billing.js';
+import { getStripe, verifyStripeEvent } from './stripe-client.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
 import { rotateTownElement } from './town-rotate.js';
@@ -115,16 +119,23 @@ const storePersistence = createStorePersistence({
   getStore: () => getStore() as unknown as Record<string, unknown>,
 });
 
+export const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
+export const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
+const STRIPE_PRICE_PRO_MONTHLY = defineString('STRIPE_PRICE_PRO_MONTHLY', { default: '' });
+const STRIPE_PRICE_PRO_YEARLY = defineString('STRIPE_PRICE_PRO_YEARLY', { default: '' });
+const PUBLIC_BASE_URL = defineString('PUBLIC_BASE_URL', { default: 'https://ronduel.web.app' });
+
 // One instance on purpose: each instance trusts its own memory for reads, so two instances would
 // show different leaderboards. cpu 1 and concurrency 40 let that single instance serve many players.
 const apiOptions = {
   cors: true,
-  memory: '512MiB',
+  memory: '512MiB' as const,
   cpu: 1,
   concurrency: 40,
   minInstances: 1,
   maxInstances: 1,
-} as const;
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET],
+};
 
 export const health = onRequest((_req, res) => {
   res.status(200).json({ ok: true, service: 'ronduel-functions', region: 'europe-west1' });
@@ -149,6 +160,12 @@ function collectRequestUids(body: Record<string, unknown>, url: URL): string[] {
   return [...ids];
 }
 
+function readStripeSignatureHeader(header: string | string[] | undefined): string | undefined {
+  if (typeof header === 'string') return header;
+  if (Array.isArray(header)) return header[0];
+  return undefined;
+}
+
 export const api = onRequest(apiOptions, async (req, res) => {
   res.setHeader(
     'Cache-Control',
@@ -160,11 +177,15 @@ export const api = onRequest(apiOptions, async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
     const pathname = url.pathname.replace(/^\/api/, '') || '/';
     const method = req.method.toUpperCase();
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const isStripeWebhookRoute =
+      method === 'POST' && (pathname === '/billing/webhook' || pathname === '/town/stripe-webhook');
+    const body = isStripeWebhookRoute ? {} : ((req.body ?? {}) as Record<string, unknown>);
     await storePersistence.ensureHydrated();
-    for (const uid of collectRequestUids(body, url)) {
-      if (!getStore().users[uid]) {
-        await getUserFromFirestore(uid);
+    if (!isStripeWebhookRoute && pathname !== '/billing/checkout') {
+      for (const uid of collectRequestUids(body, url)) {
+        if (!getStore().users[uid]) {
+          await getUserFromFirestore(uid);
+        }
       }
     }
     const originalJson = res.json.bind(res);
@@ -649,6 +670,8 @@ export const api = onRequest(apiOptions, async (req, res) => {
         const result = await createCoinCheckoutSession(db, {
           uid,
           packId,
+          locale: body.locale ? String(body.locale) : undefined,
+          publicBaseUrl: PUBLIC_BASE_URL.value(),
           successUrl: body.successUrl ? String(body.successUrl) : undefined,
           cancelUrl: body.cancelUrl ? String(body.cancelUrl) : undefined,
           simulateImmediately: Boolean(body.simulateImmediately),
@@ -663,14 +686,22 @@ export const api = onRequest(apiOptions, async (req, res) => {
 
     if (method === 'POST' && pathname === '/town/stripe-webhook') {
       const db = getDb();
-      try {
-        const result = await handleTownStripeWebhook(db, body);
-        res.status(200).json(result);
-        return;
-      } catch (err: any) {
-        res.status(400).json({ error: err.message || 'Webhook processing failed' });
-        return;
-      }
+      const result = await handleStripeWebhook(
+        {
+          rawBody: req.rawBody,
+          signature: readStripeSignatureHeader(req.headers['stripe-signature']),
+        },
+        {
+          verifyStripeEvent,
+          getStripe,
+          getStoreUser: (uid) => getStore().users[uid],
+          getUserFromFirestore,
+          processStripeWebhook,
+          handleTownStripeWebhook: (event) => handleTownStripeWebhook(db, event),
+        },
+      );
+      res.status(result.status).json(result.body);
+      return;
     }
 
     if (method === 'GET' && pathname === '/town/transfer-status') {
@@ -1116,39 +1147,51 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
 
     if (method === 'POST' && pathname === '/billing/checkout') {
-      const uid = String(body.uid);
-      const user = getOrCreateUser({ uid });
-      if (user.isAnonymous) {
-        res.status(403).json({
-          error: 'Please upgrade your anonymous account before purchasing RonDuel Pro.',
-          code: 'FORBIDDEN',
-        });
-        return;
-      }
-      const plan = (body.plan as 'monthly' | 'yearly') ?? 'yearly';
-      const eventId = `evt_cf_${Date.now()}_${uid}`;
-      const wh = processStripeWebhook({
-        eventId,
-        type: 'checkout.session.completed',
-        uid,
-        plan,
-      });
-      res.status(200).json({ mode: 'local_test_webhook', eventId, pro: wh.pro });
+      const result = await createProCheckout(
+        {
+          authHeader:
+            typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null,
+          testUidHeader:
+            typeof req.headers['x-test-uid'] === 'string' ? req.headers['x-test-uid'] : null,
+          body,
+        },
+        {
+          verifyIdToken: async (token) => getAuth().verifyIdToken(token),
+          getStoreUser: (uid) => getStore().users[uid],
+          getUserFromFirestore,
+          getOrCreateUser,
+          markUserDirty,
+          syncUserToFirestore,
+          processStripeWebhook,
+          getStripe,
+          priceIds: {
+            monthly: STRIPE_PRICE_PRO_MONTHLY.value(),
+            yearly: STRIPE_PRICE_PRO_YEARLY.value(),
+          },
+          publicBaseUrl: PUBLIC_BASE_URL.value(),
+        },
+      );
+      res.status(result.status).json(result.body);
       return;
     }
 
     if (method === 'POST' && pathname === '/billing/webhook') {
-      res.status(200).json(
-        processStripeWebhook({
-          eventId: String(body.id),
-          type: body.type as
-            | 'checkout.session.completed'
-            | 'customer.subscription.updated'
-            | 'customer.subscription.deleted',
-          uid: String(body.uid),
-          plan: body.plan as 'monthly' | 'yearly' | undefined,
-        }),
+      const db = getDb();
+      const result = await handleStripeWebhook(
+        {
+          rawBody: req.rawBody,
+          signature: readStripeSignatureHeader(req.headers['stripe-signature']),
+        },
+        {
+          verifyStripeEvent,
+          getStripe,
+          getStoreUser: (uid) => getStore().users[uid],
+          getUserFromFirestore,
+          processStripeWebhook,
+          handleTownStripeWebhook: (event) => handleTownStripeWebhook(db, event),
+        },
       );
+      res.status(result.status).json(result.body);
       return;
     }
 

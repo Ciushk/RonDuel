@@ -15,7 +15,10 @@ import { useEffect, useState } from 'react';
 import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { getLocalSession } from '@/lib/session';
+
+import { PRO_CONSENT_TEXT_VERSION } from './consent';
 
 export default function ProPaywallPage() {
   const t = useTranslations();
@@ -31,15 +34,48 @@ export default function ProPaywallPage() {
   const [toast, setToast] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
     const s = getLocalSession();
-    fetch(`/api/me/profile?uid=${encodeURIComponent(s.uid)}`)
-      .then((r) => r.json())
-      .then((d) => {
+    const isCheckoutSuccess =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('checkout') === 'success';
+
+    const fetchProfile = async (retriesRemaining: number) => {
+      try {
+        const r = await fetch(`/api/me/profile?uid=${encodeURIComponent(s.uid)}`);
+        const d = await r.json();
+        if (cancelled) return;
         setIsAnonymous(Boolean(d.isAnonymous));
-        setProActive(d.pro ?? { active: false });
-      })
-      .catch(() => {});
-  }, []);
+        const nextPro = d.pro ?? { active: false };
+        setProActive(nextPro);
+        if (isCheckoutSuccess) {
+          if (nextPro.active) {
+            setToast(t('pro.activeBadge', { plan: nextPro.plan ?? 'yearly' }));
+            return;
+          }
+          if (retriesRemaining > 0) {
+            retryTimer = setTimeout(() => {
+              void fetchProfile(retriesRemaining - 1);
+            }, 2000);
+          }
+        }
+      } catch {
+        if (!cancelled && isCheckoutSuccess && retriesRemaining > 0) {
+          retryTimer = setTimeout(() => {
+            void fetchProfile(retriesRemaining - 1);
+          }, 2000);
+        }
+      }
+    };
+
+    void fetchProfile(isCheckoutSuccess ? 3 : 0);
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [t]);
 
   useEffect(() => {
     trackEvent('paywall_viewed');
@@ -54,19 +90,38 @@ export default function ProPaywallPage() {
   const handleCheckout = async () => {
     setError('');
     trackEvent('checkout_started', { plan });
-    const s = getLocalSession();
+    let idToken: string | null = null;
+    try {
+      const auth = getFirebaseAuth();
+      idToken = (await auth?.currentUser?.getIdToken()) ?? null;
+    } catch {
+      idToken = null;
+    }
+    if (!idToken) {
+      setError(t('pro.checkoutError'));
+      return;
+    }
+
     const res = await fetch('/api/billing/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
       body: JSON.stringify({
-        uid: s.uid,
         plan,
         euWithdrawalConsent: euConsent,
+        locale,
       }),
     });
     const data = await res.json();
     if (!res.ok) {
       setError(data.error ?? t('pro.checkoutError'));
+      return;
+    }
+    if (typeof data.checkoutUrl === 'string' && data.checkoutUrl) {
+      trackEvent('checkout_redirect', { plan });
+      window.location.assign(data.checkoutUrl);
       return;
     }
     if (data.pro?.active) {
@@ -168,6 +223,7 @@ export default function ProPaywallPage() {
                 type="checkbox"
                 checked={euConsent}
                 onChange={(e) => setEuConsent(e.target.checked)}
+                data-consent-version={PRO_CONSENT_TEXT_VERSION}
                 className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--rd-blue-strong)]"
               />
               <span>{t('pro.euConsent')}</span>

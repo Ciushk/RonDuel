@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as stripeClient from './stripe-client.js';
 import { clearEconomyConfigCache } from './town-economy.js';
 import {
   createCoinCheckoutSession,
@@ -9,8 +10,12 @@ import {
 describe('town-purchase business logic & dedicated webhook', () => {
   let store: Map<string, Record<string, unknown>>;
   let mockDb: any;
+  const origEmulator = process.env.FUNCTIONS_EMULATOR;
+  const origStripeKey = process.env.STRIPE_SECRET_KEY;
 
   beforeEach(() => {
+    process.env.FUNCTIONS_EMULATOR = 'true';
+    delete process.env.STRIPE_SECRET_KEY;
     clearEconomyConfigCache();
     store = new Map();
 
@@ -211,5 +216,48 @@ describe('town-purchase business logic & dedicated webhook', () => {
     };
     const subRes = await handleTownStripeWebhook(mockDb, subEvent);
     expect(subRes.processed).toBe(false);
+  });
+
+  afterEach(() => {
+    if (origEmulator === undefined) delete process.env.FUNCTIONS_EMULATOR;
+    else process.env.FUNCTIONS_EMULATOR = origEmulator;
+    if (origStripeKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = origStripeKey;
+  });
+
+  it('throws in production when Stripe is unavailable or errors and never falls back to simulation', async () => {
+    delete process.env.FUNCTIONS_EMULATOR;
+    delete process.env.STRIPE_SECRET_KEY;
+
+    await expect(
+      createCoinCheckoutSession(mockDb, {
+        uid: 'u_prod',
+        packId: 'pack_1000',
+        simulateImmediately: true,
+      }),
+    ).rejects.toThrow('STRIPE_NOT_CONFIGURED');
+
+    // When Stripe client exists in production and sessions.create rejects, propagate error (no simulation)
+    const spy = vi.spyOn(stripeClient, 'getStripe').mockReturnValue({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockRejectedValue(new Error('Stripe API 500')),
+        },
+      },
+    } as any);
+    try {
+      await expect(
+        createCoinCheckoutSession(mockDb, {
+          uid: 'u_prod',
+          packId: 'pack_1000',
+          simulateImmediately: true,
+        }),
+      ).rejects.toThrow('Stripe API 500');
+    } finally {
+      spy.mockRestore();
+    }
+
+    // No coins credited by silent simulation fallback
+    expect(store.get('users/u_prod/wallet/main')).toBeUndefined();
   });
 });

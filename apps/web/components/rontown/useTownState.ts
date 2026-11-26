@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateTownCapacities,
@@ -236,6 +236,7 @@ export function useTownState(params: {
 }) {
   const { townEnabled, isVisitMode, visitHostUid } = params;
   const t = useTranslations();
+  const locale = useLocale();
 
   const [catalog] = useState<TownCatalogDoc>(DEFAULT_TOWN_CATALOG);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1319,6 +1320,7 @@ export function useTownState(params: {
           body: JSON.stringify({
             uid: session.uid,
             packId,
+            locale,
             simulateImmediately: true,
           }),
         });
@@ -1334,7 +1336,7 @@ export function useTownState(params: {
         showToast(t('town.toast.checkoutRequestFailed'));
       }
     },
-    [showToast, showErrorToast, t],
+    [locale, showToast, showErrorToast, t],
   );
 
   const loadTransferStatus = useCallback(async () => {

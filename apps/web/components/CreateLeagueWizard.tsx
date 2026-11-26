@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import { formatYearlyPrice } from '@/lib/pricing';
 import {
@@ -204,14 +205,26 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
     if (plan === 'pro_trial' && !isPro) {
       try {
         const s = getLocalSession();
+        let idToken: string | null = null;
+        try {
+          const auth = getFirebaseAuth();
+          idToken = (await auth?.currentUser?.getIdToken()) ?? null;
+        } catch {
+          idToken = null;
+        }
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (idToken) {
+          headers.Authorization = `Bearer ${idToken}`;
+        }
         const res = await fetch('/api/billing/checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             uid: s.uid,
             plan: 'yearly',
             trial: true,
             euWithdrawalConsent: true,
+            locale,
           }),
         });
         if (res.ok) {

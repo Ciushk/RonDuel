@@ -31,6 +31,7 @@ export type AnalyticsEvent =
   | 'pro_upsell_viewed'
   | 'paywall_viewed'
   | 'checkout_started'
+  | 'checkout_redirect'
   | 'subscription_started'
   | 'duel_created'
   | 'league_full_prompt_shown'
