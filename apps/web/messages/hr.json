@@ -1081,6 +1081,11 @@
       "connecting": "Povezivanje…",
       "reconnectingFailed": "Povezivanje s RonTownom nije uspjelo",
       "retry": "Pokušaj ponovno"
+    },
+    "road": {
+      "rotateAria": "Okreni cestu",
+      "axisNs": "Os ceste: Sjever–Jug",
+      "axisEw": "Os ceste: Istok–Zapad"
     }
   },
   "pwa": {

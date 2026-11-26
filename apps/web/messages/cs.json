@@ -1081,6 +1081,11 @@
       "connecting": "Připojování…",
       "reconnectingFailed": "Nepodařilo se připojit k RonTown",
       "retry": "Zkusit znovu"
+    },
+    "road": {
+      "rotateAria": "Otočit cestu",
+      "axisNs": "Osa cesty: Sever–Jih",
+      "axisEw": "Osa cesty: Východ–Západ"
     }
   },
   "pwa": {

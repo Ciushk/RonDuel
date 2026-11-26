@@ -297,6 +297,7 @@ export const api = onRequest(apiOptions, async (req, res) => {
           itemId: String(body.itemId ?? ''),
           x: Number(body.x),
           y: Number(body.y),
+          rot: body.rot === 1 ? 1 : undefined,
         });
         res.status(200).json(result);
         return;

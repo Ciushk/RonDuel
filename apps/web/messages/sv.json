@@ -1081,6 +1081,11 @@
       "connecting": "Ansluter…",
       "reconnectingFailed": "Kunde inte ansluta till RonTown",
       "retry": "Försök igen"
+    },
+    "road": {
+      "rotateAria": "Rotera väg",
+      "axisNs": "Vägaxel: Nord–Syd",
+      "axisEw": "Vägaxel: Öst–Väst"
     }
   },
   "pwa": {

@@ -1081,6 +1081,11 @@
       "connecting": "Свързване…",
       "reconnectingFailed": "Неуспешно свързване с RonTown",
       "retry": "Опитай пак"
+    },
+    "road": {
+      "rotateAria": "Завърти пътя",
+      "axisNs": "Ос на пътя: Север–Юг",
+      "axisEw": "Ос на пътя: Изток–Запад"
     }
   },
   "pwa": {

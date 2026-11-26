@@ -1081,6 +1081,11 @@
       "connecting": "Connexion…",
       "reconnectingFailed": "Impossible de se connecter à RonTown",
       "retry": "Réessayer"
+    },
+    "road": {
+      "rotateAria": "Pivoter la route",
+      "axisNs": "Axe de la route : Nord–Sud",
+      "axisEw": "Axe de la route : Est–Ouest"
     }
   },
   "pwa": {

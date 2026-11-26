@@ -66,6 +66,8 @@ interface IsoMapProps {
   onExpandTap: (x: number, y: number) => void;
   onHarvestComplete: (x: number, y: number) => void;
   lastTownEvent?: { id: number; x: number; y: number; type: 'harvest' | 'build' | 'plant' } | null;
+  placingRoadRot?: 0 | 1;
+  roadRotateTick?: number;
 }
 
 interface StaticWorldProps {
@@ -79,6 +81,8 @@ interface StaticWorldProps {
   nowMs: number;
   reducedMotion: boolean;
   previewRoadCell: GridCoord | null;
+  placingRoadRot: 0 | 1;
+  roadRotateTick: number;
   onHoverCell: (cell: GridCoord | null) => void;
   onTileTap: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
@@ -96,6 +100,8 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   nowMs,
   reducedMotion,
   previewRoadCell,
+  placingRoadRot,
+  roadRotateTick,
   onHoverCell,
   onTileTap,
   onExpandTap,
@@ -205,7 +211,15 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               onMouseEnter={() => onHoverCell({ x, y })}
               onMouseLeave={() => onHoverCell(null)}
               onFocus={() => onHoverCell({ x, y })}
-              onBlur={() => onHoverCell(null)}
+              onBlur={(e) => {
+                if (
+                  e.relatedTarget instanceof HTMLElement &&
+                  e.relatedTarget.dataset.testid === 'road-rotate-btn'
+                ) {
+                  return;
+                }
+                onHoverCell(null);
+              }}
               aria-label={cellLabel}
               className="focus-visible:outline-3 pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
               style={{
@@ -268,7 +282,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
       {objectItems.map(({ key, tile, w, h, sortKey }) => {
         // Road decor auto-picks 16-way street/curve/T/end/intersection (floor band, sits over its ground slab)
         if (tile.itemId === 'road') {
-          const spec = resolveRoadSprite(tile.x, tile.y, isRoadWithPreview);
+          const spec = resolveRoadSprite(tile.x, tile.y, isRoadWithPreview, tile.rot);
           const origin = isoToScreen(tile.x, tile.y);
           return (
             <img
@@ -472,27 +486,47 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
       {/* 4. Road placement preview (50% opacity in floor band under cursor) */}
       {previewRoadCell &&
         (() => {
-          const spec = resolveRoadSprite(previewRoadCell.x, previewRoadCell.y, isRoadWithPreview);
+          const spec = resolveRoadSprite(
+            previewRoadCell.x,
+            previewRoadCell.y,
+            isRoadWithPreview,
+            placingRoadRot,
+          );
           const origin = isoToScreen(previewRoadCell.x, previewRoadCell.y);
+          const dipClass =
+            roadRotateTick > 0
+              ? roadRotateTick % 2 === 1
+                ? 'rt-road-dip-a'
+                : 'rt-road-dip-b'
+              : '';
           return (
-            <img
-              key="road-preview"
-              data-road-preview="true"
-              src={spec.src}
-              alt=""
-              width={spec.width}
-              height={spec.height}
-              decoding="async"
-              className="pointer-events-none absolute block select-none"
+            <div
+              key="road-preview-wrap"
+              className="pointer-events-none absolute select-none"
               style={{
                 left: origin.x - boundsMinX,
                 top: origin.y - boundsMinY,
+                width: spec.width,
+                height: spec.height,
                 zIndex: floorZ(previewRoadCell.x, previewRoadCell.y, 1),
                 opacity: 0.5,
-                transform: spec.flipX ? 'scaleX(-1)' : undefined,
               }}
-              draggable={false}
-            />
+            >
+              <img
+                key="road-preview"
+                data-road-preview="true"
+                src={spec.src}
+                alt=""
+                width={spec.width}
+                height={spec.height}
+                decoding="async"
+                className={`rt-road-preview-img block select-none ${dipClass}`}
+                style={{
+                  transform: spec.flipX ? 'scaleX(-1)' : 'scaleX(1)',
+                }}
+                draggable={false}
+              />
+            </div>
           );
         })()}
     </>
@@ -518,6 +552,8 @@ export function IsoMap({
   onExpandTap,
   onHarvestComplete,
   lastTownEvent,
+  placingRoadRot = 0,
+  roadRotateTick = 0,
 }: IsoMapProps) {
   const t = useTranslations();
   const reducedMotion = useReducedMotion();
@@ -1226,6 +1262,8 @@ export function IsoMap({
           nowMs={nowMs}
           reducedMotion={reducedMotion}
           previewRoadCell={previewRoadCell}
+          placingRoadRot={placingRoadRot}
+          roadRotateTick={roadRotateTick}
           onHoverCell={setHoveredCell}
           onTileTap={onTileTap}
           onExpandTap={onExpandTap}

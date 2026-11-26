@@ -743,6 +743,57 @@ html[data-theme='dark'] {
   transition: opacity 180ms ease-out;
 }
 
+/* Road preview rotate feedback (transform & opacity only) */
+.rt-road-preview-img {
+  transition: transform 180ms ease-out;
+}
+
+@keyframes rt-road-dip-a {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes rt-road-dip-b {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes rt-road-reduced-a {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes rt-road-reduced-b {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.rt-road-dip-a {
+  animation: rt-road-dip-a 180ms ease-out 1;
+}
+
+.rt-road-dip-b {
+  animation: rt-road-dip-b 180ms ease-out 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -782,5 +833,17 @@ html[data-theme='dark'] {
 
   .rt-map-fade-in {
     transition: none !important;
+  }
+
+  .rt-road-preview-img {
+    transition: none !important;
+  }
+
+  .rt-road-dip-a {
+    animation: rt-road-reduced-a 120ms ease-out 1 !important;
+  }
+
+  .rt-road-dip-b {
+    animation: rt-road-reduced-b 120ms ease-out 1 !important;
   }
 }

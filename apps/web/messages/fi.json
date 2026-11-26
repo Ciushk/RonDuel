@@ -1081,6 +1081,11 @@
       "connecting": "Yhdistetään…",
       "reconnectingFailed": "Yhteys RonTowniin epäonnistui",
       "retry": "Yritä uudelleen"
+    },
+    "road": {
+      "rotateAria": "Käännä tie",
+      "axisNs": "Tien suunta: Pohjoinen–Etelä",
+      "axisEw": "Tien suunta: Itä–Länsi"
     }
   },
   "pwa": {

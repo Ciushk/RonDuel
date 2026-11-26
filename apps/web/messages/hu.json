@@ -1081,6 +1081,11 @@
       "connecting": "Csatlakozás…",
       "reconnectingFailed": "Nem sikerült csatlakozni a RonTownhoz",
       "retry": "Újra"
+    },
+    "road": {
+      "rotateAria": "Út elforgatása",
+      "axisNs": "Út iránya: Észak–Dél",
+      "axisEw": "Út iránya: Kelet–Nyugat"
     }
   },
   "pwa": {

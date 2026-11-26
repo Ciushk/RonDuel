@@ -222,6 +222,7 @@ export interface TownTileDoc {
   itemId: string;
   x: number;
   y: number;
+  rot?: 0 | 1;
   placedAt?: unknown;
   plantedAt?: unknown;
   readyAt?: unknown;
@@ -1017,4 +1018,3 @@ export function findWalkablePath(params: {
 
   return null;
 }
-

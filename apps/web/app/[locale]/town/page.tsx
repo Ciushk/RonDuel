@@ -1,6 +1,14 @@
 'use client';
 
-import { Buildings, CaretLeft, Gift, Heart, List, Users } from '@phosphor-icons/react';
+import {
+  ArrowsClockwise,
+  Buildings,
+  CaretLeft,
+  Gift,
+  Heart,
+  List,
+  Users,
+} from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -152,6 +160,8 @@ export default function TownPage() {
 
   const [shopTab, setShopTab] = useState<'housing' | 'service' | 'plot' | 'decor'>('housing');
   const [placingItemId, setPlacingItemId] = useState<string | null>(null);
+  const [roadRot, setRoadRot] = useState<0 | 1>(0);
+  const [roadRotateTick, setRoadRotateTick] = useState<number>(0);
   const [moveModeActive, setMoveModeActive] = useState<boolean>(false);
   const [movingTile, setMovingTile] = useState<TileInfo | null>(null);
   const [farmMenuOpen, setFarmMenuOpen] = useState<boolean>(false);
@@ -190,8 +200,37 @@ export default function TownPage() {
     });
   }, []);
 
+  const toggleRoadRot = useCallback(() => {
+    setRoadRot((prev) => (prev === 0 ? 1 : 0));
+    setRoadRotateTick((prev) => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    if (placingItemId !== 'road') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key !== 'r' && e.key !== 'R') return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      toggleRoadRot();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [placingItemId, toggleRoadRot]);
+
   const clearModes = useCallback(() => {
     setPlacingItemId(null);
+    setRoadRot(0);
+    setRoadRotateTick(0);
     setMoveModeActive(false);
     setMovingTile(null);
     setSelectedSeed(null);
@@ -294,9 +333,16 @@ export default function TownPage() {
       }
 
       if (placingItemId) {
-        const ok = await executeBuild(placingItemId, x, y);
+        const ok = await executeBuild(
+          placingItemId,
+          x,
+          y,
+          placingItemId === 'road' ? { rot: roadRot } : undefined,
+        );
         if (ok) {
           setPlacingItemId(null);
+          setRoadRot(0);
+          setRoadRotateTick(0);
           setLastTownEvent({ id: Date.now(), x, y, type: 'build' });
         }
         return;
@@ -344,6 +390,7 @@ export default function TownPage() {
       isVisitMode,
       isServerReady,
       placingItemId,
+      roadRot,
       movingTile,
       moveModeActive,
       selectedSeed,
@@ -545,13 +592,39 @@ export default function TownPage() {
               selectedSeed &&
               t('town.map.plantingBanner', { crop: t(`town.crops.${selectedSeed}.name`) })}
           </span>
-          <button
-            type="button"
-            onClick={clearModes}
-            className="min-h-[32px] shrink-0 cursor-pointer rounded-lg border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15]"
-          >
-            {t('town.map.cancel')}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {placingItemId === 'road' && (
+              <button
+                type="button"
+                data-testid="road-rotate-btn"
+                onClick={toggleRoadRot}
+                aria-label={t('town.road.rotateAria')}
+                aria-pressed={roadRot === 1}
+                title={t('town.road.rotateAria')}
+                className={`focus-visible:outline-3 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-full border-2 border-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] ${
+                  roadRot === 1 ? 'bg-[#0E0D15] text-[#C6FF3D]' : 'bg-[#FFF7EC] text-[#0E0D15]'
+                }`}
+              >
+                <ArrowsClockwise size={20} weight="bold" aria-hidden="true" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={clearModes}
+              className="min-h-[36px] shrink-0 cursor-pointer rounded-lg border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15]"
+            >
+              {t('town.map.cancel')}
+            </button>
+          </div>
+          {placingItemId === 'road' && (
+            <div role="status" aria-live="polite" data-testid="road-axis-live" className="sr-only">
+              {roadRotateTick > 0
+                ? roadRot === 1
+                  ? t('town.road.axisEw')
+                  : t('town.road.axisNs')
+                : ''}
+            </div>
+          )}
         </div>
       )}
 
@@ -670,6 +743,8 @@ export default function TownPage() {
               onExpandTap={handleExpandTap}
               onHarvestComplete={handleHarvestComplete}
               lastTownEvent={lastTownEvent}
+              placingRoadRot={roadRot}
+              roadRotateTick={roadRotateTick}
             />
           </div>
         )}

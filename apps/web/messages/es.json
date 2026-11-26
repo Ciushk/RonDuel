@@ -1081,6 +1081,11 @@
       "connecting": "Conectando…",
       "reconnectingFailed": "No se pudo conectar con RonTown",
       "retry": "Reintentar"
+    },
+    "road": {
+      "rotateAria": "Girar camino",
+      "axisNs": "Eje del camino: Norte–Sur",
+      "axisEw": "Eje del camino: Este–Oeste"
     }
   },
   "pwa": {

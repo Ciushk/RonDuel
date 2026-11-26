@@ -1081,6 +1081,11 @@
       "connecting": "Verbinden…",
       "reconnectingFailed": "Kan geen verbinding maken met RonTown",
       "retry": "Opnieuw"
+    },
+    "road": {
+      "rotateAria": "Weg draaien",
+      "axisNs": "Wegas: Noord–Zuid",
+      "axisEw": "Wegas: Oost–West"
     }
   },
   "pwa": {

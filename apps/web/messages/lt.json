@@ -1081,6 +1081,11 @@
       "connecting": "Jungiamasi…",
       "reconnectingFailed": "Nepavyko prisijungti prie RonTown",
       "retry": "Bandyti dar kartą"
+    },
+    "road": {
+      "rotateAria": "Pasukti kelią",
+      "axisNs": "Kelio ašis: Šiaurė–Pietūs",
+      "axisEw": "Kelio ašis: Rytai–Vakarai"
     }
   },
   "pwa": {

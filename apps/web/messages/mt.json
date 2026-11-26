@@ -1081,6 +1081,11 @@
       "connecting": "Qiegħed jikkonnettja…",
       "reconnectingFailed": "Ma setax jikkonnettja ma' RonTown",
       "retry": "Erġa' pprova"
+    },
+    "road": {
+      "rotateAria": "Dawwar it-triq",
+      "axisNs": "Assi tat-triq: Tramuntana–Nofsinhar",
+      "axisEw": "Assi tat-triq: Lvant–Punent"
     }
   },
   "pwa": {

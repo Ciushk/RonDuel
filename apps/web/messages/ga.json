@@ -1081,6 +1081,11 @@
       "connecting": "Ag ceangal…",
       "reconnectingFailed": "Níorbh fhéidir ceangal le RonTown",
       "retry": "Bain triail eile as"
+    },
+    "road": {
+      "rotateAria": "Rothlaigh an bóthar",
+      "axisNs": "Ais an bhóthair: Thuaidh–Theas",
+      "axisEw": "Ais an bhóthair: Thoir–Thiar"
     }
   },
   "pwa": {

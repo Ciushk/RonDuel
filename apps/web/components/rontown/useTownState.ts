@@ -744,7 +744,7 @@ export function useTownState(params: {
   );
 
   const executeBuild = useCallback(
-    async (itemId: string, x: number, y: number): Promise<boolean> => {
+    async (itemId: string, x: number, y: number, opts?: { rot?: 0 | 1 }): Promise<boolean> => {
       if (!serverReadyRef.current) return false;
       const item = catalog.items[itemId];
       if (!item) return false;
@@ -753,10 +753,17 @@ export function useTownState(params: {
         return false;
       }
 
+      const roadRot: 1 | undefined = itemId === 'road' && opts?.rot === 1 ? 1 : undefined;
       const session = getLocalSession();
-      const applyLocal = (serverTown?: TownDoc) => {
+      const applyLocal = (serverTown?: TownDoc, serverTile?: { rot?: 0 | 1 }) => {
         const nextTiles: Record<string, TileInfo> = { ...tiles };
-        nextTiles[`${x}_${y}`] = { x, y, itemId };
+        const effectiveRot = serverTile?.rot === 1 || roadRot === 1 ? (1 as const) : undefined;
+        nextTiles[`${x}_${y}`] = {
+          x,
+          y,
+          itemId,
+          ...(effectiveRot === 1 ? { rot: 1 as const } : {}),
+        };
         for (let dx = 0; dx < item.footprint.w; dx++) {
           for (let dy = 0; dy < item.footprint.h; dy++) {
             if (dx === 0 && dy === 0) continue;
@@ -783,14 +790,20 @@ export function useTownState(params: {
         const res = await fetch('/api/town/build', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: session.uid, itemId, x, y }),
+          body: JSON.stringify({
+            uid: session.uid,
+            itemId,
+            x,
+            y,
+            ...(roadRot === 1 ? { rot: 1 } : {}),
+          }),
         });
         const data = await res.json();
         if (!res.ok) {
           showToast(data.error || 'Build failed');
           return false;
         }
-        applyLocal(data.town);
+        applyLocal(data.town, data.tile);
         trackEvent('nav_tab_clicked', { action: 'town_build', itemId });
         return true;
       } catch {

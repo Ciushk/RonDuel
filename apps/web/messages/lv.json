@@ -1081,6 +1081,11 @@
       "connecting": "Savienojas…",
       "reconnectingFailed": "Neizdevās izveidot savienojumu ar RonTown",
       "retry": "Mēģināt vēlreiz"
+    },
+    "road": {
+      "rotateAria": "Pagriezt ceļu",
+      "axisNs": "Ceļa ass: Ziemeļi–Dienvidi",
+      "axisEw": "Ceļa ass: Austrumi–Rietumi"
     }
   },
   "pwa": {

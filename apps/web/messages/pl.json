@@ -1081,6 +1081,11 @@
       "connecting": "Łączenie…",
       "reconnectingFailed": "Nie udało się połączyć z RonTown",
       "retry": "Ponów"
+    },
+    "road": {
+      "rotateAria": "Obróć drogę",
+      "axisNs": "Oś drogi: Północ–Południe",
+      "axisEw": "Oś drogi: Wschód–Zachód"
     }
   },
   "pwa": {

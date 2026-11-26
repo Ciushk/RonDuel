@@ -1081,6 +1081,11 @@
       "connecting": "Se conectează…",
       "reconnectingFailed": "Nu ne-am putut conecta la RonTown",
       "retry": "Reîncearcă"
+    },
+    "road": {
+      "rotateAria": "Rotește drumul",
+      "axisNs": "Axă drum: Nord–Sud",
+      "axisEw": "Axă drum: Est–Vest"
     }
   },
   "pwa": {

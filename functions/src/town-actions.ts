@@ -37,6 +37,7 @@ export interface BuildItemParams {
   itemId: string;
   x: number;
   y: number;
+  rot?: number;
 }
 
 export async function buildItem(
@@ -157,6 +158,7 @@ export async function buildItem(
       x: params.x,
       y: params.y,
       placedAt: FieldValue.serverTimestamp(),
+      ...(params.itemId === 'road' && params.rot === 1 ? { rot: 1 as const } : {}),
     };
     tx.set(newTileRef, newTile);
 

@@ -63,6 +63,28 @@ describe('town-actions server business logic', () => {
       expect(tile?.itemId).toBe('cottage');
     });
 
+    it('stores rot: 1 only for road items and silently ignores other values or non-road items', async () => {
+      const roadRot = await buildItem(mockDb, 'u1', { itemId: 'road', x: 1, y: 2, rot: 1 });
+      expect(roadRot.tile.rot).toBe(1);
+      expect(store.get('users/u1/townTiles/1_2')?.rot).toBe(1);
+
+      const roadDefault = await buildItem(mockDb, 'u1', { itemId: 'road', x: 2, y: 2, rot: 0 });
+      expect(roadDefault.tile.rot).toBeUndefined();
+      expect(store.get('users/u1/townTiles/2_2')?.rot).toBeUndefined();
+
+      const roadIgnored = await buildItem(mockDb, 'u1', { itemId: 'road', x: 2, y: 1, rot: 99 });
+      expect(roadIgnored.tile.rot).toBeUndefined();
+
+      const cottageIgnored = await buildItem(mockDb, 'u1', {
+        itemId: 'cottage',
+        x: 0,
+        y: 0,
+        rot: 1,
+      });
+      expect(cottageIgnored.tile.rot).toBeUndefined();
+      expect(store.get('users/u1/townTiles/0_0')?.rot).toBeUndefined();
+    });
+
     it('rejects building when funds are insufficient', async () => {
       // Apartment costs 900 coins, player has 500
       // Unlock level 3 is also needed, let's set level 3 to test insufficient funds

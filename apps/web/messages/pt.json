@@ -1081,6 +1081,11 @@
       "connecting": "A ligar…",
       "reconnectingFailed": "Não foi possível ligar ao RonTown",
       "retry": "Tentar novamente"
+    },
+    "road": {
+      "rotateAria": "Rodar estrada",
+      "axisNs": "Eixo da estrada: Norte–Sul",
+      "axisEw": "Eixo da estrada: Este–Oeste"
     }
   },
   "pwa": {

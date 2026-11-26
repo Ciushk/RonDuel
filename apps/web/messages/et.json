@@ -1081,6 +1081,11 @@
       "connecting": "Ühendamine…",
       "reconnectingFailed": "RonTowniga ei saadud ühendust",
       "retry": "Proovi uuesti"
+    },
+    "road": {
+      "rotateAria": "Pööra teed",
+      "axisNs": "Tee telg: Põhi–Lõuna",
+      "axisEw": "Tee telg: Ida–Lääs"
     }
   },
   "pwa": {

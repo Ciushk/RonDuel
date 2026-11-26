@@ -1081,6 +1081,11 @@
       "connecting": "Kobler til…",
       "reconnectingFailed": "Kunne ikke koble til RonTown",
       "retry": "Prøv igjen"
+    },
+    "road": {
+      "rotateAria": "Roter vei",
+      "axisNs": "Veiakse: Nord–Sør",
+      "axisEw": "Veiakse: Øst–Vest"
     }
   },
   "pwa": {
