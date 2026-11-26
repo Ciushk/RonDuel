@@ -1106,6 +1106,9 @@
       "balanceAfter": "Sold după: {balance} RonCoins",
       "insufficient": "Ai nevoie de {needed} RonCoins (ai {balance})",
       "chipAria": "Grăbește {crop} pentru {cost} RonCoins"
+    },
+    "family": {
+      "announce": "O familie fericită din RonTown are un nou copil!"
     }
   },
   "pwa": {

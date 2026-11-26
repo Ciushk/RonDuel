@@ -1106,6 +1106,9 @@
       "balanceAfter": "Balance after: {balance} RonCoins",
       "insufficient": "Need {needed} RonCoins (you have {balance})",
       "chipAria": "Speed up {crop} for {cost} RonCoins"
+    },
+    "family": {
+      "announce": "A happy family in RonTown has welcomed a child!"
     }
   },
   "pwa": {

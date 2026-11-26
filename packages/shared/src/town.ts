@@ -271,6 +271,9 @@ export function getRotationKind(layer: 'ground' | 'item', id: string): RotationK
 
 export interface TownDoc {
   createdAt?: unknown;
+  familyClockStartAt?: unknown;
+  familyEventSeenAt?: unknown;
+  childBorn?: boolean;
   gridSize: number;
   population: number;
   housingCapacity: number;
@@ -338,7 +341,22 @@ export interface TownSnapshotDoc {
   }>;
   land?: Record<string, GroundTileType>;
   landRot?: Record<string, 1 | 2 | 3>;
+  childBorn?: boolean;
   updatedAt?: unknown;
+}
+
+/**
+ * Deterministic timestamp (epoch ms) when the one-time RonTown family event becomes eligible
+ * for a player: `triggerDay = 10 + (fnv1a(uid) % 5)` (days 10..14 after town creation).
+ */
+export function getFamilyEventTriggerAt(uid: string, createdAtMs: number): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < uid.length; i++) {
+    h ^= uid.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  const triggerDay = 10 + (h % 5);
+  return createdAtMs + triggerDay * 86_400_000;
 }
 
 export const WalletDocSchema = z.object({

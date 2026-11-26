@@ -35,6 +35,7 @@ import {
   BUBBLE_SPRITES,
   CATALOG_SPRITES,
   GROUND_SPRITES,
+  HEART_FLOAT_SPRITE,
   preloadInitialSprites,
   resolveCropSprite,
   resolveGroundSprite,
@@ -75,6 +76,8 @@ interface IsoMapProps {
   floatingRewards: FloatingReward[];
   speedupEnabled?: boolean;
   speedupSparkleKey?: string | null;
+  childBorn?: boolean;
+  familyEventEligible?: boolean;
   canPlaceAt: (
     x: number,
     y: number,
@@ -88,6 +91,7 @@ interface IsoMapProps {
   onExpandTap: (x: number, y: number) => void;
   onHarvestComplete: (x: number, y: number) => void;
   onSpeedupTap?: (tile: TileInfo) => void;
+  onFamilyEventComplete?: () => void;
   lastTownEvent?: { id: number; x: number; y: number; type: 'harvest' | 'build' | 'plant' } | null;
   placingRoadRot?: 0 | 1;
   roadRotateTick?: number;
@@ -689,6 +693,8 @@ export function IsoMap({
   floatingRewards,
   speedupEnabled = false,
   speedupSparkleKey = null,
+  childBorn = false,
+  familyEventEligible = false,
   canPlaceAt,
   canPlantAt,
   onTileTap,
@@ -696,6 +702,7 @@ export function IsoMap({
   onExpandTap,
   onHarvestComplete,
   onSpeedupTap,
+  onFamilyEventComplete,
   lastTownEvent,
   placingRoadRot = 0,
   roadRotateTick = 0,
@@ -1026,17 +1033,21 @@ export function IsoMap({
   }, [applyZoomAtPoint]);
 
   // Villagers operate in 1:1 source pixels inside the scaled world stage (zero DOM rewrite on zoom)
-  const { villagerList, registerDom, dispatchHarvest, notifyTownEvent } = useVillagers({
-    population,
-    land,
-    tiles,
-    catalog,
-    blockedKeys,
-    boundsMinX: bounds.minX,
-    boundsMinY: bounds.minY,
-    scale: 1,
-    reducedMotion,
-  });
+  const { villagerList, registerDom, dispatchHarvest, notifyTownEvent, familyHeartsHouse } =
+    useVillagers({
+      population,
+      land,
+      tiles,
+      catalog,
+      blockedKeys,
+      boundsMinX: bounds.minX,
+      boundsMinY: bounds.minY,
+      scale: 1,
+      reducedMotion,
+      childBorn,
+      familyEventEligible,
+      onFamilyEventComplete,
+    });
 
   useEffect(() => {
     if (!lastTownEvent) return;
@@ -1454,6 +1465,7 @@ export function IsoMap({
             <div
               key={v.id}
               data-villager-id={v.id}
+              data-villager-kind={v.kind}
               ref={(el) => registerDom(v.id, 'wrap', el)}
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 will-change-transform"
@@ -1502,6 +1514,53 @@ export function IsoMap({
             </div>
           );
         })}
+
+        {/* One-time family event floating hearts over starter house roof */}
+        {familyHeartsHouse &&
+          (() => {
+            const origin = isoToScreen(familyHeartsHouse.x, familyHeartsHouse.y);
+            const roofCenterX = origin.x + TILE_W / 2 - bounds.minX;
+            const roofTopY = origin.y - 78 - bounds.minY;
+            const heartOffsets = [
+              { dx: -24, dy: 4, delay: 0 },
+              { dx: -6, dy: -8, delay: 150 },
+              { dx: 14, dy: 0, delay: 300 },
+              { dx: 4, dy: -16, delay: 450 },
+            ];
+            return (
+              <div
+                aria-hidden="true"
+                data-testid="family-hearts-overlay"
+                className="pointer-events-none absolute"
+                style={{
+                  left: roofCenterX,
+                  top: roofTopY,
+                  zIndex: Z_UI + 5,
+                }}
+              >
+                {heartOffsets.map((h, i) => (
+                  <img
+                    key={`fam-heart-${i}`}
+                    data-testid="family-heart-float"
+                    src={HEART_FLOAT_SPRITE.src}
+                    alt=""
+                    aria-hidden="true"
+                    width={HEART_FLOAT_SPRITE.width * 2}
+                    height={HEART_FLOAT_SPRITE.height * 2}
+                    decoding="async"
+                    draggable={false}
+                    className="rt-heart-float pointer-events-none absolute block select-none"
+                    style={{
+                      left: h.dx,
+                      top: h.dy,
+                      imageRendering: 'pixelated',
+                      animationDelay: `${h.delay}ms`,
+                    }}
+                  />
+                ))}
+              </div>
+            );
+          })()}
 
         {/* Placement / Move / Plant cursor */}
         {cursorOverlay && (

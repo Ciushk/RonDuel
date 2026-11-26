@@ -83,6 +83,7 @@ import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
 import { rotateTownElement } from './town-rotate.js';
 import { speedupCrop } from './town-speedup.js';
+import { completeFamilyEvent } from './town-family.js';
 import { setTutorialStep } from './town-tutorial.js';
 import {
   buildItem,
@@ -241,8 +242,30 @@ export const api = onRequest(apiOptions, async (req, res) => {
             ...(data.readyAt ? { readyAt: serializeTs(data.readyAt) } : {}),
           };
         }
+        const toEpochMs = (val: unknown): number | undefined => {
+          if (typeof val === 'number' && Number.isFinite(val)) return val;
+          if (val instanceof Date) return val.getTime();
+          if (typeof val === 'string') {
+            const ms = Date.parse(val);
+            return Number.isNaN(ms) ? undefined : ms;
+          }
+          if (val && typeof (val as { toMillis?: () => number }).toMillis === 'function') {
+            return (val as { toMillis: () => number }).toMillis();
+          }
+          return undefined;
+        };
+        const createdAtMs = toEpochMs(result.town.createdAt);
+        const familyClockStartAtMs = toEpochMs(result.town.familyClockStartAt);
+        const serializedTown = {
+          ...result.town,
+          ...(createdAtMs !== undefined ? { createdAt: createdAtMs } : {}),
+          ...(familyClockStartAtMs !== undefined
+            ? { familyClockStartAt: familyClockStartAtMs }
+            : {}),
+          childBorn: Boolean(result.town.childBorn),
+        };
         const walletBalance = walletSnap.exists ? Number(walletSnap.data()?.balance ?? 0) : 0;
-        res.status(200).json({ ...result, tiles, walletBalance });
+        res.status(200).json({ ...result, town: serializedTown, tiles, walletBalance });
         return;
       } catch (err: any) {
         if (err.message?.includes('disabled')) {
@@ -478,6 +501,36 @@ export const api = onRequest(apiOptions, async (req, res) => {
         }
         if (msg.includes('PRICE_CHANGED')) {
           res.status(409).json({ error: msg, code: 'PRICE_CHANGED' });
+          return;
+        }
+        res.status(400).json({ error: msg });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/family-event/complete') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await completeFamilyEvent(db, uid);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        const msg = String(err?.message || 'Family event completion failed');
+        if (msg.includes('disabled')) {
+          res.status(403).json({ error: msg });
+          return;
+        }
+        if (msg.includes('NOT_YET')) {
+          res.status(409).json({ error: msg, code: 'NOT_YET' });
+          return;
+        }
+        if (msg.includes('TOWN_NOT_FOUND')) {
+          res.status(404).json({ error: msg, code: 'TOWN_NOT_FOUND' });
           return;
         }
         res.status(400).json({ error: msg });

@@ -35,6 +35,7 @@ import {
   resolveCropSprite,
   resolveGroundSprite,
   resolveRoadSprite,
+  RESIDENT_VILLAGER_KINDS,
   ROAD_VARIANT_KEYS,
   SHORE_ROTATION_KEYS,
   spriteUrl,
@@ -575,5 +576,10 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     expect(fs.existsSync(h2)).toBe(true);
     expect(readPngSize(h1)).toEqual({ width: 9, height: 8 });
     expect(readPngSize(h2)).toEqual({ width: 18, height: 16 });
+  });
+
+  it('excludes child-villager from cyclic RESIDENT_VILLAGER_KINDS so only the family event spawns it', () => {
+    expect(RESIDENT_VILLAGER_KINDS).not.toContain('child-villager');
+    expect(VILLAGER_SPRITES['child-villager']).toBeDefined();
   });
 });

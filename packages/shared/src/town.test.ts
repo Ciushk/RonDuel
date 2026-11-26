@@ -10,6 +10,7 @@ import {
   DEFAULT_TOWN_ECONOMY,
   findWalkablePath,
   generateStarterLand,
+  getFamilyEventTriggerAt,
   getGridSizeForLevel,
   getPlotPrice,
   GROUND_TILE_TYPES,
@@ -413,5 +414,24 @@ describe('calculateSpeedupCost', () => {
         min: 1,
       }),
     ).toBe(4); // ceil(3700 / 3600) * 2 = 4
+  });
+});
+
+describe('getFamilyEventTriggerAt', () => {
+  it('deterministically schedules trigger between day 10 and day 14 inclusive', () => {
+    const base = 1_700_000_000_000;
+    const seenDays = new Set<number>();
+    for (let i = 0; i < 40; i++) {
+      const uid = `u_family_${i}`;
+      const t1 = getFamilyEventTriggerAt(uid, base);
+      const t2 = getFamilyEventTriggerAt(uid, base);
+      expect(t1).toBe(t2);
+      const days = (t1 - base) / 86_400_000;
+      expect(Number.isInteger(days)).toBe(true);
+      expect(days).toBeGreaterThanOrEqual(10);
+      expect(days).toBeLessThanOrEqual(14);
+      seenDays.add(days);
+    }
+    expect(seenDays.size).toBe(5);
   });
 });

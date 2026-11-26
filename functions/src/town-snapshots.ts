@@ -55,6 +55,7 @@ export async function publishTownSnapshot(db: Firestore, uid: string): Promise<v
     tiles,
     ...(townData.land ? { land: townData.land } : {}),
     ...(townData.landRot ? { landRot: townData.landRot } : {}),
+    ...(townData.childBorn ? { childBorn: true } : {}),
     updatedAt: FieldValue.serverTimestamp(),
   };
 

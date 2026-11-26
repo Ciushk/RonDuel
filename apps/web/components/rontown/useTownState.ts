@@ -441,6 +441,7 @@ export function useTownState(params: {
             plotsOwned: 2,
             land,
             ...(snap.landRot ? { landRot: snap.landRot } : {}),
+            ...(snap.childBorn ? { childBorn: true } : {}),
           });
           setTiles(visitTiles);
           townReadyRef.current = true;
@@ -1365,6 +1366,24 @@ export function useTownState(params: {
     [showToast],
   );
 
+  const executeCompleteFamilyEvent = useCallback(async (): Promise<boolean> => {
+    if (!serverReadyRef.current || isVisitMode) return false;
+    const session = getLocalSession();
+    if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') return false;
+    try {
+      const res = await fetch('/api/town/family-event/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: session.uid }),
+      });
+      if (!res.ok) return false;
+      setTown((prev) => (prev ? { ...prev, childBorn: true } : prev));
+      return true;
+    } catch {
+      return false;
+    }
+  }, [isVisitMode]);
+
   return {
     catalog,
     loading,
@@ -1407,6 +1426,7 @@ export function useTownState(params: {
     executePlantCrop,
     executeHarvestCrop,
     executeSpeedup,
+    executeCompleteFamilyEvent,
     executeBuyPlot,
     executeDeliverOrder,
     executeLike,

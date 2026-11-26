@@ -23,7 +23,13 @@ import type { ActiveSheet } from '@/components/rontown/TownSheets';
 import { useTownState, type TileInfo } from '@/components/rontown/useTownState';
 import { useReducedMotion } from '@/components/rontown/useVillagers';
 import { useFeatureFlag } from '@/lib/feature-flags';
-import { getRotationKind, type GridCoord, type GroundTileType } from '@ronduel/shared';
+import { getLocalSession } from '@/lib/session';
+import {
+  getFamilyEventTriggerAt,
+  getRotationKind,
+  type GridCoord,
+  type GroundTileType,
+} from '@ronduel/shared';
 
 const SKELETON_CELLS: ReadonlyArray<{ x: number; y: number }> = [
   { x: 0, y: 0 },
@@ -133,6 +139,7 @@ export default function TownPage() {
     executePlantCrop,
     executeHarvestCrop,
     executeSpeedup,
+    executeCompleteFamilyEvent,
     executeBuyPlot,
     executeDeliverOrder,
     executeLike,
@@ -144,6 +151,7 @@ export default function TownPage() {
 
   const reducedMotion = useReducedMotion();
   const [mapRevealed, setMapRevealed] = useState<boolean>(false);
+  const [familyAnnouncement, setFamilyAnnouncement] = useState<string>('');
   const [displayedWalletBalance, setDisplayedWalletBalance] = useState<number>(walletBalance);
   const displayedWalletRef = useRef<number>(walletBalance);
 
@@ -638,6 +646,27 @@ export default function TownPage() {
     [executeSpeedup, reducedMotion],
   );
 
+  const familyEventEligible = useMemo(() => {
+    if (isVisitMode || !townReady || !isServerReady || !town || town.childBorn) return false;
+    const rawStart = town.createdAt ?? town.familyClockStartAt;
+    let startMs: number | null = null;
+    if (typeof rawStart === 'number' && Number.isFinite(rawStart)) {
+      startMs = rawStart;
+    } else if (typeof rawStart === 'string') {
+      const parsed = Date.parse(rawStart);
+      if (!Number.isNaN(parsed)) startMs = parsed;
+    }
+    if (startMs === null) return false;
+    const session = typeof window !== 'undefined' ? getLocalSession() : null;
+    if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') return false;
+    return Date.now() >= getFamilyEventTriggerAt(session.uid, startMs);
+  }, [isVisitMode, townReady, isServerReady, town]);
+
+  const handleFamilyEventComplete = useCallback(() => {
+    setFamilyAnnouncement(t('town.family.announce'));
+    void executeCompleteFamilyEvent();
+  }, [executeCompleteFamilyEvent, t]);
+
   if (!townEnabled) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
@@ -984,6 +1013,8 @@ export default function TownPage() {
               floatingRewards={floatingRewards}
               speedupEnabled={speedupEnabled}
               speedupSparkleKey={speedupSparkleKey}
+              childBorn={Boolean(town?.childBorn)}
+              familyEventEligible={familyEventEligible}
               canPlaceAt={canPlaceAt}
               canPlantAt={canPlantAt}
               onTileTap={(x, y) => void handleTileTap(x, y)}
@@ -991,10 +1022,14 @@ export default function TownPage() {
               onExpandTap={handleExpandTap}
               onHarvestComplete={handleHarvestComplete}
               onSpeedupTap={handleSpeedupTap}
+              onFamilyEventComplete={handleFamilyEventComplete}
               lastTownEvent={lastTownEvent}
               placingRoadRot={roadRot}
               roadRotateTick={roadRotateTick}
             />
+            <div role="status" aria-live="polite" data-testid="family-live" className="sr-only">
+              {familyAnnouncement}
+            </div>
           </div>
         )}
       </div>

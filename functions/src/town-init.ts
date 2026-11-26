@@ -35,9 +35,18 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
     // Read phase: read town doc and prepare starter coin credit before any writes
     const existingSnap = await tx.get(townRef);
     if (existingSnap.exists) {
+      const existingTown = existingSnap.data() as TownDoc;
+      if (!existingTown.createdAt && !existingTown.familyClockStartAt) {
+        const nowTs = Timestamp.now();
+        tx.update(townRef, { familyClockStartAt: nowTs });
+        return {
+          created: false,
+          town: { ...existingTown, familyClockStartAt: nowTs },
+        };
+      }
       return {
         created: false,
-        town: existingSnap.data() as TownDoc,
+        town: existingTown,
       };
     }
 

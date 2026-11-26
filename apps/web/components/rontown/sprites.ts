@@ -458,7 +458,6 @@ export const RESIDENT_VILLAGER_KINDS: readonly VillagerKind[] = [
   'small-villager',
   'woman-villager',
   'granny-villager',
-  'child-villager',
   'baker-villager',
   'blacksmith-villager',
 ];

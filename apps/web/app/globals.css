@@ -884,6 +884,44 @@ html[data-theme='dark'] {
   animation: rt-speedup-sparkle 300ms ease-out forwards;
 }
 
+@keyframes rt-heart-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.7);
+    opacity: 0;
+  }
+  20% {
+    transform: translate3d(0, -3px, 0) scale(1);
+    opacity: 1;
+  }
+  80% {
+    transform: translate3d(0, -10px, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, -12px, 0) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes rt-heart-float-reduced {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.rt-heart-float {
+  animation: rt-heart-float 1200ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -944,5 +982,10 @@ html[data-theme='dark'] {
   .rt-speedup-sparkle {
     animation: rt-road-reduced-a 120ms ease-out 1 !important;
     transform: translate(-50%, -50%) !important;
+  }
+
+  .rt-heart-float {
+    animation: rt-heart-float-reduced 1200ms ease-out both !important;
+    transform: none !important;
   }
 }

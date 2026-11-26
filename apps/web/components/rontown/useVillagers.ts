@@ -17,6 +17,7 @@ import {
 } from './sprites';
 import {
   facingToward,
+  findBuildingDoorCell,
   findNearestFreeCell,
   findSeededWalkablePath,
   getIdleSeparationOffset,
@@ -35,6 +36,8 @@ import {
   type VillagerRole,
   type VillagerState,
 } from './villagerBehavior';
+
+export const CHILD_VILLAGER_ID = 'resident-child';
 
 /** Configurable villager movement & animation constants. */
 export const VILLAGER_CONFIG = {
@@ -151,6 +154,9 @@ interface UseVillagersParams {
   boundsMinY: number;
   scale: number;
   reducedMotion: boolean;
+  childBorn?: boolean;
+  familyEventEligible?: boolean;
+  onFamilyEventComplete?: () => void;
 }
 
 function getInitialIdleDelay(
@@ -180,7 +186,11 @@ export function useVillagers({
   boundsMinY,
   scale,
   reducedMotion,
+  childBorn = false,
+  familyEventEligible = false,
+  onFamilyEventComplete,
 }: UseVillagersParams) {
+  const [familyHeartsHouse, setFamilyHeartsHouse] = useState<GridCoord | null>(null);
   const [villagerList, setVillagerList] = useState<VillagerRenderItem[]>(() => {
     const walkable = getWalkableCells(land, blockedKeys);
     const cells =
@@ -192,8 +202,8 @@ export function useVillagers({
           });
     if (cells.length === 0) return [];
     const count = Math.max(1, Math.min(population, VILLAGER_CONFIG.maxVisibleResidents));
-    const spawns = pickSpreadSpawnCells(cells, count);
-    return Array.from({ length: count }, (_, i) => {
+    const spawns = pickSpreadSpawnCells(cells, count + (childBorn ? 1 : 0));
+    const items: VillagerRenderItem[] = Array.from({ length: count }, (_, i) => {
       const spawn = spawns[i]!;
       return {
         id: `resident_${i}`,
@@ -203,12 +213,26 @@ export function useVillagers({
         initialY: spawn.y,
       };
     });
+    if (childBorn) {
+      const childSpawn = spawns[count] ?? spawns[0]!;
+      items.push({
+        id: CHILD_VILLAGER_ID,
+        kind: 'child-villager',
+        isArrivalVisitor: false,
+        initialX: childSpawn.x,
+        initialY: childSpawn.y,
+      });
+    }
+    return items;
   });
 
   const runtimesRef = useRef<Map<string, VillagerRuntime>>(new Map());
   const reservedTargetsRef = useRef<Map<string, string>>(new Map());
   const walkableCellsRef = useRef<GridCoord[]>(getWalkableCells(land, blockedKeys));
   const domRefs = useRef<Map<string, VillagerDomHandles>>(new Map());
+  const familyPlayedRef = useRef<boolean>(false);
+  const familyCompleteRef = useRef<(() => void) | undefined>(onFamilyEventComplete);
+  familyCompleteRef.current = onFamilyEventComplete;
   const landRef = useRef(land);
   const tilesRef = useRef(tiles);
   const catalogRef = useRef(catalog);
@@ -545,7 +569,7 @@ export function useVillagers({
     }
 
     for (const [id, v] of Array.from(map.entries())) {
-      if (!v.isArrivalVisitor) {
+      if (!v.isArrivalVisitor && id !== CHILD_VILLAGER_ID) {
         const idx = Number(id.replace('resident_', ''));
         if (idx >= desiredCount) {
           releaseReservation(v);
@@ -553,6 +577,71 @@ export function useVillagers({
           changed = true;
         }
       }
+    }
+
+    // Reconcile the single child villager: present ONLY when childBorn === true (or revealed by family event)
+    if (childBorn && !map.has(CHILD_VILLAGER_ID)) {
+      const rng = mulberry32(hashString(CHILD_VILLAGER_ID));
+      const preferred = fallbackCells[Math.floor(rng() * fallbackCells.length)]!;
+      const spawn =
+        findNearestFreeCell({
+          origin: preferred,
+          land,
+          blockedKeys,
+          reservedTargets: reservedTargetsRef.current,
+          villagerId: CHILD_VILLAGER_ID,
+          walkableCells: fallbackCells,
+        }) ?? preferred;
+      const sep = getIdleSeparationOffset(CHILD_VILLAGER_ID);
+      const childRuntime: VillagerRuntime = {
+        id: CHILD_VILLAGER_ID,
+        kind: 'child-villager',
+        role: 'runner',
+        isArrivalVisitor: false,
+        rng,
+        idleSepX: sep.x,
+        idleSepY: sep.y,
+        col: spawn.x,
+        row: spawn.y,
+        gridX: spawn.x,
+        gridY: spawn.y,
+        facing: 'right',
+        behavior: 'idle',
+        stateStartedAtMs: now,
+        stateUntilMs: now + getInitialIdleDelay('runner', rng, reducedMotionRef.current),
+        path: [],
+        pathIndex: 0,
+        stepElapsedMs: 0,
+        frameElapsedMs: 0,
+        frameIndex: 0,
+        stepWaitUntilMs: 0,
+        reservedKey: null,
+        pendingArrival: null,
+        homeWanderRemaining: 0,
+        lookFlipsRemaining: 0,
+        nextLookFlipAtMs: Infinity,
+        bubbleKind: null,
+        bubbleStartedAtMs: 0,
+        bubbleUntilMs: 0,
+        lastTransform: '',
+        lastZIndex: '',
+        lastOpacity: '',
+        lastSrc: '',
+        lastWidth: 0,
+        lastHeight: 0,
+        lastFacing: '',
+        lastBubbleKind: null,
+        lastBubbleOpacity: '0',
+        lastBubbleTransform: '',
+      };
+      reserveCell(childRuntime, spawn);
+      map.set(CHILD_VILLAGER_ID, childRuntime);
+      changed = true;
+    } else if (!childBorn && !familyPlayedRef.current && map.has(CHILD_VILLAGER_ID)) {
+      const existingChild = map.get(CHILD_VILLAGER_ID)!;
+      releaseReservation(existingChild);
+      map.delete(CHILD_VILLAGER_ID);
+      changed = true;
     }
 
     // Spawn arrival visitor when population increases
@@ -657,7 +746,200 @@ export function useVillagers({
       });
       wakeLoopRef.current?.();
     }
-  }, [population, land, blockedKeys, reserveCell, releaseReservation]);
+  }, [population, land, blockedKeys, childBorn, reserveCell, releaseReservation]);
+
+  const familyTimersRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    return () => {
+      for (const id of familyTimersRef.current) window.clearTimeout(id);
+      familyTimersRef.current = [];
+    };
+  }, []);
+
+  // One-time family event choreography: farmer + woman enter starter house -> hearts over roof -> single child exits -> parents exit -> complete
+  useEffect(() => {
+    if (!familyEventEligible || childBorn || familyPlayedRef.current) return;
+    const map = runtimesRef.current;
+    if (map.size === 0 || map.has(CHILD_VILLAGER_ID)) return;
+
+    const currentTiles = tilesRef.current;
+    const currentLand = landRef.current;
+    const currentBlocked = blockedRef.current;
+    const currentCatalog = catalogRef.current;
+
+    const allTiles = Object.values(currentTiles).filter((t) => !t.parentTile);
+    const house =
+      allTiles.find((t) => t.itemId === 'starter_house') ??
+      allTiles.find((t) => currentCatalog.items[t.itemId]?.type === 'housing');
+    if (!house) return;
+
+    const meta = currentCatalog.items[house.itemId];
+    const w = meta?.footprint.w ?? 1;
+    const h = meta?.footprint.h ?? 1;
+    const door =
+      findBuildingDoorCell(house, w, h, currentLand, currentBlocked) ?? walkableCellsRef.current[0];
+    if (!door) return;
+
+    familyPlayedRef.current = true;
+    const schedule = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(fn, ms);
+      familyTimersRef.current.push(id);
+    };
+
+    const syncListFromMap = () => {
+      const nextList = Array.from(map.values()).map((v) => ({
+        id: v.id,
+        kind: v.kind,
+        isArrivalVisitor: v.isArrivalVisitor,
+        initialX: v.gridX,
+        initialY: v.gridY,
+      }));
+      setVillagerList(nextList);
+    };
+
+    const spawnChildAtDoor = () => {
+      if (map.has(CHILD_VILLAGER_ID)) return;
+      const now = performance.now();
+      const rng = mulberry32(hashString(CHILD_VILLAGER_ID));
+      const sep = getIdleSeparationOffset(CHILD_VILLAGER_ID);
+      const childRuntime: VillagerRuntime = {
+        id: CHILD_VILLAGER_ID,
+        kind: 'child-villager',
+        role: 'runner',
+        isArrivalVisitor: false,
+        rng,
+        idleSepX: sep.x,
+        idleSepY: sep.y,
+        col: door.x,
+        row: door.y,
+        gridX: door.x,
+        gridY: door.y,
+        facing: 'right',
+        behavior: reducedMotionRef.current ? 'idle' : 'exiting',
+        stateStartedAtMs: now,
+        stateUntilMs: now + (reducedMotionRef.current ? 1500 : VILLAGER_CONFIG.doorFadeMs),
+        path: [],
+        pathIndex: 0,
+        stepElapsedMs: 0,
+        frameElapsedMs: 0,
+        frameIndex: 0,
+        stepWaitUntilMs: 0,
+        reservedKey: null,
+        pendingArrival: null,
+        homeWanderRemaining: 0,
+        lookFlipsRemaining: 0,
+        nextLookFlipAtMs: Infinity,
+        bubbleKind: 'heart',
+        bubbleStartedAtMs: now,
+        bubbleUntilMs: now + BUBBLE_TOTAL_MS,
+        lastTransform: '',
+        lastZIndex: '',
+        lastOpacity: '',
+        lastSrc: '',
+        lastWidth: 0,
+        lastHeight: 0,
+        lastFacing: '',
+        lastBubbleKind: null,
+        lastBubbleOpacity: '0',
+        lastBubbleTransform: '',
+      };
+      reserveCell(childRuntime, door);
+      map.set(CHILD_VILLAGER_ID, childRuntime);
+      syncListFromMap();
+      wakeLoopRef.current?.();
+      familyCompleteRef.current?.();
+    };
+
+    if (reducedMotionRef.current) {
+      setFamilyHeartsHouse({ x: house.x, y: house.y });
+      spawnChildAtDoor();
+      schedule(() => {
+        setFamilyHeartsHouse(null);
+      }, 1400);
+      return;
+    }
+
+    // Normal motion: route farmer + woman to starter house door -> enter -> floating hearts -> child exits -> parents exit
+    const parents = [
+      map.get('resident_0') ?? Array.from(map.values()).find((v) => v.kind === 'small-villager'),
+      map.get('resident_1') ?? Array.from(map.values()).find((v) => v.kind === 'woman-villager'),
+    ].filter((v): v is VillagerRuntime => Boolean(v));
+
+    const now0 = performance.now();
+    for (const parent of parents) {
+      const p = findSeededWalkablePath({
+        start: { x: Math.round(parent.col), y: Math.round(parent.row) },
+        goal: door,
+        land: currentLand,
+        blockedKeys: currentBlocked,
+        rng: parent.rng,
+      });
+      if (p && p.length > 1) {
+        parent.path = p;
+        parent.pathIndex = 0;
+        parent.stepElapsedMs = 0;
+        parent.frameElapsedMs = 0;
+        parent.stepWaitUntilMs = 0;
+        parent.pendingArrival = {
+          kind: 'inside',
+          minMs: 3200,
+          maxMs: 3200,
+          faceTarget: { x: house.x, y: house.y },
+        };
+        parent.behavior = 'walking';
+        parent.stateStartedAtMs = now0;
+      }
+    }
+    wakeLoopRef.current?.();
+
+    // Step 2: parents enter house + floating hearts appear over starter house roof
+    schedule(() => {
+      const now = performance.now();
+      for (const parent of parents) {
+        parent.col = door.x;
+        parent.row = door.y;
+        parent.gridX = door.x;
+        parent.gridY = door.y;
+        parent.path = [];
+        parent.pathIndex = 0;
+        parent.pendingArrival = null;
+        parent.behavior = 'inside';
+        parent.stateStartedAtMs = now;
+        parent.stateUntilMs = now + 2600;
+      }
+      setFamilyHeartsHouse({ x: house.x, y: house.y });
+      wakeLoopRef.current?.();
+    }, 650);
+
+    // Step 3: child exits with heart joy bubble + POST /town/family-event/complete
+    schedule(() => {
+      spawnChildAtDoor();
+    }, 1550);
+
+    // Step 4: parents exit ~1s after child
+    schedule(() => {
+      const now = performance.now();
+      for (const parent of parents) {
+        parent.col = door.x;
+        parent.row = door.y;
+        parent.gridX = door.x;
+        parent.gridY = door.y;
+        parent.behavior = 'exiting';
+        parent.stateStartedAtMs = now;
+        parent.stateUntilMs = now + VILLAGER_CONFIG.doorFadeMs;
+        parent.bubbleKind = 'heart';
+        parent.bubbleStartedAtMs = now;
+        parent.bubbleUntilMs = now + BUBBLE_TOTAL_MS;
+      }
+      wakeLoopRef.current?.();
+    }, 2550);
+
+    // Step 5: clear floating hearts overlay after animation completes
+    schedule(() => {
+      setFamilyHeartsHouse(null);
+    }, 3100);
+  }, [familyEventEligible, childBorn, reserveCell]);
 
   // Reposition immediately when bounds/scale/list/reducedMotion change
   useEffect(() => {
@@ -1267,5 +1549,6 @@ export function useVillagers({
     registerDom,
     dispatchHarvest,
     notifyTownEvent,
+    familyHeartsHouse,
   };
 }
