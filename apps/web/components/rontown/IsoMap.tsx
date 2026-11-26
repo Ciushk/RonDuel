@@ -64,6 +64,7 @@ interface IsoMapProps {
   onTileTap: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
   onHarvestComplete: (x: number, y: number) => void;
+  lastTownEvent?: { id: number; x: number; y: number; type: 'harvest' | 'build' | 'plant' } | null;
 }
 
 interface StaticWorldProps {
@@ -461,6 +462,7 @@ export function IsoMap({
   onTileTap,
   onExpandTap,
   onHarvestComplete,
+  lastTownEvent,
 }: IsoMapProps) {
   const t = useTranslations();
   const reducedMotion = useReducedMotion();
@@ -788,9 +790,11 @@ export function IsoMap({
   }, [applyZoomAtPoint]);
 
   // Villagers operate in 1:1 source pixels inside the scaled world stage (zero DOM rewrite on zoom)
-  const { villagerList, registerDom, dispatchHarvest } = useVillagers({
+  const { villagerList, registerDom, dispatchHarvest, notifyTownEvent } = useVillagers({
     population,
     land,
+    tiles,
+    catalog,
     blockedKeys,
     boundsMinX: bounds.minX,
     boundsMinY: bounds.minY,
@@ -798,12 +802,20 @@ export function IsoMap({
     reducedMotion,
   });
 
+  useEffect(() => {
+    if (!lastTownEvent) return;
+    notifyTownEvent({ x: lastTownEvent.x, y: lastTownEvent.y, type: lastTownEvent.type });
+  }, [lastTownEvent, notifyTownEvent]);
+
   const handleHarvestTap = useCallback(
     (x: number, y: number) => {
       if (isVisitMode) return;
-      dispatchHarvest({ x, y }, () => onHarvestComplete(x, y));
+      dispatchHarvest({ x, y }, () => {
+        notifyTownEvent({ x, y, type: 'harvest' });
+        onHarvestComplete(x, y);
+      });
     },
-    [isVisitMode, dispatchHarvest, onHarvestComplete],
+    [isVisitMode, dispatchHarvest, notifyTownEvent, onHarvestComplete],
   );
 
   // Pointer handlers for 1-pointer drag + 2-pointer pinch
@@ -1176,10 +1188,22 @@ export function IsoMap({
                 transition: reducedMotion ? 'opacity 180ms linear' : undefined,
               }}
             >
-              {v.isArrivalVisitor && (
+              {v.isArrivalVisitor ? (
                 <div className="rt-pixel-bubble rt-pixel-bubble--tail absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 text-[14px] font-black">
                   +1!
                 </div>
+              ) : (
+                <div
+                  ref={(el) => registerDom(v.id, 'bubble', el)}
+                  className="rt-pixel-bubble rt-pixel-bubble--tail absolute bottom-full left-1/2 mb-1.5 whitespace-nowrap px-1.5 py-0.5 text-[14px] font-black leading-none"
+                  style={{
+                    opacity: 0,
+                    transform: 'translate3d(-50%, 4px, 0) scale(0.85)',
+                    transition: reducedMotion
+                      ? undefined
+                      : 'opacity 160ms ease-out, transform 160ms ease-out',
+                  }}
+                />
               )}
               <img
                 ref={(el) => registerDom(v.id, 'img', el)}

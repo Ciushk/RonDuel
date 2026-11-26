@@ -120,6 +120,12 @@ export default function TownPage() {
 
   const [transferRecipient, setTransferRecipient] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<number>(10);
+  const [lastTownEvent, setLastTownEvent] = useState<{
+    id: number;
+    x: number;
+    y: number;
+    type: 'harvest' | 'build' | 'plant';
+  } | null>(null);
 
   useEffect(() => {
     try {
@@ -250,7 +256,10 @@ export default function TownPage() {
 
       if (placingItemId) {
         const ok = await executeBuild(placingItemId, x, y);
-        if (ok) setPlacingItemId(null);
+        if (ok) {
+          setPlacingItemId(null);
+          setLastTownEvent({ id: Date.now(), x, y, type: 'build' });
+        }
         return;
       }
 
@@ -281,7 +290,10 @@ export default function TownPage() {
           showToast(t('town.map.plantingBanner', { crop: t(`town.crops.${selectedSeed}.name`) }));
           return;
         }
-        await executePlantCrop(x, y, selectedSeed);
+        const ok = await executePlantCrop(x, y, selectedSeed);
+        if (ok) {
+          setLastTownEvent({ id: Date.now(), x, y, type: 'plant' });
+        }
         return;
       }
 
@@ -571,6 +583,7 @@ export default function TownPage() {
           onTileTap={(x, y) => void handleTileTap(x, y)}
           onExpandTap={handleExpandTap}
           onHarvestComplete={handleHarvestComplete}
+          lastTownEvent={lastTownEvent}
         />
       </div>
 
