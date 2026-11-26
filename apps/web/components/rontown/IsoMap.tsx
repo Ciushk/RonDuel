@@ -2,7 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { GridCoord, GroundTileType, TownCatalogDoc } from '@ronduel/shared';
+import {
+  getRotationKind,
+  type GridCoord,
+  type GroundTileType,
+  type TownCatalogDoc,
+} from '@ronduel/shared';
 import {
   applyRubberBand,
   clampPanPosition,
@@ -30,6 +35,7 @@ import {
   GROUND_SPRITES,
   preloadInitialSprites,
   resolveCropSprite,
+  resolveGroundSprite,
   resolveRoadSprite,
   UI_SPRITES,
   VILLAGER_SPRITES,
@@ -41,8 +47,17 @@ const DRAG_THRESHOLD_PX = 6;
 const KEYBOARD_PAN_STEP_PX = 48;
 const ZOOM_BUTTON_FACTOR = 1.25;
 
+export interface RotatingTarget {
+  key: string;
+  layer: 'ground' | 'item';
+  kind: 'rot4' | 'flip2';
+  toRot: 0 | 1 | 2 | 3;
+  tick: number;
+}
+
 interface IsoMapProps {
   land: Record<string, GroundTileType>;
+  landRot?: Record<string, 1 | 2 | 3>;
   tiles: Record<string, TileInfo>;
   expandRing: GridCoord[];
   blockedKeys: ReadonlySet<string>;
@@ -51,6 +66,8 @@ interface IsoMapProps {
   isVisitMode: boolean;
   placingItemId: string | null;
   moveModeActive: boolean;
+  rotateModeActive?: boolean;
+  rotatingTarget?: RotatingTarget | null;
   movingTile: TileInfo | null;
   selectedSeed: string | null;
   floatingRewards: FloatingReward[];
@@ -63,6 +80,7 @@ interface IsoMapProps {
   ) => boolean;
   canPlantAt: (x: number, y: number) => boolean;
   onTileTap: (x: number, y: number) => void;
+  onRotateCell?: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
   onHarvestComplete: (x: number, y: number) => void;
   lastTownEvent?: { id: number; x: number; y: number; type: 'harvest' | 'build' | 'plant' } | null;
@@ -72,12 +90,15 @@ interface IsoMapProps {
 
 interface StaticWorldProps {
   land: Record<string, GroundTileType>;
+  landRot: Record<string, 1 | 2 | 3>;
   tiles: Record<string, TileInfo>;
   expandRing: GridCoord[];
   catalog: TownCatalogDoc;
   boundsMinX: number;
   boundsMinY: number;
   isVisitMode: boolean;
+  rotateModeActive: boolean;
+  rotatingTarget: RotatingTarget | null;
   nowMs: number;
   reducedMotion: boolean;
   previewRoadCell: GridCoord | null;
@@ -91,12 +112,15 @@ interface StaticWorldProps {
 
 const StaticWorldLayer = memo(function StaticWorldLayer({
   land,
+  landRot,
   tiles,
   expandRing,
   catalog,
   boundsMinX,
   boundsMinY,
   isVisitMode,
+  rotateModeActive,
+  rotatingTarget,
   nowMs,
   reducedMotion,
   previewRoadCell,
@@ -178,11 +202,38 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         const origin = isoToScreen(x, y);
         const left = origin.x - boundsMinX;
         const top = origin.y - boundsMinY;
-        const spec = GROUND_SPRITES[ground] ?? GROUND_SPRITES['basic-block'];
-        const tile = tiles[key];
-        const cellLabel = tile
-          ? `${tile.cropId ? `${tile.cropId} ` : ''}${tile.itemId} (${x}, ${y})`
-          : `${t('town.map.groundCell', { x, y })}`;
+        const spec = resolveGroundSprite(ground, landRot[key]);
+        const rawTile = tiles[key];
+        const tile = rawTile?.parentTile ? tiles[rawTile.parentTile] : rawTile;
+        const isGroundRotating = rotatingTarget?.key === key && rotatingTarget.layer === 'ground';
+        const groundRot4Class =
+          isGroundRotating && rotatingTarget.kind === 'rot4'
+            ? rotatingTarget.tick % 2 === 1
+              ? 'rt-rot4-anim-a'
+              : 'rt-rot4-anim-b'
+            : '';
+        const groundFlip2Class =
+          isGroundRotating && rotatingTarget.kind === 'flip2'
+            ? rotatingTarget.toRot % 2 === 1
+              ? 'rt-flip2-to1'
+              : 'rt-flip2-to0'
+            : '';
+
+        let cellLabel: string;
+        if (rotateModeActive) {
+          const itemMeta = tile ? catalog.items[tile.itemId] : undefined;
+          const itemLabel =
+            tile && getRotationKind('item', tile.itemId) !== 'none'
+              ? itemMeta?.nameKey
+                ? t(itemMeta.nameKey)
+                : tile.itemId
+              : t(`town.land.types.${ground}`);
+          cellLabel = t('town.rotate.cellAria', { item: itemLabel, x, y });
+        } else {
+          cellLabel = rawTile
+            ? `${rawTile.cropId ? `${rawTile.cropId} ` : ''}${rawTile.itemId} (${x}, ${y})`
+            : `${t('town.map.groundCell', { x, y })}`;
+        }
 
         return (
           <div
@@ -196,15 +247,21 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               zIndex: floorZ(x, y),
             }}
           >
-            <img
-              src={spec.src}
-              alt=""
-              width={spec.width}
-              height={spec.height}
-              decoding="async"
-              className="pointer-events-none block select-none"
-              draggable={false}
-            />
+            <div className={`pointer-events-none ${groundRot4Class}`}>
+              <img
+                data-ground-tile={key}
+                src={spec.src}
+                alt=""
+                width={spec.width}
+                height={spec.height}
+                decoding="async"
+                className={`pointer-events-none block select-none ${groundFlip2Class}`}
+                style={{
+                  transform: spec.flipX ? 'scaleX(-1)' : undefined,
+                }}
+                draggable={false}
+              />
+            </div>
             <button
               type="button"
               onClick={() => onTileTap(x, y)}
@@ -284,17 +341,24 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         if (tile.itemId === 'road') {
           const spec = resolveRoadSprite(tile.x, tile.y, isRoadWithPreview, tile.rot);
           const origin = isoToScreen(tile.x, tile.y);
+          const isItemRotating = rotatingTarget?.key === key && rotatingTarget.layer === 'item';
+          const roadFlipClass = isItemRotating
+            ? rotatingTarget.toRot % 2 === 1
+              ? 'rt-flip2-to1'
+              : 'rt-flip2-to0'
+            : '';
           return (
             <img
               key={`obj_${key}`}
               data-road-tile={key}
+              data-item-tile={key}
               src={spec.src}
               alt=""
               width={spec.width}
               height={spec.height}
               loading="lazy"
               decoding="async"
-              className="pointer-events-none absolute block select-none"
+              className={`pointer-events-none absolute block select-none ${roadFlipClass}`}
               style={{
                 left: origin.x - boundsMinX,
                 top: origin.y - boundsMinY,
@@ -441,19 +505,28 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
         // Buildings & other decor
         const spec = CATALOG_SPRITES[tile.itemId];
+        const isFlipped = (tile.rot ?? 0) % 2 === 1;
+        const isItemRotating = rotatingTarget?.key === key && rotatingTarget.layer === 'item';
+        const itemFlipClass = isItemRotating
+          ? rotatingTarget.toRot % 2 === 1
+            ? 'rt-flip2-to1'
+            : 'rt-flip2-to0'
+          : '';
         if (!spec || spec.isPlaceholder) {
           const anchor = getBuildingPlacement(tile.x, tile.y, w, h, 96, 96);
           return (
             <div
               key={`obj_${key}`}
+              data-item-tile={key}
               aria-hidden="true"
-              className="rt-pixel-bubble pointer-events-none absolute flex items-center justify-center px-2 text-sm font-black uppercase"
+              className={`rt-pixel-bubble pointer-events-none absolute flex items-center justify-center px-2 text-sm font-black uppercase ${itemFlipClass}`}
               style={{
                 left: anchor.x - boundsMinX,
                 top: anchor.y - boundsMinY,
                 width: 96,
                 height: 96,
                 zIndex: objectZ(anchor.sortKey, Z_LAYER.building),
+                transform: isFlipped ? 'scaleX(-1)' : undefined,
               }}
             >
               {tile.itemId.slice(0, 3)}
@@ -466,17 +539,19 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         return (
           <img
             key={`obj_${key}`}
+            data-item-tile={key}
             src={spec.src}
             alt=""
             width={spec.width}
             height={spec.height}
             loading={isStarter ? 'eager' : 'lazy'}
             decoding="async"
-            className="pointer-events-none absolute block select-none"
+            className={`pointer-events-none absolute block select-none ${itemFlipClass}`}
             style={{
               left: placement.x - boundsMinX,
               top: placement.y - boundsMinY,
               zIndex: objectZ(placement.sortKey, Z_LAYER.building),
+              transform: isFlipped ? 'scaleX(-1)' : undefined,
             }}
             draggable={false}
           />
@@ -533,8 +608,11 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   );
 });
 
+const EMPTY_LAND_ROT: Record<string, 1 | 2 | 3> = {};
+
 export function IsoMap({
   land,
+  landRot = EMPTY_LAND_ROT,
   tiles,
   expandRing,
   blockedKeys,
@@ -543,12 +621,15 @@ export function IsoMap({
   isVisitMode,
   placingItemId,
   moveModeActive,
+  rotateModeActive = false,
+  rotatingTarget = null,
   movingTile,
   selectedSeed,
   floatingRewards,
   canPlaceAt,
   canPlantAt,
   onTileTap,
+  onRotateCell,
   onExpandTap,
   onHarvestComplete,
   lastTownEvent,
@@ -1068,9 +1149,22 @@ export function IsoMap({
     }
   }, []);
 
-  // Keyboard panning (Arrow keys) & zooming (+ / -) when map has focus
+  // Keyboard panning (Arrow keys), zooming (+ / -), and R rotate when map has focus
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (
+        rotateModeActive &&
+        hoveredCell &&
+        (e.key === 'r' || e.key === 'R') &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey
+      ) {
+        e.preventDefault();
+        onRotateCell?.(hoveredCell.x, hoveredCell.y);
+        return;
+      }
+
       const vp = viewportSizeRef.current;
       const st = stageSizeRef.current;
       const cam = cameraRef.current;
@@ -1107,15 +1201,15 @@ export function IsoMap({
       cam.panY = clamped.y;
       flushTransformNow('transform 150ms ease-out');
     },
-    [applyZoomAtPoint, flushTransformNow],
+    [applyZoomAtPoint, flushTransformNow, rotateModeActive, hoveredCell, onRotateCell],
   );
 
-  // Evaluate placement / move / plant cursor validity for hovered/focused cell
+  // Evaluate placement / move / rotate / plant cursor validity for hovered/focused cell
   const cursorOverlay = useMemo(() => {
     if (isVisitMode || !hoveredCell) return null;
     const { x, y } = hoveredCell;
     const isInteractiveMode = Boolean(
-      placingItemId || movingTile || moveModeActive || selectedSeed,
+      placingItemId || movingTile || moveModeActive || rotateModeActive || selectedSeed,
     );
     if (!isInteractiveMode) return null;
 
@@ -1131,6 +1225,13 @@ export function IsoMap({
     } else if (moveModeActive) {
       const tile = tiles[`${x}_${y}`];
       isValid = Boolean(tile && !tile.parentTile);
+    } else if (rotateModeActive) {
+      const raw = tiles[`${x}_${y}`];
+      const tile = raw?.parentTile ? tiles[raw.parentTile] : raw;
+      const ground = land[`${x}_${y}`];
+      const itemOk = Boolean(tile && getRotationKind('item', tile.itemId) !== 'none');
+      const groundOk = Boolean(ground && getRotationKind('ground', ground) !== 'none');
+      isValid = itemOk || groundOk;
     } else if (selectedSeed) {
       isValid = canPlantAt(x, y);
     }
@@ -1151,11 +1252,13 @@ export function IsoMap({
     placingItemId,
     movingTile,
     moveModeActive,
+    rotateModeActive,
     selectedSeed,
     catalog,
     canPlaceAt,
     canPlantAt,
     tiles,
+    land,
     bounds.minX,
     bounds.minY,
   ]);
@@ -1164,7 +1267,7 @@ export function IsoMap({
   const hoverTooltip = useMemo(() => {
     if (!hoveredCell) return null;
     const isInteractiveMode = Boolean(
-      placingItemId || movingTile || moveModeActive || selectedSeed,
+      placingItemId || movingTile || moveModeActive || rotateModeActive || selectedSeed,
     );
     if (isInteractiveMode) return null;
 
@@ -1190,6 +1293,7 @@ export function IsoMap({
     placingItemId,
     movingTile,
     moveModeActive,
+    rotateModeActive,
     selectedSeed,
     tiles,
     catalog,
@@ -1253,12 +1357,15 @@ export function IsoMap({
         {/* Memoized static world layer (ground, expand ring, crops, buildings, badges) */}
         <StaticWorldLayer
           land={land}
+          landRot={landRot}
           tiles={tiles}
           expandRing={expandRing}
           catalog={catalog}
           boundsMinX={bounds.minX}
           boundsMinY={bounds.minY}
           isVisitMode={isVisitMode}
+          rotateModeActive={rotateModeActive}
+          rotatingTarget={rotatingTarget}
           nowMs={nowMs}
           reducedMotion={reducedMotion}
           previewRoadCell={previewRoadCell}

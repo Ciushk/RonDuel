@@ -810,7 +810,8 @@
       "showBar": "Arată bara de acțiuni",
       "seedMenu": "Semințe de cultură",
       "plantSeed": "Plantează {crop}",
-      "more": "Meniu oraș"
+      "more": "Meniu oraș",
+      "rotate": "Rotește"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -1075,7 +1076,8 @@
       "zoomControls": "Controale de zoom ale hărții",
       "zoomIn": "Mărește",
       "zoomOut": "Micșorează",
-      "loading": "Se încarcă RonTown…"
+      "loading": "Se încarcă RonTown…",
+      "rotatingBanner": "Atinge o parcelă sau o clădire pentru a o roti"
     },
     "status": {
       "connecting": "Se conectează…",
@@ -1086,6 +1088,15 @@
       "rotateAria": "Rotește drumul",
       "axisNs": "Axă drum: Nord–Sud",
       "axisEw": "Axă drum: Est–Vest"
+    },
+    "rotate": {
+      "notRotatable": "Această parcelă nu poate fi rotită",
+      "cellAria": "Rotește {item} la ({x}, {y})",
+      "announce": "{item} rotit spre {dir}",
+      "dir0": "Nord-Est",
+      "dir1": "Sud-Est",
+      "dir2": "Sud-Vest",
+      "dir3": "Nord-Vest"
     }
   },
   "pwa": {

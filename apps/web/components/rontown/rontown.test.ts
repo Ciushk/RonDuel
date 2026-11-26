@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { GROUND_TILE_TYPES } from '@ronduel/shared';
+import { DEFAULT_TOWN_CATALOG, getRotationKind, GROUND_TILE_TYPES } from '@ronduel/shared';
 import {
   applyRubberBand,
   clampPanPosition,
@@ -30,8 +30,10 @@ import {
   CROP_BUTTON_SPRITES,
   GROUND_SPRITES,
   resolveCropSprite,
+  resolveGroundSprite,
   resolveRoadSprite,
   ROAD_VARIANT_KEYS,
+  SHORE_ROTATION_KEYS,
   spriteUrl,
   UI_SPRITES,
   uiSpriteUrl,
@@ -475,5 +477,73 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     const diskPath = path.join(PUBLIC_RONTOWN_DIR, 'rotate-button.png');
     expect(fs.existsSync(diskPath)).toBe(true);
     expect(readPngSize(diskPath)).toEqual({ width: 128, height: 128 });
+  });
+
+  it('classifies rotation rules for every ground type and catalog item', () => {
+    const rot4Grounds = new Set([
+      'basic-block-wather-grass-50-50',
+      'basic-block-water-grass-20-80',
+      'basic-block-water-grass-80-20',
+      'basic-block-street-curve',
+    ]);
+    for (const g of GROUND_TILE_TYPES) {
+      if (rot4Grounds.has(g)) {
+        expect(getRotationKind('ground', g), g).toBe('rot4');
+      } else if (g === 'basic-block-street') {
+        expect(getRotationKind('ground', g), g).toBe('flip2');
+      } else {
+        expect(getRotationKind('ground', g), g).toBe('none');
+      }
+    }
+
+    for (const item of Object.values(DEFAULT_TOWN_CATALOG.items)) {
+      if (item.type === 'plot' || item.type === 'crop' || item.footprint.w !== item.footprint.h) {
+        expect(getRotationKind('item', item.id), item.id).toBe('none');
+      } else {
+        expect(getRotationKind('item', item.id), item.id).toBe('flip2');
+      }
+    }
+
+    expect(getRotationKind('item', 'part:villa')).toBe('none');
+    expect(getRotationKind('item', 'nonexistent')).toBe('none');
+  });
+
+  it('resolves shore and street ground rotations and ships all 9 shore -r1..-r3 PNGs at 128x76', () => {
+    expect(SHORE_ROTATION_KEYS).toHaveLength(9);
+    for (const key of SHORE_ROTATION_KEYS) {
+      const spec = GROUND_SPRITES[key];
+      expect(spec.width).toBe(128);
+      expect(spec.height).toBe(76);
+      const diskPath = path.join(PUBLIC_RONTOWN_DIR, `${key}.png`);
+      expect(fs.existsSync(diskPath), `Missing ${key}.png`).toBe(true);
+      expect(readPngSize(diskPath)).toEqual({ width: 128, height: 76 });
+    }
+
+    // Shore cycles through base, -r1, -r2, -r3
+    expect(resolveGroundSprite('basic-block-wather-grass-50-50', 0).src).toContain(
+      'basic-block-wather-grass-50-50.png',
+    );
+    expect(resolveGroundSprite('basic-block-wather-grass-50-50', 1).src).toContain(
+      'basic-block-wather-grass-50-50-r1.png',
+    );
+    expect(resolveGroundSprite('basic-block-wather-grass-50-50', 2).src).toContain(
+      'basic-block-wather-grass-50-50-r2.png',
+    );
+    expect(resolveGroundSprite('basic-block-wather-grass-50-50', 3).src).toContain(
+      'basic-block-wather-grass-50-50-r3.png',
+    );
+
+    // Street curve cycles NE / SE / SW(flipX) / NW
+    expect(resolveGroundSprite('basic-block-street-curve', 1).src).toContain(
+      'basic-block-street-curve-se.png',
+    );
+    expect(resolveGroundSprite('basic-block-street-curve', 2).flipX).toBe(true);
+    expect(resolveGroundSprite('basic-block-street-curve', 3).src).toContain(
+      'basic-block-street-curve-nw.png',
+    );
+
+    // Straight street flips horizontally on odd rot
+    expect(resolveGroundSprite('basic-block-street', 0).flipX).toBeUndefined();
+    expect(resolveGroundSprite('basic-block-street', 1).flipX).toBe(true);
   });
 });

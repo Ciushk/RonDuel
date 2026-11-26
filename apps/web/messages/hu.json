@@ -810,7 +810,8 @@
       "showBar": "Show action bar",
       "seedMenu": "Crop seeds",
       "plantSeed": "Plant {crop}",
-      "more": "Town menu"
+      "more": "Town menu",
+      "rotate": "Rotate"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -1075,7 +1076,8 @@
       "zoomControls": "Térkép nagyításvezérlői",
       "zoomIn": "Nagyítás",
       "zoomOut": "Kicsinyítés",
-      "loading": "RonTown betöltése…"
+      "loading": "RonTown betöltése…",
+      "rotatingBanner": "Tap a tile or building to rotate it"
     },
     "status": {
       "connecting": "Csatlakozás…",
@@ -1086,6 +1088,15 @@
       "rotateAria": "Út elforgatása",
       "axisNs": "Út iránya: Észak–Dél",
       "axisEw": "Út iránya: Kelet–Nyugat"
+    },
+    "rotate": {
+      "notRotatable": "This tile cannot be rotated",
+      "cellAria": "Rotate {item} at ({x}, {y})",
+      "announce": "Rotated {item} to {dir}",
+      "dir0": "North-East",
+      "dir1": "South-East",
+      "dir2": "South-West",
+      "dir3": "North-West"
     }
   },
   "pwa": {

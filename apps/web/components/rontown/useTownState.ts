@@ -419,6 +419,7 @@ export function useTownState(params: {
                 x: item.x,
                 y: item.y,
                 itemId: item.itemId,
+                ...(item.rot ? { rot: item.rot } : {}),
                 cropId: item.cropId,
                 readyAt: item.ready ? 1 : undefined,
               };
@@ -437,6 +438,7 @@ export function useTownState(params: {
             likesCount: snap.likesCount ?? 0,
             plotsOwned: 2,
             land,
+            ...(snap.landRot ? { landRot: snap.landRot } : {}),
           });
           setTiles(visitTiles);
           townReadyRef.current = true;
@@ -608,6 +610,7 @@ export function useTownState(params: {
 
   const gridSize = town?.gridSize ?? 8;
   const land = useMemo<Record<string, GroundTileType>>(() => town?.land ?? {}, [town?.land]);
+  const landRot = useMemo<Record<string, 1 | 2 | 3>>(() => town?.landRot ?? {}, [town?.landRot]);
 
   const expandRing = useMemo<GridCoord[]>(
     () => (isVisitMode ? [] : computeExpandRing(land, gridSize)),
@@ -869,6 +872,78 @@ export function useTownState(params: {
       return true;
     },
     [tiles, catalog, canPlaceAt, showToast],
+  );
+
+  const executeRotate = useCallback(
+    async (
+      x: number,
+      y: number,
+      layer: 'ground' | 'item',
+      nextRot: 0 | 1 | 2 | 3,
+    ): Promise<boolean> => {
+      if (!serverReadyRef.current) return false;
+      const key = `${x}_${y}`;
+      const prevTile = tiles[key];
+      const prevLandRotVal = town?.landRot?.[key];
+
+      if (layer === 'ground') {
+        setTown((prev) => {
+          if (!prev) return prev;
+          const nextMap: Record<string, 1 | 2 | 3> = { ...(prev.landRot ?? {}) };
+          if (nextRot === 0) {
+            delete nextMap[key];
+          } else {
+            nextMap[key] = nextRot;
+          }
+          return { ...prev, landRot: nextMap };
+        });
+      } else {
+        setTiles((prev) => {
+          const cur = prev[key];
+          if (!cur) return prev;
+          const updated: TileInfo = { ...cur };
+          if (nextRot === 0) {
+            delete updated.rot;
+          } else {
+            updated.rot = nextRot;
+          }
+          return { ...prev, [key]: updated };
+        });
+      }
+
+      const session = getLocalSession();
+      try {
+        const res = await fetch('/api/town/rotate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: session.uid, x, y, layer, rot: nextRot }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (layer === 'ground') {
+            setTown((prev) => {
+              if (!prev) return prev;
+              const nextMap: Record<string, 1 | 2 | 3> = { ...(prev.landRot ?? {}) };
+              if (prevLandRotVal === undefined) {
+                delete nextMap[key];
+              } else {
+                nextMap[key] = prevLandRotVal;
+              }
+              return { ...prev, landRot: nextMap };
+            });
+          } else if (prevTile) {
+            setTiles((prev) => ({ ...prev, [key]: prevTile }));
+          }
+          showToast(err.error || 'Rotate failed');
+          return false;
+        }
+        return true;
+      } catch {
+        // local fallback keeps optimistic update
+        return true;
+      }
+    },
+    [tiles, town, showToast],
   );
 
   const executeRemove = useCallback(
@@ -1244,6 +1319,7 @@ export function useTownState(params: {
     town,
     tiles,
     land,
+    landRot,
     expandRing,
     blockedKeys,
     walletBalance,
@@ -1268,6 +1344,7 @@ export function useTownState(params: {
     executeBuyLand,
     executeBuild,
     executeMove,
+    executeRotate,
     executeRemove,
     executePlantCrop,
     executeHarvestCrop,

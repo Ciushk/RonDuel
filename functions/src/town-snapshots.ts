@@ -39,6 +39,7 @@ export async function publishTownSnapshot(db: Firestore, uid: string): Promise<v
       itemId: t.itemId,
       x: t.x,
       y: t.y,
+      ...(t.rot ? { rot: t.rot } : {}),
       ...(t.cropId ? { cropId: t.cropId } : {}),
       ...(t.readyAt ? { ready } : {}),
     };
@@ -53,6 +54,7 @@ export async function publishTownSnapshot(db: Firestore, uid: string): Promise<v
     leagueIds: Array.isArray(userData.leagueIds) ? userData.leagueIds : [],
     tiles,
     ...(townData.land ? { land: townData.land } : {}),
+    ...(townData.landRot ? { landRot: townData.landRot } : {}),
     updatedAt: FieldValue.serverTimestamp(),
   };
 

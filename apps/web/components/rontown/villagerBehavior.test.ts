@@ -205,4 +205,17 @@ describe('villagerBehavior pure state machine helpers', () => {
     expect(path![0]).toEqual({ x: 0, y: 0 });
     expect(path![path!.length - 1]).toEqual({ x: 4, y: 4 });
   });
+
+  it('findBuildingDoorCell swaps preferred door side when a building is horizontally flipped (rot === 1)', () => {
+    const land = makeGridLand(6);
+    const blocked = new Set(['2_2']);
+    const unflipped: BehaviorTileInfo = { x: 2, y: 2, itemId: 'starter_house', rot: 0 };
+    const flipped: BehaviorTileInfo = { x: 2, y: 2, itemId: 'starter_house', rot: 1 };
+
+    const door0 = findBuildingDoorCell(unflipped, 1, 1, land, blocked);
+    const door1 = findBuildingDoorCell(flipped, 1, 1, land, blocked);
+
+    expect(door0).toEqual({ x: 2, y: 3 });
+    expect(door1).toEqual({ x: 3, y: 2 });
+  });
 });

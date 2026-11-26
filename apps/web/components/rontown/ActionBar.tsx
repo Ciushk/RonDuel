@@ -9,11 +9,13 @@ interface ActionBarProps {
   visible: boolean;
   onToggleVisible: () => void;
   moveModeActive: boolean;
+  rotateModeActive: boolean;
   farmMenuOpen: boolean;
   selectedSeed: SeedChoiceId | null;
   maxLevel: number;
   onOpenBuild: () => void;
   onToggleMoveMode: () => void;
+  onToggleRotateMode: () => void;
   onToggleFarmMenu: () => void;
   onSelectSeed: (seed: SeedChoiceId) => void;
   onOpenVisit: () => void;
@@ -60,11 +62,13 @@ export function ActionBar({
   visible,
   onToggleVisible,
   moveModeActive,
+  rotateModeActive,
   farmMenuOpen,
   selectedSeed,
   maxLevel,
   onOpenBuild,
   onToggleMoveMode,
+  onToggleRotateMode,
   onToggleFarmMenu,
   onSelectSeed,
   onOpenVisit,
@@ -77,13 +81,11 @@ export function ActionBar({
       aria-label={t('town.toolbar.ariaLabel')}
       className="pointer-events-none absolute end-2 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-1.5 lg:end-4 lg:gap-2"
     >
-      {/* Main vertical stack of 5 hi-res controls (slides off-screen when collapsed) */}
+      {/* Main vertical stack of hi-res controls (slides off-screen when collapsed) */}
       <div
         aria-hidden={!visible}
         className={`pointer-events-none flex flex-col items-end gap-1.5 transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none lg:gap-2 ${
-          visible
-            ? 'translate-x-0 opacity-100'
-            : 'invisible translate-x-24 opacity-0'
+          visible ? 'translate-x-0 opacity-100' : 'invisible translate-x-24 opacity-0'
         }`}
       >
         {/* 1. Build */}
@@ -125,6 +127,27 @@ export function ActionBar({
           />
         </button>
 
+        {/* 2b. Rotate */}
+        <button
+          type="button"
+          data-testid="toolbar-rotate-btn"
+          tabIndex={visible ? 0 : -1}
+          onClick={onToggleRotateMode}
+          aria-label={t('town.toolbar.rotate')}
+          aria-pressed={rotateModeActive}
+          title={t('town.toolbar.rotate')}
+          className={`${ACTION_BTN_CLASS} ${rotateModeActive ? 'bg-[#C6FF3D]' : 'bg-[#FFF7EC]'}`}
+        >
+          <img
+            src={UI_SPRITES.rotate.src}
+            alt=""
+            width={UI_SPRITES.rotate.width}
+            height={UI_SPRITES.rotate.height}
+            className="block h-full w-full select-none object-contain"
+            draggable={false}
+          />
+        </button>
+
         {/* 3. Farm / Plant with staggered 3-seed fan-out (60ms stagger, 200ms total) */}
         <div className="relative flex items-center justify-end">
           <div
@@ -132,7 +155,9 @@ export function ActionBar({
             aria-label={t('town.toolbar.seedMenu')}
             aria-hidden={!farmMenuOpen || !visible}
             className={`me-2 flex items-center gap-1.5 lg:gap-2 ${
-              farmMenuOpen && visible ? 'pointer-events-auto visible' : 'pointer-events-none invisible'
+              farmMenuOpen && visible
+                ? 'pointer-events-auto visible'
+                : 'pointer-events-none invisible'
             }`}
           >
             {FAN_OUT_SEEDS.map((seed) => {
@@ -157,7 +182,7 @@ export function ActionBar({
                   style={{
                     transitionDelay: farmMenuOpen ? `${seed.staggerMs}ms` : '0ms',
                   }}
-                  className={`relative flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16 ${
+                  className={`focus-visible:outline-3 relative flex h-14 min-h-[44px] w-14 min-w-[44px] items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16 ${
                     locked
                       ? 'cursor-not-allowed bg-[#E7E2D8]'
                       : isSelected

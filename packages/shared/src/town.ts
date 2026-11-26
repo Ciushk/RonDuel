@@ -199,6 +199,74 @@ export function isGroundPlantable(ground: GroundTileType | undefined): boolean {
   return ground !== undefined && PLANTABLE_GROUND_TYPES.has(ground);
 }
 
+export type RotationKind = 'none' | 'flip2' | 'rot4';
+
+export const ROTATION_RULES: {
+  ground: Record<GroundTileType, RotationKind>;
+  item: Record<string, RotationKind>;
+} = {
+  ground: {
+    'basic-block': 'none',
+    'basic-block-flowers': 'none',
+    'basic-block-flowers-two': 'none',
+    'basic-block-dirt': 'none',
+    'basic-block-street': 'flip2',
+    'basic-block-street-curve': 'rot4',
+    'basic-block-intersection': 'none',
+    'basic-block-wather': 'none',
+    'basic-block-wather-two': 'none',
+    'basic-block-wather-grass-50-50': 'rot4',
+    'basic-block-water-grass-20-80': 'rot4',
+    'basic-block-water-grass-80-20': 'rot4',
+  },
+  item: {
+    starter_house: 'flip2',
+    cottage: 'flip2',
+    house: 'flip2',
+    apartment: 'flip2',
+    villa: 'flip2',
+    shop: 'flip2',
+    town_hall: 'flip2',
+    park: 'flip2',
+    bakery: 'flip2',
+    school: 'flip2',
+    police_station: 'flip2',
+    fire_station: 'flip2',
+    hospital: 'flip2',
+    road: 'flip2',
+    fence: 'flip2',
+    tree: 'flip2',
+    lantern: 'flip2',
+    bench: 'flip2',
+    fountain: 'flip2',
+    golden_fountain: 'flip2',
+    windmill: 'flip2',
+    clock_tower: 'flip2',
+    ronduel_statue: 'flip2',
+    plot: 'none',
+    oats: 'none',
+    wheat: 'none',
+    cabbage: 'none',
+    carrots: 'none',
+    sunflower: 'none',
+    pumpkin: 'none',
+  },
+};
+
+export function getRotationKind(layer: 'ground' | 'item', id: string): RotationKind {
+  if (!id) return 'none';
+  if (layer === 'ground') {
+    return (ROTATION_RULES.ground as Record<string, RotationKind>)[id] ?? 'none';
+  }
+  if (id.startsWith('part:')) return 'none';
+  const explicit = ROTATION_RULES.item[id];
+  if (explicit) return explicit;
+  const item = DEFAULT_TOWN_CATALOG.items[id];
+  if (!item) return 'none';
+  if (item.type === 'plot' || item.type === 'crop') return 'none';
+  return item.footprint.w === item.footprint.h ? 'flip2' : 'none';
+}
+
 export interface TownDoc {
   createdAt?: unknown;
   gridSize: number;
@@ -214,6 +282,8 @@ export interface TownDoc {
   plotsOwned: number;
   /** Owned isometric ground cells keyed by `${x}_${y}`. */
   land?: Record<string, GroundTileType>;
+  /** Non-zero ground tile rotations keyed by `${x}_${y}` (missing = 0). */
+  landRot?: Record<string, 1 | 2 | 3>;
   updatedAt?: unknown;
 }
 
@@ -222,7 +292,7 @@ export interface TownTileDoc {
   itemId: string;
   x: number;
   y: number;
-  rot?: 0 | 1;
+  rot?: 0 | 1 | 2 | 3;
   placedAt?: unknown;
   plantedAt?: unknown;
   readyAt?: unknown;
@@ -259,10 +329,12 @@ export interface TownSnapshotDoc {
     itemId: string;
     x: number;
     y: number;
+    rot?: 0 | 1 | 2 | 3;
     cropId?: string;
     ready?: boolean;
   }>;
   land?: Record<string, GroundTileType>;
+  landRot?: Record<string, 1 | 2 | 3>;
   updatedAt?: unknown;
 }
 

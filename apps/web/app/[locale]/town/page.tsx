@@ -12,10 +12,10 @@ import {
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ActionBar, type SeedChoiceId } from '@/components/rontown/ActionBar';
-import { IsoMap } from '@/components/rontown/IsoMap';
+import { IsoMap, type RotatingTarget } from '@/components/rontown/IsoMap';
 import { isoToScreen, TILE_H, TILE_W } from '@/components/rontown/iso';
 import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
 import { GROUND_SPRITES } from '@/components/rontown/sprites';
@@ -23,7 +23,7 @@ import type { ActiveSheet } from '@/components/rontown/TownSheets';
 import { useTownState, type TileInfo } from '@/components/rontown/useTownState';
 import { useReducedMotion } from '@/components/rontown/useVillagers';
 import { useFeatureFlag } from '@/lib/feature-flags';
-import type { GridCoord, GroundTileType } from '@ronduel/shared';
+import { getRotationKind, type GridCoord, type GroundTileType } from '@ronduel/shared';
 
 const SKELETON_CELLS: ReadonlyArray<{ x: number; y: number }> = [
   { x: 0, y: 0 },
@@ -96,6 +96,7 @@ export default function TownPage() {
     town,
     tiles,
     land,
+    landRot,
     expandRing,
     blockedKeys,
     walletBalance,
@@ -120,6 +121,7 @@ export default function TownPage() {
     executeBuyLand,
     executeBuild,
     executeMove,
+    executeRotate,
     executeRemove,
     executePlantCrop,
     executeHarvestCrop,
@@ -164,6 +166,18 @@ export default function TownPage() {
   const [roadRotateTick, setRoadRotateTick] = useState<number>(0);
   const [moveModeActive, setMoveModeActive] = useState<boolean>(false);
   const [movingTile, setMovingTile] = useState<TileInfo | null>(null);
+  const [rotateModeActive, setRotateModeActive] = useState<boolean>(false);
+  const [rotatingTarget, setRotatingTarget] = useState<RotatingTarget | null>(null);
+  const [rotateAnnouncement, setRotateAnnouncement] = useState<string>('');
+  const rotateTickRef = useRef<number>(0);
+  const rotateSwapTimerRef = useRef<number | null>(null);
+  const rotateClearTimerRef = useRef<number | null>(null);
+  const pendingRotRef = useRef<{
+    x: number;
+    y: number;
+    layer: 'ground' | 'item';
+    rot: 0 | 1 | 2 | 3;
+  } | null>(null);
   const [farmMenuOpen, setFarmMenuOpen] = useState<boolean>(false);
   const [selectedSeed, setSelectedSeed] = useState<SeedChoiceId | null>(null);
 
@@ -175,6 +189,13 @@ export default function TownPage() {
     y: number;
     type: 'harvest' | 'build' | 'plant';
   } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (rotateSwapTimerRef.current !== null) window.clearTimeout(rotateSwapTimerRef.current);
+      if (rotateClearTimerRef.current !== null) window.clearTimeout(rotateClearTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -233,6 +254,7 @@ export default function TownPage() {
     setRoadRotateTick(0);
     setMoveModeActive(false);
     setMovingTile(null);
+    setRotateModeActive(false);
     setSelectedSeed(null);
     setFarmMenuOpen(false);
   }, []);
@@ -314,6 +336,128 @@ export default function TownPage() {
     [executeBuyLand],
   );
 
+  const handleRotateCell = useCallback(
+    (x: number, y: number) => {
+      if (isVisitMode || !isServerReady) return;
+      const key = `${x}_${y}`;
+      const rawTile = tiles[key];
+      const tile = rawTile?.parentTile ? tiles[rawTile.parentTile] : rawTile;
+
+      // Flush any pending 90ms swap so rapid taps stay deterministic
+      let flushedPrev: {
+        x: number;
+        y: number;
+        layer: 'ground' | 'item';
+        rot: 0 | 1 | 2 | 3;
+      } | null = null;
+      if (rotateSwapTimerRef.current !== null && pendingRotRef.current) {
+        window.clearTimeout(rotateSwapTimerRef.current);
+        rotateSwapTimerRef.current = null;
+        flushedPrev = pendingRotRef.current;
+        pendingRotRef.current = null;
+        void executeRotate(flushedPrev.x, flushedPrev.y, flushedPrev.layer, flushedPrev.rot);
+      }
+
+      let layer: 'ground' | 'item' | null = null;
+      let kind: 'rot4' | 'flip2' = 'flip2';
+      let targetX = x;
+      let targetY = y;
+      let targetKey = key;
+      let curRot: 0 | 1 | 2 | 3 = 0;
+      let itemLabel = '';
+
+      if (tile) {
+        const itemKind = getRotationKind('item', tile.itemId);
+        if (itemKind !== 'none') {
+          layer = 'item';
+          kind = itemKind;
+          targetX = tile.x;
+          targetY = tile.y;
+          targetKey = `${tile.x}_${tile.y}`;
+          curRot =
+            flushedPrev &&
+            flushedPrev.layer === 'item' &&
+            flushedPrev.x === targetX &&
+            flushedPrev.y === targetY
+              ? flushedPrev.rot
+              : (((tile.rot ?? 0) % 4) as 0 | 1 | 2 | 3);
+          const meta = catalog.items[tile.itemId];
+          itemLabel = meta?.nameKey ? t(meta.nameKey) : tile.itemId;
+        }
+      }
+
+      if (!layer) {
+        const ground = land[key];
+        const groundKind = ground ? getRotationKind('ground', ground) : 'none';
+        if (ground && groundKind !== 'none') {
+          layer = 'ground';
+          kind = groundKind;
+          curRot =
+            flushedPrev &&
+            flushedPrev.layer === 'ground' &&
+            flushedPrev.x === x &&
+            flushedPrev.y === y
+              ? flushedPrev.rot
+              : (((landRot[key] ?? 0) % 4) as 0 | 1 | 2 | 3);
+          itemLabel = t(`town.land.types.${ground}`);
+        }
+      }
+
+      if (!layer) {
+        showToast(t('town.rotate.notRotatable'));
+        return;
+      }
+
+      const mod = kind === 'rot4' ? 4 : 2;
+      const nextRot = ((curRot + 1) % mod) as 0 | 1 | 2 | 3;
+      rotateTickRef.current += 1;
+      const tick = rotateTickRef.current;
+
+      setRotatingTarget({ key: targetKey, layer, kind, toRot: nextRot, tick });
+      setRotateAnnouncement(
+        t('town.rotate.announce', {
+          item: itemLabel,
+          dir: t(`town.rotate.dir${nextRot}`),
+        }),
+      );
+
+      if (rotateClearTimerRef.current !== null) {
+        window.clearTimeout(rotateClearTimerRef.current);
+      }
+      rotateClearTimerRef.current = window.setTimeout(
+        () => {
+          setRotatingTarget((cur) => (cur && cur.tick === tick ? null : cur));
+          rotateClearTimerRef.current = null;
+        },
+        reducedMotion ? 140 : 200,
+      );
+
+      if (reducedMotion || kind === 'flip2') {
+        void executeRotate(targetX, targetY, layer, nextRot);
+      } else {
+        const scheduled = { x: targetX, y: targetY, layer, rot: nextRot };
+        pendingRotRef.current = scheduled;
+        rotateSwapTimerRef.current = window.setTimeout(() => {
+          rotateSwapTimerRef.current = null;
+          pendingRotRef.current = null;
+          void executeRotate(scheduled.x, scheduled.y, scheduled.layer, scheduled.rot);
+        }, 90);
+      }
+    },
+    [
+      isVisitMode,
+      isServerReady,
+      tiles,
+      land,
+      landRot,
+      catalog,
+      reducedMotion,
+      executeRotate,
+      showToast,
+      t,
+    ],
+  );
+
   const handleTileTap = useCallback(
     async (x: number, y: number) => {
       const key = `${x}_${y}`;
@@ -329,6 +473,11 @@ export default function TownPage() {
       }
 
       if (!isServerReady) {
+        return;
+      }
+
+      if (rotateModeActive) {
+        handleRotateCell(x, y);
         return;
       }
 
@@ -389,6 +538,8 @@ export default function TownPage() {
       tiles,
       isVisitMode,
       isServerReady,
+      rotateModeActive,
+      handleRotateCell,
       placingItemId,
       roadRot,
       movingTile,
@@ -572,8 +723,8 @@ export default function TownPage() {
         </div>
       )}
 
-      {/* Active mode banners (Place / Move / Plant) */}
-      {(placingItemId || moveModeActive || movingTile || selectedSeed) && (
+      {/* Active mode banners (Place / Move / Rotate / Plant) */}
+      {(placingItemId || moveModeActive || movingTile || rotateModeActive || selectedSeed) && (
         <div className="relative z-20 flex items-center justify-between gap-2 border-b-2 border-[#0E0D15] bg-[#C6FF3D] px-3 py-1.5 text-xs font-black text-[#0E0D15]">
           <span className="truncate">
             {placingItemId &&
@@ -589,6 +740,12 @@ export default function TownPage() {
             {!placingItemId &&
               !movingTile &&
               !moveModeActive &&
+              rotateModeActive &&
+              t('town.map.rotatingBanner')}
+            {!placingItemId &&
+              !movingTile &&
+              !moveModeActive &&
+              !rotateModeActive &&
               selectedSeed &&
               t('town.map.plantingBanner', { crop: t(`town.crops.${selectedSeed}.name`) })}
           </span>
@@ -623,6 +780,11 @@ export default function TownPage() {
                   ? t('town.road.axisEw')
                   : t('town.road.axisNs')
                 : ''}
+            </div>
+          )}
+          {rotateModeActive && (
+            <div role="status" aria-live="polite" data-testid="rotate-live" className="sr-only">
+              {rotateAnnouncement}
             </div>
           )}
         </div>
@@ -719,6 +881,7 @@ export default function TownPage() {
               !placingItemId &&
               !moveModeActive &&
               !movingTile &&
+              !rotateModeActive &&
               !selectedSeed && (
                 <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
                   {t('town.map.helpBody')}
@@ -726,6 +889,7 @@ export default function TownPage() {
               )}
             <IsoMap
               land={land}
+              landRot={landRot}
               tiles={tiles}
               expandRing={isServerReady ? expandRing : []}
               blockedKeys={blockedKeys}
@@ -734,12 +898,15 @@ export default function TownPage() {
               isVisitMode={isVisitMode}
               placingItemId={placingItemId}
               moveModeActive={moveModeActive}
+              rotateModeActive={rotateModeActive}
+              rotatingTarget={rotatingTarget}
               movingTile={movingTile}
               selectedSeed={selectedSeed}
               floatingRewards={floatingRewards}
               canPlaceAt={canPlaceAt}
               canPlantAt={canPlantAt}
               onTileTap={(x, y) => void handleTileTap(x, y)}
+              onRotateCell={handleRotateCell}
               onExpandTap={handleExpandTap}
               onHarvestComplete={handleHarvestComplete}
               lastTownEvent={lastTownEvent}
@@ -756,6 +923,7 @@ export default function TownPage() {
           visible={toolbarVisible}
           onToggleVisible={toggleToolbar}
           moveModeActive={moveModeActive || Boolean(movingTile)}
+          rotateModeActive={rotateModeActive}
           farmMenuOpen={farmMenuOpen}
           selectedSeed={selectedSeed}
           maxLevel={maxLevel}
@@ -769,10 +937,16 @@ export default function TownPage() {
             clearModes();
             setMoveModeActive(next);
           }}
+          onToggleRotateMode={() => {
+            const next = !rotateModeActive;
+            clearModes();
+            setRotateModeActive(next);
+          }}
           onToggleFarmMenu={() => {
             setPlacingItemId(null);
             setMoveModeActive(false);
             setMovingTile(null);
+            setRotateModeActive(false);
             setFarmMenuOpen((prev) => {
               const next = !prev;
               if (!next) setSelectedSeed(null);
@@ -783,6 +957,7 @@ export default function TownPage() {
             setPlacingItemId(null);
             setMoveModeActive(false);
             setMovingTile(null);
+            setRotateModeActive(false);
             setSelectedSeed((prev) => (prev === seed ? null : seed));
           }}
           onOpenVisit={() => {

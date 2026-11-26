@@ -794,6 +794,77 @@ html[data-theme='dark'] {
   animation: rt-road-dip-b 180ms ease-out 1;
 }
 
+/* Part A: Rotate mode feedback (180ms ease-out, transform/opacity only) */
+@keyframes rt-rot4-pulse-a {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rt-rot4-pulse-b {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rt-flip2-to1 {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.05);
+  }
+  100% {
+    transform: scaleX(-1);
+  }
+}
+
+@keyframes rt-flip2-to0 {
+  0% {
+    transform: scaleX(-1);
+  }
+  50% {
+    transform: scaleX(-0.05);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.rt-rot4-anim-a {
+  animation: rt-rot4-pulse-a 180ms ease-out 1;
+}
+
+.rt-rot4-anim-b {
+  animation: rt-rot4-pulse-b 180ms ease-out 1;
+}
+
+.rt-flip2-to1 {
+  animation: rt-flip2-to1 180ms ease-out 1;
+}
+
+.rt-flip2-to0 {
+  animation: rt-flip2-to0 180ms ease-out 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -839,11 +910,15 @@ html[data-theme='dark'] {
     transition: none !important;
   }
 
-  .rt-road-dip-a {
+  .rt-road-dip-a,
+  .rt-rot4-anim-a,
+  .rt-flip2-to1 {
     animation: rt-road-reduced-a 120ms ease-out 1 !important;
   }
 
-  .rt-road-dip-b {
+  .rt-road-dip-b,
+  .rt-rot4-anim-b,
+  .rt-flip2-to0 {
     animation: rt-road-reduced-b 120ms ease-out 1 !important;
   }
 }

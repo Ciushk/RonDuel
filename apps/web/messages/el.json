@@ -810,7 +810,8 @@
       "showBar": "Show action bar",
       "seedMenu": "Crop seeds",
       "plantSeed": "Plant {crop}",
-      "more": "Town menu"
+      "more": "Town menu",
+      "rotate": "Rotate"
     },
     "chips": {
       "coins": "{count} RonCoins",
@@ -1075,7 +1076,8 @@
       "zoomControls": "Έλεγχοι ζουμ χάρτη",
       "zoomIn": "Μεγέθυνση",
       "zoomOut": "Σμίκρυνση",
-      "loading": "Φόρτωση RonTown…"
+      "loading": "Φόρτωση RonTown…",
+      "rotatingBanner": "Tap a tile or building to rotate it"
     },
     "status": {
       "connecting": "Σύνδεση…",
@@ -1086,6 +1088,15 @@
       "rotateAria": "Περιστροφή δρόμου",
       "axisNs": "Άξονας δρόμου: Βορράς–Νότος",
       "axisEw": "Άξονας δρόμου: Ανατολή–Δύση"
+    },
+    "rotate": {
+      "notRotatable": "This tile cannot be rotated",
+      "cellAria": "Rotate {item} at ({x}, {y})",
+      "announce": "Rotated {item} to {dir}",
+      "dir0": "North-East",
+      "dir1": "South-East",
+      "dir2": "South-West",
+      "dir3": "North-West"
     }
   },
   "pwa": {

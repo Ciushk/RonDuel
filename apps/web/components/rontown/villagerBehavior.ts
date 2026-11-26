@@ -17,6 +17,7 @@ export interface BehaviorTileInfo {
   x: number;
   y: number;
   itemId: string;
+  rot?: 0 | 1 | 2 | 3;
   cropId?: string;
   parentTile?: string;
 }
@@ -295,7 +296,8 @@ export function findNearestFreeCell(params: {
 }
 
 /**
- * Computes the front "door" cell for a placed building: tries (frontX, frontY+1), then (frontX+1, frontY).
+ * Computes the front "door" cell for a placed building: tries (frontX, frontY+1), then (frontX+1, frontY),
+ * or swaps the preference order when the building is horizontally flipped (`rot % 2 === 1`).
  * Only returns a walkable, unblocked cell.
  */
 export function findBuildingDoorCell(
@@ -307,10 +309,16 @@ export function findBuildingDoorCell(
 ): GridCoord | null {
   const frontX = tile.x + Math.max(1, footprintW) - 1;
   const frontY = tile.y + Math.max(1, footprintH) - 1;
-  const preferred: GridCoord[] = [
-    { x: frontX, y: frontY + 1 },
-    { x: frontX + 1, y: frontY },
-  ];
+  const flipped = (((tile.rot ?? 0) % 2) + 2) % 2 === 1;
+  const preferred: GridCoord[] = flipped
+    ? [
+        { x: frontX + 1, y: frontY },
+        { x: frontX, y: frontY + 1 },
+      ]
+    : [
+        { x: frontX, y: frontY + 1 },
+        { x: frontX + 1, y: frontY },
+      ];
 
   for (const c of preferred) {
     const key = `${c.x}_${c.y}`;

@@ -81,6 +81,7 @@ import {
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
+import { rotateTownElement } from './town-rotate.js';
 import { setTutorialStep } from './town-tutorial.js';
 import {
   buildItem,
@@ -325,6 +326,28 @@ export const api = onRequest(apiOptions, async (req, res) => {
         return;
       } catch (err: any) {
         res.status(400).json({ error: err.message || 'Move failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/rotate') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await rotateTownElement(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+          layer: body.layer === 'ground' ? 'ground' : body.layer === 'item' ? 'item' : ('' as any),
+          rot: Number(body.rot),
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        res.status(400).json({ error: err.message || 'Rotate failed' });
         return;
       }
     }

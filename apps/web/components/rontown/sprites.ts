@@ -42,7 +42,24 @@ export const ROAD_VARIANT_KEYS = [
 
 export type RoadVariantKey = (typeof ROAD_VARIANT_KEYS)[number];
 
-export const GROUND_SPRITES: Record<GroundTileType | RoadVariantKey, SpriteSpec> = {
+export const SHORE_ROTATION_KEYS = [
+  'basic-block-wather-grass-50-50-r1',
+  'basic-block-wather-grass-50-50-r2',
+  'basic-block-wather-grass-50-50-r3',
+  'basic-block-water-grass-20-80-r1',
+  'basic-block-water-grass-20-80-r2',
+  'basic-block-water-grass-20-80-r3',
+  'basic-block-water-grass-80-20-r1',
+  'basic-block-water-grass-80-20-r2',
+  'basic-block-water-grass-80-20-r3',
+] as const;
+
+export type ShoreRotationKey = (typeof SHORE_ROTATION_KEYS)[number];
+
+export const GROUND_SPRITES: Record<
+  GroundTileType | RoadVariantKey | ShoreRotationKey,
+  SpriteSpec
+> = {
   'basic-block': { src: spriteUrl('basic-block.png'), width: 128, height: 76 },
   'basic-block-flowers': { src: spriteUrl('basic-block-flowers.png'), width: 128, height: 76 },
   'basic-block-flowers-two': {
@@ -123,13 +140,58 @@ export const GROUND_SPRITES: Record<GroundTileType | RoadVariantKey, SpriteSpec>
     width: 128,
     height: 76,
   },
+  'basic-block-wather-grass-50-50-r1': {
+    src: spriteUrl('basic-block-wather-grass-50-50-r1.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-wather-grass-50-50-r2': {
+    src: spriteUrl('basic-block-wather-grass-50-50-r2.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-wather-grass-50-50-r3': {
+    src: spriteUrl('basic-block-wather-grass-50-50-r3.png'),
+    width: 128,
+    height: 76,
+  },
   'basic-block-water-grass-20-80': {
     src: spriteUrl('basic-block-water-grass-20-80.png'),
     width: 128,
     height: 76,
   },
+  'basic-block-water-grass-20-80-r1': {
+    src: spriteUrl('basic-block-water-grass-20-80-r1.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-water-grass-20-80-r2': {
+    src: spriteUrl('basic-block-water-grass-20-80-r2.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-water-grass-20-80-r3': {
+    src: spriteUrl('basic-block-water-grass-20-80-r3.png'),
+    width: 128,
+    height: 76,
+  },
   'basic-block-water-grass-80-20': {
     src: spriteUrl('basic-block-water-grass-80-20.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-water-grass-80-20-r1': {
+    src: spriteUrl('basic-block-water-grass-80-20-r1.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-water-grass-80-20-r2': {
+    src: spriteUrl('basic-block-water-grass-80-20-r2.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-water-grass-80-20-r3': {
+    src: spriteUrl('basic-block-water-grass-80-20-r3.png'),
     width: 128,
     height: 76,
   },
@@ -233,14 +295,44 @@ export function resolveCropSprite(cropId: string, stage: CropGrowthStage): Sprit
 }
 
 /**
+ * Resolves a ground slab sprite with optional persisted rotation (0..3).
+ * - Shore tiles (rot4): r1..r3 PNG variants
+ * - Street curve (rot4): 0=NE, 1=SE, 2=SW (flipX), 3=NW
+ * - Straight street (flip2): rot%2 === 1 -> flipX
+ */
+export function resolveGroundSprite(ground: GroundTileType, rot?: number): SpriteSpec {
+  const base = GROUND_SPRITES[ground] ?? GROUND_SPRITES['basic-block'];
+  const r = (((rot ?? 0) % 4) + 4) % 4;
+  if (r === 0) return base;
+
+  if (
+    ground === 'basic-block-wather-grass-50-50' ||
+    ground === 'basic-block-water-grass-20-80' ||
+    ground === 'basic-block-water-grass-80-20'
+  ) {
+    const key = `${ground}-r${r}` as ShoreRotationKey;
+    return GROUND_SPRITES[key] ?? base;
+  }
+  if (ground === 'basic-block-street') {
+    return r % 2 === 1 ? { ...base, flipX: true } : base;
+  }
+  if (ground === 'basic-block-street-curve') {
+    if (r === 1) return GROUND_SPRITES['basic-block-street-curve-se'];
+    if (r === 2) return { ...GROUND_SPRITES['basic-block-street-curve'], flipX: true };
+    if (r === 3) return GROUND_SPRITES['basic-block-street-curve-nw'];
+  }
+  return base;
+}
+
+/**
  * Complete 16-way road auto-tiling resolver from 4-neighbours (N=y-1, E=x+1, S=y+1, W=x-1).
- * For isolated tiles (mask 0), optional `rot === 1` flips to E-W axis.
+ * For isolated tiles (mask 0), optional `rot % 2 === 1` flips to E-W axis.
  */
 export function resolveRoadSprite(
   x: number,
   y: number,
   isRoadAt: (nx: number, ny: number) => boolean,
-  rot?: 0 | 1,
+  rot?: 0 | 1 | 2 | 3,
 ): SpriteSpec {
   const n = isRoadAt(x, y - 1) ? 1 : 0;
   const e = isRoadAt(x + 1, y) ? 2 : 0;
@@ -250,7 +342,7 @@ export function resolveRoadSprite(
 
   switch (mask) {
     case 0: // none (isolated)
-      return rot === 1
+      return (((rot ?? 0) % 2) + 2) % 2 === 1
         ? { ...GROUND_SPRITES['basic-block-street'], flipX: true }
         : GROUND_SPRITES['basic-block-street'];
     case 1: // N
@@ -386,6 +478,7 @@ export function preloadInitialSprites(extraUrls: string[] = []): void {
     GROUND_SPRITES['basic-block-street-curve'].src,
     GROUND_SPRITES['basic-block-intersection'].src,
     ...ROAD_VARIANT_KEYS.map((k) => GROUND_SPRITES[k].src),
+    ...SHORE_ROTATION_KEYS.map((k) => GROUND_SPRITES[k].src),
     UI_SPRITES.expand.src,
     UI_SPRITES.build.src,
     UI_SPRITES.move.src,
