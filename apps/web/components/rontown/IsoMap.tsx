@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  calculateSpeedupCost,
   getRotationKind,
   type GridCoord,
   type GroundTileType,
@@ -71,6 +72,8 @@ interface IsoMapProps {
   movingTile: TileInfo | null;
   selectedSeed: string | null;
   floatingRewards: FloatingReward[];
+  speedupEnabled?: boolean;
+  speedupSparkleKey?: string | null;
   canPlaceAt: (
     x: number,
     y: number,
@@ -83,6 +86,7 @@ interface IsoMapProps {
   onRotateCell?: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
   onHarvestComplete: (x: number, y: number) => void;
+  onSpeedupTap?: (tile: TileInfo) => void;
   lastTownEvent?: { id: number; x: number; y: number; type: 'harvest' | 'build' | 'plant' } | null;
   placingRoadRot?: 0 | 1;
   roadRotateTick?: number;
@@ -99,6 +103,8 @@ interface StaticWorldProps {
   isVisitMode: boolean;
   rotateModeActive: boolean;
   rotatingTarget: RotatingTarget | null;
+  speedupEnabled: boolean;
+  speedupSparkleKey: string | null;
   nowMs: number;
   reducedMotion: boolean;
   previewRoadCell: GridCoord | null;
@@ -108,6 +114,7 @@ interface StaticWorldProps {
   onTileTap: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
   onHarvestTap: (x: number, y: number) => void;
+  onSpeedupTap?: (tile: TileInfo) => void;
 }
 
 const StaticWorldLayer = memo(function StaticWorldLayer({
@@ -121,6 +128,8 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   isVisitMode,
   rotateModeActive,
   rotatingTarget,
+  speedupEnabled,
+  speedupSparkleKey,
   nowMs,
   reducedMotion,
   previewRoadCell,
@@ -130,6 +139,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   onTileTap,
   onExpandTap,
   onHarvestTap,
+  onSpeedupTap,
 }: StaticWorldProps) {
   const t = useTranslations();
 
@@ -494,9 +504,59 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     className="block select-none"
                     draggable={false}
                   />
-                  <span className="rt-pixel-bubble rt-pixel-bubble--tail whitespace-nowrap px-1.5 py-0.5 text-[14px] font-bold leading-tight">
-                    {formatDurationShort(growth.remainingSeconds)}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rt-pixel-bubble rt-pixel-bubble--tail whitespace-nowrap px-1.5 py-0.5 text-[14px] font-bold leading-tight">
+                      {formatDurationShort(growth.remainingSeconds)}
+                    </span>
+                    {!isVisitMode && speedupEnabled && onSpeedupTap && (
+                      <button
+                        type="button"
+                        data-testid={`speedup-chip-${key}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSpeedupTap(tile);
+                        }}
+                        aria-label={t('town.speedup.chipAria', {
+                          crop: t(`town.crops.${tile.cropId}.name`),
+                          cost: calculateSpeedupCost(growth.remainingSeconds, tile.cropId),
+                        })}
+                        className="focus-visible:outline-3 pointer-events-auto -m-3 flex min-h-[88px] min-w-[88px] cursor-pointer items-center justify-center bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                      >
+                        <span className="whitespace-nowrap rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-1 font-mono text-[16px] font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]">
+                          ⚡ {calculateSpeedupCost(growth.remainingSeconds, tile.cropId)}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {speedupSparkleKey === key && (
+                <div
+                  aria-hidden="true"
+                  data-testid="speedup-sparkle"
+                  style={{
+                    left: badgeCenterX,
+                    top: soilOrigin.y + 8 - boundsMinY,
+                    zIndex: objectZ(sortKey, Z_LAYER.badge + 2),
+                  }}
+                  className="rt-speedup-sparkle pointer-events-none absolute"
+                >
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 16 16"
+                    shapeRendering="crispEdges"
+                    className="block"
+                  >
+                    <rect x="7" y="1" width="2" height="14" fill="#C6FF3D" />
+                    <rect x="1" y="7" width="14" height="2" fill="#C6FF3D" />
+                    <rect x="6" y="6" width="4" height="4" fill="#FFF7EC" />
+                    <rect x="3" y="3" width="2" height="2" fill="#FACC15" />
+                    <rect x="11" y="3" width="2" height="2" fill="#FACC15" />
+                    <rect x="3" y="11" width="2" height="2" fill="#FACC15" />
+                    <rect x="11" y="11" width="2" height="2" fill="#FACC15" />
+                  </svg>
                 </div>
               )}
             </Fragment>
@@ -626,12 +686,15 @@ export function IsoMap({
   movingTile,
   selectedSeed,
   floatingRewards,
+  speedupEnabled = false,
+  speedupSparkleKey = null,
   canPlaceAt,
   canPlantAt,
   onTileTap,
   onRotateCell,
   onExpandTap,
   onHarvestComplete,
+  onSpeedupTap,
   lastTownEvent,
   placingRoadRot = 0,
   roadRotateTick = 0,
@@ -1366,6 +1429,8 @@ export function IsoMap({
           isVisitMode={isVisitMode}
           rotateModeActive={rotateModeActive}
           rotatingTarget={rotatingTarget}
+          speedupEnabled={speedupEnabled}
+          speedupSparkleKey={speedupSparkleKey}
           nowMs={nowMs}
           reducedMotion={reducedMotion}
           previewRoadCell={previewRoadCell}
@@ -1375,6 +1440,7 @@ export function IsoMap({
           onTileTap={onTileTap}
           onExpandTap={onExpandTap}
           onHarvestTap={handleHarvestTap}
+          onSpeedupTap={onSpeedupTap}
         />
 
         {/* Animated villager layer (transform-only GPU updates via single rAF loop) */}

@@ -47,6 +47,11 @@ const TownSheets = dynamic(
   { ssr: false },
 );
 
+const SpeedupConfirmSheet = dynamic(
+  () => import('@/components/rontown/SpeedupConfirmSheet').then((m) => m.SpeedupConfirmSheet),
+  { ssr: false },
+);
+
 export default function TownPage() {
   const t = useTranslations();
   const locale = useLocale();
@@ -113,6 +118,8 @@ export default function TownPage() {
     transferStatus,
     transferLoading,
     landPurchasing,
+    speedupEnabled,
+    speedupLoading,
     actionMessage,
     showToast,
     floatingRewards,
@@ -125,6 +132,7 @@ export default function TownPage() {
     executeRemove,
     executePlantCrop,
     executeHarvestCrop,
+    executeSpeedup,
     executeBuyPlot,
     executeDeliverOrder,
     executeLike,
@@ -136,6 +144,35 @@ export default function TownPage() {
 
   const reducedMotion = useReducedMotion();
   const [mapRevealed, setMapRevealed] = useState<boolean>(false);
+  const [displayedWalletBalance, setDisplayedWalletBalance] = useState<number>(walletBalance);
+  const displayedWalletRef = useRef<number>(walletBalance);
+
+  useEffect(() => {
+    const startVal = displayedWalletRef.current;
+    if (reducedMotion || startVal === walletBalance) {
+      displayedWalletRef.current = walletBalance;
+      setDisplayedWalletBalance(walletBalance);
+      return;
+    }
+    const startMs = performance.now();
+    const durationMs = 400;
+    let rafId = 0;
+    const step = (now: number) => {
+      const p = Math.min(1, (now - startMs) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const next = Math.round(startVal + (walletBalance - startVal) * eased);
+      displayedWalletRef.current = next;
+      setDisplayedWalletBalance(next);
+      if (p < 1) {
+        rafId = window.requestAnimationFrame(step);
+      } else {
+        displayedWalletRef.current = walletBalance;
+        setDisplayedWalletBalance(walletBalance);
+      }
+    };
+    rafId = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [walletBalance, reducedMotion]);
 
   useEffect(() => {
     if (!townReady) return;
@@ -158,6 +195,9 @@ export default function TownPage() {
   const [activeSheet, setActiveSheet] = useState<ActiveSheet | null>(null);
   const [selectedTile, setSelectedTile] = useState<TileInfo | null>(null);
   const [expandTarget, setExpandTarget] = useState<GridCoord | null>(null);
+  const [speedupTarget, setSpeedupTarget] = useState<TileInfo | null>(null);
+  const [speedupSparkleKey, setSpeedupSparkleKey] = useState<string | null>(null);
+  const speedupSparkleTimerRef = useRef<number | null>(null);
   const [toolbarVisible, setToolbarVisible] = useState<boolean>(true);
 
   const [shopTab, setShopTab] = useState<'housing' | 'service' | 'plot' | 'decor'>('housing');
@@ -194,6 +234,9 @@ export default function TownPage() {
     return () => {
       if (rotateSwapTimerRef.current !== null) window.clearTimeout(rotateSwapTimerRef.current);
       if (rotateClearTimerRef.current !== null) window.clearTimeout(rotateClearTimerRef.current);
+      if (speedupSparkleTimerRef.current !== null) {
+        window.clearTimeout(speedupSparkleTimerRef.current);
+      }
     };
   }, []);
 
@@ -562,6 +605,39 @@ export default function TownPage() {
     [executeHarvestCrop],
   );
 
+  const handleSpeedupTap = useCallback(
+    (tile: TileInfo) => {
+      if (isVisitMode || !isServerReady || !speedupEnabled) return;
+      clearModes();
+      closeSheet();
+      setExpandTarget(null);
+      setSpeedupTarget(tile);
+    },
+    [isVisitMode, isServerReady, speedupEnabled, clearModes, closeSheet],
+  );
+
+  const handleConfirmSpeedup = useCallback(
+    async (x: number, y: number, expectedCost: number) => {
+      const res = await executeSpeedup(x, y, expectedCost);
+      if (res.ok) {
+        setSpeedupTarget(null);
+        const key = `${x}_${y}`;
+        setSpeedupSparkleKey(key);
+        if (speedupSparkleTimerRef.current !== null) {
+          window.clearTimeout(speedupSparkleTimerRef.current);
+        }
+        speedupSparkleTimerRef.current = window.setTimeout(
+          () => {
+            setSpeedupSparkleKey((cur) => (cur === key ? null : cur));
+            speedupSparkleTimerRef.current = null;
+          },
+          reducedMotion ? 140 : 320,
+        );
+      }
+    },
+    [executeSpeedup, reducedMotion],
+  );
+
   if (!townEnabled) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
@@ -694,8 +770,11 @@ export default function TownPage() {
                 className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <RonCoinIcon size={24} />
-                <span className="font-mono text-sm font-black tabular-nums text-[#0E0D15]">
-                  {townReady ? walletBalance : '—'}
+                <span
+                  data-testid="town-wallet-balance"
+                  className="font-mono text-sm font-black tabular-nums text-[#0E0D15]"
+                >
+                  {townReady ? displayedWalletBalance : '—'}
                 </span>
               </button>
 
@@ -903,12 +982,15 @@ export default function TownPage() {
               movingTile={movingTile}
               selectedSeed={selectedSeed}
               floatingRewards={floatingRewards}
+              speedupEnabled={speedupEnabled}
+              speedupSparkleKey={speedupSparkleKey}
               canPlaceAt={canPlaceAt}
               canPlantAt={canPlantAt}
               onTileTap={(x, y) => void handleTileTap(x, y)}
               onRotateCell={handleRotateCell}
               onExpandTap={handleExpandTap}
               onHarvestComplete={handleHarvestComplete}
+              onSpeedupTap={handleSpeedupTap}
               lastTownEvent={lastTownEvent}
               placingRoadRot={roadRot}
               roadRotateTick={roadRotateTick}
@@ -1032,6 +1114,18 @@ export default function TownPage() {
           purchasing={landPurchasing}
           onConfirm={handleConfirmBuyLand}
           onClose={() => setExpandTarget(null)}
+        />
+      )}
+
+      {/* 5b. HARVEST SPEED-UP CONFIRM SHEET (gated behind speedupEnabled) */}
+      {speedupTarget && (
+        <SpeedupConfirmSheet
+          tile={speedupTarget}
+          catalog={catalog}
+          walletBalance={walletBalance}
+          loading={speedupLoading}
+          onConfirm={(x, y, expectedCost) => void handleConfirmSpeedup(x, y, expectedCost)}
+          onClose={() => setSpeedupTarget(null)}
         />
       )}
 

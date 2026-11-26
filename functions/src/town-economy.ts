@@ -55,7 +55,12 @@ export function clearEconomyConfigCache(): void {
  */
 export async function assertTownFeatureEnabled(
   db: Firestore,
-  feature: 'enabled' | 'purchasesEnabled' | 'transfersEnabled' | 'helpEnabled' = 'enabled',
+  feature:
+    | 'enabled'
+    | 'purchasesEnabled'
+    | 'transfersEnabled'
+    | 'helpEnabled'
+    | 'speedupEnabled' = 'enabled',
 ): Promise<TownEconomyConfig> {
   const config = await getTownEconomyConfig(db);
   if (!config.enabled) {

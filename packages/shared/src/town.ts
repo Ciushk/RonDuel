@@ -5,6 +5,7 @@ export interface TownEconomyConfig {
   purchasesEnabled: boolean;
   transfersEnabled: boolean;
   helpEnabled: boolean;
+  speedupEnabled: boolean;
   earnRate: {
     pro: number;
     free: number;
@@ -49,6 +50,7 @@ export const DEFAULT_TOWN_ECONOMY: TownEconomyConfig = {
   purchasesEnabled: false,
   transfersEnabled: false,
   helpEnabled: false,
+  speedupEnabled: false,
   earnRate: {
     pro: 10,
     free: 2,
@@ -296,6 +298,7 @@ export interface TownTileDoc {
   placedAt?: unknown;
   plantedAt?: unknown;
   readyAt?: unknown;
+  speedupAt?: unknown;
   cropId?: string;
   waterCount?: number;
 }
@@ -387,6 +390,60 @@ export function calculateTriviaCoins(
   const blocks = Math.floor(clampedPoints / 100);
   const rate = isPro ? economy.earnRate.pro : economy.earnRate.free;
   return blocks * rate;
+}
+
+export type SpeedupPricingMode = 'perMinutes' | 'perHour' | 'tier';
+
+export interface SpeedupCostConfig {
+  mode: SpeedupPricingMode;
+  min: number;
+  /** Used when mode === 'perMinutes': max(min, ceil(remainingSeconds / (minutesPerCoin * 60))) */
+  minutesPerCoin?: number;
+  /** Used when mode === 'perHour': max(min, ceil(remainingSeconds / 3600) * coinsPerHour) */
+  coinsPerHour?: number;
+  /** Used when mode === 'tier': flat coin cost per cropId */
+  tiers: Record<string, number>;
+}
+
+/**
+ * Harvest speed-up pricing config (Andrei-approved Option C: per-crop tier).
+ * All three pricing modes remain supported in calculateSpeedupCost for easy tuning.
+ */
+export const SPEEDUP_COST: SpeedupCostConfig = {
+  mode: 'tier',
+  min: 1,
+  minutesPerCoin: 30,
+  coinsPerHour: 2,
+  tiers: {
+    oats: 5,
+    cabbage: 8,
+    wheat: 8,
+    carrots: 12,
+    sunflower: 20,
+    pumpkin: 30,
+  },
+};
+
+export function calculateSpeedupCost(
+  remainingSeconds: number,
+  cropId?: string,
+  config: SpeedupCostConfig = SPEEDUP_COST,
+): number {
+  if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0) return 0;
+  const min = Math.max(1, Math.floor(config.min ?? 1));
+  if (config.mode === 'tier') {
+    const tierCost = cropId ? config.tiers[cropId] : undefined;
+    if (typeof tierCost === 'number' && Number.isFinite(tierCost) && tierCost > 0) {
+      return Math.max(min, Math.ceil(tierCost));
+    }
+    return min;
+  }
+  if (config.mode === 'perHour') {
+    const rate = Math.max(1, config.coinsPerHour ?? 2);
+    return Math.max(min, Math.ceil(remainingSeconds / 3600) * rate);
+  }
+  const stepSec = Math.max(60, (config.minutesPerCoin ?? 30) * 60);
+  return Math.max(min, Math.ceil(remainingSeconds / stepSec));
 }
 
 export type CatalogItemType = 'housing' | 'service' | 'crop' | 'plot' | 'decor' | 'special';

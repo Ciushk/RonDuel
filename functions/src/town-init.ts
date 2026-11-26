@@ -11,6 +11,9 @@ import { prepareCreditWallet } from './town-wallet.js';
 export interface InitTownResult {
   created: boolean;
   town: TownDoc;
+  features: {
+    speedupEnabled: boolean;
+  };
 }
 
 /**
@@ -125,5 +128,10 @@ export async function initPlayerTown(db: Firestore, uid: string): Promise<InitTo
     }
   }
 
-  return result;
+  return {
+    ...result,
+    features: {
+      speedupEnabled: Boolean(economy.speedupEnabled),
+    },
+  };
 }

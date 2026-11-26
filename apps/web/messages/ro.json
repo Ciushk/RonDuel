@@ -1097,6 +1097,15 @@
       "dir1": "Sud-Est",
       "dir2": "Sud-Vest",
       "dir3": "Nord-Vest"
+    },
+    "speedup": {
+      "title": "Grăbește recolta",
+      "subtitle": "{crop} · {time} rămas",
+      "costLabel": "Cost grăbire",
+      "confirm": "Finalizează acum · {cost}",
+      "balanceAfter": "Sold după: {balance} RonCoins",
+      "insufficient": "Ai nevoie de {needed} RonCoins (ai {balance})",
+      "chipAria": "Grăbește {crop} pentru {cost} RonCoins"
     }
   },
   "pwa": {

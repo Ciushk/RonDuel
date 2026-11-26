@@ -865,6 +865,25 @@ html[data-theme='dark'] {
   animation: rt-flip2-to0 180ms ease-out 1;
 }
 
+@keyframes rt-speedup-sparkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+  45% {
+    transform: translate(-50%, -62%) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -78%) scale(1.35);
+    opacity: 0;
+  }
+}
+
+.rt-speedup-sparkle {
+  animation: rt-speedup-sparkle 300ms ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -920,5 +939,10 @@ html[data-theme='dark'] {
   .rt-rot4-anim-b,
   .rt-flip2-to0 {
     animation: rt-road-reduced-b 120ms ease-out 1 !important;
+  }
+
+  .rt-speedup-sparkle {
+    animation: rt-road-reduced-a 120ms ease-out 1 !important;
+    transform: translate(-50%, -50%) !important;
   }
 }

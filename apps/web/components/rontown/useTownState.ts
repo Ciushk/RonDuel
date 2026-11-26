@@ -252,6 +252,8 @@ export function useTownState(params: {
   const [transferStatus, setTransferStatus] = useState<TransferStatusInfo | null>(null);
   const [transferLoading, setTransferLoading] = useState(false);
   const [landPurchasing, setLandPurchasing] = useState(false);
+  const [speedupEnabled, setSpeedupEnabled] = useState(false);
+  const [speedupLoading, setSpeedupLoading] = useState(false);
 
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [floatingRewards, setFloatingRewards] = useState<FloatingReward[]>([]);
@@ -519,6 +521,7 @@ export function useTownState(params: {
           if (typeof data.walletBalance === 'number') {
             setWalletBalance(data.walletBalance);
           }
+          setSpeedupEnabled(Boolean(data.features?.speedupEnabled));
           usingLocalFallbackRef.current = false;
           hasServerTownRef.current = true;
           serverReadyRef.current = true;
@@ -1099,6 +1102,59 @@ export function useTownState(params: {
     [tiles, catalog, showToast, pushFloatingReward],
   );
 
+  const executeSpeedup = useCallback(
+    async (
+      x: number,
+      y: number,
+      expectedCost: number,
+    ): Promise<{ ok: boolean; alreadyReady?: boolean; cost?: number; error?: string }> => {
+      if (!serverReadyRef.current || speedupLoading) return { ok: false };
+      const key = `${x}_${y}`;
+      const tile = tiles[key];
+      if (!tile?.cropId) return { ok: false };
+
+      const session = getLocalSession();
+      setSpeedupLoading(true);
+      try {
+        const res = await fetch('/api/town/speedup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: session.uid, x, y, expectedCost }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          showToast(data.error || 'Speed-up failed');
+          return { ok: false, error: data.error };
+        }
+        const readyAt = typeof data.readyAt === 'string' ? data.readyAt : new Date().toISOString();
+        setTiles((prev) => {
+          const cur = prev[key];
+          if (!cur) return prev;
+          return {
+            ...prev,
+            [key]: { ...cur, readyAt },
+          };
+        });
+        if (typeof data.balanceAfter === 'number') {
+          setWalletBalance(data.balanceAfter);
+        } else if (!data.alreadyReady && typeof data.cost === 'number' && data.cost > 0) {
+          setWalletBalance((prev) => Math.max(0, prev - data.cost));
+        }
+        return {
+          ok: true,
+          alreadyReady: Boolean(data.alreadyReady),
+          cost: typeof data.cost === 'number' ? data.cost : 0,
+        };
+      } catch {
+        showToast('Speed-up failed');
+        return { ok: false };
+      } finally {
+        setSpeedupLoading(false);
+      }
+    },
+    [tiles, speedupLoading, showToast],
+  );
+
   const executeBuyPlot = useCallback(
     async (x: number, y: number): Promise<boolean> => {
       if (!serverReadyRef.current) return false;
@@ -1336,6 +1392,8 @@ export function useTownState(params: {
     transferStatus,
     transferLoading,
     landPurchasing,
+    speedupEnabled,
+    speedupLoading,
     actionMessage,
     showToast,
     floatingRewards,
@@ -1348,6 +1406,7 @@ export function useTownState(params: {
     executeRemove,
     executePlantCrop,
     executeHarvestCrop,
+    executeSpeedup,
     executeBuyPlot,
     executeDeliverOrder,
     executeLike,

@@ -1097,6 +1097,15 @@
       "dir1": "South-East",
       "dir2": "South-West",
       "dir3": "North-West"
+    },
+    "speedup": {
+      "title": "Speed up harvest",
+      "subtitle": "{crop} · {time} left",
+      "costLabel": "Speed-up cost",
+      "confirm": "Finish now · {cost}",
+      "balanceAfter": "Balance after: {balance} RonCoins",
+      "insufficient": "Need {needed} RonCoins (you have {balance})",
+      "chipAria": "Speed up {crop} for {cost} RonCoins"
     }
   },
   "pwa": {

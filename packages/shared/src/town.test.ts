@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateLazyArrivals,
+  calculateSpeedupCost,
   calculateTownCapacities,
   calculateTownLevel,
   calculateTriviaCoins,
@@ -17,6 +18,7 @@ import {
   isGroundWalkable,
   LAND_PRICES,
   LedgerEntrySchema,
+  SPEEDUP_COST,
   WalletDocSchema,
   type GroundTileType,
 } from './town.js';
@@ -378,3 +380,38 @@ describe('RonTown ground types, starter land, expand ring, and BFS pathfinding',
   });
 });
 
+describe('calculateSpeedupCost', () => {
+  it('defaults to Option C tier pricing with speedupEnabled=false in DEFAULT_TOWN_ECONOMY', () => {
+    expect(DEFAULT_TOWN_ECONOMY.speedupEnabled).toBe(false);
+    expect(SPEEDUP_COST.mode).toBe('tier');
+    expect(calculateSpeedupCost(3600, 'oats')).toBe(5);
+    expect(calculateSpeedupCost(3600, 'cabbage')).toBe(8);
+    expect(calculateSpeedupCost(3600, 'wheat')).toBe(8);
+    expect(calculateSpeedupCost(3600, 'carrots')).toBe(12);
+    expect(calculateSpeedupCost(3600, 'sunflower')).toBe(20);
+    expect(calculateSpeedupCost(3600, 'pumpkin')).toBe(30);
+    expect(calculateSpeedupCost(0, 'wheat')).toBe(0);
+    expect(calculateSpeedupCost(-10, 'wheat')).toBe(0);
+    expect(calculateSpeedupCost(600, 'unknown_crop')).toBe(1);
+  });
+
+  it('supports perMinutes and perHour pricing modes', () => {
+    expect(
+      calculateSpeedupCost(3700, 'wheat', {
+        ...SPEEDUP_COST,
+        mode: 'perMinutes',
+        minutesPerCoin: 30,
+        min: 1,
+      }),
+    ).toBe(3); // ceil(3700 / 1800) = 3
+
+    expect(
+      calculateSpeedupCost(3700, 'wheat', {
+        ...SPEEDUP_COST,
+        mode: 'perHour',
+        coinsPerHour: 2,
+        min: 1,
+      }),
+    ).toBe(4); // ceil(3700 / 3600) * 2 = 4
+  });
+});

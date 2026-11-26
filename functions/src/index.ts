@@ -82,6 +82,7 @@ import { createStorePersistence, type FirestoreLike } from './store-persistence.
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
 import { rotateTownElement } from './town-rotate.js';
+import { speedupCrop } from './town-speedup.js';
 import { setTutorialStep } from './town-tutorial.js';
 import {
   buildItem,
@@ -450,6 +451,36 @@ export const api = onRequest(apiOptions, async (req, res) => {
         return;
       } catch (err: any) {
         res.status(400).json({ error: err.message || 'Harvest failed' });
+        return;
+      }
+    }
+
+    if (method === 'POST' && pathname === '/town/speedup') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await speedupCrop(db, uid, {
+          x: Number(body.x),
+          y: Number(body.y),
+          expectedCost: body.expectedCost !== undefined ? Number(body.expectedCost) : undefined,
+        });
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        const msg = String(err?.message || 'Speed-up failed');
+        if (msg.includes('disabled')) {
+          res.status(403).json({ error: msg });
+          return;
+        }
+        if (msg.includes('PRICE_CHANGED')) {
+          res.status(409).json({ error: msg, code: 'PRICE_CHANGED' });
+          return;
+        }
+        res.status(400).json({ error: msg });
         return;
       }
     }
