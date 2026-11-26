@@ -2,6 +2,7 @@
 
 import type { PostHog } from 'posthog-js';
 
+import { isStandalone } from '@/lib/pwa-env';
 import { getLocalSession } from '@/lib/session';
 
 /**
@@ -53,7 +54,10 @@ export type AnalyticsEvent =
   | 'signup_completed'
   | 'logout_completed'
   | 'password_reset_requested'
-  | 'invite_shared';
+  | 'invite_shared'
+  | 'pwa_installed'
+  | 'install_prompt_shown'
+  | 'install_prompt_result';
 
 const POSTHOG_KEY =
   process.env.NEXT_PUBLIC_POSTHOG_KEY || 'phc_sXBQwwVW8CX8AmyauB5e9PEeoWLuXZ3kqATZqEGk4cuy';
@@ -99,13 +103,9 @@ function hasConsent(): boolean {
 }
 
 function baseProperties(): Record<string, unknown> {
-  const standalone =
-    typeof window.matchMedia === 'function' &&
-    (window.matchMedia('(display-mode: standalone)').matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone === true);
   return {
     locale: document.documentElement.lang || undefined,
-    is_pwa: standalone,
+    is_pwa: isStandalone(),
     platform: 'web',
   };
 }

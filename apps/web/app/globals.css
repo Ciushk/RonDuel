@@ -1130,3 +1130,58 @@ html[data-theme='dark'] {
     opacity: 1 !important;
   }
 }
+
+/* --- Install app sheet (step stagger & iPhone Share pointer, transform/opacity only) --- */
+@keyframes rd-install-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rd-install-pointer-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.rd-install-step {
+  animation: rd-install-step-in 200ms ease-out both;
+}
+
+.rd-install-step-1 {
+  animation-delay: 0ms;
+}
+
+.rd-install-step-2 {
+  animation-delay: 60ms;
+}
+
+.rd-install-step-3 {
+  animation-delay: 120ms;
+}
+
+.rd-install-pointer {
+  animation: rd-install-pointer-bounce 600ms ease-in-out 3 both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-install-step,
+  .rd-install-step-1,
+  .rd-install-step-2,
+  .rd-install-step-3,
+  .rd-install-pointer {
+    animation: none !important;
+    animation-delay: 0ms !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

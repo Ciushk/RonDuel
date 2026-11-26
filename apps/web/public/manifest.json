@@ -1,4 +1,6 @@
 {
+  "id": "/",
+  "scope": "/",
   "name": "RonDuel",
   "short_name": "RonDuel",
   "description": "6 întrebări pe zi, un minut, o singură încercare. Fă-ți ligă cu prietenii și vezi cine e cel mai tare.",

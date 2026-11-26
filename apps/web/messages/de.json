@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Du wurdest nach 30 Tagen Inaktivität abgemeldet. Melde dich an, um fortzufahren.",
     "signIn": "Anmelden"
+  },
+  "install": {
+    "title": "Hol dir RonDuel auf den Home-Bildschirm",
+    "freePill": "Kostenlos",
+    "benefitFast": "⚡ Startet sofort im Vollbild",
+    "benefitReminders": "🔔 Tägliche Rundenerinnerungen",
+    "benefitTown": "🏡 RonTown nur einen Tipp entfernt",
+    "installCta": "App installieren",
+    "later": "Später",
+    "thanks": "Installiert! Du findest RonDuel auf deinem Home-Bildschirm.",
+    "iosTitle": "RonDuel zum Home-Bildschirm hinzufügen",
+    "iosSubtitle": "3 schnelle Schritte:",
+    "iosStep1": "Tippe in der Browserleiste auf Teilen",
+    "iosStep2": "Scrolle und wähle Zum Home-Bildschirm",
+    "iosStep3": "Tippe oben rechts auf Hinzufügen",
+    "iosPushNote": "Auf dem iPhone funktionieren Erinnerungen nur in der Home-Bildschirm-App (iOS 16.4+).",
+    "iosOldNote": "Aktualisiere auf iOS 16.4 oder neuer, um Erinnerungen über die Home-Bildschirm-App zu erhalten.",
+    "gotIt": "Verstanden"
   }
 }

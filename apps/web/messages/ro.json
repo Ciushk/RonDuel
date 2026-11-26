@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Ai fost deconectat după 30 de zile de inactivitate. Autentifică-te pentru a continua.",
     "signIn": "Autentifică-te"
+  },
+  "install": {
+    "title": "Pune RonDuel pe ecranul principal",
+    "freePill": "Gratuit",
+    "benefitFast": "⚡ Se deschide instant, pe tot ecranul",
+    "benefitReminders": "🔔 Mementouri pentru runda zilnică",
+    "benefitTown": "🏡 RonTown la o singură atingere",
+    "installCta": "Instalează aplicația",
+    "later": "Mai târziu",
+    "thanks": "Instalat! Găsești RonDuel pe ecranul principal.",
+    "iosTitle": "Adaugă RonDuel pe ecranul principal",
+    "iosSubtitle": "3 pași simpli:",
+    "iosStep1": "Apasă Partajați în bara browserului",
+    "iosStep2": "Derulează și alege Adăugați la ecranul principal",
+    "iosStep3": "Apasă Adăugați în colțul din dreapta sus",
+    "iosPushNote": "Pe iPhone, notificările funcționează doar din aplicația de pe ecranul principal (iOS 16.4+).",
+    "iosOldNote": "Actualizează la iOS 16.4 sau mai nou pentru notificări din aplicația de pe ecranul principal.",
+    "gotIt": "Am înțeles"
   }
 }

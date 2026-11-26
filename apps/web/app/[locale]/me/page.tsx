@@ -28,6 +28,7 @@ import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
+import { isIOS, isStandalone } from '@/lib/pwa-env';
 import { clearLocalSession, getLocalSession, saveLocalSession } from '@/lib/session';
 
 interface ProfileData {
@@ -217,12 +218,8 @@ export default function ProfilePage() {
       if (s.email) setEmailInput(s.email);
     }
 
-    // Detect iOS Safari standalone tab
-    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
-      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      setIsIosSafariTab(isIos && !isStandalone);
-    }
+    // Detect iOS / iPadOS non-standalone browser tab
+    setIsIosSafariTab(isIOS() && !isStandalone());
 
     // Fetch latest profile from server
     loadProfile();

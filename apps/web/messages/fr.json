@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Vous avez été déconnecté après 30 jours d’inactivité. Connectez-vous pour continuer.",
     "signIn": "Se connecter"
+  },
+  "install": {
+    "title": "Ajoute RonDuel sur ton écran d’accueil",
+    "freePill": "Gratuit",
+    "benefitFast": "⚡ S’ouvre instantanément en plein écran",
+    "benefitReminders": "🔔 Rappels de la manche du jour",
+    "benefitTown": "🏡 RonTown en un seul geste",
+    "installCta": "Installer l’app",
+    "later": "Plus tard",
+    "thanks": "Installée ! Retrouve RonDuel sur ton écran d’accueil.",
+    "iosTitle": "Ajouter RonDuel sur l’écran d’accueil",
+    "iosSubtitle": "3 étapes rapides :",
+    "iosStep1": "Touche Partager dans la barre du navigateur",
+    "iosStep2": "Fais défiler et choisis Sur l’écran d’accueil",
+    "iosStep3": "Touche Ajouter en haut à droite",
+    "iosPushNote": "Sur iPhone, les rappels ne fonctionnent que depuis l’app sur l’écran d’accueil (iOS 16.4+).",
+    "iosOldNote": "Mets à jour vers iOS 16.4 ou plus récent pour recevoir les rappels depuis l’app.",
+    "gotIt": "Compris"
   }
 }

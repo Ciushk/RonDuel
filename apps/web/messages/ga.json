@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Síníodh amach thú tar éis 30 lá gan ghníomhaíocht. Sínigh isteach chun leanúint ar aghaidh.",
     "signIn": "Sínigh isteach"
+  },
+  "install": {
+    "title": "Cuir RonDuel ar do scáileán baile",
+    "freePill": "Saor in aisce",
+    "benefitFast": "⚡ Osclaíonn sé láithreach ar lánscáileán",
+    "benefitReminders": "🔔 Meabhrúcháin don bhabhta laethúil",
+    "benefitTown": "🏡 RonTown ar bharr do mhéire",
+    "installCta": "Suiteáil an aip",
+    "later": "Níos déanaí",
+    "thanks": "Suiteáilte! Aimsigh RonDuel ar do scáileán baile.",
+    "iosTitle": "Cuir RonDuel leis an Scáileán Baile",
+    "iosSubtitle": "3 chéim thapa:",
+    "iosStep1": "Tapáil Comhroinn i mbarra uirlisí an bhrabhsálaí",
+    "iosStep2": "Scrollaigh agus roghnaigh Cuir leis an Scáileán Baile",
+    "iosStep3": "Tapáil Cuir leis sa chúinne uachtarach ar dheis",
+    "iosPushNote": "Ar iPhone, ní oibríonn meabhrúcháin ach ón aip ar an Scáileán Baile (iOS 16.4+).",
+    "iosOldNote": "Nuashonraigh go iOS 16.4 nó níos nuaí chun meabhrúcháin a fháil ón aip.",
+    "gotIt": "Tuigim"
   }
 }

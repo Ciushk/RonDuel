@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Du loggades ut efter 30 dagars inaktivitet. Logga in för att fortsätta.",
     "signIn": "Logga in"
+  },
+  "install": {
+    "title": "Lägg till RonDuel på hemskärmen",
+    "freePill": "Gratis",
+    "benefitFast": "⚡ Öppnas direkt i helskärm",
+    "benefitReminders": "🔔 Dagliga rundpåminnelser",
+    "benefitTown": "🏡 RonTown ett tryck bort",
+    "installCta": "Installera app",
+    "later": "Senare",
+    "thanks": "Installerad! Hitta RonDuel på din hemskärm.",
+    "iosTitle": "Lägg till RonDuel på hemskärmen",
+    "iosSubtitle": "3 snabba steg:",
+    "iosStep1": "Tryck på Dela i webbläsarens verktygsfält",
+    "iosStep2": "Skrolla och välj Lägg till på hemskärmen",
+    "iosStep3": "Tryck på Lägg till uppe till höger",
+    "iosPushNote": "På iPhone fungerar påminnelser bara från appen på hemskärmen (iOS 16.4+).",
+    "iosOldNote": "Uppdatera till iOS 16.4 eller senare för att få påminnelser från hemskärmsappen.",
+    "gotIt": "Uppfattat"
   }
 }

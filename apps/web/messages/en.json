@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "You were signed out after 30 days away. Sign in to continue.",
     "signIn": "Sign in"
+  },
+  "install": {
+    "title": "Get RonDuel on your home screen",
+    "freePill": "Free",
+    "benefitFast": "⚡ Opens instantly, full screen",
+    "benefitReminders": "🔔 Daily round reminders",
+    "benefitTown": "🏡 RonTown one tap away",
+    "installCta": "Install app",
+    "later": "Later",
+    "thanks": "Installed! Find RonDuel on your home screen.",
+    "iosTitle": "Add RonDuel to your Home Screen",
+    "iosSubtitle": "3 quick steps:",
+    "iosStep1": "Tap Share in the browser toolbar",
+    "iosStep2": "Scroll and pick Add to Home Screen",
+    "iosStep3": "Tap Add in the top-right corner",
+    "iosPushNote": "On iPhone, reminders only work from the Home Screen app (iOS 16.4+).",
+    "iosOldNote": "Update to iOS 16.4 or newer to get reminders from the Home Screen app.",
+    "gotIt": "Got it"
   }
 }

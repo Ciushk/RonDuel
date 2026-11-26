@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Ħriġt mill-kont wara 30 jum mingħajr attività. Idħol biex tkompli.",
     "signIn": "Idħol"
+  },
+  "install": {
+    "title": "Poġġi RonDuel fuq l-iskrin ewlieni tiegħek",
+    "freePill": "B’xejn",
+    "benefitFast": "⚡ Tiftaħ mill-ewwel, bi skrin sħiħ",
+    "benefitReminders": "🔔 Tfakkiriet għar-rawnd ta’ kuljum",
+    "benefitTown": "🏡 RonTown b’mess wieħed",
+    "installCta": "Installa l-app",
+    "later": "Aktar tard",
+    "thanks": "Installata! Sib RonDuel fuq l-iskrin ewlieni tiegħek.",
+    "iosTitle": "Żid RonDuel mal-Iskrin Ewlieni",
+    "iosSubtitle": "3 passi malajr:",
+    "iosStep1": "Agħfas Aqsam fl-istrixxa tal-brawżer",
+    "iosStep2": "Skrollja u agħżel Żid mal-Iskrin Ewlieni",
+    "iosStep3": "Agħfas Żid fin-naħa ta’ fuq fuq il-lemin",
+    "iosPushNote": "Fuq iPhone, it-tfakkiriet jaħdmu biss mill-app fuq l-Iskrin Ewlieni (iOS 16.4+).",
+    "iosOldNote": "Aġġorna għal iOS 16.4 jew aktar ġdid biex tirċievi tfakkiriet mill-app.",
+    "gotIt": "Fhimt"
   }
 }

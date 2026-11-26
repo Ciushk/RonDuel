@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Du blev logget ud efter 30 dages inaktivitet. Log ind for at fortsætte.",
     "signIn": "Log ind"
+  },
+  "install": {
+    "title": "Få RonDuel på din hjemmeskærm",
+    "freePill": "Gratis",
+    "benefitFast": "⚡ Åbner øjeblikkeligt i fuld skærm",
+    "benefitReminders": "🔔 Daglige påmindelser om runden",
+    "benefitTown": "🏡 RonTown kun ét tryk væk",
+    "installCta": "Installer app",
+    "later": "Senere",
+    "thanks": "Installeret! Find RonDuel på din hjemmeskærm.",
+    "iosTitle": "Føj RonDuel til hjemmeskærm",
+    "iosSubtitle": "3 hurtige trin:",
+    "iosStep1": "Tryk på Del i browserens værktøjslinje",
+    "iosStep2": "Rul ned og vælg Føj til hjemmeskærm",
+    "iosStep3": "Tryk på Tilføj øverst til højre",
+    "iosPushNote": "På iPhone virker påmindelser kun fra appen på hjemmeskærmen (iOS 16.4+).",
+    "iosOldNote": "Opdater til iOS 16.4 eller nyere for at få påmindelser fra appen på hjemmeskærmen.",
+    "gotIt": "Forstået"
   }
 }

@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Buvai atjungtas po 30 dienų neaktyvumo. Prisijunk, kad tęstum.",
     "signIn": "Prisijungti"
+  },
+  "install": {
+    "title": "Pridėk „RonDuel“ prie pradžios ekrano",
+    "freePill": "Nemokamai",
+    "benefitFast": "⚡ Atsidaro akimirksniu, per visą ekraną",
+    "benefitReminders": "🔔 Kasdieniai raundo priminimai",
+    "benefitTown": "🏡 „RonTown“ vos vienu bakstelėjimu",
+    "installCta": "Įdiegti programėlę",
+    "later": "Vėliau",
+    "thanks": "Įdiegta! Rask „RonDuel“ savo pradžios ekrane.",
+    "iosTitle": "Pridėti „RonDuel“ prie pradžios ekrano",
+    "iosSubtitle": "3 greiti žingsniai:",
+    "iosStep1": "Naršyklės juostoje bakstelėk Bendrinti",
+    "iosStep2": "Slink ir pasirink Pridėti prie pradžios ekrano",
+    "iosStep3": "Viršuje dešinėje bakstelėk Pridėti",
+    "iosPushNote": "„iPhone“ įrenginyje priminimai veikia tik iš pradžios ekrano programėlės („iOS 16.4+“).",
+    "iosOldNote": "Atnaujink į „iOS 16.4“ ar naujesnę versiją, kad gautum priminimus iš programėlės.",
+    "gotIt": "Supratau"
   }
 }

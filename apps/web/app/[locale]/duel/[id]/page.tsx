@@ -17,8 +17,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AuthModal } from '@/components/AuthModal';
 import { VersusCard } from '@/components/duel/VersusCard';
+import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { Avatar, Button, Card, Chip, TimerBar, Toast } from '@/components/ui';
 import { getBrowserTimeZone, getLocalSession, recordPlayedDuel, vibrate } from '@/lib/session';
+import { useInstallPrompt } from '@/lib/use-install-prompt';
 
 interface ClientItem {
   index: number;
@@ -91,6 +93,13 @@ export default function DuelPage() {
   const [isRematching, setIsRematching] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
   const deadlineRef = useRef<number>(0);
+
+  const { isInstallOpen, installPlatform, closeInstall } = useInstallPrompt({
+    ready: Boolean(duel && duel.status === 'complete' && !playing),
+    hasFinishedMatch: true,
+    animationsComplete: true,
+    blockedByOtherSheet: authModalOpen || playing,
+  });
 
   const loadDuel = useCallback(() => {
     const s = getLocalSession();
@@ -548,6 +557,10 @@ export default function DuelPage() {
             </Card>
           ))}
         </section>
+      )}
+
+      {installPlatform && (
+        <InstallAppSheet open={isInstallOpen} platform={installPlatform} onClose={closeInstall} />
       )}
     </main>
   );

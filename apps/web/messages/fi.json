@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Sinut kirjattiin ulos 30 päivän tauon jälkeen. Jatka kirjautumalla sisään.",
     "signIn": "Kirjaudu sisään"
+  },
+  "install": {
+    "title": "Lisää RonDuel Koti-valikkoon",
+    "freePill": "Ilmainen",
+    "benefitFast": "⚡ Avautuu heti koko näytöllä",
+    "benefitReminders": "🔔 Päivittäiset kierrosmuistutukset",
+    "benefitTown": "🏡 RonTown yhden napautuksen päässä",
+    "installCta": "Asenna sovellus",
+    "later": "Myöhemmin",
+    "thanks": "Asennettu! Löydät RonDuelin aloitusnäytöltäsi.",
+    "iosTitle": "Lisää RonDuel Koti-valikkoon",
+    "iosSubtitle": "3 nopeaa vaihetta:",
+    "iosStep1": "Napauta Jaa selaimen työkalupalkista",
+    "iosStep2": "Vieritä ja valitse Lisää Koti-valikkoon",
+    "iosStep3": "Napauta Lisää oikeasta yläkulmasta",
+    "iosPushNote": "iPhonessa muistutukset toimivat vain Koti-valikon sovelluksesta (iOS 16.4+).",
+    "iosOldNote": "Päivitä iOS 16.4:ään tai uudempaan saadaksesi muistutukset Koti-valikon sovelluksesta.",
+    "gotIt": "Selvä"
   }
 }

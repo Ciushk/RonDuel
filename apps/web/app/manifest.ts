@@ -122,6 +122,8 @@ export const APPLE_STARTUP_IMAGES = [
 
 export default function manifest(): ExtendedManifest {
   return {
+    id: '/',
+    scope: '/',
     name: 'RonDuel',
     short_name: 'RonDuel',
     description: 'Daily trivia with your friends',

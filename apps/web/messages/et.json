@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Sind logiti välja 30 päeva tegevusetuse tõttu. Jätkamiseks logi sisse.",
     "signIn": "Logi sisse"
+  },
+  "install": {
+    "title": "Lisa RonDuel oma avakuvale",
+    "freePill": "Tasuta",
+    "benefitFast": "⚡ Avaneb hetkega täisekraanil",
+    "benefitReminders": "🔔 Igapäevased vooru meeldetuletused",
+    "benefitTown": "🏡 RonTown ühe puudutuse kaugusel",
+    "installCta": "Installi rakendus",
+    "later": "Hiljem",
+    "thanks": "Installitud! Leia RonDuel oma avakuvalt.",
+    "iosTitle": "Lisa RonDuel avakuvale",
+    "iosSubtitle": "3 kiiret sammu:",
+    "iosStep1": "Puuduta brauseri ribal Jaga",
+    "iosStep2": "Keri ja vali Lisa avakuvale",
+    "iosStep3": "Puuduta üleval paremal Lisa",
+    "iosPushNote": "iPhone’is töötavad meeldetuletused ainult avakuva rakendusest (iOS 16.4+).",
+    "iosOldNote": "Uuenda versioonile iOS 16.4 või uuem, et saada avakuva rakendusest meeldetuletusi.",
+    "gotIt": "Selge"
   }
 }

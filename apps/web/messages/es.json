@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Se cerró tu sesión tras 30 días de inactividad. Inicia sesión para continuar.",
     "signIn": "Iniciar sesión"
+  },
+  "install": {
+    "title": "Pon RonDuel en tu pantalla de inicio",
+    "freePill": "Gratis",
+    "benefitFast": "⚡ Se abre al instante, a pantalla completa",
+    "benefitReminders": "🔔 Recordatorios de la ronda diaria",
+    "benefitTown": "🏡 RonTown a un solo toque",
+    "installCta": "Instalar app",
+    "later": "Más tarde",
+    "thanks": "¡Instalada! Encuentra RonDuel en tu pantalla de inicio.",
+    "iosTitle": "Añade RonDuel a tu pantalla de inicio",
+    "iosSubtitle": "3 pasos rápidos:",
+    "iosStep1": "Pulsa Compartir en la barra del navegador",
+    "iosStep2": "Desliza y elige Añadir a pantalla de inicio",
+    "iosStep3": "Pulsa Añadir arriba a la derecha",
+    "iosPushNote": "En iPhone, los recordatorios solo funcionan desde la app de la pantalla de inicio (iOS 16.4+).",
+    "iosOldNote": "Actualiza a iOS 16.4 o posterior para recibir recordatorios desde la app de inicio.",
+    "gotIt": "Entendido"
   }
 }

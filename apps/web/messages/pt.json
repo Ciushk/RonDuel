@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "A tua sessão terminou após 30 dias de ausência. Inicia sessão para continuar.",
     "signIn": "Entrar"
+  },
+  "install": {
+    "title": "Coloca o RonDuel no ecrã principal",
+    "freePill": "Grátis",
+    "benefitFast": "⚡ Abre num instante, em ecrã inteiro",
+    "benefitReminders": "🔔 Lembretes da ronda diária",
+    "benefitTown": "🏡 RonTown a um toque de distância",
+    "installCta": "Instalar app",
+    "later": "Mais tarde",
+    "thanks": "Instalada! Encontra o RonDuel no teu ecrã principal.",
+    "iosTitle": "Adicionar RonDuel ao ecrã principal",
+    "iosSubtitle": "3 passos rápidos:",
+    "iosStep1": "Toca em Partilhar na barra do navegador",
+    "iosStep2": "Desliza e escolhe Adicionar ao ecrã principal",
+    "iosStep3": "Toca em Adicionar no canto superior direito",
+    "iosPushNote": "No iPhone, os lembretes só funcionam a partir da app no ecrã principal (iOS 16.4+).",
+    "iosOldNote": "Atualiza para o iOS 16.4 ou mais recente para receberes lembretes na app.",
+    "gotIt": "Percebi"
   }
 }

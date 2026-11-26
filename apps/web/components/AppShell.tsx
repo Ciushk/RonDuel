@@ -14,6 +14,7 @@ import { PwaUpdateToast } from '@/components/PwaUpdateToast';
 import { Button, Wordmark } from '@/components/ui';
 import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
+import { initInstallPromptCapture } from '@/lib/install-prompt';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
 const SplashScreen = dynamic(
@@ -38,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useBottomStack('consent-banner', consentRef, Boolean(showConsent));
 
   useEffect(() => {
+    initInstallPromptCapture();
     const s = getLocalSession();
     setSession(s);
     syncAnalyticsConsent();

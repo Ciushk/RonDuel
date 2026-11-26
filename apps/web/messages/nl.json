@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Je bent uitgelogd na 30 dagen inactiviteit. Log in om door te gaan.",
     "signIn": "Inloggen"
+  },
+  "install": {
+    "title": "Zet RonDuel op je beginscherm",
+    "freePill": "Gratis",
+    "benefitFast": "⚡ Opent direct op volledig scherm",
+    "benefitReminders": "🔔 Dagelijkse rondeherinneringen",
+    "benefitTown": "🏡 RonTown met één tik bereikbaar",
+    "installCta": "App installeren",
+    "later": "Later",
+    "thanks": "Geïnstalleerd! Vind RonDuel op je beginscherm.",
+    "iosTitle": "Zet RonDuel op beginscherm",
+    "iosSubtitle": "3 snelle stappen:",
+    "iosStep1": "Tik op Deel in de balk van de browser",
+    "iosStep2": "Scrol en kies Zet op beginscherm",
+    "iosStep3": "Tik rechtsboven op Voeg toe",
+    "iosPushNote": "Op iPhone werken herinneringen alleen vanuit de app op het beginscherm (iOS 16.4+).",
+    "iosOldNote": "Werk bij naar iOS 16.4 of nieuwer voor herinneringen vanuit de beginscherm-app.",
+    "gotIt": "Begrepen"
   }
 }

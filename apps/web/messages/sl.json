@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Po 30 dneh neaktivnosti si bil odjavljen. Prijavi se za nadaljevanje.",
     "signIn": "Prijava"
+  },
+  "install": {
+    "title": "Dodaj RonDuel na začetni zaslon",
+    "freePill": "Brezplačno",
+    "benefitFast": "⚡ Odpre se takoj, čez cel zaslon",
+    "benefitReminders": "🔔 Dnevni opomniki za krog",
+    "benefitTown": "🏡 RonTown z enim dotikom",
+    "installCta": "Namesti aplikacijo",
+    "later": "Pozneje",
+    "thanks": "Nameščeno! RonDuel najdeš na začetnem zaslonu.",
+    "iosTitle": "Dodaj RonDuel na začetni zaslon",
+    "iosSubtitle": "3 hitri koraki:",
+    "iosStep1": "Tapni Deli v vrstici brskalnika",
+    "iosStep2": "Pomakni se in izberi Dodaj na začetni zaslon",
+    "iosStep3": "Tapni Dodaj v zgornjem desnem kotu",
+    "iosPushNote": "Na iPhonu opomniki delujejo samo iz aplikacije na začetnem zaslonu (iOS 16.4+).",
+    "iosOldNote": "Posodobi na iOS 16.4 ali novejšo različico za opomnike iz aplikacije na začetnem zaslonu.",
+    "gotIt": "Razumem"
   }
 }

@@ -188,6 +188,8 @@ for (const locale of locales) {
     } catch {}
   }
   const manifestData = {
+    id: '/',
+    scope: '/',
     name: 'RonDuel',
     short_name: 'RonDuel',
     description: manifestDesc,

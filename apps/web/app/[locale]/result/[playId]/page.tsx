@@ -15,10 +15,11 @@ import { buildShareCardText, calculateTriviaCoins } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
+import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { EmojiTiles } from '@/components/result/EmojiTiles';
 import { ScoreCountUp } from '@/components/result/ScoreCountUp';
@@ -28,6 +29,7 @@ import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
+import { useInstallPrompt } from '@/lib/use-install-prompt';
 
 interface LeagueRankInfo {
   id: string;
@@ -79,6 +81,8 @@ export default function ResultPage() {
   const [isJoinCodeOpen, setIsJoinCodeOpen] = useState(false);
   const [isSharePickerOpen, setIsSharePickerOpen] = useState(false);
   const [isLinkSheetOpen, setIsLinkSheetOpen] = useState(false);
+  const [isLinkSheetScheduled, setIsLinkSheetScheduled] = useState(false);
+  const [linkSheetJustClosed, setLinkSheetJustClosed] = useState(false);
   const [isAccountLinked, setIsAccountLinked] = useState(false);
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
@@ -92,11 +96,35 @@ export default function ResultPage() {
   const townEnabled = useFeatureFlag('town_enabled');
   const [userIsPro, setUserIsPro] = useState(false);
   const [animated, setAnimated] = useState(false);
+  const [resultAnimDone, setResultAnimDone] = useState(false);
   const [showPB, setShowPB] = useState(false);
   const [showTiles, setShowTiles] = useState(false);
   const [flameBumping, setFlameBumping] = useState(false);
   const [showRows, setShowRows] = useState(false);
   const [isPB, setIsPB] = useState(false);
+
+  const { isInstallOpen, installPlatform, closeInstall } = useInstallPrompt({
+    ready: Boolean(data),
+    finishedPlaysCount: data?.finishedPlaysCount ?? 1,
+    animationsComplete: resultAnimDone,
+    blockedByOtherSheet:
+      isLinkSheetScheduled ||
+      isLinkSheetOpen ||
+      isCreateLeagueOpen ||
+      isJoinCodeOpen ||
+      isSharePickerOpen ||
+      Boolean(reportingQuestionId),
+    afterOtherSheetClosed: linkSheetJustClosed,
+  });
+
+  const isAnySheetOpenRef = useRef(false);
+  isAnySheetOpenRef.current =
+    isLinkSheetOpen ||
+    isSharePickerOpen ||
+    isCreateLeagueOpen ||
+    isJoinCodeOpen ||
+    Boolean(reportingQuestionId) ||
+    isInstallOpen;
 
   useEffect(() => {
     const s = getLocalSession();
@@ -115,6 +143,7 @@ export default function ResultPage() {
   const skipAnimation = useCallback(() => {
     if (!animated) return;
     setAnimated(false);
+    setResultAnimDone(true);
     setShowPB(isPB);
     setShowTiles(true);
     setShowRows(true);
@@ -146,6 +175,7 @@ export default function ResultPage() {
 
     if (alreadySeen || prefersReduced) {
       setAnimated(false);
+      setResultAnimDone(true);
       setShowPB(personalBest);
       setShowTiles(true);
       setShowRows(true);
@@ -154,6 +184,7 @@ export default function ResultPage() {
     }
 
     setAnimated(true);
+    setResultAnimDone(false);
 
     const pbTimer = setTimeout(() => {
       if (personalBest) setShowPB(true);
@@ -188,6 +219,7 @@ export default function ResultPage() {
 
     const completeTimer = setTimeout(() => {
       setAnimated(false);
+      setResultAnimDone(true);
       sessionStorage.setItem(storageKeySeen, '1');
     }, 1600);
 
@@ -205,6 +237,7 @@ export default function ResultPage() {
     if (!data) return;
     setSecondsRemaining(15);
     const interval = setInterval(() => {
+      if (isAnySheetOpenRef.current) return;
       setSecondsRemaining((prev) => {
         if (prev === null) return null;
         if (prev <= 1) {
@@ -292,7 +325,9 @@ export default function ResultPage() {
               state.showCount < 3 &&
               (playsCount === 1 || res.streakCurrent === 3)
             ) {
+              setIsLinkSheetScheduled(true);
               const timer = setTimeout(() => {
+                setIsLinkSheetScheduled(false);
                 setIsLinkSheetOpen(true);
                 const trigger = playsCount === 1 ? 'round_1' : 'streak_3';
                 trackEvent('account_link_prompt_shown', { trigger });
@@ -333,7 +368,15 @@ export default function ResultPage() {
   // "already played today" state with the live countdown to the next round.
   useEffect(() => {
     if (!data || returnTo || typeof window === 'undefined') return;
-    if (isLinkSheetOpen || isSharePickerOpen || isCreateLeagueOpen || isJoinCodeOpen) return;
+    if (
+      isLinkSheetOpen ||
+      isSharePickerOpen ||
+      isCreateLeagueOpen ||
+      isJoinCodeOpen ||
+      isInstallOpen
+    ) {
+      return;
+    }
     const key = `rd_result_auto_home_${data.playId}`;
     if (sessionStorage.getItem(key)) return;
     const timer = setTimeout(() => {
@@ -350,10 +393,13 @@ export default function ResultPage() {
     isSharePickerOpen,
     isCreateLeagueOpen,
     isJoinCodeOpen,
+    isInstallOpen,
   ]);
 
   const handleLinkDismissed = () => {
     setIsLinkSheetOpen(false);
+    setIsLinkSheetScheduled(false);
+    setLinkSheetJustClosed(true);
     if (!data) return;
     try {
       const stored = localStorage.getItem('rd_link_sheet_state');
@@ -375,6 +421,8 @@ export default function ResultPage() {
     setIsAccountLinked(true);
     setShowSlimBanner(false);
     setIsLinkSheetOpen(false);
+    setIsLinkSheetScheduled(false);
+    setLinkSheetJustClosed(true);
     setToast(t('result.accountSaved'));
     setTimeout(() => setToast(''), 3500);
   };
@@ -996,6 +1044,10 @@ export default function ResultPage() {
           </div>
         </div>
       </Sheet>
+
+      {installPlatform && (
+        <InstallAppSheet open={isInstallOpen} platform={installPlatform} onClose={closeInstall} />
+      )}
     </main>
   );
 }

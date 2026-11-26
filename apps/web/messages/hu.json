@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "30 nap távollét után kijelentkeztettünk. Jelentkezz be a folytatáshoz.",
     "signIn": "Bejelentkezés"
+  },
+  "install": {
+    "title": "Tedd a RonDuelt a főképernyődre",
+    "freePill": "Ingyenes",
+    "benefitFast": "⚡ Azonnal megnyílik, teljes képernyőn",
+    "benefitReminders": "🔔 Napi forduló-emlékeztetők",
+    "benefitTown": "🏡 RonTown egyetlen koppintásra",
+    "installCta": "Alkalmazás telepítése",
+    "later": "Később",
+    "thanks": "Telepítve! A RonDuelt megtalálod a főképernyődön.",
+    "iosTitle": "RonDuel hozzáadása a Főképernyőhöz",
+    "iosSubtitle": "3 gyors lépés:",
+    "iosStep1": "Koppints a Megosztás gombra a böngésző sávjában",
+    "iosStep2": "Görgess és válaszd a Hozzáadás a Főképernyőhöz opciót",
+    "iosStep3": "Koppints a Hozzáadás gombra a jobb felső sarokban",
+    "iosPushNote": "iPhone-on az emlékeztetők csak a Főképernyőre tett alkalmazásból működnek (iOS 16.4+).",
+    "iosOldNote": "Frissíts iOS 16.4-re vagy újabbra a Főképernyőről érkező emlékeztetőkhöz.",
+    "gotIt": "Értem"
   }
 }

@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Po 30 dnech neaktivity jste byli odhlášeni. Pokračujte přihlášením.",
     "signIn": "Přihlásit se"
+  },
+  "install": {
+    "title": "Přidej si RonDuel na plochu",
+    "freePill": "Zdarma",
+    "benefitFast": "⚡ Otevře se okamžitě na celou obrazovku",
+    "benefitReminders": "🔔 Připomínky denního kola",
+    "benefitTown": "🏡 RonTown na jedno klepnutí",
+    "installCta": "Nainstalovat aplikaci",
+    "later": "Později",
+    "thanks": "Nainstalováno! RonDuel najdeš na své ploše.",
+    "iosTitle": "Přidat RonDuel na plochu",
+    "iosSubtitle": "3 rychlé kroky:",
+    "iosStep1": "Klepni na Sdílet v liště prohlížeče",
+    "iosStep2": "Sjeď dolů a vyber Přidat na plochu",
+    "iosStep3": "Klepni na Přidat v pravém horním rohu",
+    "iosPushNote": "Na iPhonu fungují připomínky jen z aplikace přidané na plochu (iOS 16.4+).",
+    "iosOldNote": "Aktualizuj na iOS 16.4 nebo novější pro připomínky z aplikace na ploše.",
+    "gotIt": "Rozumím"
   }
 }

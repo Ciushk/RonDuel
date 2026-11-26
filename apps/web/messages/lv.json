@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Tu tiki izrakstīts pēc 30 dienu neaktivitātes. Pieraksties, lai turpinātu.",
     "signIn": "Pierakstīties"
+  },
+  "install": {
+    "title": "Pievieno RonDuel sākuma ekrānam",
+    "freePill": "Bezmaksas",
+    "benefitFast": "⚡ Atveras uzreiz pilnekrānā",
+    "benefitReminders": "🔔 Ikdienas kārtas atgādinājumi",
+    "benefitTown": "🏡 RonTown viena pieskāriena attālumā",
+    "installCta": "Instalēt lietotni",
+    "later": "Vēlāk",
+    "thanks": "Instalēts! Atrodi RonDuel savā sākuma ekrānā.",
+    "iosTitle": "Pievienot RonDuel sākuma ekrānam",
+    "iosSubtitle": "3 ātri soļi:",
+    "iosStep1": "Pārlūkprogrammas joslā pieskaries Kopīgot",
+    "iosStep2": "Ritini un izvēlies Pievienot sākuma ekrānam",
+    "iosStep3": "Augšējā labajā stūrī pieskaries Pievienot",
+    "iosPushNote": "iPhone tālrunī atgādinājumi darbojas tikai no sākuma ekrāna lietotnes (iOS 16.4+).",
+    "iosOldNote": "Atjaunini uz iOS 16.4 vai jaunāku versiju, lai saņemtu atgādinājumus no lietotnes.",
+    "gotIt": "Sapratu"
   }
 }

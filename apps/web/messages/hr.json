@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Odjavljeni ste nakon 30 dana neaktivnosti. Prijavite se za nastavak.",
     "signIn": "Prijavi se"
+  },
+  "install": {
+    "title": "Dodaj RonDuel na početni zaslon",
+    "freePill": "Besplatno",
+    "benefitFast": "⚡ Otvara se odmah, preko cijelog zaslona",
+    "benefitReminders": "🔔 Dnevni podsjetnici za rundu",
+    "benefitTown": "🏡 RonTown na jedan dodir",
+    "installCta": "Instaliraj aplikaciju",
+    "later": "Kasnije",
+    "thanks": "Instalirano! Pronađi RonDuel na početnom zaslonu.",
+    "iosTitle": "Dodaj RonDuel na početni zaslon",
+    "iosSubtitle": "3 brza koraka:",
+    "iosStep1": "Dodirni Dijeli u traci preglednika",
+    "iosStep2": "Pomakni se i odaberi Dodaj na početni zaslon",
+    "iosStep3": "Dodirni Dodaj u gornjem desnom kutu",
+    "iosPushNote": "Na iPhoneu podsjetnici rade samo iz aplikacije na početnom zaslonu (iOS 16.4+).",
+    "iosOldNote": "Ažuriraj na iOS 16.4 ili noviji za podsjetnike iz aplikacije na početnom zaslonu.",
+    "gotIt": "Razumijem"
   }
 }

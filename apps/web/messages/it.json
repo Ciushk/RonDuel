@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Sei stato disconnesso dopo 30 giorni di inattività. Accedi per continuare.",
     "signIn": "Accedi"
+  },
+  "install": {
+    "title": "Metti RonDuel sulla schermata Home",
+    "freePill": "Gratis",
+    "benefitFast": "⚡ Si apre all’istante, a tutto schermo",
+    "benefitReminders": "🔔 Promemoria per il round giornaliero",
+    "benefitTown": "🏡 RonTown a un tocco di distanza",
+    "installCta": "Installa app",
+    "later": "Più tardi",
+    "thanks": "Installata! Trova RonDuel sulla tua schermata Home.",
+    "iosTitle": "Aggiungi RonDuel alla schermata Home",
+    "iosSubtitle": "3 rapidi passaggi:",
+    "iosStep1": "Tocca Condividi nella barra del browser",
+    "iosStep2": "Scorri e scegli Aggiungi alla schermata Home",
+    "iosStep3": "Tocca Aggiungi in alto a destra",
+    "iosPushNote": "Su iPhone i promemoria funzionano solo dall’app nella schermata Home (iOS 16.4+).",
+    "iosOldNote": "Aggiorna a iOS 16.4 o successivo per ricevere promemoria dall’app sulla schermata Home.",
+    "gotIt": "Ho capito"
   }
 }

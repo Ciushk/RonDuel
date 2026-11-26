@@ -1193,5 +1193,23 @@
   "session": {
     "expired": "Wylogowano Cię po 30 dniach nieaktywności. Zaloguj się, aby kontynuować.",
     "signIn": "Zaloguj się"
+  },
+  "install": {
+    "title": "Dodaj RonDuel na ekran początkowy",
+    "freePill": "Za darmo",
+    "benefitFast": "⚡ Otwiera się błyskawicznie na pełnym ekranie",
+    "benefitReminders": "🔔 Codzienne przypomnienia o rundzie",
+    "benefitTown": "🏡 RonTown na jedno dotknięcie",
+    "installCta": "Zainstaluj aplikację",
+    "later": "Później",
+    "thanks": "Zainstalowano! Znajdziesz RonDuel na ekranie początkowym.",
+    "iosTitle": "Dodaj RonDuel do ekranu początkowego",
+    "iosSubtitle": "3 szybkie kroki:",
+    "iosStep1": "Stuknij Udostępnij na pasku przeglądarki",
+    "iosStep2": "Przewiń i wybierz Do ekranu początkowego",
+    "iosStep3": "Stuknij Dodaj w prawym górnym rogu",
+    "iosPushNote": "Na iPhonie przypomnienia działają tylko z aplikacji na ekranie początkowym (iOS 16.4+).",
+    "iosOldNote": "Zaktualizuj do iOS 16.4 lub nowszego, aby otrzymywać przypomnienia z aplikacji.",
+    "gotIt": "Rozumiem"
   }
 }
