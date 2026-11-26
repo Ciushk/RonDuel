@@ -320,7 +320,9 @@ export function TownSheets({
                         alt=""
                         width={icon.width}
                         height={icon.height}
-                        className="rt-pixelated block shrink-0 select-none"
+                        loading="lazy"
+                        decoding="async"
+                        className="block h-10 w-10 shrink-0 select-none object-contain"
                         draggable={false}
                       />
                     )}
@@ -379,7 +381,9 @@ export function TownSheets({
                               alt=""
                               width={sprite.width}
                               height={sprite.height}
-                              className="rt-pixelated block select-none"
+                              loading="lazy"
+                              decoding="async"
+                              className="block h-11 w-11 select-none object-contain"
                               draggable={false}
                             />
                           ) : (
@@ -531,7 +535,9 @@ export function TownSheets({
                               alt=""
                               width={icon.width}
                               height={icon.height}
-                              className="rt-pixelated block select-none"
+                              loading="lazy"
+                              decoding="async"
+                              className="block h-10 w-10 shrink-0 select-none object-contain"
                               draggable={false}
                             />
                           )}
@@ -573,9 +579,11 @@ export function TownSheets({
                           : UI_SPRITES.farmGrowing.src
                       }
                       alt=""
-                      width={28}
-                      height={28}
-                      className="rt-pixelated block select-none"
+                      width={UI_SPRITES.farmReady.width}
+                      height={UI_SPRITES.farmReady.height}
+                      loading="lazy"
+                      decoding="async"
+                      className="block h-9 w-9 select-none object-contain"
                       draggable={false}
                     />
                     <p className="text-ink text-sm font-black">
@@ -682,9 +690,11 @@ export function TownSheets({
                 <img
                   src={UI_SPRITES.visit.src}
                   alt=""
-                  width={32}
-                  height={32}
-                  className="rt-pixelated block select-none"
+                  width={UI_SPRITES.visit.width}
+                  height={UI_SPRITES.visit.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-14 w-14 select-none object-contain"
                   draggable={false}
                 />
                 <h3 className="text-ink mt-2 font-display text-sm font-black">

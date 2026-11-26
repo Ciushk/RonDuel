@@ -144,14 +144,15 @@ export function BuyLandSheet({
                     : 'border-border bg-surface-2 hover:bg-surface'
                 }`}
               >
-                <div className="flex h-12 items-center justify-center">
-                  {/* Strict 2x integer scale (32x19 -> 64x38) */}
+                <div className="flex h-14 items-center justify-center">
                   <img
                     src={spec.src}
                     alt=""
-                    width={spec.width * 2}
-                    height={spec.height * 2}
-                    className="rt-pixelated block select-none"
+                    width={spec.width}
+                    height={spec.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-12 w-20 select-none object-contain"
                     draggable={false}
                   />
                 </div>

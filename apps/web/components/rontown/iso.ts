@@ -1,10 +1,14 @@
 import type { GridCoord } from '@ronduel/shared';
 import type { CropGrowthStage } from './sprites';
 
-/** Measured from basic-block.png (32x19): 32x16 2:1 diamond + 3px earth strip. */
-export const TILE_W = 32;
-export const DIAMOND_H = 16;
-export const TILE_H = 19;
+/** Measured from high-res 4x basic-block.png (128x76): 128x64 2:1 diamond + 12px earth strip. */
+export const TILE_W = 128;
+export const DIAMOND_H = 64;
+export const TILE_H = 76;
+
+/** Placement cursor sprite dimensions (block-free-spot / button-taken-spot). */
+export const CURSOR_W = 206;
+export const CURSOR_H = 128;
 
 /**
  * Placeholder configurable visual growth stage split thresholds (fraction of growTimeSeconds).
@@ -15,7 +19,7 @@ export const CROP_STAGE_THRESHOLDS = {
   done: 1,
 } as const;
 
-/** Top-left logical pixel coordinates for an isometric ground slab at (col, row). */
+/** Top-left source-pixel coordinates for an isometric ground slab at (col, row). */
 export function isoToScreen(col: number, row: number): { x: number; y: number } {
   return {
     x: (col - row) * (TILE_W / 2),
@@ -23,7 +27,7 @@ export function isoToScreen(col: number, row: number): { x: number; y: number } 
   };
 }
 
-/** Diamond bottom point (tileX + 16, tileY + 16) for cell (col, row). */
+/** Diamond bottom point (tileX + 64, tileY + 64) for cell (col, row). */
 export function isoDiamondBottom(col: number, row: number): { x: number; y: number } {
   const origin = isoToScreen(col, row);
   return {
@@ -59,7 +63,7 @@ export function getBuildingPlacement(
 }
 
 /**
- * Bottom-aligns a crop sprite (which may be taller than 19px) with the 32x19 tile bottom.
+ * Bottom-aligns a crop sprite (which may be taller than 76px) with the 128x76 tile bottom.
  */
 export function getCropPlacement(
   col: number,
@@ -74,14 +78,14 @@ export function getCropPlacement(
 }
 
 /**
- * Centers the 52x32 placement cursor (block-free-spot / button-taken-spot)
- * inner diamond on the target tile's 32x16 diamond.
+ * Centers the 206x128 placement cursor (block-free-spot / button-taken-spot)
+ * inner diamond on the target tile's 128x64 diamond.
  */
 export function getCursorPlacement(col: number, row: number): { x: number; y: number } {
   const origin = isoToScreen(col, row);
   return {
-    x: origin.x - 10,
-    y: origin.y - 6,
+    x: origin.x - Math.round((CURSOR_W - TILE_W) / 2),
+    y: origin.y - Math.round((CURSOR_H - DIAMOND_H) / 2),
   };
 }
 
@@ -92,13 +96,13 @@ export function getVillagerFeetPoint(col: number, row: number): { x: number; y: 
   const origin = isoToScreen(col, row);
   return {
     x: origin.x + TILE_W / 2,
-    y: origin.y + DIAMOND_H - 2,
+    y: origin.y + DIAMOND_H - 8,
   };
 }
 
 /**
- * Computes tight logical pixel bounds for all visible cells (owned land + expand ring),
- * with generous top padding for tall buildings and harvest badges.
+ * Computes source-pixel bounds for all visible cells (owned land + expand ring),
+ * with ~1 tile of padding around the edges plus room for tall buildings and harvest badges.
  */
 export function computeMapBounds(coords: GridCoord[]): {
   minX: number;
@@ -107,7 +111,7 @@ export function computeMapBounds(coords: GridCoord[]): {
   height: number;
 } {
   if (coords.length === 0) {
-    return { minX: -64, minY: -48, width: 192, height: 144 };
+    return { minX: -256, minY: -192, width: 768, height: 576 };
   }
 
   let minX = Infinity;
@@ -123,10 +127,10 @@ export function computeMapBounds(coords: GridCoord[]): {
     if (p.y + TILE_H > maxY) maxY = p.y + TILE_H;
   }
 
-  // Pad around edges for 2x2 buildings, corner-bracket cursors (52x32), and harvest badges
-  const padX = 24;
-  const padTop = 44;
-  const padBottom = 18;
+  // ~1 tile of horizontal/bottom padding and extra headroom for tall 2x2 buildings & badges
+  const padX = TILE_W;
+  const padTop = TILE_W + 48;
+  const padBottom = TILE_H;
 
   return {
     minX: minX - padX,
@@ -134,6 +138,95 @@ export function computeMapBounds(coords: GridCoord[]): {
     width: maxX - minX + padX * 2,
     height: maxY - minY + padTop + padBottom,
   };
+}
+
+/**
+ * Computes the fit-to-view display scale and zoom bounds for a given viewport and content size.
+ * - Mobile (< 1024px): fit tile width targets 64..92px (scale 0.5..0.71875).
+ * - Desktop (>= 1024px): fit tile width targets 80..112px (scale 0.625..0.875).
+ * - Max zoom: up to 2x the fit level, capped at 1.0 (<= 128px native tile width so sprites stay sharp).
+ */
+export function computeDisplayZoomRange(
+  viewportW: number,
+  viewportH: number,
+  contentW: number,
+  contentH: number,
+): { fitScale: number; minZoom: number; maxZoom: number } {
+  const safeVW = Math.max(320, viewportW);
+  const safeVH = Math.max(320, viewportH);
+  const safeCW = Math.max(TILE_W * 2, contentW);
+  const safeCH = Math.max(TILE_H * 2, contentH);
+
+  const isDesktop = safeVW >= 1024;
+  const rawFit = Math.min((safeVW - 16) / safeCW, (safeVH - 16) / safeCH);
+
+  const minFit = isDesktop ? 80 / TILE_W : 64 / TILE_W;
+  const maxFit = isDesktop ? 112 / TILE_W : 92 / TILE_W;
+  const fitScale = Math.max(minFit, Math.min(maxFit, rawFit));
+  const maxZoom = Math.min(fitScale * 2, 1.0);
+
+  return {
+    fitScale,
+    minZoom: fitScale,
+    maxZoom: Math.max(fitScale, maxZoom),
+  };
+}
+
+export const MAX_RUBBER_BAND_PX = 24;
+
+/**
+ * Computes valid [min, max] pan range along one axis so content edges stay within the viewport.
+ * When scaled content is smaller than the viewport, centers it (min === max).
+ */
+export function getPanAxisLimits(
+  viewportSize: number,
+  contentSize: number,
+  zoom: number,
+): { min: number; max: number } {
+  const scaled = contentSize * zoom;
+  if (scaled <= viewportSize) {
+    const centered = (viewportSize - scaled) / 2;
+    return { min: centered, max: centered };
+  }
+  return { min: viewportSize - scaled, max: 0 };
+}
+
+/** Hard-clamps a (panX, panY) camera offset to the content bounds at the given zoom. */
+export function clampPanPosition(
+  panX: number,
+  panY: number,
+  viewportW: number,
+  viewportH: number,
+  contentW: number,
+  contentH: number,
+  zoom: number,
+): { x: number; y: number } {
+  const limX = getPanAxisLimits(viewportW, contentW, zoom);
+  const limY = getPanAxisLimits(viewportH, contentH, zoom);
+  return {
+    x: Math.max(limX.min, Math.min(limX.max, panX)),
+    y: Math.max(limY.min, Math.min(limY.max, panY)),
+  };
+}
+
+/**
+ * Applies soft asymptotic rubber-band resistance (max 24px overshoot) past [min, max].
+ * Under reduced motion, returns a hard clamp with zero overshoot.
+ */
+export function applyRubberBand(
+  value: number,
+  min: number,
+  max: number,
+  reducedMotion: boolean,
+): number {
+  if (value >= min && value <= max) return value;
+  if (reducedMotion) return Math.max(min, Math.min(max, value));
+  if (value < min) {
+    const over = min - value;
+    return min - MAX_RUBBER_BAND_PX * Math.tanh(over / (MAX_RUBBER_BAND_PX * 3));
+  }
+  const over = value - max;
+  return max + MAX_RUBBER_BAND_PX * Math.tanh(over / (MAX_RUBBER_BAND_PX * 3));
 }
 
 /**
@@ -179,7 +272,12 @@ export function getCropGrowthInfo(params: {
 
   if (readyMs === null) {
     // Fallback when no readyAt timestamp is present
-    return { stage: 'sprout', progress: 0, remainingSeconds: Math.ceil(totalMs / 1000), isReady: false };
+    return {
+      stage: 'sprout',
+      progress: 0,
+      remainingSeconds: Math.ceil(totalMs / 1000),
+      isReady: false,
+    };
   }
 
   if (nowMs >= readyMs) {

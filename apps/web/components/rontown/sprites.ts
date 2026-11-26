@@ -18,101 +18,101 @@ export function spriteUrl(filename: string): string {
 }
 
 export const GROUND_SPRITES: Record<GroundTileType, SpriteSpec> = {
-  'basic-block': { src: spriteUrl('basic-block.png'), width: 32, height: 19 },
-  'basic-block-flowers': { src: spriteUrl('basic-block-flowers.png'), width: 32, height: 19 },
+  'basic-block': { src: spriteUrl('basic-block.png'), width: 128, height: 76 },
+  'basic-block-flowers': { src: spriteUrl('basic-block-flowers.png'), width: 128, height: 76 },
   'basic-block-flowers-two': {
     src: spriteUrl('basic-block-flowers-two.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
-  'basic-block-dirt': { src: spriteUrl('basic-block-dirt.png'), width: 32, height: 19 },
-  'basic-block-street': { src: spriteUrl('basic-block-street.png'), width: 32, height: 19 },
+  'basic-block-dirt': { src: spriteUrl('basic-block-dirt.png'), width: 128, height: 76 },
+  'basic-block-street': { src: spriteUrl('basic-block-street.png'), width: 128, height: 76 },
   'basic-block-street-curve': {
     src: spriteUrl('basic-block-street-curve.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
   'basic-block-intersection': {
     src: spriteUrl('basic-block-intersection.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
-  'basic-block-wather': { src: spriteUrl('basic-block-wather.png'), width: 32, height: 19 },
-  'basic-block-wather-two': { src: spriteUrl('basic-block-wather-two.png'), width: 32, height: 19 },
+  'basic-block-wather': { src: spriteUrl('basic-block-wather.png'), width: 128, height: 76 },
+  'basic-block-wather-two': { src: spriteUrl('basic-block-wather-two.png'), width: 128, height: 76 },
   'basic-block-wather-grass-50-50': {
     src: spriteUrl('basic-block-wather-grass-50-50.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
   'basic-block-water-grass-20-80': {
     src: spriteUrl('basic-block-water-grass-20-80.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
   'basic-block-water-grass-80-20': {
     src: spriteUrl('basic-block-water-grass-80-20.png'),
-    width: 32,
-    height: 19,
+    width: 128,
+    height: 76,
   },
 };
 
 export const UI_SPRITES = {
-  expand: { src: spriteUrl('tile_expand.png'), width: 32, height: 19 },
-  freeSpot: { src: spriteUrl('block-free-spot.png'), width: 52, height: 32 },
-  takenSpot: { src: spriteUrl('button-taken-spot.png'), width: 52, height: 32 },
-  build: { src: spriteUrl('build-button.png'), width: 32, height: 32 },
-  move: { src: spriteUrl('move-button.png'), width: 32, height: 32 },
-  plant: { src: spriteUrl('plant-button.png'), width: 32, height: 32 },
-  visit: { src: spriteUrl('button-vizit.png'), width: 32, height: 32 },
-  coinsShop: { src: spriteUrl('button-coins.png'), width: 32, height: 32 },
-  hideBar: { src: spriteUrl('button-hide-bar.png'), width: 32, height: 32 },
-  seedWheat: { src: spriteUrl('button-wheat.png'), width: 32, height: 32 },
-  seedCabbage: { src: spriteUrl('button-cabage.png'), width: 32, height: 32 },
-  seedPumpkin: { src: spriteUrl('button-pumpkin.png'), width: 32, height: 32 },
-  farmGrowing: { src: spriteUrl('farm-done-icon.png'), width: 14, height: 14 },
-  farmReady: { src: spriteUrl('farm-done-icon-gold.png'), width: 14, height: 14 },
+  expand: { src: spriteUrl('tile_expand.png'), width: 128, height: 76 },
+  freeSpot: { src: spriteUrl('block-free-spot.png'), width: 206, height: 128 },
+  takenSpot: { src: spriteUrl('button-taken-spot.png'), width: 206, height: 128 },
+  build: { src: spriteUrl('build-button.png'), width: 128, height: 128 },
+  move: { src: spriteUrl('move-button.png'), width: 128, height: 128 },
+  plant: { src: spriteUrl('plant-button.png'), width: 128, height: 128 },
+  visit: { src: spriteUrl('button-vizit.png'), width: 128, height: 128 },
+  coinsShop: { src: spriteUrl('button-coins.png'), width: 128, height: 128 },
+  hideBar: { src: spriteUrl('button-hide-bar.png'), width: 128, height: 128 },
+  seedWheat: { src: spriteUrl('button-wheat.png'), width: 128, height: 128 },
+  seedCabbage: { src: spriteUrl('button-cabage.png'), width: 128, height: 128 },
+  seedPumpkin: { src: spriteUrl('button-pumpkin.png'), width: 128, height: 128 },
+  farmGrowing: { src: spriteUrl('farm-done-icon.png'), width: 56, height: 56 },
+  farmReady: { src: spriteUrl('farm-done-icon-gold.png'), width: 56, height: 56 },
 } as const;
 
 /**
- * Maps DEFAULT_TOWN_CATALOG spriteKeys to pixel-art PNG specs.
+ * Maps DEFAULT_TOWN_CATALOG spriteKeys to high-res 4x PNG specs (measured from elements-rontown).
  * Catalog footprints are authoritative; mismatches with art dimensions are noted with TODOs.
  */
 export const CATALOG_SPRITES: Record<string, SpriteSpec> = {
-  starter_house: { src: spriteUrl('building-house-basic.png'), width: 31, height: 34 },
-  // TODO(art): building-two-blocks-house.png is ~2x1 (46x35) while catalog cottage is 1x1.
+  starter_house: { src: spriteUrl('building-house-basic.png'), width: 125, height: 137 },
+  // TODO(art): building-two-blocks-house.png is ~2x1 (182x143) while catalog cottage is 1x1.
   // Confirm whether cottage footprint should become 2x1 or swap PNG.
-  cottage: { src: spriteUrl('building-two-blocks-house.png'), width: 46, height: 35 },
-  house: { src: spriteUrl('building-two-level-house.png'), width: 28, height: 35 },
+  cottage: { src: spriteUrl('building-two-blocks-house.png'), width: 182, height: 143 },
+  house: { src: spriteUrl('building-two-level-house.png'), width: 111, height: 140 },
   // TODO(art): building-apartment.png missing — swap filename when art arrives.
-  apartment: { src: '', width: 48, height: 48, isPlaceholder: true },
-  // TODO(art): building-villa.png is 50px wide (< 64px for 2x2); centered on 2x2 at integer scale.
-  villa: { src: spriteUrl('building-villa.png'), width: 50, height: 37 },
-  shop: { src: spriteUrl('building-shop.png'), width: 33, height: 32 },
-  // TODO(art): building-town-hall.png is 33px wide (< 64px for 2x2); centered on 2x2 at integer scale.
-  town_hall: { src: spriteUrl('building-town-hall.png'), width: 33, height: 38 },
-  // TODO(art): building-park.png is drawn as 2x2 (50x35) while catalog park is 1x1.
+  apartment: { src: '', width: 192, height: 192, isPlaceholder: true },
+  // TODO(art): building-villa.png is 199px wide (< 256px for 2x2); centered on 2x2.
+  villa: { src: spriteUrl('building-villa.png'), width: 199, height: 147 },
+  shop: { src: spriteUrl('building-shop.png'), width: 132, height: 130 },
+  // TODO(art): building-town-hall.png is 132px wide (< 256px for 2x2); centered on 2x2.
+  town_hall: { src: spriteUrl('building-town-hall.png'), width: 132, height: 151 },
+  // TODO(art): building-park.png is drawn as 2x2 (197x139) while catalog park is 1x1.
   // Confirm whether park catalog footprint should become 2x2 or swap PNG.
-  park: { src: spriteUrl('building-park.png'), width: 50, height: 35 },
-  bakery: { src: spriteUrl('building-bakery.png'), width: 32, height: 34 },
-  // TODO(art): building-school.png is 44px wide (< 64px for 2x2); centered on 2x2 at integer scale.
-  school: { src: spriteUrl('building-school.png'), width: 44, height: 32 },
-  police_station: { src: spriteUrl('building-police.png'), width: 38, height: 33 },
-  fire_station: { src: spriteUrl('building-fire-station.png'), width: 40, height: 42 },
-  // TODO(art): building-hospital.png is 44px wide (< 64px for 2x2); centered on 2x2 at integer scale.
-  hospital: { src: spriteUrl('building-hospital.png'), width: 44, height: 32 },
+  park: { src: spriteUrl('building-park.png'), width: 197, height: 139 },
+  bakery: { src: spriteUrl('building-bakery.png'), width: 129, height: 136 },
+  // TODO(art): building-school.png is 174px wide (< 256px for 2x2); centered on 2x2.
+  school: { src: spriteUrl('building-school.png'), width: 174, height: 127 },
+  police_station: { src: spriteUrl('building-police.png'), width: 150, height: 131 },
+  fire_station: { src: spriteUrl('building-fire-station.png'), width: 161, height: 168 },
+  // TODO(art): building-hospital.png is 176px wide (< 256px for 2x2); centered on 2x2.
+  hospital: { src: spriteUrl('building-hospital.png'), width: 176, height: 129 },
   // TODO(art): No dedicated empty tilled plot PNG; using basic-block-dirt.png as placeholder.
-  plot: { src: spriteUrl('basic-block-dirt.png'), width: 32, height: 19 },
-  road: { src: spriteUrl('basic-block-street.png'), width: 32, height: 19 },
-  fence: { src: spriteUrl('decor-fence.png'), width: 31, height: 26 },
-  tree: { src: spriteUrl('decor-tree.png'), width: 29, height: 30 },
-  lantern: { src: spriteUrl('decor-lantern.png'), width: 14, height: 33 },
+  plot: { src: spriteUrl('basic-block-dirt.png'), width: 128, height: 76 },
+  road: { src: spriteUrl('basic-block-street.png'), width: 128, height: 76 },
+  fence: { src: spriteUrl('decor-fence.png'), width: 125, height: 104 },
+  tree: { src: spriteUrl('decor-tree.png'), width: 117, height: 119 },
+  lantern: { src: spriteUrl('decor-lantern.png'), width: 55, height: 130 },
   // TODO(art): Missing decor art — swap by filename when PNGs arrive.
-  bench: { src: '', width: 24, height: 20, isPlaceholder: true },
-  fountain: { src: '', width: 28, height: 28, isPlaceholder: true },
-  golden_fountain: { src: '', width: 28, height: 28, isPlaceholder: true },
-  windmill: { src: '', width: 32, height: 40, isPlaceholder: true },
-  clock_tower: { src: '', width: 32, height: 44, isPlaceholder: true },
-  ronduel_statue: { src: '', width: 32, height: 44, isPlaceholder: true },
+  bench: { src: '', width: 96, height: 80, isPlaceholder: true },
+  fountain: { src: '', width: 112, height: 112, isPlaceholder: true },
+  golden_fountain: { src: '', width: 112, height: 112, isPlaceholder: true },
+  windmill: { src: '', width: 128, height: 160, isPlaceholder: true },
+  clock_tower: { src: '', width: 128, height: 176, isPlaceholder: true },
+  ronduel_statue: { src: '', width: 128, height: 176, isPlaceholder: true },
 };
 
 export type CropGrowthStage = 'sprout' | 'half' | 'done';
@@ -122,32 +122,32 @@ export const CROP_BUTTON_SPRITES: Record<string, SpriteSpec> = {
   cabbage: UI_SPRITES.seedCabbage,
   pumpkin: UI_SPRITES.seedPumpkin,
   // TODO(art): oats, carrots, sunflower lack seed button art; fall back to sprout icon.
-  oats: { src: spriteUrl('land-farm-one.png'), width: 32, height: 22 },
-  carrots: { src: spriteUrl('land-farm-one.png'), width: 32, height: 22 },
-  sunflower: { src: spriteUrl('land-farm-one.png'), width: 32, height: 22 },
+  oats: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
+  carrots: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
+  sunflower: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
 };
 
 export function resolveCropSprite(cropId: string, stage: CropGrowthStage): SpriteSpec {
   if (stage === 'sprout') {
-    return { src: spriteUrl('land-farm-one.png'), width: 32, height: 22 };
+    return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
   }
   if (cropId === 'wheat') {
     return stage === 'done'
-      ? { src: spriteUrl('block-wheat-done.png'), width: 32, height: 22 }
-      : { src: spriteUrl('block-wheat-half.png'), width: 32, height: 21 };
+      ? { src: spriteUrl('block-wheat-done.png'), width: 128, height: 88 }
+      : { src: spriteUrl('block-wheat-half.png'), width: 128, height: 85 };
   }
   if (cropId === 'cabbage') {
     return stage === 'done'
-      ? { src: spriteUrl('block-cabage-done.png'), width: 32, height: 20 }
-      : { src: spriteUrl('block-cabage-half.png'), width: 32, height: 20 };
+      ? { src: spriteUrl('block-cabage-done.png'), width: 128, height: 81 }
+      : { src: spriteUrl('block-cabage-half.png'), width: 128, height: 80 };
   }
   if (cropId === 'pumpkin') {
     return stage === 'done'
-      ? { src: spriteUrl('block-pumpkin-done.png'), width: 32, height: 20 }
-      : { src: spriteUrl('block-pumpkin-half.png'), width: 32, height: 20 };
+      ? { src: spriteUrl('block-pumpkin-done.png'), width: 128, height: 79 }
+      : { src: spriteUrl('block-pumpkin-half.png'), width: 128, height: 79 };
   }
   // TODO(art): oats, carrots, sunflower use land-farm-one stand-in until crop PNGs arrive.
-  return { src: spriteUrl('land-farm-one.png'), width: 32, height: 22 };
+  return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
 }
 
 /**
@@ -196,65 +196,65 @@ export type VillagerKind =
 export interface VillagerSpriteSet {
   kind: VillagerKind;
   idle: SpriteSpec;
-  /** 4-frame front/right walk cycle if available; null means static + 2px bob. */
+  /** 4-frame front/right walk cycle if available; null means static + vertical bob. */
   walkFrames: SpriteSpec[] | null;
 }
 
 export const VILLAGER_SPRITES: Record<VillagerKind, VillagerSpriteSet> = {
   'small-villager': {
     kind: 'small-villager',
-    idle: { src: spriteUrl('small-villager.png'), width: 13, height: 16 },
+    idle: { src: spriteUrl('small-villager.png'), width: 53, height: 64 },
     walkFrames: [1, 2, 3, 4].map((f) => ({
       src: spriteUrl(`small-villager-walking-animation-right_f${f}.png`),
-      width: 15,
-      height: 17,
+      width: 61,
+      height: 68,
     })),
   },
   'woman-villager': {
     kind: 'woman-villager',
-    idle: { src: spriteUrl('woman-villager.png'), width: 9, height: 16 },
+    idle: { src: spriteUrl('woman-villager.png'), width: 35, height: 64 },
     walkFrames: [1, 2, 3, 4].map((f) => ({
       src: spriteUrl(`woman-villager-walking-animation-right_f${f}.png`),
-      width: 13,
-      height: 17,
+      width: 50,
+      height: 68,
     })),
   },
   'granny-villager': {
     kind: 'granny-villager',
-    idle: { src: spriteUrl('granny-villager.png'), width: 8, height: 16 },
+    idle: { src: spriteUrl('granny-villager.png'), width: 33, height: 64 },
     walkFrames: [1, 2, 3, 4].map((f) => ({
       src: spriteUrl(`granny-villager-moving-animation-right_f${f}.png`),
-      width: 11,
-      height: 17,
+      width: 45,
+      height: 68,
     })),
   },
   'child-villager': {
     kind: 'child-villager',
-    idle: { src: spriteUrl('child-villager.png'), width: 7, height: 13 },
+    idle: { src: spriteUrl('child-villager.png'), width: 27, height: 52 },
     walkFrames: [1, 2, 3, 4].map((f) => ({
       src: spriteUrl(`child-villager-walking-animation-right_f${f}.png`),
-      width: 10,
-      height: 14,
+      width: 41,
+      height: 56,
     })),
   },
   'blacksmith-villager': {
     kind: 'blacksmith-villager',
-    idle: { src: spriteUrl('blacksmith-villager.png'), width: 8, height: 16 },
+    idle: { src: spriteUrl('blacksmith-villager.png'), width: 32, height: 64 },
     walkFrames: [1, 2, 3, 4].map((f) => ({
       src: spriteUrl(`blacksmith-villager-walking-animation-right_f${f}.png`),
-      width: 13,
-      height: 17,
+      width: 50,
+      height: 68,
     })),
   },
   'baker-villager': {
     kind: 'baker-villager',
-    idle: { src: spriteUrl('baker-villager.png'), width: 9, height: 16 },
+    idle: { src: spriteUrl('baker-villager.png'), width: 34, height: 64 },
     walkFrames: null,
   },
   visitor: {
     kind: 'visitor',
     // TODO(art): visitor.png contains an unwanted miniature house in the background; regenerate PNG.
-    idle: { src: spriteUrl('visitor.png'), width: 15, height: 16 },
+    idle: { src: spriteUrl('visitor.png'), width: 59, height: 64 },
     walkFrames: null,
   },
 };
@@ -271,7 +271,8 @@ export const RESIDENT_VILLAGER_KINDS: readonly VillagerKind[] = [
 const preloadedUrls = new Set<string>();
 
 /**
- * Preloads the essential sprites used on the initial map render to prevent pop-in.
+ * Preloads the essential sprites used on the initial map paint to avoid pop-in.
+ * Off-screen / secondary sprites stay lazy-loaded.
  */
 export function preloadInitialSprites(extraUrls: string[] = []): void {
   if (typeof window === 'undefined') return;
@@ -279,26 +280,15 @@ export function preloadInitialSprites(extraUrls: string[] = []): void {
     GROUND_SPRITES['basic-block'].src,
     GROUND_SPRITES['basic-block-dirt'].src,
     UI_SPRITES.expand.src,
-    UI_SPRITES.freeSpot.src,
-    UI_SPRITES.takenSpot.src,
     UI_SPRITES.build.src,
     UI_SPRITES.move.src,
     UI_SPRITES.plant.src,
     UI_SPRITES.visit.src,
     UI_SPRITES.coinsShop.src,
     UI_SPRITES.hideBar.src,
-    UI_SPRITES.seedWheat.src,
-    UI_SPRITES.seedCabbage.src,
-    UI_SPRITES.seedPumpkin.src,
-    UI_SPRITES.farmGrowing.src,
-    UI_SPRITES.farmReady.src,
     CATALOG_SPRITES.starter_house!.src,
-    spriteUrl('land-farm-one.png'),
-    ...VILLAGER_SPRITES['small-villager'].walkFrames!.map((f) => f.src),
-    ...VILLAGER_SPRITES['woman-villager'].walkFrames!.map((f) => f.src),
     VILLAGER_SPRITES['small-villager'].idle.src,
     VILLAGER_SPRITES['woman-villager'].idle.src,
-    VILLAGER_SPRITES.visitor.idle.src,
     ...extraUrls,
   ];
 

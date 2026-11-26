@@ -200,7 +200,7 @@ export function useVillagers({
       !reducedMotionRef.current &&
       !specSet.walkFrames &&
       (v.state === 'walking' || v.isArrivalVisitor)
-        ? Math.round(Math.sin(nowMs / 180) * 2) * s
+        ? Math.round(Math.sin(nowMs / 180) * 6 * s)
         : 0;
 
     const nextTransform = `translate3d(${pxX}px, ${pxY + bobPx}px, 0)`;
