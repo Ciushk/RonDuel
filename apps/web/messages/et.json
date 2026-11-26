@@ -366,7 +366,10 @@
     "themeHighContrast": "Kõrge kontrast",
     "themeProMidnight": "Pro: Südaöö väljak",
     "themeProClay": "Pro: Saviliivaväljak",
-    "themeProNeon": "Pro: Neoon-arkaad"
+    "themeProNeon": "Pro: Neoon-arkaad",
+    "clearCache": "Tühjenda vahemälu ja laadi uuesti",
+    "clearCacheHint": "Parandab vananenud pildid pärast uuendust. Ei logi sind välja.",
+    "clearCacheConfirm": "Tühjenda vahemälu failid ja laadi uuesti? Jääd sisselogituks."
   },
   "consent": {
     "message": "Kasutame edusammude salvestamiseks hädavajalikku salvestusruumi. Kas lubad privaatsussõbralikku EL-i analüütikat?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Suurenda",
       "zoomOut": "Vähenda"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Uus versioon on saadaval",
+    "reload": "Laadi uuesti",
+    "dismiss": "Sulge"
   }
 }

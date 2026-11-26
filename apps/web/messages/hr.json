@@ -366,7 +366,10 @@
     "themeHighContrast": "Visoki kontrast",
     "themeProMidnight": "Pro: Ponoćni teren",
     "themeProClay": "Pro: Zemljani teren",
-    "themeProNeon": "Pro: Neonska arkada"
+    "themeProNeon": "Pro: Neonska arkada",
+    "clearCache": "Očisti predmemoriju i osvježi",
+    "clearCacheHint": "Popravlja stare slike nakon ažuriranja. Ne odjavljuje te.",
+    "clearCacheConfirm": "Očistiti predmemorirane datoteke i osvježiti? Ostat ćeš prijavljen."
   },
   "consent": {
     "message": "Koristimo nužnu lokalnu pohranu za spremanje tvog napretka. Dopuštaš li analitiku koja poštuje privatnost u EU?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Povećaj",
       "zoomOut": "Smanji"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Dostupna je nova verzija",
+    "reload": "Osvježi",
+    "dismiss": "Zatvori"
   }
 }

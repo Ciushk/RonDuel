@@ -366,7 +366,10 @@
     "themeHighContrast": "Alto contraste",
     "themeProMidnight": "Pro: Campo Noturno",
     "themeProClay": "Pro: Saibro",
-    "themeProNeon": "Pro: Fliperama Neon"
+    "themeProNeon": "Pro: Fliperama Neon",
+    "clearCache": "Limpar cache e recarregar",
+    "clearCacheHint": "Corrige imagens antigas após uma atualização. Não encerra a sua sessão.",
+    "clearCacheConfirm": "Limpar os ficheiros em cache e recarregar? Continuará com sessão iniciada."
   },
   "consent": {
     "message": "Usamos armazenamento essencial para seu progresso. Permitir analytics na UE?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Ampliar",
       "zoomOut": "Reduzir"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Nova versão disponível",
+    "reload": "Recarregar",
+    "dismiss": "Fechar"
   }
 }

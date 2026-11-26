@@ -1,5 +1,7 @@
 'use client';
 
+import { uiSpriteUrl } from './sprites';
+
 export type RonCoinSourceSize = 16 | 24 | 32 | 64 | 128;
 
 export interface RonCoinIconProps {
@@ -20,6 +22,7 @@ export interface RonCoinIconProps {
 export function getRonCoinSources(
   size: number,
   variant: 'single' | 'stack' = 'single',
+  buildId?: string,
 ): { src: string; srcSet: string; base: RonCoinSourceSize; retina: number } {
   let base: RonCoinSourceSize;
   if (size <= 16 && variant !== 'stack') {
@@ -35,9 +38,10 @@ export function getRonCoinSources(
   }
 
   const retina = base * 2;
-  const prefix = variant === 'stack' ? '/rontown/ui/roncoin-stack-' : '/rontown/ui/roncoin-';
-  const src = `${prefix}${base}.png`;
-  const srcSet = `${src} 1x, ${prefix}${retina}.png 2x`;
+  const stem = variant === 'stack' ? 'roncoin-stack-' : 'roncoin-';
+  const src = uiSpriteUrl(`${stem}${base}.png`, buildId);
+  const src2x = uiSpriteUrl(`${stem}${retina}.png`, buildId);
+  const srcSet = `${src} 1x, ${src2x} 2x`;
   return { src, srcSet, base, retina };
 }
 

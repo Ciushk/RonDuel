@@ -366,7 +366,10 @@
     "themeHighContrast": "Nagy kontraszt",
     "themeProMidnight": "Pro: Éjféli pálya",
     "themeProClay": "Pro: Salakos pálya",
-    "themeProNeon": "Pro: Neon Játékterem"
+    "themeProNeon": "Pro: Neon Játékterem",
+    "clearCache": "Gyorsítótár törlése és újratöltés",
+    "clearCacheHint": "Kijavítja a régi képeket frissítés után. Nem jelentkeztet ki.",
+    "clearCacheConfirm": "Törlöd a gyorsítótárazott fájlokat és újratöltöd? Bejelentkezve maradsz."
   },
   "consent": {
     "message": "Az alapvető tárhelyet használjuk az előrehaladásod mentésére. Engedélyezed a GDPR-kompatibilis analitikát?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Nagyítás",
       "zoomOut": "Kicsinyítés"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Új verzió érhető el",
+    "reload": "Újratöltés",
+    "dismiss": "Bezárás"
   }
 }

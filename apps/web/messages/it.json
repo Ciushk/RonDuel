@@ -366,7 +366,10 @@
     "themeHighContrast": "Contrasto elevato",
     "themeProMidnight": "Pro: Campo Notturno",
     "themeProClay": "Pro: Terra Rossa",
-    "themeProNeon": "Pro: Arcade Neon"
+    "themeProNeon": "Pro: Arcade Neon",
+    "clearCache": "Svuota cache e ricarica",
+    "clearCacheHint": "Risolve le immagini vecchie dopo un aggiornamento. Non ti disconnette.",
+    "clearCacheConfirm": "Svuotare i file in cache e ricaricare? Resterai connesso."
   },
   "consent": {
     "message": "Usiamo archiviazione essenziale per salvare i tuoi progressi. Consenti l'analisi anonima conforme alle norme UE?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Ingrandisci",
       "zoomOut": "Riduci"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Nuova versione disponibile",
+    "reload": "Ricarica",
+    "dismiss": "Chiudi"
   }
 }

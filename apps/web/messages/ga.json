@@ -366,7 +366,10 @@
     "themeHighContrast": "Codarsnacht ard",
     "themeProMidnight": "Pro: Cúirt Meán Oíche",
     "themeProClay": "Pro: Cúirt Chré",
-    "themeProNeon": "Pro: Stuara Neon"
+    "themeProNeon": "Pro: Stuara Neon",
+    "clearCache": "Glan an taisce agus athlódáil",
+    "clearCacheHint": "Ceartaíonn sé sean-íomhánna tar éis nuashonraithe. Ní shíníonn sé amach thú.",
+    "clearCacheConfirm": "Glan comhaid thaisce na haipe agus athlódáil? Fanfaidh tú sínithe isteach."
   },
   "consent": {
     "message": "Úsáidimid stóráil riachtanach chun do dhul chun cinn a shábháil. An gceadaíonn tú anailísíocht AE atá neamhdhíobhálach don phríobháideachas?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Zúmáil isteach",
       "zoomOut": "Zúmáil amach"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Leagan nua ar fáil",
+    "reload": "Athlódáil",
+    "dismiss": "Dún"
   }
 }

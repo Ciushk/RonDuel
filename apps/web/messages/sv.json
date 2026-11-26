@@ -366,7 +366,10 @@
     "themeHighContrast": "Hög kontrast",
     "themeProMidnight": "Pro: Midnattsbana",
     "themeProClay": "Pro: Grusbana",
-    "themeProNeon": "Pro: Neonarkad"
+    "themeProNeon": "Pro: Neonarkad",
+    "clearCache": "Rensa cache och ladda om",
+    "clearCacheHint": "Åtgärdar gamla bilder efter en uppdatering. Loggar inte ut dig.",
+    "clearCacheConfirm": "Rensa cachade appfiler och ladda om? Du förblir inloggad."
   },
   "consent": {
     "message": "Vi använder nödvändig lagring för att spara dina framsteg. Tillåt integritetsvänlig EU-analys?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Zooma in",
       "zoomOut": "Zooma ut"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Ny version tillgänglig",
+    "reload": "Ladda om",
+    "dismiss": "Stäng"
   }
 }

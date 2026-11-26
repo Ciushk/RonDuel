@@ -366,7 +366,10 @@
     "themeHighContrast": "Høj kontrast",
     "themeProMidnight": "Pro: Midnatbane",
     "themeProClay": "Pro: Grusbane",
-    "themeProNeon": "Pro: Neon-arkade"
+    "themeProNeon": "Pro: Neon-arkade",
+    "clearCache": "Ryd cache og genindlæs",
+    "clearCacheHint": "Retter gamle billeder efter en opdatering. Logger dig ikke ud.",
+    "clearCacheConfirm": "Ryd cachelagrede appfiler og genindlæs? Du forbliver logget ind."
   },
   "consent": {
     "message": "Vi bruger nødvendig lagring til at gemme dine fremskridt. Tillad privatlivsvenlig EU-analyse?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Zoom ind",
       "zoomOut": "Zoom ud"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Ny version tilgængelig",
+    "reload": "Genindlæs",
+    "dismiss": "Luk"
   }
 }

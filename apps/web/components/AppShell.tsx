@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { BottomNav } from '@/components/BottomNav';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { PwaUpdateToast } from '@/components/PwaUpdateToast';
 import { Button, Wordmark } from '@/components/ui';
 import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
@@ -35,10 +36,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     syncAnalyticsConsent();
     document.documentElement.setAttribute('data-theme', s.theme);
     document.documentElement.classList.toggle('dark', s.theme === 'dark');
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
   }, []);
 
   const isPlayFocusMode = pathname.endsWith('/play');
@@ -227,6 +224,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
       )}
+      {/* PWA update toast (registers /sw.js?v=2 and prompts for new builds) */}
+      <PwaUpdateToast
+        hasConsentBanner={Boolean(showConsent)}
+        hideBottomNav={hideBottomNav}
+      />
     </div>
   );
 }

@@ -708,6 +708,22 @@ html[data-theme='dark'] {
   }
 }
 
+/* PWA update toast entrance (transform & opacity only) */
+@keyframes rd-update-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rd-update-toast {
+  animation: rd-update-toast-in 220ms ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -733,5 +749,12 @@ html[data-theme='dark'] {
     animation: none !important;
     transform: none !important;
   }
+
+  .rd-update-toast {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
+
 

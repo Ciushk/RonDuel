@@ -6,14 +6,47 @@ const rootDir = process.cwd();
 const webDir = path.join(rootDir, 'apps/web');
 const outDir = path.join(rootDir, 'hosting-dist');
 
-console.log('Building @ronduel/web...');
-execSync('pnpm --filter @ronduel/web build', { stdio: 'inherit' });
+function resolveBuildId() {
+  const fromEnv = process.env.GITHUB_SHA?.trim() || process.env.NEXT_PUBLIC_BUILD_ID?.trim();
+  if (fromEnv) return fromEnv;
+  try {
+    return execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
+  } catch {
+    return `local-${Date.now()}`;
+  }
+}
+
+const buildId = resolveBuildId();
+const builtAt = new Date().toISOString();
+
+console.log(`Building @ronduel/web (buildId=${buildId.slice(0, 12)})...`);
+execSync('pnpm --filter @ronduel/web build', {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    NEXT_PUBLIC_BUILD_ID: buildId,
+    NEXT_PUBLIC_BUILT_AT: builtAt,
+  },
+});
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 
 // 1. Copy public/ assets
 fs.cpSync(path.join(webDir, 'public'), outDir, { recursive: true });
+
+// 1b. Inject buildId into hosting-dist/sw.js and emit hosting-dist/version.json
+const swOutPath = path.join(outDir, 'sw.js');
+if (fs.existsSync(swOutPath)) {
+  const swSource = fs.readFileSync(swOutPath, 'utf8');
+  fs.writeFileSync(swOutPath, swSource.replaceAll('__RONDUEL_BUILD_ID__', buildId), 'utf8');
+}
+fs.writeFileSync(
+  path.join(outDir, 'version.json'),
+  JSON.stringify({ buildId, builtAt }, null, 2) + '\n',
+  'utf8',
+);
+console.log(`Stamped sw.js and wrote hosting-dist/version.json (${buildId.slice(0, 12)}).`);
 
 // 2. Copy .next/static -> hosting-dist/_next/static
 fs.mkdirSync(path.join(outDir, '_next/static'), { recursive: true });

@@ -366,7 +366,10 @@
     "themeHighContrast": "Hoog contrast",
     "themeProMidnight": "Pro: Middernachtbaan",
     "themeProClay": "Pro: Gravelbaan",
-    "themeProNeon": "Pro: Neon Arcadehal"
+    "themeProNeon": "Pro: Neon Arcadehal",
+    "clearCache": "Cache wissen & herladen",
+    "clearCacheHint": "Lost verouderde afbeeldingen op na een update. Logt je niet uit.",
+    "clearCacheConfirm": "Opgeslagen app-bestanden wissen en herladen? Je blijft ingelogd."
   },
   "consent": {
     "message": "We gebruiken essentiële opslag om je voortgang te bewaren. Privacyvriendelijke EU-analyse toestaan?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Inzoomen",
       "zoomOut": "Uitzoomen"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Nieuwe versie beschikbaar",
+    "reload": "Herladen",
+    "dismiss": "Sluiten"
   }
 }

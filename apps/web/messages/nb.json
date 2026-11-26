@@ -366,7 +366,10 @@
     "themeHighContrast": "Høy kontrast",
     "themeProMidnight": "Pro: Midnattsbane",
     "themeProClay": "Pro: Grusbane",
-    "themeProNeon": "Pro: Neonarkade"
+    "themeProNeon": "Pro: Neonarkade",
+    "clearCache": "Tøm hurtigbuffer og last inn på nytt",
+    "clearCacheHint": "Fikser gamle bilder etter en oppdatering. Logger deg ikke ut.",
+    "clearCacheConfirm": "Tømme hurtigbufrede appfiler og laste inn på nytt? Du forblir innlogget."
   },
   "consent": {
     "message": "Vi bruker nødvendig lagring for å lagre fremgangen din. Tillat personvernvennlig EU-analyse?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Zoom inn",
       "zoomOut": "Zoom ut"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Ny versjon tilgjengelig",
+    "reload": "Last inn på nytt",
+    "dismiss": "Lukk"
   }
 }

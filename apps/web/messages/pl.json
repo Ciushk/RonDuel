@@ -366,7 +366,10 @@
     "themeHighContrast": "Wysoki kontrast",
     "themeProMidnight": "Pro: Nocny kort",
     "themeProClay": "Pro: Kort ceglany",
-    "themeProNeon": "Pro: Neonowy salon gier"
+    "themeProNeon": "Pro: Neonowy salon gier",
+    "clearCache": "Wyczyść pamięć podręczną i odśwież",
+    "clearCacheHint": "Naprawia stare obrazy po aktualizacji. Nie wylogowuje Cię.",
+    "clearCacheConfirm": "Wyczyścić pliki pamięci podręcznej i odświeżyć? Pozostaniesz zalogowany."
   },
   "consent": {
     "message": "Używamy niezbędnej pamięci lokalnej, aby zapisywać Twoje postępy. Czy zezwalasz na analitykę zgodną z prywatnością w UE?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Powiększ",
       "zoomOut": "Pomniejsz"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Dostępna nowa wersja",
+    "reload": "Odśwież",
+    "dismiss": "Zamknij"
   }
 }

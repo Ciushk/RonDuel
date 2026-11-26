@@ -366,7 +366,10 @@
     "themeHighContrast": "Suuri kontrasti",
     "themeProMidnight": "Pro: Keskiyön kenttä",
     "themeProClay": "Pro: Massakenttä",
-    "themeProNeon": "Pro: Neon-arkadi"
+    "themeProNeon": "Pro: Neon-arkadi",
+    "clearCache": "Tyhjennä välimuisti ja lataa uudelleen",
+    "clearCacheHint": "Korjaa vanhentuneet kuvat päivityksen jälkeen. Ei kirjaa sinua ulos.",
+    "clearCacheConfirm": "Tyhjennetäänkö välimuistin tiedostot ja ladataanko uudelleen? Pysyt kirjautuneena."
   },
   "consent": {
     "message": "Käytämme välttämätöntä tallennustilaa edistymisesi tallentamiseen. Sallitko yksityisyyttä kunnioittavan EU-analytiikan?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Lähennä",
       "zoomOut": "Loitonna"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Uusi versio saatavilla",
+    "reload": "Lataa uudelleen",
+    "dismiss": "Sulje"
   }
 }

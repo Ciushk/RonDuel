@@ -366,7 +366,10 @@
     "themeHighContrast": "Alto contraste",
     "themeProMidnight": "Pro: Pista Nocturna",
     "themeProClay": "Pro: Pista de Tierra",
-    "themeProNeon": "Pro: Recreativa Neón"
+    "themeProNeon": "Pro: Recreativa Neón",
+    "clearCache": "Borrar caché y recargar",
+    "clearCacheHint": "Corrige imágenes antiguas tras una actualización. No cierra tu sesión.",
+    "clearCacheConfirm": "¿Borrar los archivos en caché y recargar? Seguirás con la sesión iniciada."
   },
   "consent": {
     "message": "Usamos almacenamiento esencial para tu progreso. ¿Permites analítica en la UE?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Acercar",
       "zoomOut": "Alejar"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Nueva versión disponible",
+    "reload": "Recargar",
+    "dismiss": "Cerrar"
   }
 }

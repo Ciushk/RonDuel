@@ -366,7 +366,10 @@
     "themeHighContrast": "High contrast",
     "themeProMidnight": "Pro: Midnight Court",
     "themeProClay": "Pro: Clay Court",
-    "themeProNeon": "Pro: Neon Arcade"
+    "themeProNeon": "Pro: Neon Arcade",
+    "clearCache": "Clear cache & reload",
+    "clearCacheHint": "Fixes stale images after an update. Does not sign you out.",
+    "clearCacheConfirm": "Clear cached app files and reload? You will stay signed in."
   },
   "consent": {
     "message": "We use essential storage to save your progress. Allow privacy-friendly EU analytics?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out"
     }
+  },
+  "pwa": {
+    "updateAvailable": "New version available",
+    "reload": "Reload",
+    "dismiss": "Dismiss"
   }
 }

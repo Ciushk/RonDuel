@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { getPlotPrice, type CatalogItem, type TownCatalogDoc, type TownDoc, type TownOrderItem } from '@ronduel/shared';
 import { formatDurationShort, getCropGrowthInfo } from './iso';
-import { CATALOG_SPRITES, CROP_BUTTON_SPRITES, UI_SPRITES } from './sprites';
+import { CATALOG_SPRITES, CROP_BUTTON_SPRITES, UI_SPRITES, uiSpriteUrl } from './sprites';
 import { RonCoinIcon } from './RonCoinIcon';
 import type { TileInfo, TransferStatusInfo } from './useTownState';
 
@@ -218,8 +218,8 @@ export function TownSheets({
                     className="rt-menu-sticker text-ink flex min-h-[96px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-[#FFF7EC] px-3 py-3 text-center text-sm font-black leading-tight focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] dark:bg-surface-2"
                   >
                     <img
-                      src={`/rontown/ui/${item.icon}.png`}
-                      srcSet={`/rontown/ui/${item.icon}.png 1x, /rontown/ui/${item.icon}@2x.png 2x`}
+                      src={uiSpriteUrl(`${item.icon}.png`)}
+                      srcSet={`${uiSpriteUrl(`${item.icon}.png`)} 1x, ${uiSpriteUrl(`${item.icon}@2x.png`)} 2x`}
                       sizes="(min-width: 1024px) 48px, 40px"
                       alt=""
                       aria-hidden="true"

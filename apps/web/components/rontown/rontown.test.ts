@@ -24,7 +24,9 @@ import {
   GROUND_SPRITES,
   resolveCropSprite,
   resolveRoadSprite,
+  spriteUrl,
   UI_SPRITES,
+  uiSpriteUrl,
   VILLAGER_SPRITES,
   type SpriteSpec,
 } from './sprites';
@@ -169,7 +171,7 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     const seen = new Set<string>();
     for (const spec of specs) {
       expect(spec.src.startsWith('/rontown/')).toBe(true);
-      const filename = spec.src.slice('/rontown/'.length);
+      const filename = spec.src.slice('/rontown/'.length).split('?')[0]!;
       const diskPath = path.join(PUBLIC_RONTOWN_DIR, filename);
       expect(fs.existsSync(diskPath), `Missing sprite on disk: ${filename}`).toBe(true);
       const actual = readPngSize(diskPath);
@@ -182,8 +184,22 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     expect(seen.size).toBeGreaterThan(50);
   });
 
+  it('appends ?v=BUILD_ID to spriteUrl, uiSpriteUrl, and RonCoinIcon srcset when buildId is set', () => {
+    expect(spriteUrl('basic-block.png', '')).toBe('/rontown/basic-block.png');
+    expect(spriteUrl('basic-block.png', 'abc1234')).toBe('/rontown/basic-block.png?v=abc1234');
+    expect(uiSpriteUrl('icon-orders.png', 'abc1234')).toBe('/rontown/ui/icon-orders.png?v=abc1234');
+    expect(getRonCoinSources(24, 'single', 'abc1234')).toEqual({
+      src: '/rontown/ui/roncoin-24.png?v=abc1234',
+      srcSet: '/rontown/ui/roncoin-24.png?v=abc1234 1x, /rontown/ui/roncoin-48.png?v=abc1234 2x',
+      base: 24,
+      retina: 48,
+    });
+  });
+
   it('maps RonCoinIcon CSS sizes to exact 1x/2x srcset pairs and avoids stack-16', () => {
-    expect(getRonCoinSources(14)).toEqual({
+    const stripQuery = (url: string) => url.split('?')[0]!;
+    expect(stripQuery(getRonCoinSources(14, 'single', '').src)).toBe('/rontown/ui/roncoin-16.png');
+    expect(getRonCoinSources(14, 'single', '')).toEqual({
       src: '/rontown/ui/roncoin-16.png',
       srcSet: '/rontown/ui/roncoin-16.png 1x, /rontown/ui/roncoin-32.png 2x',
       base: 16,
@@ -191,7 +207,7 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     });
     expect(getRonCoinSources(16).base).toBe(16);
     expect(getRonCoinSources(18).base).toBe(24);
-    expect(getRonCoinSources(20)).toEqual({
+    expect(getRonCoinSources(20, 'single', '')).toEqual({
       src: '/rontown/ui/roncoin-24.png',
       srcSet: '/rontown/ui/roncoin-24.png 1x, /rontown/ui/roncoin-48.png 2x',
       base: 24,
@@ -202,7 +218,7 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     expect(getRonCoinSources(28).base).toBe(32);
     expect(getRonCoinSources(32).base).toBe(32);
     expect(getRonCoinSources(64).base).toBe(64);
-    expect(getRonCoinSources(128)).toEqual({
+    expect(getRonCoinSources(128, 'single', '')).toEqual({
       src: '/rontown/ui/roncoin-128.png',
       srcSet: '/rontown/ui/roncoin-128.png 1x, /rontown/ui/roncoin-256.png 2x',
       base: 128,
@@ -210,13 +226,13 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     });
 
     // Stack variant enforces minimum 24px base so roncoin-stack-16 is never used
-    expect(getRonCoinSources(16, 'stack')).toEqual({
+    expect(getRonCoinSources(16, 'stack', '')).toEqual({
       src: '/rontown/ui/roncoin-stack-24.png',
       srcSet: '/rontown/ui/roncoin-stack-24.png 1x, /rontown/ui/roncoin-stack-48.png 2x',
       base: 24,
       retina: 48,
     });
-    expect(getRonCoinSources(28, 'stack').src).toBe('/rontown/ui/roncoin-stack-32.png');
+    expect(stripQuery(getRonCoinSources(28, 'stack').src)).toBe('/rontown/ui/roncoin-stack-32.png');
   });
 
   it('ships all 6 town menu 1x/2x icons and official RonCoin PNG sizes in public/rontown/ui', () => {

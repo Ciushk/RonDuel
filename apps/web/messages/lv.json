@@ -366,7 +366,10 @@
     "themeHighContrast": "Augsts kontrasts",
     "themeProMidnight": "Pro: Pusnakts korts",
     "themeProClay": "Pro: Māla korts",
-    "themeProNeon": "Pro: Neona pasāža"
+    "themeProNeon": "Pro: Neona pasāža",
+    "clearCache": "Notīrīt kešatmiņu un pārlādēt",
+    "clearCacheHint": "Novērš novecojušus attēlus pēc atjauninājuma. Neizraksta no konta.",
+    "clearCacheConfirm": "Notīrīt kešatmiņas failus un pārlādēt? Jūs paliksit pieslēdzies."
   },
   "consent": {
     "message": "Mēs izmantojam obligāto krātuvi, lai saglabātu tavu progresu. Vai atļaut privātumam draudzīgu ES analītiku?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Tuvināt",
       "zoomOut": "Tālināt"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Pieejama jauna versija",
+    "reload": "Pārlādēt",
+    "dismiss": "Aizvērt"
   }
 }

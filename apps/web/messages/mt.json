@@ -366,7 +366,10 @@
     "themeHighContrast": "Kuntrast għoli",
     "themeProMidnight": "Pro: Qorti ta Nofs il-Lejl",
     "themeProClay": "Pro: Qorti tat-Tafal",
-    "themeProNeon": "Pro: Arkata Neon"
+    "themeProNeon": "Pro: Arkata Neon",
+    "clearCache": "Naddaf il-cache u erġa' tgħabbi",
+    "clearCacheHint": "Jirranġa immaġni qodma wara aġġornament. Ma joħorġokx mill-kont.",
+    "clearCacheConfirm": "Tnaddaf il-fajls fil-cache u terġa' tgħabbi? Tibqa' dħalt fil-kont."
   },
   "consent": {
     "message": "Nużaw ħażna essenzjali biex nissejvjaw il-progress tiegħek. Tippermetti analitika tal-UE li tirrispetta l-privatezza?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Kabbar",
       "zoomOut": "Ċekken"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Verżjoni ġdida disponibbli",
+    "reload": "Erġa' tgħabbi",
+    "dismiss": "Agħlaq"
   }
 }

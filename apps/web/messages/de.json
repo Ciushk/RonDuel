@@ -366,7 +366,10 @@
     "themeHighContrast": "Hoher Kontrast",
     "themeProMidnight": "Pro: Mitternachtsplatz",
     "themeProClay": "Pro: Sandplatz",
-    "themeProNeon": "Pro: Neon-Arkade"
+    "themeProNeon": "Pro: Neon-Arkade",
+    "clearCache": "Cache leeren & neu laden",
+    "clearCacheHint": "Behebt veraltete Bilder nach einem Update. Meldet dich nicht ab.",
+    "clearCacheConfirm": "Zwischengespeicherte App-Dateien löschen und neu laden? Du bleibst angemeldet."
   },
   "consent": {
     "message": "Wir nutzen essenziellen Speicher für deinen Spielfortschritt. Datenschutzfreundliche EU-Analysen erlauben?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Vergrößern",
       "zoomOut": "Verkleinern"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Neue Version verfügbar",
+    "reload": "Neu laden",
+    "dismiss": "Schließen"
   }
 }

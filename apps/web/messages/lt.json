@@ -366,7 +366,10 @@
     "themeHighContrast": "Didelis kontrastas",
     "themeProMidnight": "Pro: Vidurnakčio kortas",
     "themeProClay": "Pro: Grunto kortas",
-    "themeProNeon": "Pro: Neono arkada"
+    "themeProNeon": "Pro: Neono arkada",
+    "clearCache": "Išvalyti talpyklą ir įkelti iš naujo",
+    "clearCacheHint": "Pataiso pasenusius vaizdus po atnaujinimo. Neatsijungia nuo paskyros.",
+    "clearCacheConfirm": "Išvalyti talpyklos failus ir įkelti iš naujo? Liksite prisijungę."
   },
   "consent": {
     "message": "Būtiniausią saugyklą naudojame jūsų pažangai išsaugoti. Ar leidžiate privatumą saugančią ES analitiką?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Priartinti",
       "zoomOut": "Atitolinti"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Pasiekiama nauja versija",
+    "reload": "Įkelti iš naujo",
+    "dismiss": "Uždaryti"
   }
 }

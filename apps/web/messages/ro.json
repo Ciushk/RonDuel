@@ -366,7 +366,10 @@
     "themeHighContrast": "Contrast ridicat",
     "themeProMidnight": "Pro: Teren Nocturn",
     "themeProClay": "Pro: Zgură",
-    "themeProNeon": "Pro: Arcade Neon"
+    "themeProNeon": "Pro: Arcade Neon",
+    "clearCache": "Golește memoria cache și reîncarcă",
+    "clearCacheHint": "Repară imaginile rămase vechi după un update. Nu te deconectează.",
+    "clearCacheConfirm": "Golești fișierele din memoria cache și reîncarci aplicația? Rămâi conectat."
   },
   "consent": {
     "message": "Folosim stocare esențială pentru progres. Permiți analytics anonim în UE?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Mărește",
       "zoomOut": "Micșorează"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Versiune nouă disponibilă",
+    "reload": "Reîncarcă",
+    "dismiss": "Închide"
   }
 }

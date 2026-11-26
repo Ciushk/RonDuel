@@ -13,8 +13,16 @@ export interface SpriteSpec {
 
 export const SPRITE_BASE = '/rontown';
 
-export function spriteUrl(filename: string): string {
-  return `${SPRITE_BASE}/${filename}`;
+const ASSET_BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID?.trim() || '';
+
+export function spriteUrl(filename: string, buildId: string = ASSET_BUILD_ID): string {
+  const clean = filename.replace(/^\/+/, '');
+  const base = `${SPRITE_BASE}/${clean}`;
+  return buildId ? `${base}?v=${encodeURIComponent(buildId)}` : base;
+}
+
+export function uiSpriteUrl(filename: string, buildId: string = ASSET_BUILD_ID): string {
+  return spriteUrl(`ui/${filename.replace(/^\/+/, '')}`, buildId);
 }
 
 export const GROUND_SPRITES: Record<GroundTileType, SpriteSpec> = {

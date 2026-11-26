@@ -366,7 +366,10 @@
     "themeHighContrast": "Vysoký kontrast",
     "themeProMidnight": "Pro: Půlnoční kurt",
     "themeProClay": "Pro: Antukový kurt",
-    "themeProNeon": "Pro: Neonová arkáda"
+    "themeProNeon": "Pro: Neonová arkáda",
+    "clearCache": "Vymazat mezipaměť a obnovit",
+    "clearCacheHint": "Opraví zastaralé obrázky po aktualizaci. Neodhlásí tě.",
+    "clearCacheConfirm": "Vymazat soubory v mezipaměti a obnovit? Zůstaneš přihlášený."
   },
   "consent": {
     "message": "K ukládání tvého postupu používáme nezbytné úložiště. Povolíš analytiku chránící soukromí v EU?",
@@ -1073,5 +1076,10 @@
       "zoomIn": "Přiblížit",
       "zoomOut": "Oddálit"
     }
+  },
+  "pwa": {
+    "updateAvailable": "Je k dispozici nová verze",
+    "reload": "Obnovit",
+    "dismiss": "Zavřít"
   }
 }

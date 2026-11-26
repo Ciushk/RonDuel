@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { syncAnalyticsConsent } from '@/lib/analytics';
 import { Button, Card, Toast } from '@/components/ui';
+import { clearAppCachesAndUnregisterSw } from '@/lib/pwa-update';
 import {
   clearLocalSession,
   getLocalSession,
@@ -17,6 +18,7 @@ export default function SettingsPage() {
   const t = useTranslations();
   const [session, setSession] = useState<LocalSession | null>(null);
   const [toast, setToast] = useState('');
+  const [clearingCache, setClearingCache] = useState(false);
 
   useEffect(() => {
     setSession(getLocalSession());
@@ -43,6 +45,19 @@ export default function SettingsPage() {
     a.download = `ronduel-data-${session.uid}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleClearCache = async () => {
+    if (clearingCache) return;
+    if (typeof window !== 'undefined' && !window.confirm(t('settings.clearCacheConfirm'))) {
+      return;
+    }
+    setClearingCache(true);
+    try {
+      await clearAppCachesAndUnregisterSw();
+    } finally {
+      window.location.reload();
+    }
   };
 
   const handleDelete = async () => {
@@ -110,6 +125,19 @@ export default function SettingsPage() {
           <Button fullWidth variant="secondary" onClick={() => void handleExport()}>
             {t('settings.exportData')}
           </Button>
+          <div className="space-y-1.5 pt-1">
+            <Button
+              fullWidth
+              variant="secondary"
+              disabled={clearingCache}
+              onClick={() => void handleClearCache()}
+            >
+              {t('settings.clearCache')}
+            </Button>
+            <p className="text-muted px-1 text-xs leading-snug">
+              {t('settings.clearCacheHint')}
+            </p>
+          </div>
           <Button fullWidth variant="danger" onClick={() => void handleDelete()}>
             {t('settings.deleteAccount')}
           </Button>
