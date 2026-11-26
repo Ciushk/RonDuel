@@ -78,6 +78,7 @@ interface StaticWorldProps {
   isVisitMode: boolean;
   nowMs: number;
   reducedMotion: boolean;
+  previewRoadCell: GridCoord | null;
   onHoverCell: (cell: GridCoord | null) => void;
   onTileTap: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
@@ -94,6 +95,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   isVisitMode,
   nowMs,
   reducedMotion,
+  previewRoadCell,
   onHoverCell,
   onTileTap,
   onExpandTap,
@@ -128,6 +130,13 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
       );
     },
     [tiles, land],
+  );
+
+  const isRoadWithPreview = useCallback(
+    (nx: number, ny: number) =>
+      isRoadAt(nx, ny) ||
+      (previewRoadCell !== null && nx === previewRoadCell.x && ny === previewRoadCell.y),
+    [isRoadAt, previewRoadCell],
   );
 
   // Main buildings / decor / plots sorted by their front footprint cell (largest col + row)
@@ -257,13 +266,14 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
       {/* 3. Crops, roads, buildings, and decor */}
       {objectItems.map(({ key, tile, w, h, sortKey }) => {
-        // Road decor auto-picks street / curve / intersection (floor band, sits over its ground slab)
+        // Road decor auto-picks 16-way street/curve/T/end/intersection (floor band, sits over its ground slab)
         if (tile.itemId === 'road') {
-          const spec = resolveRoadSprite(tile.x, tile.y, isRoadAt);
+          const spec = resolveRoadSprite(tile.x, tile.y, isRoadWithPreview);
           const origin = isoToScreen(tile.x, tile.y);
           return (
             <img
               key={`obj_${key}`}
+              data-road-tile={key}
               src={spec.src}
               alt=""
               width={spec.width}
@@ -458,6 +468,33 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           />
         );
       })}
+
+      {/* 4. Road placement preview (50% opacity in floor band under cursor) */}
+      {previewRoadCell &&
+        (() => {
+          const spec = resolveRoadSprite(previewRoadCell.x, previewRoadCell.y, isRoadWithPreview);
+          const origin = isoToScreen(previewRoadCell.x, previewRoadCell.y);
+          return (
+            <img
+              key="road-preview"
+              data-road-preview="true"
+              src={spec.src}
+              alt=""
+              width={spec.width}
+              height={spec.height}
+              decoding="async"
+              className="pointer-events-none absolute block select-none"
+              style={{
+                left: origin.x - boundsMinX,
+                top: origin.y - boundsMinY,
+                zIndex: floorZ(previewRoadCell.x, previewRoadCell.y, 1),
+                opacity: 0.5,
+                transform: spec.flipX ? 'scaleX(-1)' : undefined,
+              }}
+              draggable={false}
+            />
+          );
+        })()}
     </>
   );
 });
@@ -1143,6 +1180,13 @@ export function IsoMap({
     return { x: clamped.x, y: clamped.y, z };
   }, [viewportSize.w, viewportSize.h, stageW, stageH, zoomRange.fitScale]);
 
+  // Road placement preview cell (valid hovered cell while placingItemId === 'road')
+  const previewRoadCell = useMemo<GridCoord | null>(() => {
+    if (isVisitMode || placingItemId !== 'road' || !hoveredCell) return null;
+    if (!canPlaceAt(hoveredCell.x, hoveredCell.y, 1, 1)) return null;
+    return hoveredCell;
+  }, [isVisitMode, placingItemId, hoveredCell, canPlaceAt]);
+
   return (
     <div
       ref={viewportRef}
@@ -1181,6 +1225,7 @@ export function IsoMap({
           isVisitMode={isVisitMode}
           nowMs={nowMs}
           reducedMotion={reducedMotion}
+          previewRoadCell={previewRoadCell}
           onHoverCell={setHoveredCell}
           onTileTap={onTileTap}
           onExpandTap={onExpandTap}

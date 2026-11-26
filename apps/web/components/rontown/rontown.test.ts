@@ -31,6 +31,7 @@ import {
   GROUND_SPRITES,
   resolveCropSprite,
   resolveRoadSprite,
+  ROAD_VARIANT_KEYS,
   spriteUrl,
   UI_SPRITES,
   uiSpriteUrl,
@@ -136,30 +137,62 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     expect(done.isReady).toBe(true);
   });
 
-  it('auto-picks road straight, curve, and intersection variants by neighbours', () => {
-    const straight = resolveRoadSprite(2, 2, (x, y) => x === 2 && (y === 1 || y === 3));
-    expect(straight.src).toContain('basic-block-street.png');
-    expect(straight.flipX).toBeUndefined();
+  it('auto-picks exact road sprites for all 16 N/E/S/W masks plus isolated rot 0/1', () => {
+    const cases: Array<{
+      name: string;
+      n?: boolean;
+      e?: boolean;
+      s?: boolean;
+      w?: boolean;
+      rot?: 0 | 1;
+      file: string;
+      flipX?: boolean;
+    }> = [
+      { name: 'none (rot=0)', rot: 0, file: 'basic-block-street.png' },
+      { name: 'none (rot=1)', rot: 1, file: 'basic-block-street.png', flipX: true },
+      { name: 'N', n: true, file: 'basic-block-street-end-n.png' },
+      { name: 'E', e: true, file: 'basic-block-street-end-e.png' },
+      { name: 'S', s: true, file: 'basic-block-street-end-s.png' },
+      { name: 'W', w: true, file: 'basic-block-street-end-w.png' },
+      { name: 'N+S', n: true, s: true, file: 'basic-block-street.png' },
+      { name: 'E+W', e: true, w: true, file: 'basic-block-street.png', flipX: true },
+      { name: 'N+E', n: true, e: true, file: 'basic-block-street-curve.png' },
+      { name: 'S+W', s: true, w: true, file: 'basic-block-street-curve.png', flipX: true },
+      { name: 'N+W', n: true, w: true, file: 'basic-block-street-curve-nw.png' },
+      { name: 'S+E', s: true, e: true, file: 'basic-block-street-curve-se.png' },
+      { name: 'N+E+S', n: true, e: true, s: true, file: 'basic-block-street-t-nes.png' },
+      { name: 'E+S+W', e: true, s: true, w: true, file: 'basic-block-street-t-esw.png' },
+      { name: 'N+S+W', n: true, s: true, w: true, file: 'basic-block-street-t-nsw.png' },
+      { name: 'N+E+W', n: true, e: true, w: true, file: 'basic-block-street-t-new.png' },
+      { name: 'N+E+S+W', n: true, e: true, s: true, w: true, file: 'basic-block-intersection.png' },
+    ];
 
-    const perp = resolveRoadSprite(2, 2, (x, y) => y === 2 && (x === 1 || x === 3));
-    expect(perp.src).toContain('basic-block-street.png');
-    expect(perp.flipX).toBe(true);
+    for (const c of cases) {
+      const isRoadAt = (nx: number, ny: number) =>
+        (Boolean(c.n) && nx === 2 && ny === 1) ||
+        (Boolean(c.e) && nx === 3 && ny === 2) ||
+        (Boolean(c.s) && nx === 2 && ny === 3) ||
+        (Boolean(c.w) && nx === 1 && ny === 2);
+      const spec = resolveRoadSprite(2, 2, isRoadAt, c.rot);
+      expect(spec.src, `mask ${c.name}`).toContain(c.file);
+      expect(Boolean(spec.flipX), `mask ${c.name} flipX`).toBe(Boolean(c.flipX));
+      expect(spec.width).toBe(128);
+      expect(spec.height).toBe(76);
+    }
 
-    const curve = resolveRoadSprite(2, 2, (x, y) => (x === 2 && y === 1) || (x === 3 && y === 2));
-    expect(curve.src).toContain('basic-block-street-curve.png');
-
-    const cross = resolveRoadSprite(
-      2,
-      2,
-      (x, y) => (x === 2 && y === 1) || (x === 2 && y === 3) || (x === 3 && y === 2),
-    );
-    expect(cross.src).toContain('basic-block-intersection.png');
+    // Verify all 10 generated road variant PNGs exist on disk at exact 128x76
+    for (const key of ROAD_VARIANT_KEYS) {
+      const diskPath = path.join(PUBLIC_RONTOWN_DIR, `${key}.png`);
+      expect(fs.existsSync(diskPath), `Missing generated road sprite: ${key}.png`).toBe(true);
+      expect(readPngSize(diskPath)).toEqual({ width: 128, height: 76 });
+    }
   });
 
   it('maps every sprite spec (preserving typos wather/cabage/vizit/moving) to an existing 4x PNG matching its declared width/height', () => {
     const specs: SpriteSpec[] = [];
 
     for (const gt of GROUND_TILE_TYPES) specs.push(GROUND_SPRITES[gt]);
+    for (const rk of ROAD_VARIANT_KEYS) specs.push(GROUND_SPRITES[rk]);
     for (const spec of Object.values(UI_SPRITES)) specs.push(spec);
     for (const spec of Object.values(CATALOG_SPRITES)) {
       if (!spec.isPlaceholder && spec.src) specs.push(spec);

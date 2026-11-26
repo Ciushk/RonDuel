@@ -27,7 +27,22 @@ export function uiSpriteUrl(filename: string, buildId: string = ASSET_BUILD_ID):
   return spriteUrl(`ui/${filename.replace(/^\/+/, '')}`, buildId);
 }
 
-export const GROUND_SPRITES: Record<GroundTileType, SpriteSpec> = {
+export const ROAD_VARIANT_KEYS = [
+  'basic-block-street-curve-nw',
+  'basic-block-street-curve-se',
+  'basic-block-street-t-nes',
+  'basic-block-street-t-esw',
+  'basic-block-street-t-nsw',
+  'basic-block-street-t-new',
+  'basic-block-street-end-n',
+  'basic-block-street-end-e',
+  'basic-block-street-end-s',
+  'basic-block-street-end-w',
+] as const;
+
+export type RoadVariantKey = (typeof ROAD_VARIANT_KEYS)[number];
+
+export const GROUND_SPRITES: Record<GroundTileType | RoadVariantKey, SpriteSpec> = {
   'basic-block': { src: spriteUrl('basic-block.png'), width: 128, height: 76 },
   'basic-block-flowers': { src: spriteUrl('basic-block-flowers.png'), width: 128, height: 76 },
   'basic-block-flowers-two': {
@@ -39,6 +54,56 @@ export const GROUND_SPRITES: Record<GroundTileType, SpriteSpec> = {
   'basic-block-street': { src: spriteUrl('basic-block-street.png'), width: 128, height: 76 },
   'basic-block-street-curve': {
     src: spriteUrl('basic-block-street-curve.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-curve-nw': {
+    src: spriteUrl('basic-block-street-curve-nw.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-curve-se': {
+    src: spriteUrl('basic-block-street-curve-se.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-t-nes': {
+    src: spriteUrl('basic-block-street-t-nes.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-t-esw': {
+    src: spriteUrl('basic-block-street-t-esw.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-t-nsw': {
+    src: spriteUrl('basic-block-street-t-nsw.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-t-new': {
+    src: spriteUrl('basic-block-street-t-new.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-end-n': {
+    src: spriteUrl('basic-block-street-end-n.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-end-e': {
+    src: spriteUrl('basic-block-street-end-e.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-end-s': {
+    src: spriteUrl('basic-block-street-end-s.png'),
+    width: 128,
+    height: 76,
+  },
+  'basic-block-street-end-w': {
+    src: spriteUrl('basic-block-street-end-w.png'),
     width: 128,
     height: 76,
   },
@@ -167,37 +232,58 @@ export function resolveCropSprite(cropId: string, stage: CropGrowthStage): Sprit
 }
 
 /**
- * Auto-picks straight, curved, or 4-way intersection road sprite based on 4-neighbours.
+ * Complete 16-way road auto-tiling resolver from 4-neighbours (N=y-1, E=x+1, S=y+1, W=x-1).
+ * For isolated tiles (mask 0), optional `rot === 1` flips to E-W axis.
  */
 export function resolveRoadSprite(
   x: number,
   y: number,
   isRoadAt: (nx: number, ny: number) => boolean,
+  rot?: 0 | 1,
 ): SpriteSpec {
-  const n = isRoadAt(x, y - 1);
-  const s = isRoadAt(x, y + 1);
-  const e = isRoadAt(x + 1, y);
-  const w = isRoadAt(x - 1, y);
-  const count = Number(n) + Number(s) + Number(e) + Number(w);
+  const n = isRoadAt(x, y - 1) ? 1 : 0;
+  const e = isRoadAt(x + 1, y) ? 2 : 0;
+  const s = isRoadAt(x, y + 1) ? 4 : 0;
+  const w = isRoadAt(x - 1, y) ? 8 : 0;
+  const mask = n | e | s | w;
 
-  if (count >= 3) {
-    return GROUND_SPRITES['basic-block-intersection'];
+  switch (mask) {
+    case 0: // none (isolated)
+      return rot === 1
+        ? { ...GROUND_SPRITES['basic-block-street'], flipX: true }
+        : GROUND_SPRITES['basic-block-street'];
+    case 1: // N
+      return GROUND_SPRITES['basic-block-street-end-n'];
+    case 2: // E
+      return GROUND_SPRITES['basic-block-street-end-e'];
+    case 4: // S
+      return GROUND_SPRITES['basic-block-street-end-s'];
+    case 8: // W
+      return GROUND_SPRITES['basic-block-street-end-w'];
+    case 5: // N+S
+      return GROUND_SPRITES['basic-block-street'];
+    case 10: // E+W
+      return { ...GROUND_SPRITES['basic-block-street'], flipX: true };
+    case 3: // N+E
+      return GROUND_SPRITES['basic-block-street-curve'];
+    case 12: // S+W
+      return { ...GROUND_SPRITES['basic-block-street-curve'], flipX: true };
+    case 9: // N+W
+      return GROUND_SPRITES['basic-block-street-curve-nw'];
+    case 6: // S+E
+      return GROUND_SPRITES['basic-block-street-curve-se'];
+    case 7: // N+E+S
+      return GROUND_SPRITES['basic-block-street-t-nes'];
+    case 14: // E+S+W
+      return GROUND_SPRITES['basic-block-street-t-esw'];
+    case 13: // N+S+W
+      return GROUND_SPRITES['basic-block-street-t-nsw'];
+    case 11: // N+E+W
+      return GROUND_SPRITES['basic-block-street-t-new'];
+    case 15: // N+E+S+W
+    default:
+      return GROUND_SPRITES['basic-block-intersection'];
   }
-  if ((n || s) && (e || w)) {
-    // Corner curve; mirror horizontally when turning toward west
-    return {
-      ...GROUND_SPRITES['basic-block-street-curve'],
-      flipX: w && !e,
-    };
-  }
-  if (e || w) {
-    // Runs along col axis (mirror of row axis)
-    return {
-      ...GROUND_SPRITES['basic-block-street'],
-      flipX: true,
-    };
-  }
-  return GROUND_SPRITES['basic-block-street'];
 }
 
 export type VillagerKind =
@@ -295,6 +381,10 @@ export function preloadInitialSprites(extraUrls: string[] = []): void {
   const urls = [
     GROUND_SPRITES['basic-block'].src,
     GROUND_SPRITES['basic-block-dirt'].src,
+    GROUND_SPRITES['basic-block-street'].src,
+    GROUND_SPRITES['basic-block-street-curve'].src,
+    GROUND_SPRITES['basic-block-intersection'].src,
+    ...ROAD_VARIANT_KEYS.map((k) => GROUND_SPRITES[k].src),
     UI_SPRITES.expand.src,
     UI_SPRITES.build.src,
     UI_SPRITES.move.src,
