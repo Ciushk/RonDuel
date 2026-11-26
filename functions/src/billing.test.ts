@@ -209,32 +209,85 @@ describe('Stripe Pro billing checkout & verified webhooks', () => {
       expect(sessionsCreate).not.toHaveBeenCalled();
     });
 
-    it('returns 503 BILLING_NOT_CONFIGURED when the price param for the plan is empty', async () => {
-      makeRegisteredUser('u_token_owner');
+    it('uses inline price_data when price params are empty (monthly 499, yearly 3999, inclusive eur)', async () => {
+      const user = makeRegisteredUser('u_token_owner');
       const { deps, sessionsCreate } = buildCheckoutDeps({
         priceIds: { monthly: '', yearly: '' },
       });
 
-      const res = await createProCheckout(
+      const yearlyRes = await createProCheckout(
         {
           authHeader: 'Bearer valid_token',
-          body: { plan: 'yearly', euWithdrawalConsent: true },
+          body: { plan: 'yearly', euWithdrawalConsent: true, locale: 'ro' },
         },
         deps,
       );
 
-      expect(res.status).toBe(503);
-      expect(res.body).toEqual({
-        error: 'Pro checkout not configured',
-        code: 'BILLING_NOT_CONFIGURED',
+      expect(yearlyRes.status).toBe(200);
+      expect(yearlyRes.body).toEqual({
+        mode: 'stripe_checkout',
+        sessionId: 'cs_test_pro_123',
+        checkoutUrl: 'https://checkout.stripe.com/c/pay/cs_test_pro_123',
       });
-      expect(sessionsCreate).not.toHaveBeenCalled();
-      expect(getStore().users['u_token_owner']?.pro?.active).toBe(false);
+      expect(sessionsCreate).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          mode: 'subscription',
+          locale: 'ro',
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: 'eur',
+                tax_behavior: 'inclusive',
+                unit_amount: 3999,
+                recurring: { interval: 'year' },
+                product_data: { name: 'RonDuel Pro (yearly)' },
+              },
+            },
+          ],
+        }),
+      );
+      expect(sessionsCreate.mock.calls[0][0].line_items[0].price).toBeUndefined();
+
+      const monthlyRes = await createProCheckout(
+        {
+          authHeader: 'Bearer valid_token',
+          body: { plan: 'monthly', euWithdrawalConsent: true, locale: 'en' },
+        },
+        deps,
+      );
+
+      expect(monthlyRes.status).toBe(200);
+      expect(monthlyRes.body.checkoutUrl).toBe('https://checkout.stripe.com/c/pay/cs_test_pro_123');
+      expect(sessionsCreate).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          mode: 'subscription',
+          locale: 'en',
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: 'eur',
+                tax_behavior: 'inclusive',
+                unit_amount: 499,
+                recurring: { interval: 'month' },
+                product_data: { name: 'RonDuel Pro (monthly)' },
+              },
+            },
+          ],
+        }),
+      );
+      expect(sessionsCreate.mock.calls[1][0].line_items[0].price).toBeUndefined();
+      expect(user.pro).toEqual({ active: false });
     });
 
-    it('creates a subscription Checkout Session with metadata/locale and never grants Pro directly', async () => {
+    it('creates a subscription Checkout Session with optional price ID (no price_data) and never grants Pro directly', async () => {
       const user = makeRegisteredUser('u_token_owner');
-      const { deps, sessionsCreate } = buildCheckoutDeps();
+      const { deps, sessionsCreate } = buildCheckoutDeps({
+        priceIds: { monthly: '', yearly: 'price_test_yearly_3999' },
+      });
 
       const res = await createProCheckout(
         {
@@ -277,6 +330,7 @@ describe('Stripe Pro billing checkout & verified webhooks', () => {
           cancel_url: 'https://ronduel.web.app/en/pro?checkout=canceled',
         }),
       );
+      expect(sessionsCreate.mock.calls[0][0].line_items[0].price_data).toBeUndefined();
       expect(sessionsCreate.mock.calls[0][0].metadata.consentAt).toBeTruthy();
 
       // Paid checkout MUST NOT grant Pro before webhook confirmation

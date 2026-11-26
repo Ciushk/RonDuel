@@ -1,4 +1,4 @@
-import { LOCALES } from '@ronduel/shared';
+import { LOCALES, STRIPE_PRICES } from '@ronduel/shared';
 import type Stripe from 'stripe';
 
 import { PRO_CONSENT_TEXT_VERSION } from '../../apps/web/app/[locale]/pro/consent.js';
@@ -258,15 +258,23 @@ export async function createProCheckout(
   }
 
   const priceId = (plan === 'yearly' ? deps.priceIds.yearly : deps.priceIds.monthly).trim();
-  if (!priceId) {
-    return {
-      status: 503,
-      body: {
-        error: 'Pro checkout not configured',
-        code: 'BILLING_NOT_CONFIGURED',
-      },
-    };
-  }
+  const amount = plan === 'yearly' ? STRIPE_PRICES.yearly : STRIPE_PRICES.monthly;
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceId
+    ? [{ price: priceId, quantity: 1 }]
+    : [
+        {
+          quantity: 1,
+          price_data: {
+            currency: STRIPE_PRICES.currency.toLowerCase(),
+            tax_behavior: 'inclusive',
+            unit_amount: Math.round(amount * 100),
+            recurring: { interval: plan === 'yearly' ? 'year' : 'month' },
+            product_data: {
+              name: plan === 'yearly' ? 'RonDuel Pro (yearly)' : 'RonDuel Pro (monthly)',
+            },
+          },
+        },
+      ];
 
   const urlLocale = resolveUrlLocale(input.body.locale);
   const stripeLocale = mapToStripeCheckoutLocale(input.body.locale);
@@ -275,7 +283,7 @@ export async function createProCheckout(
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     locale: stripeLocale,
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: lineItems,
     client_reference_id: uid,
     ...(decoded.email ? { customer_email: decoded.email } : {}),
     metadata: {
