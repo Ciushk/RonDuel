@@ -20,6 +20,7 @@ import {
   type TownOrderItem,
   type TownTileDoc,
 } from '@ronduel/shared';
+import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { trackEvent } from '@/lib/analytics';
 import { getLocalSession } from '@/lib/session';
 
@@ -237,6 +238,7 @@ export function useTownState(params: {
   const { townEnabled, isVisitMode, visitHostUid } = params;
   const t = useTranslations();
   const locale = useLocale();
+  const { requireAccount } = usePaymentAuthGate();
 
   const [catalog] = useState<TownCatalogDoc>(DEFAULT_TOWN_CATALOG);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1308,35 +1310,37 @@ export function useTownState(params: {
 
   const executeCoinCheckout = useCallback(
     async (packId: string) => {
-      const session = getLocalSession();
-      if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') {
-        showToast(t('town.toast.signInBeforePurchase'));
-        return;
-      }
-      try {
-        const res = await fetch('/api/town/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            uid: session.uid,
-            packId,
-            locale,
-            simulateImmediately: true,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          showErrorToast(data.error, 'town.toast.checkoutFailed');
+      await requireAccount({ kind: 'town_coins', label: t('town.coinStore.unit') }, async () => {
+        const session = getLocalSession();
+        if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') {
+          showToast(t('town.toast.signInBeforePurchase'));
           return;
         }
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
+        try {
+          const res = await fetch('/api/town/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uid: session.uid,
+              packId,
+              locale,
+              simulateImmediately: true,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            showErrorToast(data.error, 'town.toast.checkoutFailed');
+            return;
+          }
+          if (data.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          }
+        } catch {
+          showToast(t('town.toast.checkoutRequestFailed'));
         }
-      } catch {
-        showToast(t('town.toast.checkoutRequestFailed'));
-      }
+      });
     },
-    [locale, showToast, showErrorToast, t],
+    [locale, requireAccount, showToast, showErrorToast, t],
   );
 
   const loadTransferStatus = useCallback(async () => {

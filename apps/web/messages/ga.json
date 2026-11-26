@@ -1154,5 +1154,34 @@
     "updateAvailable": "Leagan nua ar fáil",
     "reload": "Athlódáil",
     "dismiss": "Dún"
+  },
+  "paymentGate": {
+    "title": "Cruthaigh cuntas chun do shonraí a choinneáil",
+    "body": "Sula n-íocann tú, sábháil do phróifíl ionas go bhfanfaidh do cheannach leat ar gach gléas.",
+    "keepStreak": "🔥 Sraith",
+    "keepScore": "🏆 Scór & sraitheanna",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Lean ar aghaidh le Google",
+    "or": "nó",
+    "email": "Lean ar aghaidh le ríomhphost",
+    "notNow": "Ní anois",
+    "note": "Bogann do dhul chun cinn aoi go huathoibríoch chuig an gcuntas nua. Tar éis síniú isteach téimid díreach chuig an íocaíocht.",
+    "emailTitleSignup": "Cláraigh le ríomhphost",
+    "emailTitleLogin": "Logáil isteach le ríomhphost",
+    "haveAccount": "Cuntas agat cheana?",
+    "noAccount": "Nua anseo?",
+    "logIn": "Logáil isteach",
+    "signUp": "Cláraigh",
+    "back": "Siar",
+    "submitSignup": "Cruthaigh cuntas & lean ar aghaidh",
+    "submitLogin": "Logáil isteach & lean ar aghaidh",
+    "nextStep": "An chéad chéim eile: íocaíocht shlán do {label}.",
+    "success": "Cuntas sábháilte — ag oscailt íocaíochta…",
+    "continueToPayment": "Lean ar aghaidh chuig íocaíocht"
+  },
+  "session": {
+    "expired": "Síníodh amach thú tar éis 30 lá gan ghníomhaíocht. Sínigh isteach chun leanúint ar aghaidh.",
+    "signIn": "Sínigh isteach"
   }
 }

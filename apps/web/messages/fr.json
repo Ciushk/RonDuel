@@ -1154,5 +1154,34 @@
     "updateAvailable": "Nouvelle version disponible",
     "reload": "Recharger",
     "dismiss": "Fermer"
+  },
+  "paymentGate": {
+    "title": "Créez un compte pour conserver vos données",
+    "body": "Avant de payer, sauvegardez votre profil afin que votre achat vous suive sur tous vos appareils.",
+    "keepStreak": "🔥 Série",
+    "keepScore": "🏆 Score et ligues",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Continuer avec Google",
+    "or": "ou",
+    "email": "Continuer par e-mail",
+    "notNow": "Pas maintenant",
+    "note": "Votre progression invité est transférée automatiquement. Après la connexion, vous passez directement au paiement.",
+    "emailTitleSignup": "Inscription par e-mail",
+    "emailTitleLogin": "Connexion par e-mail",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "noAccount": "Nouveau ici ?",
+    "logIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "back": "Retour",
+    "submitSignup": "Créer le compte et continuer",
+    "submitLogin": "Se connecter et continuer",
+    "nextStep": "Étape suivante : paiement sécurisé pour {label}.",
+    "success": "Compte enregistré — ouverture du paiement…",
+    "continueToPayment": "Continuer vers le paiement"
+  },
+  "session": {
+    "expired": "Vous avez été déconnecté après 30 jours d’inactivité. Connectez-vous pour continuer.",
+    "signIn": "Se connecter"
   }
 }

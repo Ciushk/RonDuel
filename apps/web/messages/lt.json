@@ -1154,5 +1154,34 @@
     "updateAvailable": "Pasiekiama nauja versija",
     "reload": "Įkelti iš naujo",
     "dismiss": "Uždaryti"
+  },
+  "paymentGate": {
+    "title": "Susikurk paskyrą savo duomenims išsaugoti",
+    "body": "Prieš mokėdamas išsaugok profilį, kad pirkinys liktų su tavimi visuose įrenginiuose.",
+    "keepStreak": "🔥 Serija",
+    "keepScore": "🏆 Taškai ir lygos",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Tęsti su Google",
+    "or": "arba",
+    "email": "Tęsti el. paštu",
+    "notNow": "Ne dabar",
+    "note": "Svečio pažanga automatiškai perkeliama į naują paskyrą. Prisijungus iškart nukreipsime į mokėjimą.",
+    "emailTitleSignup": "Registracija el. paštu",
+    "emailTitleLogin": "Prisijungimas el. paštu",
+    "haveAccount": "Jau turi paskyrą?",
+    "noAccount": "Naujas čia?",
+    "logIn": "Prisijungti",
+    "signUp": "Registruotis",
+    "back": "Atgal",
+    "submitSignup": "Sukurti paskyrą ir tęsti",
+    "submitLogin": "Prisijungti ir tęsti",
+    "nextStep": "Kitas žingsnis: saugus apmokėjimas už {label}.",
+    "success": "Paskyra išsaugota — atidaromas mokėjimas…",
+    "continueToPayment": "Tęsti mokėjimą"
+  },
+  "session": {
+    "expired": "Buvai atjungtas po 30 dienų neaktyvumo. Prisijunk, kad tęstum.",
+    "signIn": "Prisijungti"
   }
 }

@@ -12,7 +12,7 @@ import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
+import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth } from '@/lib/firebase';
@@ -24,11 +24,11 @@ export default function ProPaywallPage() {
   const t = useTranslations();
   const format = useFormatter();
   const locale = useLocale();
+  const { requireAccount, openGate } = usePaymentAuthGate();
 
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [euConsent, setEuConsent] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
-  const [linkOpen, setLinkOpen] = useState(false);
   const [proActive, setProActive] = useState<{ active: boolean; plan?: string }>({ active: false });
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -71,21 +71,27 @@ export default function ProPaywallPage() {
 
     void fetchProfile(isCheckoutSuccess ? 3 : 0);
 
+    const onSessionUpdated = () => {
+      const updated = getLocalSession();
+      if (
+        updated.isAnonymous === false &&
+        (updated.authProvider === 'google.com' || updated.authProvider === 'password')
+      ) {
+        setIsAnonymous(false);
+      }
+    };
+    window.addEventListener('ronduel_session_updated', onSessionUpdated);
+
     return () => {
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener('ronduel_session_updated', onSessionUpdated);
     };
   }, [t]);
 
   useEffect(() => {
     trackEvent('paywall_viewed');
   }, []);
-
-  const handleLinked = () => {
-    // The guest profile is now a permanent account, so Pro can be tied to it.
-    setIsAnonymous(false);
-    setLinkOpen(false);
-  };
 
   const handleCheckout = async () => {
     setError('');
@@ -130,6 +136,27 @@ export default function ProPaywallPage() {
       setToast(t('pro.activeBadge', { plan: data.pro.plan ?? plan }));
     }
   };
+
+  useEffect(() => {
+    const onResume = (evt: Event) => {
+      const detail = (evt as CustomEvent<{ kind?: string }>).detail;
+      if (detail?.kind === 'pro_checkout' && euConsent) {
+        void handleCheckout();
+      }
+    };
+    window.addEventListener('ronduel_resume_payment', onResume);
+    return () => window.removeEventListener('ronduel_resume_payment', onResume);
+  });
+
+  const selectedPlanLabel =
+    plan === 'yearly'
+      ? t('pro.yearly', {
+          price: format.number(39.99, { style: 'currency', currency: 'EUR' }),
+          percent: 33,
+        })
+      : t('pro.monthly', {
+          price: format.number(4.99, { style: 'currency', currency: 'EUR' }),
+        });
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
@@ -210,7 +237,7 @@ export default function ProPaywallPage() {
                 <p className="mb-2">{t('pro.upgradeFirst')}</p>
                 <button
                   type="button"
-                  onClick={() => setLinkOpen(true)}
+                  onClick={() => openGate({ kind: 'pro_checkout', label: selectedPlanLabel })}
                   className="text-duel-strong cursor-pointer underline"
                 >
                   {t('account.createAccountBtn')} {'\u2192'}
@@ -236,11 +263,9 @@ export default function ProPaywallPage() {
               size="lg"
               disabled={!euConsent}
               onClick={() => {
-                if (isAnonymous) {
-                  setLinkOpen(true);
-                  return;
-                }
-                void handleCheckout();
+                void requireAccount({ kind: 'pro_checkout', label: selectedPlanLabel }, () => {
+                  void handleCheckout();
+                });
               }}
             >
               {t('pro.subscribeCta')}
@@ -248,14 +273,6 @@ export default function ProPaywallPage() {
           </>
         )}
       </Card>
-
-      <AccountLinkingSheet
-        open={linkOpen}
-        onClose={() => setLinkOpen(false)}
-        score={0}
-        streak={0}
-        onLinked={handleLinked}
-      />
 
       {toast && (
         <div className="flex justify-center">

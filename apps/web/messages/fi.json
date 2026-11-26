@@ -1154,5 +1154,34 @@
     "updateAvailable": "Uusi versio saatavilla",
     "reload": "Lataa uudelleen",
     "dismiss": "Sulje"
+  },
+  "paymentGate": {
+    "title": "Luo tili tietojesi säilyttämiseksi",
+    "body": "Tallenna profiilisi ennen maksua, jotta ostoksesi säilyy kaikilla laitteillasi.",
+    "keepStreak": "🔥 Putki",
+    "keepScore": "🏆 Pisteet ja liigat",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Jatka Googlella",
+    "or": "tai",
+    "email": "Jatka sähköpostilla",
+    "notNow": "Ei nyt",
+    "note": "Vierasedistymisesi siirtyy automaattisesti uudelle tilille. Kirjautumisen jälkeen siirryt suoraan maksuun.",
+    "emailTitleSignup": "Rekisteröidy sähköpostilla",
+    "emailTitleLogin": "Kirjaudu sähköpostilla",
+    "haveAccount": "Onko sinulla jo tili?",
+    "noAccount": "Uusi täällä?",
+    "logIn": "Kirjaudu",
+    "signUp": "Luo tili",
+    "back": "Takaisin",
+    "submitSignup": "Luo tili ja jatka",
+    "submitLogin": "Kirjaudu ja jatka",
+    "nextStep": "Seuraava vaihe: turvallinen maksu ({label}).",
+    "success": "Tili tallennettu — avataan maksua…",
+    "continueToPayment": "Jatka maksuun"
+  },
+  "session": {
+    "expired": "Sinut kirjattiin ulos 30 päivän tauon jälkeen. Jatka kirjautumalla sisään.",
+    "signIn": "Kirjaudu sisään"
   }
 }

@@ -1154,5 +1154,34 @@
     "updateAvailable": "Uus versioon on saadaval",
     "reload": "Laadi uuesti",
     "dismiss": "Sulge"
+  },
+  "paymentGate": {
+    "title": "Loo konto oma andmete säilitamiseks",
+    "body": "Salvesta profiil enne maksmist, et ost püsiks sinuga igas seadmes.",
+    "keepStreak": "🔥 Seeria",
+    "keepScore": "🏆 Skoor ja liigad",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Jätka Google’iga",
+    "or": "või",
+    "email": "Jätka e-postiga",
+    "notNow": "Mitte praegu",
+    "note": "Sinu külalise edenemine kandub automaatselt uuele kontole. Pärast sisselogimist liigud otse maksmisele.",
+    "emailTitleSignup": "Registreeru e-postiga",
+    "emailTitleLogin": "Logi sisse e-postiga",
+    "haveAccount": "Sul on juba konto?",
+    "noAccount": "Esimest korda siin?",
+    "logIn": "Logi sisse",
+    "signUp": "Registreeru",
+    "back": "Tagasi",
+    "submitSignup": "Loo konto ja jätka",
+    "submitLogin": "Logi sisse ja jätka",
+    "nextStep": "Järgmine samm: turvaline makse ({label}).",
+    "success": "Konto salvestatud — avame makse…",
+    "continueToPayment": "Jätka maksmisega"
+  },
+  "session": {
+    "expired": "Sind logiti välja 30 päeva tegevusetuse tõttu. Jätkamiseks logi sisse.",
+    "signIn": "Logi sisse"
   }
 }

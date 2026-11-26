@@ -15,6 +15,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
@@ -49,6 +50,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
   const t = useTranslations('league');
   const tRoot = useTranslations();
   const locale = useLocale() as Locale;
+  const { requireAccount } = usePaymentAuthGate();
 
   const router = useRouter();
 
@@ -191,13 +193,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
   };
 
   // Step 2: Choose Plan (Free or Pro Trial) -> Proceed to Step 3
-  const handleProceedToTheme = async (plan: 'free' | 'pro_trial') => {
-    const trimmed = name.trim();
-    if (trimmed.length < 2 || trimmed.length > 30) {
-      setError(t('errorNameLength'));
-      return;
-    }
-
+  const runProceedToTheme = async (plan: 'free' | 'pro_trial') => {
     setLoading(true);
     setError('');
     setChosenPlan(plan);
@@ -238,6 +234,23 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
 
     setLoading(false);
     setStep(3);
+  };
+
+  const handleProceedToTheme = async (plan: 'free' | 'pro_trial') => {
+    const trimmed = name.trim();
+    if (trimmed.length < 2 || trimmed.length > 30) {
+      setError(t('errorNameLength'));
+      return;
+    }
+
+    if (plan === 'pro_trial') {
+      await requireAccount({ kind: 'pro_trial', label: t('goProTrialBtn') }, () => {
+        void runProceedToTheme('pro_trial');
+      });
+      return;
+    }
+
+    await runProceedToTheme('free');
   };
 
   // Step 3: Confirm Theme and Create League

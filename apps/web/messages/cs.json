@@ -1154,5 +1154,34 @@
     "updateAvailable": "Je k dispozici nová verze",
     "reload": "Obnovit",
     "dismiss": "Zavřít"
+  },
+  "paymentGate": {
+    "title": "Vytvořte si účet a uchovejte svá data",
+    "body": "Před platbou si uložte profil, aby s vámi nákup zůstal na všech zařízeních.",
+    "keepStreak": "🔥 Série",
+    "keepScore": "🏆 Skóre a ligy",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Pokračovat přes Google",
+    "or": "nebo",
+    "email": "Pokračovat e-mailem",
+    "notNow": "Teď ne",
+    "note": "Váš pokrok hosta se přesune automaticky. Po přihlášení přejdete rovnou k platbě.",
+    "emailTitleSignup": "Registrace e-mailem",
+    "emailTitleLogin": "Přihlášení e-mailem",
+    "haveAccount": "Už máte účet?",
+    "noAccount": "Jste tu poprvé?",
+    "logIn": "Přihlásit se",
+    "signUp": "Registrovat se",
+    "back": "Zpět",
+    "submitSignup": "Vytvořit účet a pokračovat",
+    "submitLogin": "Přihlásit se a pokračovat",
+    "nextStep": "Další krok: bezpečná platba za {label}.",
+    "success": "Účet uložen — otevíráme platbu…",
+    "continueToPayment": "Pokračovat k platbě"
+  },
+  "session": {
+    "expired": "Po 30 dnech neaktivity jste byli odhlášeni. Pokračujte přihlášením.",
+    "signIn": "Přihlásit se"
   }
 }

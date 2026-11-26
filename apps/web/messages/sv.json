@@ -1154,5 +1154,34 @@
     "updateAvailable": "Ny version tillgänglig",
     "reload": "Ladda om",
     "dismiss": "Stäng"
+  },
+  "paymentGate": {
+    "title": "Skapa ett konto för att spara dina data",
+    "body": "Spara din profil innan du betalar så att ditt köp följer med dig på alla enheter.",
+    "keepStreak": "🔥 Svit",
+    "keepScore": "🏆 Poäng & ligor",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Fortsätt med Google",
+    "or": "eller",
+    "email": "Fortsätt med e-post",
+    "notNow": "Inte nu",
+    "note": "Dina gästframsteg flyttas automatiskt till det nya kontot. Efter inloggning går du direkt till betalning.",
+    "emailTitleSignup": "Registrera med e-post",
+    "emailTitleLogin": "Logga in med e-post",
+    "haveAccount": "Har du redan ett konto?",
+    "noAccount": "Ny här?",
+    "logIn": "Logga in",
+    "signUp": "Skapa konto",
+    "back": "Tillbaka",
+    "submitSignup": "Skapa konto & fortsätt",
+    "submitLogin": "Logga in & fortsätt",
+    "nextStep": "Nästa steg: säker betalning för {label}.",
+    "success": "Konto sparat — öppnar betalning…",
+    "continueToPayment": "Fortsätt till betalning"
+  },
+  "session": {
+    "expired": "Du loggades ut efter 30 dagars inaktivitet. Logga in för att fortsätta.",
+    "signIn": "Logga in"
   }
 }

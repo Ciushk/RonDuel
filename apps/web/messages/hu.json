@@ -1154,5 +1154,34 @@
     "updateAvailable": "Új verzió érhető el",
     "reload": "Újratöltés",
     "dismiss": "Bezárás"
+  },
+  "paymentGate": {
+    "title": "Hozz létre fiókot az adataid megőrzéséhez",
+    "body": "Fizetés előtt mentsd a profilodat, hogy a vásárlásod minden eszközödön megmaradjon.",
+    "keepStreak": "🔥 Sorozat",
+    "keepScore": "🏆 Pontszám és ligák",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Folytatás Google-lal",
+    "or": "vagy",
+    "email": "Folytatás e-maillel",
+    "notNow": "Most nem",
+    "note": "A vendégként elért haladásod automatikusan átkerül az új fiókba. Bejelentkezés után egyből a fizetéshez viszünk.",
+    "emailTitleSignup": "Regisztráció e-maillel",
+    "emailTitleLogin": "Bejelentkezés e-maillel",
+    "haveAccount": "Már van fiókod?",
+    "noAccount": "Új vagy itt?",
+    "logIn": "Bejelentkezés",
+    "signUp": "Regisztráció",
+    "back": "Vissza",
+    "submitSignup": "Fiók létrehozása és folytatás",
+    "submitLogin": "Bejelentkezés és folytatás",
+    "nextStep": "Következő lépés: biztonságos fizetés ({label}).",
+    "success": "Fiók elmentve — fizetés megnyitása…",
+    "continueToPayment": "Tovább a fizetéshez"
+  },
+  "session": {
+    "expired": "30 nap távollét után kijelentkeztettünk. Jelentkezz be a folytatáshoz.",
+    "signIn": "Bejelentkezés"
   }
 }

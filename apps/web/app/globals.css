@@ -988,4 +988,116 @@ html[data-theme='dark'] {
     animation: rt-heart-float-reduced 1200ms ease-out infinite both !important;
     transform: none !important;
   }
+
+  .rd-gate-scrim-in,
+  .rd-gate-scrim-out,
+  .rd-gate-panel-in,
+  .rd-gate-panel-out,
+  .rd-gate-step {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* --- PaymentAuthGate modal transitions (transform & opacity only) --- */
+@keyframes rd-gate-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rd-gate-scrim-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes rd-gate-panel-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rd-gate-panel-out-mobile {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@keyframes rd-gate-panel-in-desktop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rd-gate-panel-out-desktop {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes rd-gate-step-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rd-gate-scrim-in {
+  animation: rd-gate-scrim-in 200ms ease-out forwards;
+}
+
+.rd-gate-scrim-out {
+  animation: rd-gate-scrim-out 180ms ease-in forwards;
+}
+
+.rd-gate-panel-in {
+  animation: rd-gate-panel-in-mobile 260ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.rd-gate-panel-out {
+  animation: rd-gate-panel-out-mobile 180ms ease-in forwards;
+}
+
+@media (min-width: 640px) {
+  .rd-gate-panel-in {
+    animation: rd-gate-panel-in-desktop 260ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .rd-gate-panel-out {
+    animation: rd-gate-panel-out-desktop 180ms ease-in forwards;
+  }
+}
+
+.rd-gate-step {
+  animation: rd-gate-step-fade 150ms ease-out forwards;
 }

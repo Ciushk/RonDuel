@@ -23,6 +23,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AuthModal, type AuthMode } from '@/components/AuthModal';
 import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
 import { GuestAccountNotice } from '@/components/GuestAccountNotice';
+import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
@@ -126,6 +127,7 @@ export default function ProfilePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const { requireAccount } = usePaymentAuthGate();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [emailInput, setEmailInput] = useState('');
@@ -147,14 +149,15 @@ export default function ProfilePage() {
     setAuthModalOpen(true);
   };
 
-  const handleBuyFreeze = async (pack: 'freeze_1' | 'freeze_3') => {
-    if (!profile) return;
+  const executeBuyFreeze = async (pack: 'freeze_1' | 'freeze_3') => {
+    const uid = getLocalSession().uid || profile?.uid;
+    if (!uid) return;
     setBuyingFreeze(true);
     try {
       const res = await fetch('/api/billing/freeze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: profile.uid, pack }),
+        body: JSON.stringify({ uid, pack }),
       });
       if (res.ok) {
         setToast(t('profile.shieldAddedToast'));
@@ -169,6 +172,13 @@ export default function ProfilePage() {
       setBuyingFreeze(false);
       setTimeout(() => setToast(''), 3000);
     }
+  };
+
+  const handleBuyFreeze = (pack: 'freeze_1' | 'freeze_3') => {
+    const label = pack === 'freeze_3' ? '1,99 €' : '0,99 €';
+    void requireAccount({ kind: 'shield_pack', label }, () => {
+      void executeBuyFreeze(pack);
+    });
   };
 
   const loadProfile = useCallback(() => {

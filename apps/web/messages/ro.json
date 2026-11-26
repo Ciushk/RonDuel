@@ -1154,5 +1154,34 @@
     "updateAvailable": "Versiune nouă disponibilă",
     "reload": "Reîncarcă",
     "dismiss": "Închide"
+  },
+  "paymentGate": {
+    "title": "Creează un cont ca să îți păstrezi datele",
+    "body": "Înainte de plată, salvează-ți profilul ca achiziția să rămână cu tine pe orice dispozitiv.",
+    "keepStreak": "🔥 Serie",
+    "keepScore": "🏆 Scor și ligi",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Continuă cu Google",
+    "or": "sau",
+    "email": "Continuă cu email",
+    "notNow": "Nu acum",
+    "note": "Progresul tău de vizitator se mută automat pe noul cont. După autentificare te ducem direct la plată.",
+    "emailTitleSignup": "Înregistrează-te cu email",
+    "emailTitleLogin": "Autentifică-te cu email",
+    "haveAccount": "Ai deja un cont?",
+    "noAccount": "Ești nou aici?",
+    "logIn": "Autentifică-te",
+    "signUp": "Creează cont",
+    "back": "Înapoi",
+    "submitSignup": "Creează cont și continuă",
+    "submitLogin": "Autentifică-te și continuă",
+    "nextStep": "Pasul următor: plată securizată pentru {label}.",
+    "success": "Cont salvat — deschidem plata…",
+    "continueToPayment": "Continuă spre plată"
+  },
+  "session": {
+    "expired": "Ai fost deconectat după 30 de zile de inactivitate. Autentifică-te pentru a continua.",
+    "signIn": "Autentifică-te"
   }
 }

@@ -1154,5 +1154,34 @@
     "updateAvailable": "New version available",
     "reload": "Reload",
     "dismiss": "Dismiss"
+  },
+  "paymentGate": {
+    "title": "Create an account to keep your data",
+    "body": "Before you pay, save your profile so your purchase stays with you on every device.",
+    "keepStreak": "🔥 Streak",
+    "keepScore": "🏆 Score & leagues",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Continue with Google",
+    "or": "or",
+    "email": "Continue with email",
+    "notNow": "Not now",
+    "note": "Your guest progress moves to the new account automatically. After sign-in we take you straight to payment.",
+    "emailTitleSignup": "Sign up with email",
+    "emailTitleLogin": "Log in with email",
+    "haveAccount": "Already have an account?",
+    "noAccount": "New here?",
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "back": "Back",
+    "submitSignup": "Create account & continue",
+    "submitLogin": "Log in & continue",
+    "nextStep": "Next step: secure checkout for {label}.",
+    "success": "Account saved — opening payment…",
+    "continueToPayment": "Continue to payment"
+  },
+  "session": {
+    "expired": "You were signed out after 30 days away. Sign in to continue.",
+    "signIn": "Sign in"
   }
 }

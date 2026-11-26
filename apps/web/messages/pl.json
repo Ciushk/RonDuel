@@ -1154,5 +1154,34 @@
     "updateAvailable": "Dostępna nowa wersja",
     "reload": "Odśwież",
     "dismiss": "Zamknij"
+  },
+  "paymentGate": {
+    "title": "Utwórz konto, aby zachować swoje dane",
+    "body": "Przed płatnością zapisz profil, aby zakup był dostępny na każdym Twoim urządzeniu.",
+    "keepStreak": "🔥 Seria",
+    "keepScore": "🏆 Wynik i ligi",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Kontynuuj przez Google",
+    "or": "lub",
+    "email": "Kontynuuj przez e-mail",
+    "notNow": "Nie teraz",
+    "note": "Postępy gościa zostaną przeniesione automatycznie. Po zalogowaniu przejdziesz od razu do płatności.",
+    "emailTitleSignup": "Rejestracja przez e-mail",
+    "emailTitleLogin": "Logowanie przez e-mail",
+    "haveAccount": "Masz już konto?",
+    "noAccount": "Pierwszy raz tutaj?",
+    "logIn": "Zaloguj się",
+    "signUp": "Załóż konto",
+    "back": "Wstecz",
+    "submitSignup": "Załóż konto i kontynuuj",
+    "submitLogin": "Zaloguj się i kontynuuj",
+    "nextStep": "Następny krok: bezpieczna płatność za {label}.",
+    "success": "Konto zapisane — otwieranie płatności…",
+    "continueToPayment": "Przejdź do płatności"
+  },
+  "session": {
+    "expired": "Wylogowano Cię po 30 dniach nieaktywności. Zaloguj się, aby kontynuować.",
+    "signIn": "Zaloguj się"
   }
 }

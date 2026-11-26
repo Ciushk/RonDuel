@@ -1154,5 +1154,34 @@
     "updateAvailable": "Verżjoni ġdida disponibbli",
     "reload": "Erġa' tgħabbi",
     "dismiss": "Agħlaq"
+  },
+  "paymentGate": {
+    "title": "Oħloq kont biex iżżomm id-dejta tiegħek",
+    "body": "Qabel tħallas, salva l-profil tiegħek biex ix-xiri jibqa’ miegħek fuq kull apparat.",
+    "keepStreak": "🔥 Serje",
+    "keepScore": "🏆 Punti u kampjonati",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Kompli b’Google",
+    "or": "jew",
+    "email": "Kompli bl-imejl",
+    "notNow": "Mhux issa",
+    "note": "Il-progress tiegħek bħala mistieden jintbagħat awtomatikament fil-kont il-ġdid. Wara d-dħul nieħduk direttament għall-ħlas.",
+    "emailTitleSignup": "Irreġistra bl-imejl",
+    "emailTitleLogin": "Idħol bl-imejl",
+    "haveAccount": "Diġà għandek kont?",
+    "noAccount": "Ġdid hawn?",
+    "logIn": "Idħol",
+    "signUp": "Irreġistra",
+    "back": "Lura",
+    "submitSignup": "Oħloq kont u kompli",
+    "submitLogin": "Idħol u kompli",
+    "nextStep": "Il-pass li jmiss: ħlas sigur għal {label}.",
+    "success": "Kont salvat — qed niftħu l-ħlas…",
+    "continueToPayment": "Kompli għall-ħlas"
+  },
+  "session": {
+    "expired": "Ħriġt mill-kont wara 30 jum mingħajr attività. Idħol biex tkompli.",
+    "signIn": "Idħol"
   }
 }

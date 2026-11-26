@@ -10,6 +10,7 @@ import {
 } from '@/lib/firebase';
 import { isAutoNickname } from '@/lib/onboarding-profile';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
+import { ensureInactivityCheckOnce } from '@/lib/session-activity';
 
 function choosePreferredNickname(
   explicit?: string,
@@ -157,7 +158,11 @@ export async function linkSessionWithPassword(params: {
     }
   }
   const email = linked.user.email || params.email.trim();
-  const nickname = choosePreferredNickname(params.nickname, session.nickname, linked.user.displayName);
+  const nickname = choosePreferredNickname(
+    params.nickname,
+    session.nickname,
+    linked.user.displayName,
+  );
   if (linked.user && nickname && linked.user.displayName !== nickname) {
     try {
       await updateProfile(linked.user, { displayName: nickname });
@@ -186,6 +191,7 @@ export async function linkSessionWithPassword(params: {
  * another browser) continues the same profile instead of starting a new guest.
  */
 export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
+  await ensureInactivityCheckOnce();
   const account = await getSignedInAccount();
   const session = getLocalSession();
   if (!account || account.uid === session.uid) return session;

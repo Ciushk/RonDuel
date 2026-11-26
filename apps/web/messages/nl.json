@@ -1154,5 +1154,34 @@
     "updateAvailable": "Nieuwe versie beschikbaar",
     "reload": "Herladen",
     "dismiss": "Sluiten"
+  },
+  "paymentGate": {
+    "title": "Maak een account om je gegevens te bewaren",
+    "body": "Sla eerst je profiel op zodat je aankoop op elk apparaat behouden blijft.",
+    "keepStreak": "🔥 Reeks",
+    "keepScore": "🏆 Score & competities",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Doorgaan met Google",
+    "or": "of",
+    "email": "Doorgaan met e-mail",
+    "notNow": "Niet nu",
+    "note": "Je gastvoortgang wordt automatisch meegenomen. Na het inloggen ga je direct naar de betaling.",
+    "emailTitleSignup": "Registreren met e-mail",
+    "emailTitleLogin": "Inloggen met e-mail",
+    "haveAccount": "Heb je al een account?",
+    "noAccount": "Nieuw hier?",
+    "logIn": "Inloggen",
+    "signUp": "Registreren",
+    "back": "Terug",
+    "submitSignup": "Account maken & doorgaan",
+    "submitLogin": "Inloggen & doorgaan",
+    "nextStep": "Volgende stap: veilig afrekenen voor {label}.",
+    "success": "Account opgeslagen — betaling openen…",
+    "continueToPayment": "Doorgaan naar betaling"
+  },
+  "session": {
+    "expired": "Je bent uitgelogd na 30 dagen inactiviteit. Log in om door te gaan.",
+    "signIn": "Inloggen"
   }
 }

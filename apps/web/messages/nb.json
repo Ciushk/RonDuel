@@ -1154,5 +1154,34 @@
     "updateAvailable": "Ny versjon tilgjengelig",
     "reload": "Last inn på nytt",
     "dismiss": "Lukk"
+  },
+  "paymentGate": {
+    "title": "Opprett en konto for å beholde dataene dine",
+    "body": "Lagre profilen din før du betaler, slik at kjøpet følger med deg på alle enheter.",
+    "keepStreak": "🔥 Rekke",
+    "keepScore": "🏆 Poeng og ligaer",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Fortsett med Google",
+    "or": "eller",
+    "email": "Fortsett med e-post",
+    "notNow": "Ikke nå",
+    "note": "Gjestefremgangen din flyttes automatisk til den nye kontoen. Etter innlogging går du rett til betaling.",
+    "emailTitleSignup": "Registrer deg med e-post",
+    "emailTitleLogin": "Logg inn med e-post",
+    "haveAccount": "Har du allerede en konto?",
+    "noAccount": "Ny her?",
+    "logIn": "Logg inn",
+    "signUp": "Registrer deg",
+    "back": "Tilbake",
+    "submitSignup": "Opprett konto og fortsett",
+    "submitLogin": "Logg inn og fortsett",
+    "nextStep": "Neste steg: sikker betaling for {label}.",
+    "success": "Konto lagret — åpner betaling…",
+    "continueToPayment": "Fortsett til betaling"
+  },
+  "session": {
+    "expired": "Du ble logget ut etter 30 dagers inaktivitet. Logg inn for å fortsette.",
+    "signIn": "Logg inn"
   }
 }

@@ -2,10 +2,11 @@
 
 import { EnvelopeSimple, GoogleLogo, Key, Lock, User } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button, Sheet } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { getFriendlyAuthErrorMessage } from '@/lib/auth-errors';
 import { requestPasswordReset } from '@/lib/firebase';
 import { linkSessionWithGoogle, linkSessionWithPassword } from '@/lib/link-account';
 
@@ -22,28 +23,14 @@ export function AuthModal({ open, onClose, initialMode = 'login', onSuccess }: A
   const t = useTranslations('auth');
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
-  const getFriendlyErrorMessage = (err: unknown): string => {
-    if (!err || typeof err !== 'object') return t('errors.unexpectedError');
-    const code = (err as { code?: string }).code || '';
-    switch (code) {
-      case 'auth/invalid-credential':
-      case 'auth/wrong-password':
-      case 'auth/user-not-found':
-        return t('errors.invalidCredentials');
-      case 'auth/email-already-in-use':
-        return t('errors.emailInUse');
-      case 'auth/weak-password':
-        return t('errors.weakPassword');
-      case 'auth/invalid-email':
-        return t('errors.invalidEmail');
-      case 'auth/popup-closed-by-user':
-        return t('errors.googleClosed');
-      case 'auth/network-request-failed':
-        return t('errors.networkError');
-      default:
-        return (err as { message?: string }).message || t('errors.unexpectedError');
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode);
     }
-  };
+  }, [open, initialMode]);
+
+  const getFriendlyErrorMessage = (err: unknown): string =>
+    getFriendlyAuthErrorMessage(err, (key) => t(key as Parameters<typeof t>[0]));
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

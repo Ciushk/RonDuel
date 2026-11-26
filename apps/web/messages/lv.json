@@ -1154,5 +1154,34 @@
     "updateAvailable": "Pieejama jauna versija",
     "reload": "Pārlādēt",
     "dismiss": "Aizvērt"
+  },
+  "paymentGate": {
+    "title": "Izveido kontu, lai saglabātu savus datus",
+    "body": "Pirms maksāšanas saglabā profilu, lai pirkums paliktu ar tevi visās ierīcēs.",
+    "keepStreak": "🔥 Sērija",
+    "keepScore": "🏆 Punkti un līgas",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Turpināt ar Google",
+    "or": "vai",
+    "email": "Turpināt ar e-pastu",
+    "notNow": "Ne tagad",
+    "note": "Viesa progress automātiski pāriet uz jauno kontu. Pēc pierakstīšanās uzreiz dosimies uz apmaksu.",
+    "emailTitleSignup": "Reģistrācija ar e-pastu",
+    "emailTitleLogin": "Pierakstīšanās ar e-pastu",
+    "haveAccount": "Jau ir konts?",
+    "noAccount": "Esi šeit jauns?",
+    "logIn": "Pierakstīties",
+    "signUp": "Reģistrēties",
+    "back": "Atpakaļ",
+    "submitSignup": "Izveidot kontu un turpināt",
+    "submitLogin": "Pierakstīties un turpināt",
+    "nextStep": "Nākamais solis: droša apmaksa par {label}.",
+    "success": "Konts saglabāts — atveram apmaksu…",
+    "continueToPayment": "Turpināt uz apmaksu"
+  },
+  "session": {
+    "expired": "Tu tiki izrakstīts pēc 30 dienu neaktivitātes. Pieraksties, lai turpinātu.",
+    "signIn": "Pierakstīties"
   }
 }

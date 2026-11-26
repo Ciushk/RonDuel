@@ -1154,5 +1154,34 @@
     "updateAvailable": "Dostupna je nova verzija",
     "reload": "Osvježi",
     "dismiss": "Zatvori"
+  },
+  "paymentGate": {
+    "title": "Izradi račun kako bi sačuvao podatke",
+    "body": "Prije plaćanja spremi svoj profil kako bi kupnja ostala uz tebe na svakom uređaju.",
+    "keepStreak": "🔥 Niz",
+    "keepScore": "🏆 Bodovi i lige",
+    "keepTown": "🏡 RonTown",
+    "keepPro": "⚡ Pro",
+    "google": "Nastavi s Googleom",
+    "or": "ili",
+    "email": "Nastavi putem e-pošte",
+    "notNow": "Ne sada",
+    "note": "Tvoj napredak gosta automatski se prenosi na novi račun. Nakon prijave vodimo te izravno na plaćanje.",
+    "emailTitleSignup": "Registracija e-poštom",
+    "emailTitleLogin": "Prijava e-poštom",
+    "haveAccount": "Već imaš račun?",
+    "noAccount": "Novi si ovdje?",
+    "logIn": "Prijavi se",
+    "signUp": "Registriraj se",
+    "back": "Natrag",
+    "submitSignup": "Izradi račun i nastavi",
+    "submitLogin": "Prijavi se i nastavi",
+    "nextStep": "Sljedeći korak: sigurno plaćanje za {label}.",
+    "success": "Račun spremljen — otvaramo plaćanje…",
+    "continueToPayment": "Nastavi na plaćanje"
+  },
+  "session": {
+    "expired": "Odjavljeni ste nakon 30 dana neaktivnosti. Prijavite se za nastavak.",
+    "signIn": "Prijavi se"
   }
 }
