@@ -1074,7 +1074,8 @@
       "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
       "zoomControls": "Kontrole povečave zemljevida",
       "zoomIn": "Povečaj",
-      "zoomOut": "Pomanjšaj"
+      "zoomOut": "Pomanjšaj",
+      "loading": "Nalaganje RonTown…"
     },
     "status": {
       "connecting": "Povezovanje…",

@@ -8,11 +8,26 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ActionBar, type SeedChoiceId } from '@/components/rontown/ActionBar';
 import { IsoMap } from '@/components/rontown/IsoMap';
+import { isoToScreen, TILE_H, TILE_W } from '@/components/rontown/iso';
 import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
+import { GROUND_SPRITES } from '@/components/rontown/sprites';
 import type { ActiveSheet } from '@/components/rontown/TownSheets';
 import { useTownState, type TileInfo } from '@/components/rontown/useTownState';
+import { useReducedMotion } from '@/components/rontown/useVillagers';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import type { GridCoord, GroundTileType } from '@ronduel/shared';
+
+const SKELETON_CELLS: ReadonlyArray<{ x: number; y: number }> = [
+  { x: 0, y: 0 },
+  { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 2, y: 0 },
+  { x: 1, y: 1 },
+  { x: 0, y: 2 },
+  { x: 2, y: 1 },
+  { x: 1, y: 2 },
+  { x: 2, y: 2 },
+];
 
 const BuyLandSheet = dynamic(
   () => import('@/components/rontown/BuyLandSheet').then((m) => m.BuyLandSheet),
@@ -66,7 +81,8 @@ export default function TownPage() {
   const state = useTownState({ townEnabled, isVisitMode, visitHostUid });
   const {
     catalog,
-    loading,
+    townReady,
+    hydratedFromCache,
     connectionStatus,
     retryInit,
     town,
@@ -107,6 +123,27 @@ export default function TownPage() {
     loadTransferStatus,
     executeTransfer,
   } = state;
+
+  const reducedMotion = useReducedMotion();
+  const [mapRevealed, setMapRevealed] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!townReady) return;
+    if (hydratedFromCache || reducedMotion) {
+      setMapRevealed(true);
+      return;
+    }
+    let raf2 = 0;
+    const raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => {
+        setMapRevealed(true);
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      if (raf2) window.cancelAnimationFrame(raf2);
+    };
+  }, [townReady, hydratedFromCache, reducedMotion]);
 
   const [activeSheet, setActiveSheet] = useState<ActiveSheet | null>(null);
   const [selectedTile, setSelectedTile] = useState<TileInfo | null>(null);
@@ -349,17 +386,8 @@ export default function TownPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-[#132013]">
-        <div
-          role="status"
-          aria-label="Loading RonTown"
-          className="h-8 w-8 animate-spin rounded-full border-4 border-[#C6FF3D] border-t-transparent motion-reduce:animate-none"
-        />
-      </div>
-    );
-  }
+  const skeletonTileSrc = GROUND_SPRITES['basic-block'].src;
+  const skipFade = hydratedFromCache || reducedMotion;
 
   return (
     <main className="relative flex h-full w-full flex-col overflow-hidden overscroll-none bg-[#132013]">
@@ -389,7 +417,7 @@ export default function TownPage() {
 
             <div className="flex shrink-0 items-center gap-2">
               <span className="rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-1 font-mono text-xs font-black text-[#0E0D15]">
-                {t('town.chips.level', { level })}
+                {townReady ? t('town.chips.level', { level }) : '—'}
               </span>
               <button
                 type="button"
@@ -438,18 +466,20 @@ export default function TownPage() {
                 RonTown
               </h1>
               <span className="whitespace-nowrap rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-0.5 font-mono text-[11px] font-black text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]">
-                {t('town.chips.level', { level })}
+                {townReady ? t('town.chips.level', { level }) : '—'}
               </span>
               <button
                 type="button"
                 onClick={() => openSheet('stats')}
-                aria-label={`${t('town.toolbar.stats')}: ${t('town.chips.population', { population, cap: populationCap })}`}
+                aria-label={`${t('town.toolbar.stats')}: ${
+                  townReady ? t('town.chips.population', { population, cap: populationCap }) : '—'
+                }`}
                 title={growthBottleneck ?? t('town.growth.maxCapacity')}
                 className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <Users size={14} weight="fill" aria-hidden="true" />
                 <span className="font-mono tabular-nums">
-                  {t('town.chips.population', { population, cap: populationCap })}
+                  {townReady ? t('town.chips.population', { population, cap: populationCap }) : '—'}
                 </span>
               </button>
             </div>
@@ -458,12 +488,16 @@ export default function TownPage() {
               <button
                 type="button"
                 onClick={() => openSheet(coinsPurchaseEnabled ? 'coins' : 'orders')}
-                aria-label={t('town.chips.coins', { count: walletBalance })}
+                aria-label={
+                  townReady
+                    ? t('town.chips.coins', { count: walletBalance })
+                    : t('town.map.loading')
+                }
                 className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
               >
                 <RonCoinIcon size={24} />
                 <span className="font-mono text-sm font-black tabular-nums text-[#0E0D15]">
-                  {walletBalance}
+                  {townReady ? walletBalance : '—'}
                 </span>
               </button>
 
@@ -480,39 +514,6 @@ export default function TownPage() {
           </>
         )}
       </div>
-
-      {/* Connection status pill while syncing/retrying /api/town/init */}
-      {!isVisitMode && connectionStatus !== 'connected' && (
-        <div
-          role="status"
-          aria-live="polite"
-          data-testid="town-connection-status"
-          className="relative z-20 flex items-center justify-center gap-2 border-b-2 border-[#0E0D15] bg-[#FFF7EC] px-3 py-1.5 text-xs font-extrabold text-[#16131F]"
-        >
-          <span
-            aria-hidden="true"
-            className={`inline-block h-2 w-2 rounded-full border border-[#16131F] ${
-              connectionStatus === 'connecting'
-                ? 'animate-pulse bg-[#C6FF3D] motion-reduce:animate-none'
-                : 'bg-[#FFC53D]'
-            }`}
-          />
-          <span>
-            {connectionStatus === 'connecting'
-              ? t('town.status.connecting')
-              : t('town.status.reconnectingFailed')}
-          </span>
-          {connectionStatus === 'offline' && (
-            <button
-              type="button"
-              onClick={retryInit}
-              className="min-h-[30px] cursor-pointer rounded-lg border-2 border-[#16131F] bg-[#C6FF3D] px-2.5 text-xs font-black text-[#16131F] shadow-[1px_1px_0px_0px_#16131F]"
-            >
-              {t('town.status.retry')}
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Action toast banner */}
       {actionMessage && (
@@ -556,37 +557,122 @@ export default function TownPage() {
 
       {/* 2. ISOMETRIC PIXEL-ART MAP VIEWPORT */}
       <div className="relative isolate z-0 flex min-h-0 flex-1 flex-col">
-        {!isVisitMode &&
-          isServerReady &&
-          tutorialStep >= 3 &&
-          !placingItemId &&
-          !moveModeActive &&
-          !movingTile &&
-          !selectedSeed && (
-            <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
-              {t('town.map.helpBody')}
-            </p>
-          )}
-        <IsoMap
-          land={land}
-          tiles={tiles}
-          expandRing={isServerReady ? expandRing : []}
-          blockedKeys={blockedKeys}
-          catalog={catalog}
-          population={population}
-          isVisitMode={isVisitMode}
-          placingItemId={placingItemId}
-          moveModeActive={moveModeActive}
-          movingTile={movingTile}
-          selectedSeed={selectedSeed}
-          floatingRewards={floatingRewards}
-          canPlaceAt={canPlaceAt}
-          canPlantAt={canPlantAt}
-          onTileTap={(x, y) => void handleTileTap(x, y)}
-          onExpandTap={handleExpandTap}
-          onHarvestComplete={handleHarvestComplete}
-          lastTownEvent={lastTownEvent}
-        />
+        {/* Connection status overlay while syncing/retrying /api/town/init (absolute to avoid CLS) */}
+        {!isVisitMode && connectionStatus !== 'connected' && (
+          <div
+            role="status"
+            aria-live="polite"
+            data-testid="town-connection-status"
+            className="absolute inset-x-0 top-0 z-20 flex items-center justify-center gap-2 border-b-2 border-[#0E0D15] bg-[#FFF7EC] px-3 py-1.5 text-xs font-extrabold text-[#16131F]"
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-block h-2 w-2 rounded-full border border-[#16131F] ${
+                connectionStatus === 'connecting'
+                  ? 'animate-pulse bg-[#C6FF3D] motion-reduce:animate-none'
+                  : 'bg-[#FFC53D]'
+              }`}
+            />
+            <span>
+              {connectionStatus === 'connecting'
+                ? t('town.status.connecting')
+                : t('town.status.reconnectingFailed')}
+            </span>
+            {connectionStatus === 'offline' && (
+              <button
+                type="button"
+                onClick={retryInit}
+                className="min-h-[30px] cursor-pointer rounded-lg border-2 border-[#16131F] bg-[#C6FF3D] px-2.5 text-xs font-black text-[#16131F] shadow-[1px_1px_0px_0px_#16131F]"
+              >
+                {t('town.status.retry')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {!townReady ? (
+          <div
+            data-testid="town-skeleton"
+            role="status"
+            aria-label={t('town.map.loading')}
+            className="rt-skeleton-pulse flex h-full w-full flex-1 items-center justify-center"
+          >
+            <div
+              aria-hidden="true"
+              className="relative"
+              style={{
+                width: 384,
+                height: 204,
+                transform: 'scale(0.75)',
+                transformOrigin: 'center center',
+              }}
+            >
+              {SKELETON_CELLS.map((cell) => {
+                const pos = isoToScreen(cell.x, cell.y);
+                return (
+                  <img
+                    key={`skel-${cell.x}-${cell.y}`}
+                    src={skeletonTileSrc}
+                    alt=""
+                    width={TILE_W}
+                    height={TILE_H}
+                    draggable={false}
+                    className="pointer-events-none absolute select-none"
+                    style={{
+                      left: pos.x + 128,
+                      top: pos.y,
+                      width: TILE_W,
+                      height: TILE_H,
+                      zIndex: (cell.x + cell.y) * 2,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div
+            data-testid="town-map-wrapper"
+            className={
+              skipFade
+                ? 'relative flex h-full min-h-0 w-full flex-1 flex-col'
+                : 'rt-map-fade-in relative flex h-full min-h-0 w-full flex-1 flex-col'
+            }
+            style={{ opacity: skipFade || mapRevealed ? 1 : 0 }}
+          >
+            {!isVisitMode &&
+              isServerReady &&
+              tutorialStep >= 3 &&
+              !placingItemId &&
+              !moveModeActive &&
+              !movingTile &&
+              !selectedSeed && (
+                <p className="pointer-events-none absolute inset-x-4 top-2.5 z-10 mx-auto max-w-xs text-center text-xs font-semibold leading-snug text-[#FFF7EC]/80">
+                  {t('town.map.helpBody')}
+                </p>
+              )}
+            <IsoMap
+              land={land}
+              tiles={tiles}
+              expandRing={isServerReady ? expandRing : []}
+              blockedKeys={blockedKeys}
+              catalog={catalog}
+              population={population}
+              isVisitMode={isVisitMode}
+              placingItemId={placingItemId}
+              moveModeActive={moveModeActive}
+              movingTile={movingTile}
+              selectedSeed={selectedSeed}
+              floatingRewards={floatingRewards}
+              canPlaceAt={canPlaceAt}
+              canPlantAt={canPlantAt}
+              onTileTap={(x, y) => void handleTileTap(x, y)}
+              onExpandTap={handleExpandTap}
+              onHarvestComplete={handleHarvestComplete}
+              lastTownEvent={lastTownEvent}
+            />
+          </div>
+        )}
       </div>
 
       {/* 3. RIGHT VERTICAL PIXEL-ART ACTION BAR */}

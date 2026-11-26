@@ -724,6 +724,25 @@ html[data-theme='dark'] {
   animation: rd-update-toast-in 220ms ease-out forwards;
 }
 
+/* RonTown loading skeleton & first-ready fade-in (opacity only) */
+@keyframes rt-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.rt-skeleton-pulse {
+  animation: rt-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.rt-map-fade-in {
+  transition: opacity 180ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -754,5 +773,14 @@ html[data-theme='dark'] {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .rt-skeleton-pulse {
+    animation: none !important;
+    opacity: 0.6 !important;
+  }
+
+  .rt-map-fade-in {
+    transition: none !important;
   }
 }

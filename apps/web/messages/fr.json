@@ -1074,7 +1074,8 @@
       "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
       "zoomControls": "Commandes de zoom de la carte",
       "zoomIn": "Zoomer",
-      "zoomOut": "Dézoomer"
+      "zoomOut": "Dézoomer",
+      "loading": "Chargement de RonTown…"
     },
     "status": {
       "connecting": "Connexion…",

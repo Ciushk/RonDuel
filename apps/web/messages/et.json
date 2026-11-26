@@ -1074,7 +1074,8 @@
       "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
       "zoomControls": "Kaardi suumi juhtnupud",
       "zoomIn": "Suurenda",
-      "zoomOut": "Vähenda"
+      "zoomOut": "Vähenda",
+      "loading": "RonTowni laadimine…"
     },
     "status": {
       "connecting": "Ühendamine…",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateTownCapacities,
   calculateTownLevel,
@@ -21,6 +21,8 @@ import {
 } from '@ronduel/shared';
 import { trackEvent } from '@/lib/analytics';
 import { getLocalSession } from '@/lib/session';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface TileInfo extends TownTileDoc {
   x: number;
@@ -59,13 +61,61 @@ interface LocalPersistedTown {
   inventory: Record<string, number>;
 }
 
+export interface ServerTownCache extends LocalPersistedTown {
+  savedAt: number;
+  source: 'server';
+}
+
 interface LocalTutorialState {
   step: number;
   done: boolean;
 }
 
 const LOCAL_STORAGE_PREFIX = 'rt_local_town_v2_';
+const SERVER_CACHE_PREFIX = 'rt_town_cache_v3_';
 const TUTORIAL_KEY = (uid: string) => `rt_tutorial_v1_${uid}`;
+
+function readServerTownCache(uid: string): ServerTownCache | null {
+  if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return null;
+  try {
+    const raw = window.localStorage.getItem(`${SERVER_CACHE_PREFIX}${uid}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ServerTownCache>;
+    if (
+      parsed.source !== 'server' ||
+      !parsed.town ||
+      typeof parsed.town !== 'object' ||
+      !parsed.tiles ||
+      typeof parsed.tiles !== 'object'
+    ) {
+      return null;
+    }
+    return {
+      town: parsed.town,
+      tiles: parsed.tiles,
+      walletBalance: typeof parsed.walletBalance === 'number' ? parsed.walletBalance : 100,
+      inventory: parsed.inventory ?? {},
+      savedAt: typeof parsed.savedAt === 'number' ? parsed.savedAt : Date.now(),
+      source: 'server',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeServerTownCache(uid: string, payload: LocalPersistedTown): void {
+  if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return;
+  try {
+    const entry: ServerTownCache = {
+      ...payload,
+      savedAt: Date.now(),
+      source: 'server',
+    };
+    window.localStorage.setItem(`${SERVER_CACHE_PREFIX}${uid}`, JSON.stringify(entry));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
 
 function readLocalTutorial(uid: string): LocalTutorialState | null {
   if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return null;
@@ -174,40 +224,6 @@ function ensureLandCoversTiles(
   return land;
 }
 
-function createDeterministicSsrState(): LocalPersistedTown {
-  const starterTiles: Record<string, TileInfo> = {
-    '3_3': { x: 3, y: 3, itemId: 'starter_house' },
-    '3_4': { x: 3, y: 4, itemId: 'plot' },
-    '4_4': { x: 4, y: 4, itemId: 'plot' },
-  };
-  const starterLand: Record<string, GroundTileType> = {
-    '3_3': 'basic-block',
-    '3_4': 'basic-block-dirt',
-    '4_4': 'basic-block-dirt',
-    '2_3': 'basic-block',
-    '4_3': 'basic-block',
-    '3_2': 'basic-block',
-  };
-  return {
-    town: {
-      gridSize: 8,
-      population: 2,
-      housingCapacity: 2,
-      serviceCapacity: 4,
-      populationCap: 2,
-      level: 1,
-      maxLevelReached: 1,
-      tutorialStep: 3,
-      likesCount: 0,
-      plotsOwned: 2,
-      land: starterLand,
-    },
-    tiles: starterTiles,
-    walletBalance: 100,
-    inventory: {},
-  };
-}
-
 export function useTownState(params: {
   townEnabled: boolean;
   isVisitMode: boolean;
@@ -216,13 +232,11 @@ export function useTownState(params: {
   const { townEnabled, isVisitMode, visitHostUid } = params;
 
   const [catalog] = useState<TownCatalogDoc>(DEFAULT_TOWN_CATALOG);
-  const [loading, setLoading] = useState<boolean>(isVisitMode);
-  const [town, setTown] = useState<TownDoc | null>(() =>
-    isVisitMode ? null : createDeterministicSsrState().town,
-  );
-  const [tiles, setTiles] = useState<Record<string, TileInfo>>(() =>
-    isVisitMode ? {} : createDeterministicSsrState().tiles,
-  );
+  const [loading, setLoading] = useState<boolean>(true);
+  const [townReady, setTownReady] = useState<boolean>(false);
+  const [hydratedFromCache, setHydratedFromCache] = useState<boolean>(false);
+  const [town, setTown] = useState<TownDoc | null>(null);
+  const [tiles, setTiles] = useState<Record<string, TileInfo>>({});
   const [walletBalance, setWalletBalance] = useState<number>(100);
   const [inventory, setInventory] = useState<Record<string, number>>({});
   const [orders, setOrders] = useState<TownOrderItem[]>([]);
@@ -246,8 +260,11 @@ export function useTownState(params: {
   );
   const [initEpoch, setInitEpoch] = useState(0);
   const usingLocalFallbackRef = useRef(false);
+  const hasServerTownRef = useRef(false);
+  const townReadyRef = useRef(false);
   const serverReadyRef = useRef<boolean>(isVisitMode);
   serverReadyRef.current = isVisitMode || connectionStatus === 'connected';
+  townReadyRef.current = townReady;
 
   const applyTutorialProgress = useCallback((nextStep: number, markDone: boolean) => {
     const clamped = Math.min(3, Math.max(tutorialStepRef.current, Math.floor(nextStep)));
@@ -296,18 +313,68 @@ export function useTownState(params: {
     }, 650);
   }, []);
 
-  // Persist local fallback state whenever town/tiles/wallet change in offline/local mode
-  useEffect(() => {
-    if (!usingLocalFallbackRef.current || isVisitMode || !town) return;
+  // Restore last-known server town cache BEFORE first paint (zero starter flash on repeat visits)
+  useIsomorphicLayoutEffect(() => {
+    if (!townEnabled || isVisitMode) return;
     const session = getLocalSession();
-    if (!session?.uid || session.uid === 'u_ssr') return;
-    try {
-      const payload: LocalPersistedTown = { town, tiles, walletBalance, inventory };
-      window.localStorage.setItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`, JSON.stringify(payload));
-    } catch {
-      // ignore storage quota errors
+    if (!session?.uid || session.uid === 'u_ssr' || session.uid === 'anon') return;
+
+    const cached = readServerTownCache(session.uid);
+    const localTut = readLocalTutorial(session.uid);
+    if (cached) {
+      const restoredLand = ensureLandCoversTiles(
+        cached.town.land,
+        cached.tiles,
+        cached.town.gridSize ?? 8,
+      );
+      setTown({ ...cached.town, land: restoredLand });
+      setTiles(cached.tiles);
+      setWalletBalance(cached.walletBalance);
+      setInventory(cached.inventory ?? {});
+      const cachedStep = Number(cached.town.tutorialStep ?? 3);
+      const localStep = localTut ? (localTut.done ? 3 : localTut.step) : 0;
+      const merged = Math.min(3, Math.max(localStep, cachedStep));
+      const mergedDone = Boolean(localTut?.done) || merged >= 3;
+      tutorialStepRef.current = mergedDone ? 3 : merged;
+      tutorialDoneRef.current = mergedDone;
+      setTutorialStepState(tutorialStepRef.current);
+      setTutorialDone(mergedDone);
+      hasServerTownRef.current = true;
+      townReadyRef.current = true;
+      setHydratedFromCache(true);
+      setTownReady(true);
+      setLoading(false);
+    } else if (localTut) {
+      const eff = localTut.done ? 3 : localTut.step;
+      tutorialStepRef.current = eff;
+      tutorialDoneRef.current = localTut.done || eff >= 3;
+      setTutorialStepState(eff);
+      setTutorialDone(tutorialDoneRef.current);
     }
-  }, [isVisitMode, town, tiles, walletBalance, inventory]);
+  }, [townEnabled, isVisitMode]);
+
+  // Persist server cache (rt_town_cache_v3_) after every real server update,
+  // or local offline fallback (rt_local_town_v2_) when explicitly offline.
+  useEffect(() => {
+    if (isVisitMode || !town || !townReady) return;
+    const session = getLocalSession();
+    if (!session?.uid || session.uid === 'u_ssr' || session.uid === 'anon') return;
+    const payload: LocalPersistedTown = { town, tiles, walletBalance, inventory };
+    if (hasServerTownRef.current && !usingLocalFallbackRef.current) {
+      writeServerTownCache(session.uid, payload);
+      return;
+    }
+    if (usingLocalFallbackRef.current) {
+      try {
+        window.localStorage.setItem(
+          `${LOCAL_STORAGE_PREFIX}${session.uid}`,
+          JSON.stringify(payload),
+        );
+      } catch {
+        // ignore storage quota errors
+      }
+    }
+  }, [isVisitMode, town, tiles, walletBalance, inventory, townReady]);
 
   // Initialize town (or visit snapshot) on mount with automatic retry/backoff
   useEffect(() => {
@@ -372,6 +439,8 @@ export function useTownState(params: {
             land,
           });
           setTiles(visitTiles);
+          townReadyRef.current = true;
+          setTownReady(true);
           setLoading(false);
         })
         .catch(() => {
@@ -385,6 +454,8 @@ export function useTownState(params: {
           });
           setTown({ ...demo.town, tutorialStep: 3 });
           setTiles(demo.tiles);
+          townReadyRef.current = true;
+          setTownReady(true);
           setLoading(false);
         });
       return () => {
@@ -395,43 +466,6 @@ export function useTownState(params: {
 
     setConnectionStatus('connecting');
     serverReadyRef.current = false;
-
-    const localTutInitial = readLocalTutorial(session.uid);
-    try {
-      const raw = window.localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`);
-      if (raw) {
-        const restored = JSON.parse(raw) as LocalPersistedTown;
-        const restoredLand = ensureLandCoversTiles(
-          restored.town.land,
-          restored.tiles,
-          restored.town.gridSize ?? 8,
-        );
-        setTown({ ...restored.town, land: restoredLand });
-        setTiles(restored.tiles);
-        setWalletBalance(restored.walletBalance);
-        setInventory(restored.inventory ?? {});
-        const cachedStep = restored.town.tutorialStep ?? 3;
-        const localEffective = localTutInitial
-          ? localTutInitial.done
-            ? 3
-            : localTutInitial.step
-          : 0;
-        const merged = Math.min(3, Math.max(localEffective, cachedStep));
-        const mergedDone = Boolean(localTutInitial?.done) || merged >= 3;
-        tutorialStepRef.current = mergedDone ? 3 : merged;
-        tutorialDoneRef.current = mergedDone;
-        setTutorialStepState(tutorialStepRef.current);
-        setTutorialDone(mergedDone);
-      } else if (localTutInitial) {
-        const eff = localTutInitial.done ? 3 : localTutInitial.step;
-        tutorialStepRef.current = eff;
-        tutorialDoneRef.current = localTutInitial.done || eff >= 3;
-        setTutorialStepState(eff);
-        setTutorialDone(tutorialDoneRef.current);
-      }
-    } catch {
-      // Ignore corrupt local cache
-    }
 
     const runInitAttempt = (retryIndex: number) => {
       if (!active) return;
@@ -445,21 +479,22 @@ export function useTownState(params: {
         })
         .then((data) => {
           if (!active) return;
+          if (!data?.town || typeof data.town !== 'object') {
+            throw new Error('Missing town payload in init response');
+          }
           const serverTiles: Record<string, TileInfo> =
-            data.tiles && Object.keys(data.tiles).length > 0
-              ? data.tiles
-              : {
-                  '3_3': { x: 3, y: 3, itemId: 'starter_house' },
-                  '3_4': { x: 3, y: 4, itemId: 'plot' },
-                  '4_4': { x: 4, y: 4, itemId: 'plot' },
-                };
-          const serverTown: TownDoc = data.town ?? createDefaultStarterState().town;
+            data.tiles && typeof data.tiles === 'object' ? data.tiles : {};
+          const serverTown: TownDoc = data.town as TownDoc;
           const land = ensureLandCoversTiles(
             serverTown.land,
             serverTiles,
             serverTown.gridSize ?? 8,
           );
-          setTown({ ...serverTown, land });
+          const resolvedTown: TownDoc = { ...serverTown, land };
+          const nextBalance =
+            typeof data.walletBalance === 'number' ? data.walletBalance : walletBalance;
+
+          setTown(resolvedTown);
           setTiles(serverTiles);
 
           const serverStep = Math.min(3, Math.max(0, Number(serverTown.tutorialStep ?? 0)));
@@ -483,9 +518,19 @@ export function useTownState(params: {
             setWalletBalance(data.walletBalance);
           }
           usingLocalFallbackRef.current = false;
+          hasServerTownRef.current = true;
           serverReadyRef.current = true;
+          townReadyRef.current = true;
+          setTownReady(true);
           setConnectionStatus('connected');
           setLoading(false);
+
+          writeServerTownCache(session.uid, {
+            town: resolvedTown,
+            tiles: serverTiles,
+            walletBalance: nextBalance,
+            inventory: {},
+          });
 
           // Fetch inventory & daily orders only when town API is reachable
           fetch(`/api/town/inventory?uid=${encodeURIComponent(session.uid)}`, {
@@ -518,8 +563,33 @@ export function useTownState(params: {
             }, delayMs);
             return;
           }
+
+          // Explicit offline fallback after all retries failed
           usingLocalFallbackRef.current = true;
           serverReadyRef.current = false;
+          if (!townReadyRef.current) {
+            let restoredOffline: LocalPersistedTown | null = null;
+            try {
+              const raw = window.localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`);
+              if (raw) {
+                restoredOffline = JSON.parse(raw) as LocalPersistedTown;
+              }
+            } catch {
+              // Ignore corrupt offline fallback
+            }
+            const offlineTown = restoredOffline ?? createDefaultStarterState();
+            const offlineLand = ensureLandCoversTiles(
+              offlineTown.town.land,
+              offlineTown.tiles,
+              offlineTown.town.gridSize ?? 8,
+            );
+            setTown({ ...offlineTown.town, land: offlineLand });
+            setTiles(offlineTown.tiles);
+            setWalletBalance(offlineTown.walletBalance);
+            setInventory(offlineTown.inventory ?? {});
+            townReadyRef.current = true;
+            setTownReady(true);
+          }
           setConnectionStatus('offline');
           setLoading(false);
         });
@@ -1154,6 +1224,8 @@ export function useTownState(params: {
   return {
     catalog,
     loading,
+    townReady,
+    hydratedFromCache,
     connectionStatus,
     retryInit,
     town,

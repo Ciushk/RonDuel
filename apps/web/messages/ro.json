@@ -1074,7 +1074,8 @@
       "helpBody": "Apasă pe terenurile cu X verde pentru a te extinde, folosește Construiește pentru case și servicii, Recoltează pentru semințe și apasă secera aurie pentru a trimite sătenii la cules.",
       "zoomControls": "Controale de zoom ale hărții",
       "zoomIn": "Mărește",
-      "zoomOut": "Micșorează"
+      "zoomOut": "Micșorează",
+      "loading": "Se încarcă RonTown…"
     },
     "status": {
       "connecting": "Se conectează…",

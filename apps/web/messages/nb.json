@@ -1074,7 +1074,8 @@
       "helpBody": "Tap green X border tiles to expand your land, use Build for houses and services, Farm to plant seeds, and tap golden sickles to send villagers harvesting.",
       "zoomControls": "Zoomkontroller for kart",
       "zoomIn": "Zoom inn",
-      "zoomOut": "Zoom ut"
+      "zoomOut": "Zoom ut",
+      "loading": "Laster RonTown…"
     },
     "status": {
       "connecting": "Kobler til…",
