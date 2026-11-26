@@ -1211,5 +1211,23 @@
     "iosPushNote": "Na iPhone fungujú pripomienky len z aplikácie na ploche (iOS 16.4+).",
     "iosOldNote": "Aktualizuj na iOS 16.4 alebo novší, aby si dostával pripomienky z aplikácie na ploche.",
     "gotIt": "Rozumiem"
+  },
+  "push": {
+    "title": "Nikdy nezmeškaj denné kolo",
+    "body": "Jedna pripomienka denne a upozornenie na hotovú úrodu. Kedykoľvek vypneš v Profile.",
+    "enable": "Zapnúť pripomienky",
+    "notNow": "Teraz nie",
+    "enabledState": "Pripomienky zapnuté",
+    "sendTest": "Poslať test",
+    "testSent": "Test odoslaný — skontroluj upozornenia",
+    "blocked": "Upozornenia pre RonDuel sú zablokované.",
+    "blockedHelpAndroid": "Chrome: ťukni na ikonu zámku → Povolenia → Upozornenia → Povoliť.",
+    "blockedHelpIos": "iPhone: Nastavenia → Hlásenia → RonDuel → Povoliť hlásenia.",
+    "blockedHelpDesktop": "Klikni na ikonu zámku v paneli s adresou → Upozornenia → Povoliť.",
+    "error": "Nepodarilo sa zapnúť pripomienky. Skús to znova.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Upozornenia fungujú! Vidíme sa v ďalšom kole.",
+    "reminderTitle": "Dnešné kolo čaká ⚡",
+    "reminderBody": "6 otázok, jedna minúta. Udrž svoju sériu nažive!"
   }
 }

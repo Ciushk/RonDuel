@@ -24,6 +24,7 @@ import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
+import { PushOptInCard } from '@/components/PushOptInCard';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
@@ -582,6 +583,14 @@ export default function LocaleHomePage() {
             </div>
           </Link>
         </div>
+      )}
+
+      {/* Web Push opt-in card (hidden when unsupported, granted/denied, missing VAPID, <1 round, snoozed, or sheet open) */}
+      {status && (
+        <PushOptInCard
+          finishedPlaysCount={status.finishedPlaysCount ?? (status.played ? 1 : 0)}
+          anySheetOpen={nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen}
+        />
       )}
 
       {/* Prominent Action Button: Leaderboards */}

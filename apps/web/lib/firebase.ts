@@ -29,12 +29,11 @@ function getFirebaseConfig() {
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'ronduel.firebaseapp.com',
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'ronduel',
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:192428092772:web:16e2669fad3e7f599ade71',
-    messagingSenderId:
-      process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_MESSAGING_SENDER_ID || '192428092772',
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '192428092772',
   };
 }
 
-function getFirebaseApp(): FirebaseApp | null {
+export function getFirebaseApp(): FirebaseApp | null {
   if (typeof window === 'undefined') return null;
   const config = getFirebaseConfig();
   if (!config.apiKey) return null;

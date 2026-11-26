@@ -1211,5 +1211,23 @@
     "iosPushNote": "iPhone’is töötavad meeldetuletused ainult avakuva rakendusest (iOS 16.4+).",
     "iosOldNote": "Uuenda versioonile iOS 16.4 või uuem, et saada avakuva rakendusest meeldetuletusi.",
     "gotIt": "Selge"
+  },
+  "push": {
+    "title": "Ära jää päevavoorust ilma",
+    "body": "Üks meeldetuletus päevas ning teade, kui saak on valmis. Lülita igal ajal Profiilis välja.",
+    "enable": "Lülita meeldetuletused sisse",
+    "notNow": "Mitte praegu",
+    "enabledState": "Meeldetuletused sees",
+    "sendTest": "Saada test",
+    "testSent": "Test saadetud — vaata oma märguandeid",
+    "blocked": "RonDueli märguanded on blokeeritud.",
+    "blockedHelpAndroid": "Chrome: puuduta lukuikooni → Load → Märguanded → Luba.",
+    "blockedHelpIos": "iPhone: Seaded → Märguanded → RonDuel → Luba märguanded.",
+    "blockedHelpDesktop": "Klõpsa aadressiribal lukuikooni → Märguanded → Luba.",
+    "error": "Meeldetuletusi ei õnnestunud sisse lülitada. Proovi uuesti.",
+    "testTitle": "RonDueli test 🔔",
+    "testBody": "Märguanded töötavad! Kohtume järgmises voorus.",
+    "reminderTitle": "Tänane voor ootab ⚡",
+    "reminderBody": "6 küsimust, üks minut. Hoia oma seeria elus!"
   }
 }

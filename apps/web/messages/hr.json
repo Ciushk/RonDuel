@@ -1211,5 +1211,23 @@
     "iosPushNote": "Na iPhoneu podsjetnici rade samo iz aplikacije na početnom zaslonu (iOS 16.4+).",
     "iosOldNote": "Ažuriraj na iOS 16.4 ili noviji za podsjetnike iz aplikacije na početnom zaslonu.",
     "gotIt": "Razumijem"
+  },
+  "push": {
+    "title": "Nikad ne propusti dnevnu rundu",
+    "body": "Jedan podsjetnik dnevno, plus kad su ti usjevi spremni. Isključi bilo kad u Profilu.",
+    "enable": "Uključi podsjetnike",
+    "notNow": "Ne sada",
+    "enabledState": "Podsjetnici uključeni",
+    "sendTest": "Pošalji test",
+    "testSent": "Test poslan — provjeri svoje obavijesti",
+    "blocked": "Obavijesti za RonDuel su blokirane.",
+    "blockedHelpAndroid": "Chrome: dodirni ikonu lokota → Dozvole → Obavijesti → Dopusti.",
+    "blockedHelpIos": "iPhone: Postavke → Obavijesti → RonDuel → Dopusti obavijesti.",
+    "blockedHelpDesktop": "Klikni ikonu lokota u adresnoj traci → Obavijesti → Dopusti.",
+    "error": "Nije bilo moguće uključiti podsjetnike. Pokušaj ponovno.",
+    "testTitle": "RonDuel test 🔔",
+    "testBody": "Obavijesti rade! Vidimo se u sljedećoj rundi.",
+    "reminderTitle": "Današnja runda te čeka ⚡",
+    "reminderBody": "6 pitanja, jedna minuta. Održi svoj niz živim!"
   }
 }

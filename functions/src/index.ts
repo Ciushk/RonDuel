@@ -104,8 +104,14 @@ import { getTransferStatus, transferCoins } from './town-transfer.js';
 import { getFriendWaterStatus, waterFriendCrop } from './town-help.js';
 import { batchReconcileLedgers } from './town-wallet.js';
 import { notifyCropsReady } from './town-notifications.js';
+import {
+  handleNotifyTestRequest,
+  handleNotifyTokenRequest,
+  runHourlyReminders,
+  sendPushToUser,
+} from './push.js';
 
-export { notifyCropsReady };
+export { notifyCropsReady, sendPushToUser };
 
 // EU data residency: all Cloud Functions run in europe-west1 (§6 & §7.2)
 setGlobalOptions({ region: 'europe-west1' });
@@ -1209,6 +1215,29 @@ export const api = onRequest(apiOptions, async (req, res) => {
       return;
     }
 
+    if ((method === 'POST' || method === 'DELETE') && pathname === '/notify/token') {
+      const db = getDb();
+      const result = await handleNotifyTokenRequest(db, {
+        method,
+        authHeader: String(req.headers['authorization'] ?? ''),
+        body,
+        verifyIdToken: async (token) => getAuth().verifyIdToken(token),
+      });
+      res.status(result.status).json(result.body);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/notify/test') {
+      const db = getDb();
+      const result = await handleNotifyTestRequest(db, {
+        authHeader: String(req.headers['authorization'] ?? ''),
+        body,
+        verifyIdToken: async (token) => getAuth().verifyIdToken(token),
+      });
+      res.status(result.status).json(result.body);
+      return;
+    }
+
     if (method === 'POST' && pathname === '/admin/cleanup-expired-users') {
       const purged = await purgeExpiredAnonymousUsers();
       res.status(200).json(purged);
@@ -1431,6 +1460,10 @@ export const hourlyLeagueRollover = onSchedule('0 * * * *', async () => {
 
 export const hourlyReminders = onSchedule('15 * * * *', async () => {
   void shouldSendNotification;
+  const db = getDb();
+  const summary = await runHourlyReminders(db);
+  console.log('[hourlyReminders] completed', summary);
+  // TODO(push-phase-2): call notifyCropsReady from a harvest-ready scheduler when one exists.
 });
 
 export const dailyDuelExpiry = onSchedule('30 0 * * *', async () => {

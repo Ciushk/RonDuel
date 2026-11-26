@@ -1211,5 +1211,23 @@
     "iosPushNote": "iPhone tālrunī atgādinājumi darbojas tikai no sākuma ekrāna lietotnes (iOS 16.4+).",
     "iosOldNote": "Atjaunini uz iOS 16.4 vai jaunāku versiju, lai saņemtu atgādinājumus no lietotnes.",
     "gotIt": "Sapratu"
+  },
+  "push": {
+    "title": "Nekad nepalaid garām dienas kārtu",
+    "body": "Viens atgādinājums dienā un ziņa, kad raža ir gatava. Jebkurā laikā izslēdz Profilā.",
+    "enable": "Ieslēgt atgādinājumus",
+    "notNow": "Ne tagad",
+    "enabledState": "Atgādinājumi ieslēgti",
+    "sendTest": "Nosūtīt testu",
+    "testSent": "Tests nosūtīts — pārbaudi savus paziņojumus",
+    "blocked": "RonDuel paziņojumi ir bloķēti.",
+    "blockedHelpAndroid": "Chrome: pieskaries slēdzenes ikonai → Atļaujas → Paziņojumi → Atļaut.",
+    "blockedHelpIos": "iPhone: Iestatījumi → Paziņojumi → RonDuel → Atļaut paziņojumus.",
+    "blockedHelpDesktop": "Noklikšķini uz slēdzenes ikonas adreses joslā → Paziņojumi → Atļaut.",
+    "error": "Neizdevās ieslēgt atgādinājumus. Mēģini vēlreiz.",
+    "testTitle": "RonDuel tests 🔔",
+    "testBody": "Paziņojumi darbojas! Tiekamies nākamajā kārtā.",
+    "reminderTitle": "Šodienas kārta gaida ⚡",
+    "reminderBody": "6 jautājumi, viena minūte. Saglabā savu sēriju!"
   }
 }

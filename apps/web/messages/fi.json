@@ -1211,5 +1211,23 @@
     "iosPushNote": "iPhonessa muistutukset toimivat vain Koti-valikon sovelluksesta (iOS 16.4+).",
     "iosOldNote": "Päivitä iOS 16.4:ään tai uudempaan saadaksesi muistutukset Koti-valikon sovelluksesta.",
     "gotIt": "Selvä"
+  },
+  "push": {
+    "title": "Älä koskaan missaa päivän kierrosta",
+    "body": "Yksi muistutus päivässä sekä ilmoitus, kun sato on valmis. Sammuta milloin tahansa Profiilista.",
+    "enable": "Ota muistutukset käyttöön",
+    "notNow": "Ei nyt",
+    "enabledState": "Muistutukset päällä",
+    "sendTest": "Lähetä testi",
+    "testSent": "Testi lähetetty — tarkista ilmoituksesi",
+    "blocked": "RonDuelin ilmoitukset on estetty.",
+    "blockedHelpAndroid": "Chrome: napauta lukkokuvaketta → Luvat → Ilmoitukset → Salli.",
+    "blockedHelpIos": "iPhone: Asetukset → Ilmoitukset → RonDuel → Salli ilmoitukset.",
+    "blockedHelpDesktop": "Napsauta osoitepalkin lukkokuvaketta → Ilmoitukset → Salli.",
+    "error": "Muistutusten käyttöönotto epäonnistui. Yritä uudelleen.",
+    "testTitle": "RonDuel-testi 🔔",
+    "testBody": "Ilmoitukset toimivat! Nähdään seuraavalla kierroksella.",
+    "reminderTitle": "Päivän kierros odottaa ⚡",
+    "reminderBody": "6 kysymystä, yksi minuutti. Pidä putkesi elossa!"
   }
 }

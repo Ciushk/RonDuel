@@ -1211,5 +1211,23 @@
     "iosPushNote": "Fuq iPhone, it-tfakkiriet jaħdmu biss mill-app fuq l-Iskrin Ewlieni (iOS 16.4+).",
     "iosOldNote": "Aġġorna għal iOS 16.4 jew aktar ġdid biex tirċievi tfakkiriet mill-app.",
     "gotIt": "Fhimt"
+  },
+  "push": {
+    "title": "Qatt titlifx ir-rawnd ta’ kuljum",
+    "body": "Tfakkira waħda kuljum, kif ukoll meta l-uċuħ tiegħek ikunu lesti. Itfi meta trid fil-Profil.",
+    "enable": "Ixgħel it-tfakkiriet",
+    "notNow": "Mhux issa",
+    "enabledState": "Tfakkiriet mixgħula",
+    "sendTest": "Ibgħat test",
+    "testSent": "Test mibgħut — iċċekkja n-notifiki tiegħek",
+    "blocked": "In-notifiki huma mblukkati għal RonDuel.",
+    "blockedHelpAndroid": "Chrome: agħfas il-katnazz → Permessi → Notifiki → Ippermetti.",
+    "blockedHelpIos": "iPhone: Settings → Notifications → RonDuel → Allow Notifications.",
+    "blockedHelpDesktop": "Ikklikkja l-katnazz fl-istrixxa tal-indirizz → Notifiki → Ippermetti.",
+    "error": "Ma stajniex nixgħelu t-tfakkiriet. Erġa’ pprova.",
+    "testTitle": "Test ta’ RonDuel 🔔",
+    "testBody": "In-notifiki jaħdmu! Narawk fir-rawnd li jmiss.",
+    "reminderTitle": "Ir-rawnd tal-lum qed jistenna ⚡",
+    "reminderBody": "6 mistoqsijiet, minuta waħda. Żomm is-serje tiegħek ħajja!"
   }
 }

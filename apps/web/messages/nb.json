@@ -1211,5 +1211,23 @@
     "iosPushNote": "På iPhone fungerer påminnelser bare fra appen på Hjem-skjermen (iOS 16.4+).",
     "iosOldNote": "Oppdater til iOS 16.4 eller nyere for å få påminnelser fra appen på Hjem-skjermen.",
     "gotIt": "Skjønner"
+  },
+  "push": {
+    "title": "Gå aldri glipp av dagens runde",
+    "body": "Én påminnelse om dagen, pluss når avlingene dine er klare. Slå av når som helst i Profil.",
+    "enable": "Slå på påminnelser",
+    "notNow": "Ikke nå",
+    "enabledState": "Påminnelser på",
+    "sendTest": "Send en test",
+    "testSent": "Test sendt — sjekk varslene dine",
+    "blocked": "Varsler er blokkert for RonDuel.",
+    "blockedHelpAndroid": "Chrome: trykk på hengelåsen → Tillatelser → Varsler → Tillat.",
+    "blockedHelpIos": "iPhone: Innstillinger → Varslinger → RonDuel → Tillat varslinger.",
+    "blockedHelpDesktop": "Klikk på hengelåsen i adressefeltet → Varsler → Tillat.",
+    "error": "Kunne ikke slå på påminnelser. Prøv igjen.",
+    "testTitle": "RonDuel-test 🔔",
+    "testBody": "Varsler fungerer! Vi ses til neste runde.",
+    "reminderTitle": "Dagens runde venter ⚡",
+    "reminderBody": "6 spørsmål, ett minutt. Hold rekken i live!"
   }
 }

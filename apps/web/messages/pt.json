@@ -1211,5 +1211,23 @@
     "iosPushNote": "No iPhone, os lembretes só funcionam a partir da app no ecrã principal (iOS 16.4+).",
     "iosOldNote": "Atualiza para o iOS 16.4 ou mais recente para receberes lembretes na app.",
     "gotIt": "Percebi"
+  },
+  "push": {
+    "title": "Nunca percas a ronda diária",
+    "body": "Um lembrete por dia, mais quando as tuas culturas estiverem prontas. Desativa quando quiseres no Perfil.",
+    "enable": "Ativar lembretes",
+    "notNow": "Agora não",
+    "enabledState": "Lembretes ativos",
+    "sendTest": "Enviar um teste",
+    "testSent": "Teste enviado — verifica as tuas notificações",
+    "blocked": "As notificações estão bloqueadas para o RonDuel.",
+    "blockedHelpAndroid": "Chrome: toca no cadeado → Permissões → Notificações → Permitir.",
+    "blockedHelpIos": "iPhone: Definições → Notificações → RonDuel → Permitir notificações.",
+    "blockedHelpDesktop": "Clica no cadeado na barra de endereços → Notificações → Permitir.",
+    "error": "Não foi possível ativar os lembretes. Tenta novamente.",
+    "testTitle": "Teste RonDuel 🔔",
+    "testBody": "As notificações funcionam! Até à próxima ronda.",
+    "reminderTitle": "A ronda de hoje está à espera ⚡",
+    "reminderBody": "6 perguntas, um minuto. Mantém a tua série viva!"
   }
 }

@@ -1211,5 +1211,23 @@
     "iosPushNote": "iPhone-on az emlékeztetők csak a Főképernyőre tett alkalmazásból működnek (iOS 16.4+).",
     "iosOldNote": "Frissíts iOS 16.4-re vagy újabbra a Főképernyőről érkező emlékeztetőkhöz.",
     "gotIt": "Értem"
+  },
+  "push": {
+    "title": "Soha ne maradj le a napi fordulóról",
+    "body": "Naponta egy emlékeztető, plusz ha kész a termésed. Bármikor kikapcsolhatod a Profilban.",
+    "enable": "Emlékeztetők bekapcsolása",
+    "notNow": "Most nem",
+    "enabledState": "Emlékeztetők bekapcsolva",
+    "sendTest": "Teszt küldése",
+    "testSent": "Teszt elküldve — nézd meg az értesítéseidet",
+    "blocked": "A RonDuel értesítései le vannak tiltva.",
+    "blockedHelpAndroid": "Chrome: koppints a lakat ikonra → Engedélyek → Értesítések → Engedélyezés.",
+    "blockedHelpIos": "iPhone: Beállítások → Értesítések → RonDuel → Értesítések engedélyezése.",
+    "blockedHelpDesktop": "Kattints a lakat ikonra a címsorban → Értesítések → Engedélyezés.",
+    "error": "Nem sikerült bekapcsolni az emlékeztetőket. Próbáld újra.",
+    "testTitle": "RonDuel teszt 🔔",
+    "testBody": "Az értesítések működnek! Találkozunk a következő fordulóban.",
+    "reminderTitle": "Vár a mai forduló ⚡",
+    "reminderBody": "6 kérdés, egy perc. Tartsd életben a sorozatodat!"
   }
 }

@@ -1211,5 +1211,23 @@
     "iosPushNote": "Pe iPhone, notificările funcționează doar din aplicația de pe ecranul principal (iOS 16.4+).",
     "iosOldNote": "Actualizează la iOS 16.4 sau mai nou pentru notificări din aplicația de pe ecranul principal.",
     "gotIt": "Am înțeles"
+  },
+  "push": {
+    "title": "Nu rata runda zilnică",
+    "body": "Un memento pe zi, plus când îți sunt gata culturile. Poți dezactiva oricând din Profil.",
+    "enable": "Activează mementourile",
+    "notNow": "Nu acum",
+    "enabledState": "Mementouri active",
+    "sendTest": "Trimite un test",
+    "testSent": "Test trimis — verifică notificările",
+    "blocked": "Notificările sunt blocate pentru RonDuel.",
+    "blockedHelpAndroid": "Chrome: apasă pictograma lacăt → Permisiuni → Notificări → Permite.",
+    "blockedHelpIos": "iPhone: Configurări → Notificări → RonDuel → Permiteți notificările.",
+    "blockedHelpDesktop": "Apasă pictograma lacăt din bara de adrese → Notificări → Permite.",
+    "error": "Nu s-au putut activa mementourile. Încearcă din nou.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Notificările funcționează! Ne vedem la următoarea rundă.",
+    "reminderTitle": "Runda de azi te așteaptă ⚡",
+    "reminderBody": "6 întrebări, un minut. Păstrează-ți seria vie!"
   }
 }

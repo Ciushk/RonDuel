@@ -1211,5 +1211,23 @@
     "iosPushNote": "En iPhone, los recordatorios solo funcionan desde la app de la pantalla de inicio (iOS 16.4+).",
     "iosOldNote": "Actualiza a iOS 16.4 o posterior para recibir recordatorios desde la app de inicio.",
     "gotIt": "Entendido"
+  },
+  "push": {
+    "title": "No te pierdas la ronda diaria",
+    "body": "Un recordatorio al día, además de cuando tus cultivos estén listos. Desactívalo cuando quieras en Perfil.",
+    "enable": "Activar recordatorios",
+    "notNow": "Ahora no",
+    "enabledState": "Recordatorios activados",
+    "sendTest": "Enviar una prueba",
+    "testSent": "Prueba enviada — revisa tus notificaciones",
+    "blocked": "Las notificaciones están bloqueadas para RonDuel.",
+    "blockedHelpAndroid": "Chrome: toca el candado → Permisos → Notificaciones → Permitir.",
+    "blockedHelpIos": "iPhone: Ajustes → Notificaciones → RonDuel → Permitir notificaciones.",
+    "blockedHelpDesktop": "Haz clic en el candado de la barra de direcciones → Notificaciones → Permitir.",
+    "error": "No se pudieron activar los recordatorios. Inténtalo de nuevo.",
+    "testTitle": "Prueba de RonDuel 🔔",
+    "testBody": "¡Las notificaciones funcionan! Nos vemos en la próxima ronda.",
+    "reminderTitle": "La ronda de hoy te espera ⚡",
+    "reminderBody": "6 preguntas, un minuto. ¡Mantén viva tu racha!"
   }
 }

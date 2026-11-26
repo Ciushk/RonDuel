@@ -1211,5 +1211,23 @@
     "iosPushNote": "Na iPhonu opomniki delujejo samo iz aplikacije na začetnem zaslonu (iOS 16.4+).",
     "iosOldNote": "Posodobi na iOS 16.4 ali novejšo različico za opomnike iz aplikacije na začetnem zaslonu.",
     "gotIt": "Razumem"
+  },
+  "push": {
+    "title": "Nikoli ne zamudi dnevnega kroga",
+    "body": "En opomnik na dan, plus ko je pridelek pripravljen. Kadar koli izklopi v Profilu.",
+    "enable": "Vklopi opomnike",
+    "notNow": "Ne zdaj",
+    "enabledState": "Opomniki vklopljeni",
+    "sendTest": "Pošlji test",
+    "testSent": "Test poslan — preveri svoja obvestila",
+    "blocked": "Obvestila za RonDuel so blokirana.",
+    "blockedHelpAndroid": "Chrome: tapni ikono ključavnice → Dovoljenja → Obvestila → Dovoli.",
+    "blockedHelpIos": "iPhone: Nastavitve → Obvestila → RonDuel → Dovoli obvestila.",
+    "blockedHelpDesktop": "Klikni ikono ključavnice v naslovni vrstici → Obvestila → Dovoli.",
+    "error": "Opomnikov ni bilo mogoče vklopiti. Poskusi znova.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Obvestila delujejo! Se vidimo v naslednjem krogu.",
+    "reminderTitle": "Današnji krog te čaka ⚡",
+    "reminderBody": "6 vprašanj, ena minuta. Ohrani svoj niz živ!"
   }
 }

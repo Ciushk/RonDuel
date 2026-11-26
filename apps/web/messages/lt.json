@@ -1211,5 +1211,23 @@
     "iosPushNote": "„iPhone“ įrenginyje priminimai veikia tik iš pradžios ekrano programėlės („iOS 16.4+“).",
     "iosOldNote": "Atnaujink į „iOS 16.4“ ar naujesnę versiją, kad gautum priminimus iš programėlės.",
     "gotIt": "Supratau"
+  },
+  "push": {
+    "title": "Niekada nepraleisk dienos raundo",
+    "body": "Vienas priminimas per dieną ir pranešimas, kai derlius subręs. Bet kada išjunk Profilyje.",
+    "enable": "Įjungti priminimus",
+    "notNow": "Ne dabar",
+    "enabledState": "Priminimai įjungti",
+    "sendTest": "Siųsti testą",
+    "testSent": "Testas išsiųstas — patikrink pranešimus",
+    "blocked": "„RonDuel“ pranešimai yra užblokuoti.",
+    "blockedHelpAndroid": "Chrome: bakstelėk spynos piktogramą → Leidimai → Pranešimai → Leisti.",
+    "blockedHelpIos": "iPhone: Nustatymai → Pranešimai → RonDuel → Leisti pranešimus.",
+    "blockedHelpDesktop": "Spustelėk spynos piktogramą adreso juostoje → Pranešimai → Leisti.",
+    "error": "Nepavyko įjungti priminimų. Bandyk dar kartą.",
+    "testTitle": "„RonDuel“ testas 🔔",
+    "testBody": "Pranešimai veikia! Iki pasimatymo kitame raunde.",
+    "reminderTitle": "Šiandienos raundas laukia ⚡",
+    "reminderBody": "6 klausimai, viena minutė. Išsaugok savo seriją!"
   }
 }

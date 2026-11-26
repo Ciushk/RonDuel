@@ -2,6 +2,7 @@
 
 import {
   Bell,
+  BellSlash,
   CaretRight,
   CheckCircle,
   Crown,
@@ -10,9 +11,11 @@ import {
   GearSix,
   GoogleLogo,
   Lock,
+  PaperPlaneTilt,
   PencilSimple,
   Sword,
   Trophy,
+  WarningCircle,
 } from '@phosphor-icons/react';
 import { getNotificationChannelCapability } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
@@ -28,6 +31,15 @@ import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
+import {
+  disablePush,
+  enablePush,
+  getPermission,
+  getPushPlatform,
+  hasVapidKey,
+  sendTestPush,
+  type PushPermissionState,
+} from '@/lib/push';
 import { isIOS, isStandalone } from '@/lib/pwa-env';
 import { clearLocalSession, getLocalSession, saveLocalSession } from '@/lib/session';
 
@@ -134,6 +146,11 @@ export default function ProfilePage() {
   const [emailInput, setEmailInput] = useState('');
   const [toast, setToast] = useState('');
   const [isIosSafariTab, setIsIosSafariTab] = useState(false);
+  const [pushPerm, setPushPerm] = useState<PushPermissionState>('default');
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState('');
+  const [pushTestBusy, setPushTestBusy] = useState(false);
+  const [pushTestSent, setPushTestSent] = useState(false);
   const [isCreateLeagueOpen, setIsCreateLeagueOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>('login');
@@ -218,8 +235,9 @@ export default function ProfilePage() {
       if (s.email) setEmailInput(s.email);
     }
 
-    // Detect iOS / iPadOS non-standalone browser tab
+    // Detect iOS / iPadOS non-standalone browser tab and current notification permission
     setIsIosSafariTab(isIOS() && !isStandalone());
+    setPushPerm(getPermission());
 
     // Fetch latest profile from server
     loadProfile();
@@ -378,6 +396,62 @@ export default function ProfilePage() {
       return;
     }
     setProfile({ ...profile, notif: data });
+  };
+
+  const handlePushToggle = (val: boolean) => {
+    if (!profile || pushBusy) return;
+    setPushError('');
+    setPushTestSent(false);
+    setPushBusy(true);
+
+    if (val) {
+      // Must call enablePush synchronously in the click handler so Notification.requestPermission()
+      // executes directly inside the user gesture (required by iOS Safari PWA).
+      void enablePush({
+        locale,
+        uid: profile.uid,
+        emailEnabled: profile.notif.emailEnabled,
+        reminderLocalTime: profile.notif.reminderLocalTime,
+      }).then((outcome) => {
+        setPushBusy(false);
+        setPushPerm(getPermission());
+        if (outcome === 'granted') {
+          setProfile((prev) =>
+            prev ? { ...prev, notif: { ...prev.notif, pushEnabled: true } } : prev,
+          );
+        } else if (outcome === 'denied') {
+          setPushPerm('denied');
+        } else if (outcome === 'error' || outcome === 'unsupported') {
+          setPushError(t('push.error'));
+        }
+      });
+      return;
+    }
+
+    void disablePush({
+      uid: profile.uid,
+      emailEnabled: profile.notif.emailEnabled,
+      reminderLocalTime: profile.notif.reminderLocalTime,
+    }).then(() => {
+      setPushBusy(false);
+      setPushPerm(getPermission());
+      setProfile((prev) =>
+        prev ? { ...prev, notif: { ...prev.notif, pushEnabled: false } } : prev,
+      );
+    });
+  };
+
+  const handleSendTestPush = async () => {
+    if (pushTestBusy) return;
+    setPushTestBusy(true);
+    setPushError('');
+    const res = await sendTestPush(locale);
+    setPushTestBusy(false);
+    if (res.ok) {
+      setPushTestSent(true);
+    } else {
+      setPushError(t('push.error'));
+    }
   };
 
   if (!profile) {
@@ -647,7 +721,7 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* Phase 4 Notifications with iOS Safari tab detection */}
+      {/* Phase 4 Notifications with iOS Safari tab detection and real Web Push opt-in */}
       <Card className="space-y-3">
         <h2 className="font-display text-xl font-extrabold">
           <Bell size={18} weight="fill" className="mr-1.5 inline" aria-hidden="true" />
@@ -659,11 +733,75 @@ export default function ProfilePage() {
             {t('profile.iosSafariNotice')}
           </p>
         ) : (
-          <AppToggle
-            label={t('profile.pushLabel')}
-            checked={profile.notif.pushEnabled}
-            onChange={(val) => void updateNotif({ pushEnabled: val })}
-          />
+          <div className="space-y-2">
+            <AppToggle
+              label={t('profile.pushLabel')}
+              checked={profile.notif.pushEnabled && pushPerm === 'granted'}
+              disabled={
+                pushBusy || pushPerm === 'denied' || pushPerm === 'unsupported' || !hasVapidKey()
+              }
+              onChange={handlePushToggle}
+            />
+
+            {pushPerm === 'denied' && (
+              <div
+                role="status"
+                data-testid="profile-push-blocked"
+                className="border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs"
+              >
+                <BellSlash
+                  size={18}
+                  weight="fill"
+                  aria-hidden="true"
+                  className="text-wrong mt-0.5 shrink-0"
+                />
+                <div className="space-y-0.5">
+                  <p className="text-ink font-extrabold">{t('push.blocked')}</p>
+                  <p className="text-muted font-semibold leading-snug">
+                    {t(
+                      getPushPlatform() === 'android'
+                        ? 'push.blockedHelpAndroid'
+                        : getPushPlatform() === 'ios'
+                          ? 'push.blockedHelpIos'
+                          : 'push.blockedHelpDesktop',
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {profile.notif.pushEnabled && pushPerm === 'granted' && (
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  disabled={pushTestBusy}
+                  onClick={() => void handleSendTestPush()}
+                  data-testid="profile-send-test-btn"
+                  className="text-duel-strong hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-1.5 text-xs font-extrabold underline underline-offset-4 disabled:opacity-50"
+                >
+                  <PaperPlaneTilt size={15} weight="bold" aria-hidden="true" />
+                  <span>{t('push.sendTest')}</span>
+                </button>
+                {pushTestSent && (
+                  <p
+                    role="status"
+                    data-testid="profile-test-sent-msg"
+                    className="text-correct-text flex items-center gap-1.5 text-xs font-bold"
+                  >
+                    <CheckCircle size={15} weight="fill" aria-hidden="true" className="shrink-0" />
+                    <span>{t('push.testSent')}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {pushError && (
+              <p role="status" className="text-wrong flex items-center gap-1.5 text-xs font-bold">
+                <WarningCircle size={15} weight="fill" aria-hidden="true" className="shrink-0" />
+                <span>{pushError}</span>
+              </p>
+            )}
+          </div>
         )}
 
         <AppToggle

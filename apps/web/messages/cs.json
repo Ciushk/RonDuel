@@ -1211,5 +1211,23 @@
     "iosPushNote": "Na iPhonu fungují připomínky jen z aplikace přidané na plochu (iOS 16.4+).",
     "iosOldNote": "Aktualizuj na iOS 16.4 nebo novější pro připomínky z aplikace na ploše.",
     "gotIt": "Rozumím"
+  },
+  "push": {
+    "title": "Nezmeškej denní kolo",
+    "body": "Jedna připomínka denně a upozornění na hotovou úrodu. Kdykoli vypneš v Profilu.",
+    "enable": "Zapnout připomínky",
+    "notNow": "Teď ne",
+    "enabledState": "Připomínky zapnuty",
+    "sendTest": "Poslat test",
+    "testSent": "Test odeslán — zkontroluj oznámení",
+    "blocked": "Oznámení pro RonDuel jsou zablokována.",
+    "blockedHelpAndroid": "Chrome: klepni na zámek → Oprávnění → Oznámení → Povolit.",
+    "blockedHelpIos": "iPhone: Nastavení → Oznámení → RonDuel → Povolit oznámení.",
+    "blockedHelpDesktop": "Klikni na zámek v adresním řádku → Oznámení → Povolit.",
+    "error": "Nepodařilo se zapnout připomínky. Zkus to znovu.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Oznámení fungují! Uvidíme se v dalším kole.",
+    "reminderTitle": "Dnešní kolo čeká ⚡",
+    "reminderBody": "6 otázek, jedna minuta. Udrž svou sérii!"
   }
 }

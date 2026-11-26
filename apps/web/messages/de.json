@@ -1211,5 +1211,23 @@
     "iosPushNote": "Auf dem iPhone funktionieren Erinnerungen nur in der Home-Bildschirm-App (iOS 16.4+).",
     "iosOldNote": "Aktualisiere auf iOS 16.4 oder neuer, um Erinnerungen über die Home-Bildschirm-App zu erhalten.",
     "gotIt": "Verstanden"
+  },
+  "push": {
+    "title": "Verpasse nie die Tagesrunde",
+    "body": "Eine Erinnerung pro Tag und wenn deine Ernte bereit ist. Jederzeit im Profil abschaltbar.",
+    "enable": "Erinnerungen aktivieren",
+    "notNow": "Nicht jetzt",
+    "enabledState": "Erinnerungen aktiv",
+    "sendTest": "Test senden",
+    "testSent": "Test gesendet — prüfe deine Benachrichtigungen",
+    "blocked": "Benachrichtigungen für RonDuel sind blockiert.",
+    "blockedHelpAndroid": "Chrome: auf das Schloss-Symbol tippen → Berechtigungen → Benachrichtigungen → Zulassen.",
+    "blockedHelpIos": "iPhone: Einstellungen → Mitteilungen → RonDuel → Mitteilungen erlauben.",
+    "blockedHelpDesktop": "Auf das Schloss-Symbol in der Adressleiste klicken → Benachrichtigungen → Zulassen.",
+    "error": "Erinnerungen konnten nicht aktiviert werden. Versuch es noch einmal.",
+    "testTitle": "RonDuel-Test 🔔",
+    "testBody": "Benachrichtigungen funktionieren! Bis zur nächsten Runde.",
+    "reminderTitle": "Die heutige Runde wartet ⚡",
+    "reminderBody": "6 Fragen, eine Minute. Halte deine Serie am Leben!"
   }
 }

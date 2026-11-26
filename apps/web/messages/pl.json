@@ -1211,5 +1211,23 @@
     "iosPushNote": "Na iPhonie przypomnienia działają tylko z aplikacji na ekranie początkowym (iOS 16.4+).",
     "iosOldNote": "Zaktualizuj do iOS 16.4 lub nowszego, aby otrzymywać przypomnienia z aplikacji.",
     "gotIt": "Rozumiem"
+  },
+  "push": {
+    "title": "Nie przegap codziennej rundy",
+    "body": "Jedno przypomnienie dziennie oraz gdy plony są gotowe. Wyłączysz w dowolnej chwili w Profilu.",
+    "enable": "Włącz przypomnienia",
+    "notNow": "Nie teraz",
+    "enabledState": "Przypomnienia włączone",
+    "sendTest": "Wyślij test",
+    "testSent": "Test wysłany — sprawdź powiadomienia",
+    "blocked": "Powiadomienia dla RonDuel są zablokowane.",
+    "blockedHelpAndroid": "Chrome: stuknij ikonę kłódki → Uprawnienia → Powiadomienia → Zezwalaj.",
+    "blockedHelpIos": "iPhone: Ustawienia → Powiadomienia → RonDuel → Zezwalaj na powiadomienia.",
+    "blockedHelpDesktop": "Kliknij ikonę kłódki na pasku adresu → Powiadomienia → Zezwalaj.",
+    "error": "Nie udało się włączyć przypomnień. Spróbuj ponownie.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Powiadomienia działają! Do zobaczenia w następnej rundzie.",
+    "reminderTitle": "Dzisiejsza runda czeka ⚡",
+    "reminderBody": "6 pytań, jedna minuta. Utrzymaj swoją passę!"
   }
 }

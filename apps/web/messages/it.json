@@ -1211,5 +1211,23 @@
     "iosPushNote": "Su iPhone i promemoria funzionano solo dall’app nella schermata Home (iOS 16.4+).",
     "iosOldNote": "Aggiorna a iOS 16.4 o successivo per ricevere promemoria dall’app sulla schermata Home.",
     "gotIt": "Ho capito"
+  },
+  "push": {
+    "title": "Non perdere mai il round giornaliero",
+    "body": "Un promemoria al giorno, più quando i tuoi raccolti sono pronti. Disattivalo quando vuoi in Profilo.",
+    "enable": "Attiva promemoria",
+    "notNow": "Non ora",
+    "enabledState": "Promemoria attivi",
+    "sendTest": "Invia un test",
+    "testSent": "Test inviato — controlla le notifiche",
+    "blocked": "Le notifiche sono bloccate per RonDuel.",
+    "blockedHelpAndroid": "Chrome: tocca il lucchetto → Autorizzazioni → Notifiche → Consenti.",
+    "blockedHelpIos": "iPhone: Impostazioni → Notifiche → RonDuel → Consenti notifiche.",
+    "blockedHelpDesktop": "Fai clic sul lucchetto nella barra degli indirizzi → Notifiche → Consenti.",
+    "error": "Impossibile attivare i promemoria. Riprova.",
+    "testTitle": "Test RonDuel 🔔",
+    "testBody": "Le notifiche funzionano! Ci vediamo al prossimo round.",
+    "reminderTitle": "Il round di oggi ti aspetta ⚡",
+    "reminderBody": "6 domande, un minuto. Mantieni viva la tua serie!"
   }
 }

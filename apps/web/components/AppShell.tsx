@@ -15,6 +15,7 @@ import { Button, Wordmark } from '@/components/ui';
 import { syncAnalyticsConsent, trackEvent } from '@/lib/analytics';
 import { useBottomStack } from '@/lib/bottom-stack';
 import { initInstallPromptCapture } from '@/lib/install-prompt';
+import { refreshPushToken } from '@/lib/push';
 import { getLocalSession, saveLocalSession, type LocalSession } from '@/lib/session';
 
 const SplashScreen = dynamic(
@@ -45,6 +46,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     syncAnalyticsConsent();
     document.documentElement.setAttribute('data-theme', s.theme);
     document.documentElement.classList.toggle('dark', s.theme === 'dark');
+    void refreshPushToken();
 
     let cancelled = false;
     let stopTracker: (() => void) | null = null;

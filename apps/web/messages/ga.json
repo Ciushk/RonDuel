@@ -1211,5 +1211,23 @@
     "iosPushNote": "Ar iPhone, ní oibríonn meabhrúcháin ach ón aip ar an Scáileán Baile (iOS 16.4+).",
     "iosOldNote": "Nuashonraigh go iOS 16.4 nó níos nuaí chun meabhrúcháin a fháil ón aip.",
     "gotIt": "Tuigim"
+  },
+  "push": {
+    "title": "Ná caill an babhta laethúil choíche",
+    "body": "Meabhrúchán amháin in aghaidh an lae, agus nuair a bhíonn do bharraí réidh. Múch am ar bith i bPróifíl.",
+    "enable": "Cuir meabhrúcháin ar siúl",
+    "notNow": "Ní anois",
+    "enabledState": "Meabhrúcháin ar siúl",
+    "sendTest": "Seol tástáil",
+    "testSent": "Tástáil seolta — seiceáil do chuid fógraí",
+    "blocked": "Tá fógraí bactha do RonDuel.",
+    "blockedHelpAndroid": "Chrome: tapáil an glas → Ceadanna → Fógraí → Ceadaigh.",
+    "blockedHelpIos": "iPhone: Socruithe → Fógraí → RonDuel → Ceadaigh Fógraí.",
+    "blockedHelpDesktop": "Cliceáil an glas sa bharra seoltaí → Fógraí → Ceadaigh.",
+    "error": "Níorbh fhéidir meabhrúcháin a chur ar siúl. Bain triail eile as.",
+    "testTitle": "Tástáil RonDuel 🔔",
+    "testBody": "Oibríonn na fógraí! Feicfidh muid thú sa chéad bhabhta eile.",
+    "reminderTitle": "Tá babhta an lae inniu ag fanacht ⚡",
+    "reminderBody": "6 cheist, nóiméad amháin. Coinnigh do shraith beo!"
   }
 }

@@ -81,3 +81,41 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+self.addEventListener('push', (event) => {
+  let p = {};
+  try {
+    p = event.data ? event.data.json() : {};
+  } catch {
+    p = {};
+  }
+  const d = p.data || p;
+  const n = p.notification || {};
+  const title = d.title || n.title || 'RonDuel';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: d.body || n.body || '',
+      icon: '/brand/icon-192.png',
+      badge: '/brand/icon-monochrome.svg',
+      tag: d.tag || 'ronduel',
+      data: { url: d.url || '/' },
+      renotify: false,
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || '/', self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (c.url.startsWith(self.location.origin)) {
+          c.navigate(url);
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

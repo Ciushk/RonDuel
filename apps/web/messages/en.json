@@ -1211,5 +1211,23 @@
     "iosPushNote": "On iPhone, reminders only work from the Home Screen app (iOS 16.4+).",
     "iosOldNote": "Update to iOS 16.4 or newer to get reminders from the Home Screen app.",
     "gotIt": "Got it"
+  },
+  "push": {
+    "title": "Never miss the daily round",
+    "body": "One reminder a day, plus when your crops are ready. Turn off anytime in Profile.",
+    "enable": "Turn on reminders",
+    "notNow": "Not now",
+    "enabledState": "Reminders on",
+    "sendTest": "Send a test",
+    "testSent": "Test sent — check your notifications",
+    "blocked": "Notifications are blocked for RonDuel.",
+    "blockedHelpAndroid": "Chrome: tap the lock icon → Permissions → Notifications → Allow.",
+    "blockedHelpIos": "iPhone: Settings → Notifications → RonDuel → Allow Notifications.",
+    "blockedHelpDesktop": "Click the lock icon in the address bar → Notifications → Allow.",
+    "error": "Couldn't turn on reminders. Try again.",
+    "testTitle": "RonDuel test 🔔",
+    "testBody": "Notifications work! See you at the next round.",
+    "reminderTitle": "Today's round is waiting ⚡",
+    "reminderBody": "6 questions, one minute. Keep your streak alive!"
   }
 }

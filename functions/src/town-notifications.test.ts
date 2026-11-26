@@ -109,7 +109,7 @@ describe('town-notifications FCM crops ready', () => {
     expect(res.count).toBe(2);
     expect(sentMessages.length).toBe(1);
     expect(sentMessages[0].tokens).toEqual(['fcm_token_abc', 'fcm_token_xyz']);
-    expect(sentMessages[0].notification.body).toContain('Carrots');
+    expect(sentMessages[0].webpush.data.body).toContain('Carrots');
   });
 
   it('reads tokens from pushTokens subcollection if array not present on user doc', async () => {
