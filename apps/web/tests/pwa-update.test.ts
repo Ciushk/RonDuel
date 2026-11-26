@@ -90,13 +90,18 @@ describe('sw.js & firebase.json PWA caching contract', () => {
 
   it('defines expected Cache-Control headers in firebase.json', () => {
     const fb = JSON.parse(fs.readFileSync(path.join(repoRoot, 'firebase.json'), 'utf8'));
-    const headers: Array<{ source: string; headers: Array<{ key: string; value: string }> }> =
-      fb.hosting.headers;
+    const headers: Array<{
+      source?: string;
+      regex?: string;
+      headers: Array<{ key: string; value: string }>;
+    }> = fb.hosting.headers;
     const bySource = new Map(
-      headers.map((entry) => [
-        entry.source,
-        entry.headers.find((h) => h.key.toLowerCase() === 'cache-control')?.value,
-      ]),
+      headers
+        .filter((entry) => entry.source)
+        .map((entry) => [
+          entry.source!,
+          entry.headers.find((h) => h.key.toLowerCase() === 'cache-control')?.value,
+        ]),
     );
 
     expect(bySource.get('/api/**')).toContain('no-store');
@@ -108,5 +113,19 @@ describe('sw.js & firebase.json PWA caching contract', () => {
     expect(bySource.get('/manifest.webmanifest')).toBe('public, max-age=300, must-revalidate');
     expect(bySource.get('/manifest-*.webmanifest')).toBe('public, max-age=300, must-revalidate');
     expect(bySource.get('/manifest.json')).toBe('public, max-age=300, must-revalidate');
+
+    const cleanHtmlRule = headers.find((entry) => entry.regex);
+    expect(cleanHtmlRule).toBeTruthy();
+    expect(cleanHtmlRule?.headers.find((h) => h.key.toLowerCase() === 'cache-control')?.value).toBe(
+      'no-cache, max-age=0, must-revalidate',
+    );
+    const cleanRe = new RegExp(cleanHtmlRule!.regex!);
+    expect(cleanRe.test('/')).toBe(true);
+    expect(cleanRe.test('/en')).toBe(true);
+    expect(cleanRe.test('/en/town')).toBe(true);
+    expect(cleanRe.test('/ro/leagues')).toBe(true);
+    expect(cleanRe.test('/offline')).toBe(true);
+    expect(cleanRe.test('/rontown/basic-block.png')).toBe(false);
+    expect(cleanRe.test('/_next/static/chunks/app.js')).toBe(false);
   });
 });

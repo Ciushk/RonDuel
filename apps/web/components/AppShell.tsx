@@ -225,10 +225,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </aside>
       )}
       {/* PWA update toast (registers /sw.js?v=2 and prompts for new builds) */}
-      <PwaUpdateToast
-        hasConsentBanner={Boolean(showConsent)}
-        hideBottomNav={hideBottomNav}
-      />
+      <PwaUpdateToast hasConsentBanner={Boolean(showConsent)} hideBottomNav={hideBottomNav} />
     </div>
   );
 }

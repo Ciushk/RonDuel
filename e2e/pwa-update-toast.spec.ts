@@ -45,8 +45,12 @@ async function seedSessionAndSwMock(
         : {
             state: 'installed',
             postMessage(msg: unknown) {
-              if (msg === 'SKIP_WAITING' || (msg && (msg as { type?: string }).type === 'SKIP_WAITING')) {
-                const count = Number(window.sessionStorage.getItem('e2e_skip_waiting_count') || '0') + 1;
+              if (
+                msg === 'SKIP_WAITING' ||
+                (msg && (msg as { type?: string }).type === 'SKIP_WAITING')
+              ) {
+                const count =
+                  Number(window.sessionStorage.getItem('e2e_skip_waiting_count') || '0') + 1;
                 window.sessionStorage.setItem('e2e_skip_waiting_count', String(count));
                 window.sessionStorage.setItem('e2e_sw_updated', '1');
                 window.setTimeout(() => emit('controllerchange'), 20);
@@ -93,7 +97,6 @@ test.use({
 });
 
 test.describe('PWA update toast & Settings cache reset', () => {
-
   test('shows Split Court update toast on new build and reloads once on Reload click', async ({
     page,
   }) => {

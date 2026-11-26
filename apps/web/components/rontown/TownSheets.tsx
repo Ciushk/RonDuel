@@ -11,7 +11,13 @@ import {
 } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { getPlotPrice, type CatalogItem, type TownCatalogDoc, type TownDoc, type TownOrderItem } from '@ronduel/shared';
+import {
+  getPlotPrice,
+  type CatalogItem,
+  type TownCatalogDoc,
+  type TownDoc,
+  type TownOrderItem,
+} from '@ronduel/shared';
 import { formatDurationShort, getCropGrowthInfo } from './iso';
 import { CATALOG_SPRITES, CROP_BUTTON_SPRITES, UI_SPRITES, uiSpriteUrl } from './sprites';
 import { RonCoinIcon } from './RonCoinIcon';
@@ -215,7 +221,7 @@ export function TownSheets({
                     key={item.sheet}
                     type="button"
                     onClick={() => openSheet(item.sheet)}
-                    className="rt-menu-sticker text-ink flex min-h-[96px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-[#FFF7EC] px-3 py-3 text-center text-sm font-black leading-tight focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] dark:bg-surface-2"
+                    className="rt-menu-sticker text-ink focus-visible:outline-3 dark:bg-surface-2 flex min-h-[96px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-[#FFF7EC] px-3 py-3 text-center text-sm font-black leading-tight focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
                   >
                     <img
                       src={uiSpriteUrl(`${item.icon}.png`)}
@@ -413,8 +419,10 @@ export function TownSheets({
                             )}
                           </div>
                           <p className="text-muted text-xs">
-                            {item.housing && `${t('town.shop.housingValue', { count: item.housing })} `}
-                            {item.supports && `${t('town.shop.serviceValue', { count: item.supports })} `}
+                            {item.housing &&
+                              `${t('town.shop.housingValue', { count: item.housing })} `}
+                            {item.supports &&
+                              `${t('town.shop.serviceValue', { count: item.supports })} `}
                             {item.footprint.w > 1 && `(${item.footprint.w}×${item.footprint.h})`}
                           </p>
                           <p className="text-ink inline-flex items-center gap-1 font-mono text-xs font-black tabular-nums">
@@ -669,11 +677,15 @@ export function TownSheets({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted font-bold">{t('town.shop.tabHousing')}</span>
-                <span className="text-ink font-mono font-black tabular-nums">{housingCapacity}</span>
+                <span className="text-ink font-mono font-black tabular-nums">
+                  {housingCapacity}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted font-bold">{t('town.shop.tabServices')}</span>
-                <span className="text-ink font-mono font-black tabular-nums">{serviceCapacity}</span>
+                <span className="text-ink font-mono font-black tabular-nums">
+                  {serviceCapacity}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted font-bold">{t('town.chips.level', { level })}</span>
@@ -703,7 +715,7 @@ export function TownSheets({
                   className="block h-14 w-14 select-none object-contain"
                   draggable={false}
                 />
-                <h3 className="text-ink mt-2 font-display text-sm font-black">
+                <h3 className="text-ink font-display mt-2 text-sm font-black">
                   {t('town.toolbar.visit')}
                 </h3>
                 <p className="text-muted mt-1 text-xs">{t('town.visit.readOnlyNotice')}</p>

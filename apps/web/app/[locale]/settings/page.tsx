@@ -134,9 +134,7 @@ export default function SettingsPage() {
             >
               {t('settings.clearCache')}
             </Button>
-            <p className="text-muted px-1 text-xs leading-snug">
-              {t('settings.clearCacheHint')}
-            </p>
+            <p className="text-muted px-1 text-xs leading-snug">{t('settings.clearCacheHint')}</p>
           </div>
           <Button fullWidth variant="danger" onClick={() => void handleDelete()}>
             {t('settings.deleteAccount')}

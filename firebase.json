@@ -5,11 +5,7 @@
   },
   "hosting": {
     "public": "hosting-dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "cleanUrls": true,
     "trailingSlash": false,
     "redirects": [],
@@ -43,6 +39,15 @@
       },
       {
         "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
+        "regex": "^(?:/(?:ro|en|es|pt|de|fr|it|nl|pl|bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|mt|nb|sk|sl|sv|uk)(?:/[^.]*)?|/|/offline|/admin|/dev/ui)$",
         "headers": [
           {
             "key": "Cache-Control",

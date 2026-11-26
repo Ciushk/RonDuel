@@ -118,12 +118,12 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
     const dur = 10_000;
     const ready = start + dur;
 
-    expect(
-      getCropGrowthInfo({ plantedAt: start, readyAt: ready, nowMs: start + 1000 }).stage,
-    ).toBe('sprout');
-    expect(
-      getCropGrowthInfo({ plantedAt: start, readyAt: ready, nowMs: start + 5000 }).stage,
-    ).toBe('half');
+    expect(getCropGrowthInfo({ plantedAt: start, readyAt: ready, nowMs: start + 1000 }).stage).toBe(
+      'sprout',
+    );
+    expect(getCropGrowthInfo({ plantedAt: start, readyAt: ready, nowMs: start + 5000 }).stage).toBe(
+      'half',
+    );
     const done = getCropGrowthInfo({ plantedAt: start, readyAt: ready, nowMs: ready + 100 });
     expect(done.stage).toBe('done');
     expect(done.isReady).toBe(true);

@@ -46,7 +46,11 @@ export const GROUND_SPRITES: Record<GroundTileType, SpriteSpec> = {
     height: 76,
   },
   'basic-block-wather': { src: spriteUrl('basic-block-wather.png'), width: 128, height: 76 },
-  'basic-block-wather-two': { src: spriteUrl('basic-block-wather-two.png'), width: 128, height: 76 },
+  'basic-block-wather-two': {
+    src: spriteUrl('basic-block-wather-two.png'),
+    width: 128,
+    height: 76,
+  },
   'basic-block-wather-grass-50-50': {
     src: spriteUrl('basic-block-wather-grass-50-50.png'),
     width: 128,
