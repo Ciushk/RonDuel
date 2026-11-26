@@ -389,7 +389,6 @@
     "roundChip": "Γύρος #{number} · {emoji} {theme}",
     "createLeague": "Δημιουργία λίγκας",
     "joinLeague": "Συμμετοχή σε λίγκα",
-    "playWithoutLeague": "Παιχνίδι χωρίς λίγκα",
     "joinByCodeTitle": "Συμμετοχή σε λίγκα",
     "codeLabel": "Κωδικός λίγκας",
     "codePlaceholder": "π.χ. ABC123",

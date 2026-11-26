@@ -389,7 +389,6 @@
     "roundChip": "Voor #{number} · {emoji} {theme}",
     "createLeague": "Loo liiga",
     "joinLeague": "Liitu liigaga",
-    "playWithoutLeague": "Mängi ilma liigata",
     "joinByCodeTitle": "Liitu liigaga",
     "codeLabel": "Liiga kood",
     "codePlaceholder": "nt ABC123",

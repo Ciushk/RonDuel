@@ -389,7 +389,6 @@
     "roundChip": "Omgång #{number} · {emoji} {theme}",
     "createLeague": "Skapa en liga",
     "joinLeague": "Gå med i en liga",
-    "playWithoutLeague": "Spela utan liga",
     "joinByCodeTitle": "Gå med i en liga",
     "codeLabel": "Ligakod",
     "codePlaceholder": "t.ex. ABC123",

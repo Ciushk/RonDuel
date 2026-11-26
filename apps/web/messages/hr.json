@@ -389,7 +389,6 @@
     "roundChip": "Runda #{number} · {emoji} {theme}",
     "createLeague": "Stvori ligu",
     "joinLeague": "Pridruži se ligi",
-    "playWithoutLeague": "Igraj bez lige",
     "joinByCodeTitle": "Pridruži se ligi",
     "codeLabel": "Kod lige",
     "codePlaceholder": "npr. ABC123",

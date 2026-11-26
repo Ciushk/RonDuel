@@ -389,7 +389,6 @@
     "roundChip": "#{number}. forduló · {emoji} {theme}",
     "createLeague": "Liga létrehozása",
     "joinLeague": "Csatlakozás egy ligához",
-    "playWithoutLeague": "Játék liga nélkül",
     "joinByCodeTitle": "Csatlakozás egy ligához",
     "codeLabel": "Ligakód",
     "codePlaceholder": "pl. ABC123",

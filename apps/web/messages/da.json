@@ -389,7 +389,6 @@
     "roundChip": "Runde #{number} · {emoji} {theme}",
     "createLeague": "Opret en liga",
     "joinLeague": "Deltag i en liga",
-    "playWithoutLeague": "Spil uden liga",
     "joinByCodeTitle": "Deltag i en liga",
     "codeLabel": "Ligakode",
     "codePlaceholder": "f.eks. ABC123",

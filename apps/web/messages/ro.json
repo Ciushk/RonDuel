@@ -389,7 +389,6 @@
     "roundChip": "Runda #{number} · {emoji} {theme}",
     "createLeague": "Creează o ligă",
     "joinLeague": "Alătură-te unei ligi",
-    "playWithoutLeague": "Joacă fără ligă",
     "joinByCodeTitle": "Alătură-te unei ligi",
     "codeLabel": "Codul ligii",
     "codePlaceholder": "ex. ABC123",

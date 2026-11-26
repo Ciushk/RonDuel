@@ -389,7 +389,6 @@
     "roundChip": "Ronde #{number} · {emoji} {theme}",
     "createLeague": "Maak een competitie",
     "joinLeague": "Doe mee met een competitie",
-    "playWithoutLeague": "Speel zonder competitie",
     "joinByCodeTitle": "Deelnemen aan een competitie",
     "codeLabel": "Competitiecode",
     "codePlaceholder": "bijv. ABC123",

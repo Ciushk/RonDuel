@@ -389,7 +389,6 @@
     "roundChip": "Round #{number} · {emoji} {theme}",
     "createLeague": "Create a league",
     "joinLeague": "Join a league",
-    "playWithoutLeague": "Play without a league",
     "joinByCodeTitle": "Join a league",
     "codeLabel": "League code",
     "codePlaceholder": "e.g. ABC123",

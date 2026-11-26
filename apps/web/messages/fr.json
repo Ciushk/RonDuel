@@ -389,7 +389,6 @@
     "roundChip": "Manche #{number} · {emoji} {theme}",
     "createLeague": "Créer une ligue",
     "joinLeague": "Rejoindre une ligue",
-    "playWithoutLeague": "Jouer sans ligue",
     "joinByCodeTitle": "Rejoindre une ligue",
     "codeLabel": "Code de la ligue",
     "codePlaceholder": "ex. ABC123",

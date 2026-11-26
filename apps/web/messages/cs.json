@@ -389,7 +389,6 @@
     "roundChip": "Kolo #{number} · {emoji} {theme}",
     "createLeague": "Vytvořit ligu",
     "joinLeague": "Připojit se k lize",
-    "playWithoutLeague": "Hrát bez ligy",
     "joinByCodeTitle": "Připojit se k lize",
     "codeLabel": "Kód ligy",
     "codePlaceholder": "např. ABC123",

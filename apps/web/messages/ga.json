@@ -389,7 +389,6 @@
     "roundChip": "Babhta #{number} · {emoji} {theme}",
     "createLeague": "Cruthaigh sraith",
     "joinLeague": "Glac páirt i sraith",
-    "playWithoutLeague": "Imir gan sraith",
     "joinByCodeTitle": "Glac páirt i sraith",
     "codeLabel": "Cód na sraithe",
     "codePlaceholder": "m.sh. ABC123",

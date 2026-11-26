@@ -389,7 +389,6 @@
     "roundChip": "Runda #{number} · {emoji} {theme}",
     "createLeague": "Utwórz ligę",
     "joinLeague": "Dołącz do ligi",
-    "playWithoutLeague": "Graj bez ligi",
     "joinByCodeTitle": "Dołącz do ligi",
     "codeLabel": "Kod ligi",
     "codePlaceholder": "np. ABC123",

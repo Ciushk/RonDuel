@@ -389,7 +389,6 @@
     "roundChip": "Kierros #{number} · {emoji} {theme}",
     "createLeague": "Luo liiga",
     "joinLeague": "Liity liigaan",
-    "playWithoutLeague": "Pelaa ilman liigaa",
     "joinByCodeTitle": "Liity liigaan",
     "codeLabel": "Liigakoodi",
     "codePlaceholder": "esim. ABC123",

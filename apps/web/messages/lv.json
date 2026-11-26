@@ -389,7 +389,6 @@
     "roundChip": "Kārta #{number} · {emoji} {theme}",
     "createLeague": "Izveidot līgu",
     "joinLeague": "Pievienoties līgai",
-    "playWithoutLeague": "Spēlēt bez līgas",
     "joinByCodeTitle": "Pievienoties līgai",
     "codeLabel": "Līgas kods",
     "codePlaceholder": "piem., ABC123",

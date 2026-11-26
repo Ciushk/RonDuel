@@ -389,7 +389,6 @@
     "roundChip": "Raundas #{number} · {emoji} {theme}",
     "createLeague": "Sukurti lygą",
     "joinLeague": "Prisijungti prie lygos",
-    "playWithoutLeague": "Žaisti be lygos",
     "joinByCodeTitle": "Prisijungti prie lygos",
     "codeLabel": "Lygos kodas",
     "codePlaceholder": "pvz., ABC123",

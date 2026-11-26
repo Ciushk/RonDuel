@@ -389,7 +389,6 @@
     "roundChip": "Rodada #{number} · {emoji} {theme}",
     "createLeague": "Criar uma liga",
     "joinLeague": "Entrar em uma liga",
-    "playWithoutLeague": "Jogar sem liga",
     "joinByCodeTitle": "Entrar em uma liga",
     "codeLabel": "Código da liga",
     "codePlaceholder": "ex. ABC123",

@@ -389,7 +389,6 @@
     "roundChip": "Раунд #{number} · {emoji} {theme}",
     "createLeague": "Створити лігу",
     "joinLeague": "Приєднатися до ліги",
-    "playWithoutLeague": "Грати без ліги",
     "joinByCodeTitle": "Приєднатися до ліги",
     "codeLabel": "Код ліги",
     "codePlaceholder": "напр. ABC123",

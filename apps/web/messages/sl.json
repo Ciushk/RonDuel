@@ -389,7 +389,6 @@
     "roundChip": "Krog #{number} · {emoji} {theme}",
     "createLeague": "Ustvari ligo",
     "joinLeague": "Pridruži se ligi",
-    "playWithoutLeague": "Igraj brez lige",
     "joinByCodeTitle": "Pridruži se ligi",
     "codeLabel": "Koda lige",
     "codePlaceholder": "npr. ABC123",

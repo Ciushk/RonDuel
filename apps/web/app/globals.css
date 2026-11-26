@@ -240,7 +240,7 @@ html[data-theme='dark'] {
 }
 
 .rd-splash-overlay {
-  transition: opacity 220ms ease-out;
+  transition: opacity 250ms ease-out;
 }
 
 .rd-no-scrollbar {
@@ -577,7 +577,7 @@ html[data-theme='dark'] {
   }
 
   .rd-splash-overlay {
-    transition: opacity 150ms linear !important;
+    transition: none !important;
   }
 }
 
