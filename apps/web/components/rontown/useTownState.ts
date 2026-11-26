@@ -59,7 +59,47 @@ interface LocalPersistedTown {
   inventory: Record<string, number>;
 }
 
+interface LocalTutorialState {
+  step: number;
+  done: boolean;
+}
+
 const LOCAL_STORAGE_PREFIX = 'rt_local_town_v2_';
+const TUTORIAL_KEY = (uid: string) => `rt_tutorial_v1_${uid}`;
+
+function readLocalTutorial(uid: string): LocalTutorialState | null {
+  if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return null;
+  try {
+    const raw = window.localStorage.getItem(TUTORIAL_KEY(uid));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<LocalTutorialState>;
+    const rawStep =
+      typeof parsed.step === 'number' && Number.isFinite(parsed.step) ? parsed.step : 0;
+    const done = Boolean(parsed.done) || rawStep >= 3;
+    const step = done ? 3 : Math.min(3, Math.max(0, Math.floor(rawStep)));
+    return { step, done };
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalTutorial(uid: string, state: LocalTutorialState): void {
+  if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return;
+  try {
+    window.localStorage.setItem(TUTORIAL_KEY(uid), JSON.stringify(state));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function postTutorialStep(uid: string, step: number): void {
+  if (typeof window === 'undefined' || !uid || uid === 'u_ssr' || uid === 'anon') return;
+  fetch('/api/town/tutorial', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid, step }),
+  }).catch(() => {});
+}
 
 function createDefaultStarterState(): LocalPersistedTown {
   const starterTiles: Record<string, TileInfo> = {
@@ -187,7 +227,10 @@ export function useTownState(params: {
   const [inventory, setInventory] = useState<Record<string, number>>({});
   const [orders, setOrders] = useState<TownOrderItem[]>([]);
   const [ordersUnlocked, setOrdersUnlocked] = useState<boolean>(true);
-  const [tutorialStep, setTutorialStep] = useState<number>(3);
+  const [tutorialStep, setTutorialStepState] = useState<number>(3);
+  const [tutorialDone, setTutorialDone] = useState<boolean>(true);
+  const tutorialStepRef = useRef<number>(3);
+  const tutorialDoneRef = useRef<boolean>(true);
 
   const [hostInfo, setHostInfo] = useState<HostVisitInfo | null>(null);
   const [likeLoading, setLikeLoading] = useState(false);
@@ -205,6 +248,33 @@ export function useTownState(params: {
   const usingLocalFallbackRef = useRef(false);
   const serverReadyRef = useRef<boolean>(isVisitMode);
   serverReadyRef.current = isVisitMode || connectionStatus === 'connected';
+
+  const applyTutorialProgress = useCallback((nextStep: number, markDone: boolean) => {
+    const clamped = Math.min(3, Math.max(tutorialStepRef.current, Math.floor(nextStep)));
+    const done = tutorialDoneRef.current || markDone || clamped >= 3;
+    const effective = done ? 3 : clamped;
+    tutorialStepRef.current = effective;
+    tutorialDoneRef.current = done;
+    setTutorialStepState(effective);
+    setTutorialDone(done);
+
+    const session = getLocalSession();
+    if (session?.uid) {
+      writeLocalTutorial(session.uid, { step: effective, done });
+      postTutorialStep(session.uid, effective);
+    }
+  }, []);
+
+  const advanceTutorial = useCallback(
+    (nextStep: number) => {
+      applyTutorialProgress(nextStep, nextStep >= 3);
+    },
+    [applyTutorialProgress],
+  );
+
+  const skipTutorial = useCallback(() => {
+    applyTutorialProgress(3, true);
+  }, [applyTutorialProgress]);
 
   const retryInit = useCallback(() => {
     setConnectionStatus('connecting');
@@ -326,6 +396,7 @@ export function useTownState(params: {
     setConnectionStatus('connecting');
     serverReadyRef.current = false;
 
+    const localTutInitial = readLocalTutorial(session.uid);
     try {
       const raw = window.localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${session.uid}`);
       if (raw) {
@@ -339,7 +410,24 @@ export function useTownState(params: {
         setTiles(restored.tiles);
         setWalletBalance(restored.walletBalance);
         setInventory(restored.inventory ?? {});
-        setTutorialStep(restored.town.tutorialStep ?? 3);
+        const cachedStep = restored.town.tutorialStep ?? 3;
+        const localEffective = localTutInitial
+          ? localTutInitial.done
+            ? 3
+            : localTutInitial.step
+          : 0;
+        const merged = Math.min(3, Math.max(localEffective, cachedStep));
+        const mergedDone = Boolean(localTutInitial?.done) || merged >= 3;
+        tutorialStepRef.current = mergedDone ? 3 : merged;
+        tutorialDoneRef.current = mergedDone;
+        setTutorialStepState(tutorialStepRef.current);
+        setTutorialDone(mergedDone);
+      } else if (localTutInitial) {
+        const eff = localTutInitial.done ? 3 : localTutInitial.step;
+        tutorialStepRef.current = eff;
+        tutorialDoneRef.current = localTutInitial.done || eff >= 3;
+        setTutorialStepState(eff);
+        setTutorialDone(tutorialDoneRef.current);
       }
     } catch {
       // Ignore corrupt local cache
@@ -373,7 +461,24 @@ export function useTownState(params: {
           );
           setTown({ ...serverTown, land });
           setTiles(serverTiles);
-          setTutorialStep(serverTown.tutorialStep ?? 0);
+
+          const serverStep = Math.min(3, Math.max(0, Number(serverTown.tutorialStep ?? 0)));
+          const localTut = readLocalTutorial(session.uid);
+          const localStep = localTut ? (localTut.done ? 3 : localTut.step) : 0;
+          const effective = Math.min(3, Math.max(localStep, serverStep));
+          const effectiveDone = Boolean(localTut?.done) || effective >= 3;
+          tutorialStepRef.current = effectiveDone ? 3 : effective;
+          tutorialDoneRef.current = effectiveDone;
+          setTutorialStepState(tutorialStepRef.current);
+          setTutorialDone(effectiveDone);
+          writeLocalTutorial(session.uid, {
+            step: tutorialStepRef.current,
+            done: effectiveDone,
+          });
+          if (tutorialStepRef.current > serverStep) {
+            postTutorialStep(session.uid, tutorialStepRef.current);
+          }
+
           if (typeof data.walletBalance === 'number') {
             setWalletBalance(data.walletBalance);
           }
@@ -1061,7 +1166,9 @@ export function useTownState(params: {
     orders,
     ordersUnlocked,
     tutorialStep,
-    setTutorialStep,
+    tutorialDone,
+    advanceTutorial,
+    skipTutorial,
     hostInfo,
     likeLoading,
     waterLoading,

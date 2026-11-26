@@ -204,7 +204,7 @@ export async function buildItem(
     const newGridSize = getGridSizeForLevel(maxLevel);
 
     let tutorialStep = townData.tutorialStep ?? 0;
-    if (tutorialStep === 1 && params.itemId === 'cottage') {
+    if (tutorialStep === 1 && item.type === 'housing') {
       tutorialStep = 2; // Advance tutorial
     }
 

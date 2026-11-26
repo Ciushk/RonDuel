@@ -81,6 +81,7 @@ import {
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
+import { setTutorialStep } from './town-tutorial.js';
 import {
   buildItem,
   buyFarmPlot,
@@ -256,6 +257,32 @@ export const api = onRequest(apiOptions, async (req, res) => {
       const catalog = await getTownCatalog(db);
       res.status(200).json(catalog);
       return;
+    }
+
+    if (method === 'POST' && pathname === '/town/tutorial') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(401).json({ error: 'Missing uid' });
+        return;
+      }
+      const step = Number(body.step);
+      if (!Number.isFinite(step)) {
+        res.status(400).json({ error: 'Invalid tutorial step' });
+        return;
+      }
+      const db = getDb();
+      try {
+        const result = await setTutorialStep(db, uid, step);
+        res.status(200).json(result);
+        return;
+      } catch (err: any) {
+        if (err.message?.includes('TOWN_NOT_FOUND')) {
+          res.status(404).json({ error: err.message });
+          return;
+        }
+        res.status(400).json({ error: err.message || 'Failed to update tutorial step' });
+        return;
+      }
     }
 
     if (method === 'POST' && pathname === '/town/build') {
@@ -763,7 +790,11 @@ export const api = onRequest(apiOptions, async (req, res) => {
           }
           if (body.action === 'rename' || typeof body.name === 'string') {
             const trimmed = String(body.name ?? '').trim();
-            if (trimmed.length < 2 || trimmed.length > 30 || trimmed.toLowerCase() === 'undefined') {
+            if (
+              trimmed.length < 2 ||
+              trimmed.length > 30 ||
+              trimmed.toLowerCase() === 'undefined'
+            ) {
               res.status(400).json({
                 error: 'League name must be between 2 and 30 characters',
                 code: 'LEAGUE_NAME_INVALID',

@@ -107,8 +107,8 @@ export async function plantCrop(
       tx.update(tileRef, { ...updatedTile });
     }
 
-    // Advance tutorial step 0 (plant oats)
-    if (townData.tutorialStep === 0 && params.cropId === 'oats') {
+    // Advance tutorial step 0 on any planted crop
+    if (townData.tutorialStep === 0) {
       tx.update(townRef, {
         tutorialStep: 1,
         updatedAt: FieldValue.serverTimestamp(),

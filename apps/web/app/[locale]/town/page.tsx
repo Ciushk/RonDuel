@@ -79,7 +79,9 @@ export default function TownPage() {
     orders,
     ordersUnlocked,
     tutorialStep,
-    setTutorialStep,
+    tutorialDone,
+    advanceTutorial,
+    skipTutorial,
     hostInfo,
     likeLoading,
     waterLoading,
@@ -634,49 +636,57 @@ export default function TownPage() {
       )}
 
       {/* 4. TUTORIAL PIXEL-ART SPEECH BUBBLE */}
-      {!isVisitMode && isServerReady && tutorialStep < 3 && !activeSheet && !expandTarget && (
-        <div className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-16 z-20 max-w-[260px] p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
-              {tutorialStep + 1}/3
-            </span>
-            <button
-              type="button"
-              onClick={() => setTutorialStep(3)}
-              className="min-h-[32px] cursor-pointer px-1 font-mono text-xs font-bold text-[#0E0D15]/70 hover:text-[#0E0D15]"
-            >
-              {t('town.tutorial.skip')}
-            </button>
+      {!isVisitMode &&
+        isServerReady &&
+        !tutorialDone &&
+        tutorialStep < 3 &&
+        !activeSheet &&
+        !expandTarget && (
+          <div
+            data-testid="town-tutorial-card"
+            className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-16 z-20 max-w-[260px] p-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
+                {tutorialStep + 1}/3
+              </span>
+              <button
+                type="button"
+                onClick={skipTutorial}
+                className="min-h-[32px] cursor-pointer px-1 font-mono text-xs font-bold text-[#0E0D15]/70 hover:text-[#0E0D15]"
+              >
+                {t('town.tutorial.skip')}
+              </button>
+            </div>
+            <h2 className="mt-1.5 font-mono text-sm font-black text-[#0E0D15]">
+              {tutorialStep === 0 && t('town.tutorial.step1Title')}
+              {tutorialStep === 1 && t('town.tutorial.step2Title')}
+              {tutorialStep === 2 && t('town.tutorial.step3Title')}
+            </h2>
+            <p className="mt-1 font-mono text-xs leading-snug text-[#0E0D15]/80">
+              {tutorialStep === 0 && t('town.tutorial.step1Desc')}
+              {tutorialStep === 1 && t('town.tutorial.step2Desc')}
+              {tutorialStep === 2 && t('town.tutorial.step3Desc')}
+            </p>
+            <div className="mt-2.5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (tutorialStep === 1) {
+                    setShopTab('housing');
+                    openSheet('shop');
+                  } else if (tutorialStep === 2) {
+                    openSheet('orders');
+                  }
+                  advanceTutorial(tutorialStep + 1);
+                }}
+                className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+              >
+                {tutorialStep === 2 ? t('town.tutorial.finish') : t('town.tutorial.next')}
+              </button>
+            </div>
           </div>
-          <h2 className="mt-1.5 font-mono text-sm font-black text-[#0E0D15]">
-            {tutorialStep === 0 && t('town.tutorial.step1Title')}
-            {tutorialStep === 1 && t('town.tutorial.step2Title')}
-            {tutorialStep === 2 && t('town.tutorial.step3Title')}
-          </h2>
-          <p className="mt-1 font-mono text-xs leading-snug text-[#0E0D15]/80">
-            {tutorialStep === 0 && t('town.tutorial.step1Desc')}
-            {tutorialStep === 1 && t('town.tutorial.step2Desc')}
-            {tutorialStep === 2 && t('town.tutorial.step3Desc')}
-          </p>
-          <div className="mt-2.5 flex justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                if (tutorialStep === 1) {
-                  setShopTab('housing');
-                  openSheet('shop');
-                } else if (tutorialStep === 2) {
-                  openSheet('orders');
-                }
-                setTutorialStep((prev) => prev + 1);
-              }}
-              className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
-            >
-              {tutorialStep === 2 ? t('town.tutorial.finish') : t('town.tutorial.next')}
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       {/* 5. BUY LAND BOTTOM SHEET (lazy-loaded on demand) */}
       {expandTarget && (
