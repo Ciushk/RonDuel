@@ -1,11 +1,66 @@
 import { expect, test, type Page } from '@playwright/test';
 import path from 'node:path';
+import zlib from 'node:zlib';
 
 const SHOTS_DIR = process.env.RONTOWN_SHOTS_DIR || '';
 const TEST_UID = 'u_e2e_polish_1';
 
 function shotPath(name: string): string | null {
   return SHOTS_DIR ? path.join(SHOTS_DIR, name) : null;
+}
+
+function samplePngRgba(
+  png: Buffer,
+  px: number,
+  py: number,
+): { r: number; g: number; b: number; a: number } {
+  const width = png.readUInt32BE(16);
+  const height = png.readUInt32BE(20);
+  const colorType = png[25]!;
+  const bpp = colorType === 6 ? 4 : 3;
+  const idat: Buffer[] = [];
+  let off = 8;
+  while (off < png.length) {
+    const len = png.readUInt32BE(off);
+    const type = png.toString('ascii', off + 4, off + 8);
+    if (type === 'IDAT') idat.push(png.subarray(off + 8, off + 8 + len));
+    if (type === 'IEND') break;
+    off += 12 + len;
+  }
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const stride = width * bpp;
+  const out = Buffer.alloc(height * stride);
+  const paeth = (a: number, b: number, c: number) => {
+    const p = a + b - c;
+    const pa = Math.abs(p - a);
+    const pb = Math.abs(p - b);
+    const pc = Math.abs(p - c);
+    return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+  };
+  for (let y = 0; y < height; y++) {
+    const f = raw[y * (stride + 1)]!;
+    for (let i = 0; i < stride; i++) {
+      const cur = raw[y * (stride + 1) + 1 + i]!;
+      const a = i >= bpp ? out[y * stride + i - bpp]! : 0;
+      const b = y > 0 ? out[(y - 1) * stride + i]! : 0;
+      const c = y > 0 && i >= bpp ? out[(y - 1) * stride + i - bpp]! : 0;
+      let val = cur;
+      if (f === 1) val = (cur + a) & 0xff;
+      else if (f === 2) val = (cur + b) & 0xff;
+      else if (f === 3) val = (cur + ((a + b) >> 1)) & 0xff;
+      else if (f === 4) val = (cur + paeth(a, b, c)) & 0xff;
+      out[y * stride + i] = val;
+    }
+  }
+  const cx = Math.max(0, Math.min(width - 1, Math.round(px)));
+  const cy = Math.max(0, Math.min(height - 1, Math.round(py)));
+  const idx = cy * stride + cx * bpp;
+  return {
+    r: out[idx]!,
+    g: out[idx + 1]!,
+    b: out[idx + 2]!,
+    a: bpp === 4 ? out[idx + 3]! : 255,
+  };
 }
 
 function buildLandGrid(coords: Array<[number, number, string]>): Record<string, string> {
@@ -226,12 +281,13 @@ test.describe('RonTown Polish (Parts 1-5)', () => {
     if (out) await page.screenshot({ path: out });
   });
 
-  test('Part 2: planted crop plot sits flush with surrounding grass tiles via groundOffsetY', async ({
+  test('Part 2: planted crop plots sit flush with grass (floor-band soil + clipped crop + green front grass)', async ({
     page,
   }) => {
     await seedSessionAndFlags(page);
 
-    // 3x3 grass island with a half-grown wheat plot in the center (3,3) surrounded by grass on all 4 sides
+    // 3x3 grass island: wheat plot at center (3,3) with plain grass in front at (3,4) and (4,3),
+    // plus an edge pumpkin plot at (2,4) to verify edge plots keep a normal 12px earth wall.
     const landCoords: Array<[number, number, string]> = [];
     for (let x = 2; x <= 4; x++) {
       for (let y = 2; y <= 4; y++) {
@@ -268,8 +324,8 @@ test.describe('RonTown Polish (Parts 1-5)', () => {
               plantedAt: now - 30_000,
               readyAt: now + 30_000,
             },
-            '3_4': {
-              x: 3,
+            '2_4': {
+              x: 2,
               y: 4,
               itemId: 'plot',
               cropId: 'pumpkin',
@@ -287,28 +343,109 @@ test.describe('RonTown Polish (Parts 1-5)', () => {
 
     await page.goto('/en/town', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('img[src*="wheat-half"]')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('img[src*="basic-block-dirt"]').first()).toBeVisible({
+      timeout: 10_000,
+    });
+    // Wait for fade-in transition to settle before sampling screenshot pixels
+    await page.waitForTimeout(300);
 
-    const cropCheck = await page.evaluate(() => {
+    const check = await page.evaluate(() => {
       const stage = document.querySelector('[data-rontown-stage="true"]');
       if (!stage) return null;
+
+      // Locate grass slab container for planted cell (3,3) via its hit-test button aria-label
+      const plantedBtn = Array.from(
+        stage.querySelectorAll<HTMLButtonElement>('button[aria-label]'),
+      ).find((b) => (b.getAttribute('aria-label') || '').includes('(3, 3)'));
+      const grassDiv = plantedBtn?.parentElement as HTMLElement | null;
+      if (!grassDiv) return null;
+      const grassLeft = parseFloat(grassDiv.style.left);
+      const grassTop = parseFloat(grassDiv.style.top);
+
+      // (a) Floor-band basic-block-dirt img at planted cell (3,3)
+      const dirtImgs = Array.from(
+        stage.querySelectorAll<HTMLImageElement>('img[src*="basic-block-dirt"]'),
+      );
+      const dirtAtPlanted = dirtImgs.find(
+        (img) =>
+          Math.abs(parseFloat(img.style.left) - grassLeft) <= 1 &&
+          Math.abs(parseFloat(img.style.top) - grassTop) <= 1,
+      );
+
+      // (b) Crop img clip-path bottom vertex aligned with grassTop + 64
       const wheatImg = stage.querySelector<HTMLImageElement>('img[src*="wheat-half"]');
-      const pumpkinImg = stage.querySelector<HTMLImageElement>('img[src*="pumpkin-done"]');
-      if (!wheatImg || !pumpkinImg) return null;
+      if (!wheatImg) return null;
+      const wheatTop = parseFloat(wheatImg.style.top);
+      const wheatClip = window.getComputedStyle(wheatImg).clipPath || wheatImg.style.clipPath;
+      const clipMatch =
+        /polygon\(\s*0(?:px)?\s+0(?:px)?,\s*100%\s+0(?:px)?,\s*100%\s+(-?\d+(?:\.\d+)?)px,\s*50%\s+(-?\d+(?:\.\d+)?)px,\s*0(?:px)?\s+(-?\d+(?:\.\d+)?)px\s*\)/.exec(
+          wheatClip,
+        );
+
+      // (c) Front grass cell (3,4) top-face centre minus 4px in viewport coordinates
+      const frontGrassBtn = Array.from(
+        stage.querySelectorAll<HTMLButtonElement>('button[aria-label]'),
+      ).find((b) => {
+        const label = b.getAttribute('aria-label') || '';
+        return label.includes('(3, 4)') || label.includes('3, 4');
+      });
+      const frontRect = frontGrassBtn?.getBoundingClientRect();
+
       return {
-        wheatTop: parseFloat(wheatImg.style.top),
-        wheatHeight: wheatImg.height,
-        pumpkinTop: parseFloat(pumpkinImg.style.top),
-        pumpkinHeight: pumpkinImg.height,
+        grassTop,
+        dirtFound: Boolean(dirtAtPlanted),
+        dirtTop: dirtAtPlanted ? parseFloat(dirtAtPlanted.style.top) : NaN,
+        dirtZ: dirtAtPlanted ? Number(window.getComputedStyle(dirtAtPlanted).zIndex) : NaN,
+        wheatTop,
+        wheatClip,
+        clipBottom: clipMatch ? parseFloat(clipMatch[2]!) : NaN,
+        frontSampleCss: frontRect
+          ? {
+              x: frontRect.left + frontRect.width / 2,
+              y: frontRect.top + frontRect.height / 2 - 4,
+            }
+          : null,
+        dpr: window.devicePixelRatio || 1,
       };
     });
 
-    expect(cropCheck).not.toBeNull();
-    // wheat-half has groundOffsetY = +3, pumpkin-done has groundOffsetY = +1
-    expect(Number.isFinite(cropCheck!.wheatTop)).toBe(true);
-    expect(Number.isFinite(cropCheck!.pumpkinTop)).toBe(true);
+    expect(check).not.toBeNull();
+    // (a) basic-block-dirt img exists at planted cell with same top as grass and floor-band zIndex (< 1000)
+    expect(check!.dirtFound).toBe(true);
+    expect(check!.dirtTop).toBe(check!.grassTop);
+    expect(check!.dirtZ).toBeLessThan(1000);
 
-    const out = shotPath('rontown_crop_offset_390.png');
+    // (b) crop img clip-path bottom vertex lands at grassTop + 64 (±1px)
+    expect(Number.isFinite(check!.clipBottom)).toBe(true);
+    expect(
+      Math.abs(check!.wheatTop + check!.clipBottom - (check!.grassTop + 64)),
+    ).toBeLessThanOrEqual(1);
+
+    // (c) pixel check on front grass cell (3,4) at top-face centre minus 4px -> must be grass-green, not dirt-brown
+    expect(check!.frontSampleCss).not.toBeNull();
+    const out = shotPath('rontown_plot_flush_390.png');
     if (out) await page.screenshot({ path: out });
+
+    // Hide villager sprites briefly so a villager standing on (3,4) doesn't occlude the grass pixel sample
+    await page.evaluate(() => {
+      document.querySelectorAll<HTMLElement>('[data-villager-id]').forEach((el) => {
+        el.style.visibility = 'hidden';
+      });
+    });
+    const screenshotBuf = await page.screenshot();
+    const px = check!.frontSampleCss!.x * check!.dpr;
+    const py = check!.frontSampleCss!.y * check!.dpr;
+    const rgb = samplePngRgba(screenshotBuf, px, py);
+    // Grass green has green channel clearly dominant over red and blue (unlike dirt-brown where r > g)
+    expect(
+      rgb.g,
+      `Expected grass-green at front cell (3,4), got rgb(${rgb.r},${rgb.g},${rgb.b})`,
+    ).toBeGreaterThan(rgb.r + 15);
+    expect(
+      rgb.g,
+      `Expected grass-green at front cell (3,4), got rgb(${rgb.r},${rgb.g},${rgb.b})`,
+    ).toBeGreaterThan(rgb.b + 15);
   });
 
   test('Part 3: 6 villagers behave independently, avoid sharing cells, and respect reduced-motion', async ({

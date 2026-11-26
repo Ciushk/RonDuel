@@ -11,6 +11,7 @@ import {
   DIAMOND_H,
   floorZ,
   getBuildingPlacement,
+  getCropFaceClipPath,
   getCropGrowthInfo,
   getCropPlacement,
   getCursorPlacement,
@@ -394,6 +395,43 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
       const placedRight = placed.y + corners.right;
       expect(Math.abs(placedLeft - 43), `${file} left=${placedLeft}`).toBeLessThanOrEqual(1);
       expect(Math.abs(placedRight - 43), `${file} right=${placedRight}`).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('clips every crop sprite to the tile top-face V so placed top + bottom equals grass bottom vertex', () => {
+    const crops = ['wheat', 'cabbage', 'pumpkin', 'oats', 'carrots', 'sunflower'] as const;
+    const stages = ['sprout', 'half', 'done'] as const;
+    const testCell = { x: 3, y: 4 };
+    const grassOrigin = isoToScreen(testCell.x, testCell.y);
+
+    for (const cropId of crops) {
+      for (const stage of stages) {
+        const spec = resolveCropSprite(cropId, stage);
+        const off = spec.groundOffsetY ?? 0;
+        const clip = getCropFaceClipPath(spec.height, off);
+        const expectedSide = 32 - (76 - spec.height + off);
+        const expectedBottom = 64 - (76 - spec.height + off);
+
+        expect(clip).toBe(
+          `polygon(0 0, 100% 0, 100% ${expectedSide}px, 50% ${expectedBottom}px, 0 ${expectedSide}px)`,
+        );
+
+        const match = /^polygon\(0 0, 100% 0, 100% (-?\d+)px, 50% (-?\d+)px, 0 (-?\d+)px\)$/.exec(
+          clip,
+        );
+        expect(match, `Unexpected clipPath format for ${cropId}/${stage}: ${clip}`).not.toBeNull();
+        const side = Number(match![1]);
+        const bottom = Number(match![2]);
+        const leftSide = Number(match![3]);
+
+        expect(side).toBe(expectedSide);
+        expect(leftSide).toBe(expectedSide);
+        expect(bottom).toBe(expectedBottom);
+
+        const placed = getCropPlacement(testCell.x, testCell.y, spec.height, off);
+        expect(placed.y + bottom).toBe(grassOrigin.y + 64);
+        expect(placed.y + side).toBe(grassOrigin.y + 32);
+      }
     }
   });
 });

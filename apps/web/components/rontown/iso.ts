@@ -94,6 +94,14 @@ export function getCropPlacement(
   };
 }
 
+/** Clip a bottom-aligned crop sprite to the tile top face (diamond V at tile y=32 / y=64), removing its own walls. */
+export function getCropFaceClipPath(spriteH: number, groundOffsetY = 0): string {
+  const top = TILE_H - spriteH + groundOffsetY; // sprite top in tile coords (same as getCropPlacement)
+  const side = DIAMOND_H / 2 - top; // left/right vertex row inside the sprite
+  const bottom = DIAMOND_H - top; // bottom vertex row inside the sprite
+  return `polygon(0 0, 100% 0, 100% ${side}px, 50% ${bottom}px, 0 ${side}px)`;
+}
+
 /**
  * Centers the 206x128 placement cursor (block-free-spot / button-taken-spot)
  * inner diamond on the target tile's 128x64 diamond.

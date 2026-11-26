@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GridCoord, GroundTileType, TownCatalogDoc } from '@ronduel/shared';
 import {
   applyRubberBand,
@@ -12,6 +12,7 @@ import {
   floorZ,
   formatDurationShort,
   getBuildingPlacement,
+  getCropFaceClipPath,
   getCropGrowthInfo,
   getCropPlacement,
   getCursorPlacement,
@@ -314,12 +315,28 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           });
           const cropSpec = resolveCropSprite(tile.cropId, growth.stage);
           const pos = getCropPlacement(tile.x, tile.y, cropSpec.height, cropSpec.groundOffsetY);
-          const badgeOrigin = isoToScreen(tile.x, tile.y);
-          const badgeCenterX = badgeOrigin.x + TILE_W / 2 - boundsMinX;
-          const badgeTopY = badgeOrigin.y - 34 - boundsMinY;
+          const soilOrigin = isoToScreen(tile.x, tile.y);
+          const soilSpec = GROUND_SPRITES['basic-block-dirt'];
+          const badgeCenterX = soilOrigin.x + TILE_W / 2 - boundsMinX;
+          const badgeTopY = soilOrigin.y - 34 - boundsMinY;
 
           return (
-            <div key={`obj_${key}`}>
+            <Fragment key={`obj_${key}`}>
+              <img
+                src={soilSpec.src}
+                alt=""
+                width={soilSpec.width}
+                height={soilSpec.height}
+                decoding="async"
+                className="pointer-events-none absolute block select-none"
+                style={{
+                  left: soilOrigin.x - boundsMinX,
+                  top: soilOrigin.y - boundsMinY,
+                  zIndex: floorZ(tile.x, tile.y, 1),
+                }}
+                draggable={false}
+              />
+
               <img
                 src={cropSpec.src}
                 alt=""
@@ -332,6 +349,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                   left: pos.x - boundsMinX,
                   top: pos.y - boundsMinY,
                   zIndex: objectZ(sortKey, Z_LAYER.crop),
+                  clipPath: getCropFaceClipPath(cropSpec.height, cropSpec.groundOffsetY),
                 }}
                 draggable={false}
               />
@@ -393,7 +411,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                   </span>
                 </div>
               )}
-            </div>
+            </Fragment>
           );
         }
 
