@@ -46,6 +46,8 @@ import {
   getTodayStatus,
   getUserDuels,
   getUserProfile,
+  isPlaceholderNickname,
+  isUserDirty,
   joinLeague,
   leaveOrRemoveLeagueMember,
   markUserDirty,
@@ -82,6 +84,7 @@ import {
   purgeExpiredAnonymousUsers,
   syncUserToFirestore,
 } from './firestore-users.js';
+import { resetStreakTx, useStreakFreezeTx } from './streak-tx.js';
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 import { createProCheckout, handleStripeWebhook } from './billing.js';
 import { getStripe, verifyStripeEvent } from './stripe-client.js';
@@ -198,7 +201,8 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
     if (!isStripeWebhookRoute && pathname !== '/billing/checkout') {
       for (const uid of collectRequestUids(body, url)) {
-        if (!getStore().users[uid]) {
+        const existing = getStore().users[uid];
+        if (!existing || (!isUserDirty(uid) && isPlaceholderNickname(existing.nickname))) {
           await getUserFromFirestore(uid);
         }
       }
@@ -807,8 +811,11 @@ export const api = onRequest(apiOptions, async (req, res) => {
       const tz = url.searchParams.get('tz') ?? 'UTC';
       const rawLeagues = url.searchParams.get('leagues');
       const clientLeagueIds = rawLeagues ? rawLeagues.split(',').filter(Boolean) : undefined;
-      if (uid && uid !== 'anon' && uid !== 'u_ssr' && !getStore().users[uid]) {
-        await getUserFromFirestore(uid);
+      if (uid && uid !== 'anon' && uid !== 'u_ssr') {
+        const existing = getStore().users[uid];
+        if (!existing || (!isUserDirty(uid) && isPlaceholderNickname(existing.nickname))) {
+          await getUserFromFirestore(uid);
+        }
       }
       res.status(200).json(getTodayStatus(uid, tz, clientLeagueIds));
       return;
@@ -848,8 +855,36 @@ export const api = onRequest(apiOptions, async (req, res) => {
 
     if (method === 'POST' && pathname === '/game/finish') {
       const uid = String(body.uid);
-      const finishRes = finishRound(uid, String(body.playId), body.clientSummary as any);
+      const tz = body.tz ? String(body.tz) : undefined;
+      const finishRes = finishRound(uid, String(body.playId), body.clientSummary as any, tz);
       res.status(200).json(finishRes);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/game/use-freeze') {
+      const uid = String(body.uid ?? '');
+      const tz = body.tz ? String(body.tz) : undefined;
+      const mode = body.mode ? String(body.mode) : undefined;
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(400).json({ error: 'INVALID_UID' });
+        return;
+      }
+      const outcome =
+        mode === 'reset'
+          ? await resetStreakTx(getDb(), { uid })
+          : await useStreakFreezeTx(getDb(), { uid, tz });
+      res.status(outcome.status).json(outcome.body);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/game/reset-streak') {
+      const uid = String(body.uid ?? '');
+      if (!uid || uid === 'anon' || uid === 'u_ssr') {
+        res.status(400).json({ error: 'INVALID_UID' });
+        return;
+      }
+      const outcome = await resetStreakTx(getDb(), { uid });
+      res.status(outcome.status).json(outcome.body);
       return;
     }
 

@@ -36,6 +36,13 @@ import {
   generateFullDailyRound,
   generateSingleQuestionWithGemini,
 } from './daily-round-generator';
+import {
+  computeFreezeApplication,
+  computeStreakSnapshot,
+  getLocalHourInTz,
+  normalizeFrozenDates,
+  type FreezeLedgerEntry,
+} from './streak-logic';
 
 export interface UserRecord {
   uid: string;
@@ -67,11 +74,14 @@ export interface UserRecord {
   streakBest: number;
   lastPlayedDate?: string;
   streakShieldUsedWeek?: string;
+  streakBeforeToday?: number;
+  streakIncreasedDate?: string;
   leagueIds: string[];
   lastNicknameChangeAt?: string;
   freezes: number;
+  frozenDates?: string[];
   freezeUsedYesterday?: boolean;
-  freezeLedger?: Array<{ date: string; action: string; freezesAfter?: number }>;
+  freezeLedger?: FreezeLedgerEntry[];
   duelStats?: {
     played: number;
     wins: number;
@@ -135,6 +145,7 @@ export interface PlayRecord {
   totalMs: number;
   emojiLine: string;
   finishedAt?: string;
+  freezeAutoUsed?: boolean;
 }
 
 export interface LeagueMember {
@@ -400,38 +411,6 @@ export function getStore(): StoreState {
     s.inviteCodes['WORLD1'] = 'lg_world';
   }
 
-  const andreiUid = 'u_andrei89';
-  if (!s.users[andreiUid]) {
-    s.users[andreiUid] = {
-      uid: andreiUid,
-      nickname: 'Andrei',
-      email: 'eu.andrei89@gmail.com',
-      isAnonymous: false,
-      authProvider: 'google',
-      locale: 'ro',
-      tz: 'Europe/Bucharest',
-      country: 'RO',
-      ageConfirmed16: true,
-      relaxedTimer: false,
-      pro: {
-        active: true,
-        plan: 'yearly',
-        until: '2099-12-31T23:59:59.999Z',
-      },
-      notif: {
-        pushEnabled: true,
-        emailEnabled: true,
-        reminderLocalTime: '18:00',
-        sentTodayCount: 0,
-      },
-      streakCurrent: 5,
-      streakBest: 12,
-      leagueIds: ['lg_world'],
-      freezes: 5,
-      createdAt: '2026-11-01T00:00:00.000Z',
-    };
-  }
-
   // QA #22: Invariant check and sanitation on plays and league days
   for (const [k, p] of Object.entries(s.plays)) {
     const correctCount = p.emojiLine ? (p.emojiLine.match(/[⚡🟩]/gu) || []).length : 0;
@@ -623,6 +602,10 @@ export function markUserDirty(uid: string) {
   if (uid) dirtyUserIds.add(uid);
 }
 
+export function isUserDirty(uid: string): boolean {
+  return Boolean(uid && dirtyUserIds.has(uid));
+}
+
 export function consumeDirtyUsers(): UserRecord[] {
   const store = getStore();
   const users: UserRecord[] = [];
@@ -632,6 +615,22 @@ export function consumeDirtyUsers(): UserRecord[] {
   }
   dirtyUserIds.clear();
   return users;
+}
+
+/**
+ * Returns a user's finished plays deduplicated by playId (fallback `${date}_${uid}`),
+ * since store.plays indexes each play under both `${date}_${uid}` and `${uid}_${date}`.
+ */
+export function getUniqueFinishedPlays(store: StoreState, uid: string): PlayRecord[] {
+  const seen = new Map<string, PlayRecord>();
+  for (const play of Object.values(store.plays)) {
+    if (play.uid !== uid || play.status !== 'finished') continue;
+    const key = play.playId || `${play.date}_${play.uid}`;
+    if (!seen.has(key)) {
+      seen.set(key, play);
+    }
+  }
+  return [...seen.values()];
 }
 
 export function isPlaceholderNickname(raw?: string | null): boolean {
@@ -1087,16 +1086,22 @@ export function getLeagueLeaderboard(dateStr?: string) {
   return list;
 }
 
-export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string[]) {
+export function getTodayStatus(
+  uid: string,
+  tz: string,
+  clientLeagueIds?: string[],
+  nowDate: Date = new Date(),
+) {
   const store = getStore();
-  const date = getLocalDateString(new Date(), tz);
+  const user = getOrCreateUser({ uid, tz });
+  const effectiveTz = user.tz || tz || 'UTC';
+  const date = getLocalDateString(nowDate, effectiveTz);
   const meta = getRoundMeta(date);
   const playId = `${date}_${uid}`;
   const play =
     store.plays[playId] ||
     store.plays[`${uid}_${date}`] ||
     Object.values(store.plays).find((p) => p.uid === uid && p.date === date);
-  const user = getOrCreateUser({ uid, tz });
 
   if (clientLeagueIds && Array.isArray(clientLeagueIds)) {
     for (const lid of clientLeagueIds) {
@@ -1119,11 +1124,10 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     }
   }
 
-  const finishedPlaysCount = Object.values(store.plays).filter(
-    (p) => p.uid === uid && p.status === 'finished',
-  ).length;
+  const uniqueFinishedPlays = getUniqueFinishedPlays(store, uid);
+  const finishedPlaysCount = uniqueFinishedPlays.length;
 
-  const now = Date.now();
+  const now = nowDate.getTime();
   const activeDuels = Object.values(store.duels)
     .filter(
       (d) =>
@@ -1253,34 +1257,57 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     (l) => l.isOwner && !user.pro.active && l.memberCount >= 5,
   );
 
-  const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: user.tz || tz }));
-  const currentHour = nowInTz.getHours();
-  const streakAtRisk =
-    currentHour >= 20 &&
-    play?.status !== 'finished' &&
-    (user.freezes ?? 0) === 0 &&
-    user.streakCurrent > 0;
+  const currentHour = getLocalHourInTz(nowDate, effectiveTz);
+  const playedDatesSet = new Set<string>(uniqueFinishedPlays.map((p) => p.date));
+  const playedToday = play?.status === 'finished';
 
-  const freezeNotice = user.freezeUsedYesterday
-    ? `\uD83E\uCA8A \u021Ai-am folosit un scut ieri. Seria ta: ${user.streakCurrent} zile.`
-    : null;
+  const streakSnapshot = computeStreakSnapshot({
+    today: date,
+    currentHour,
+    streakCurrent: user.streakCurrent,
+    streakBest: user.streakBest,
+    lastPlayedDate: user.lastPlayedDate,
+    isPro: user.pro.active,
+    freezes: user.freezes ?? 0,
+    streakShieldUsedWeek: user.streakShieldUsedWeek,
+    frozenDates: user.frozenDates,
+    playedDatesSet,
+    playedToday,
+    streakBeforeToday: user.streakBeforeToday,
+    streakIncreasedDate: user.streakIncreasedDate,
+  });
+
+  // Expose one-shot boolean flag for client-localized toast (never hardcode UI strings in server)
+  const freezeAutoUsed = Boolean(user.freezeUsedYesterday);
   if (user.freezeUsedYesterday) {
     user.freezeUsedYesterday = false;
+    markUserDirty(user.uid);
   }
 
   return {
     ...meta,
-    played: play?.status === 'finished',
+    played: playedToday,
     inProgress: play?.status === 'in_progress',
     playId: play ? play.playId : undefined,
-    score: play?.status === 'finished' ? play.totalScore : null,
-    totalScore: play?.status === 'finished' ? play.totalScore : null,
-    emojiLine: play?.status === 'finished' ? play.emojiLine : null,
+    score: playedToday ? play.totalScore : null,
+    totalScore: playedToday ? play.totalScore : null,
+    emojiLine: playedToday ? play.emojiLine : null,
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
+    lastPlayedDate: user.lastPlayedDate,
     freezes: user.freezes ?? 0,
-    streakAtRisk,
-    freezeNotice,
+    streakIncreasedToday: streakSnapshot.streakIncreasedToday,
+    streakBeforeToday: streakSnapshot.streakBeforeToday,
+    weekStrip: streakSnapshot.weekStrip,
+    missedDays: streakSnapshot.missedDays,
+    freezeAvailable: streakSnapshot.freezeAvailable,
+    freezesNeeded: streakSnapshot.freezesNeeded,
+    canCoverMiss: streakSnapshot.canCoverMiss,
+    weeklyShieldAvailable: streakSnapshot.weeklyShieldAvailable,
+    streakAlive: streakSnapshot.streakAlive,
+    streakAtRisk: streakSnapshot.streakAtRisk,
+    freezeAutoUsed,
+    freezeNotice: null as string | null,
     isPro: user.pro.active,
     isAnonymous: user.isAnonymous,
     authProvider: user.authProvider,
@@ -1305,6 +1332,72 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
   };
 }
 
+export function useStreakFreeze(params: { uid: string; tz?: string; now?: Date }) {
+  const store = getStore();
+  const user = getOrCreateUser({ uid: params.uid, tz: params.tz });
+  const nowDate = params.now ?? new Date();
+  const effectiveTz = user.tz || params.tz || 'UTC';
+  const today = getLocalDateString(nowDate, effectiveTz);
+  const playedDatesSet = new Set(getUniqueFinishedPlays(store, params.uid).map((p) => p.date));
+
+  const applied = computeFreezeApplication({
+    user,
+    today,
+    nowIso: nowDate.toISOString(),
+    auto: false,
+    playedDatesSet,
+  });
+
+  if (!applied.ok) {
+    throw new ApiError(
+      applied.error ?? 'FREEZE_UNAVAILABLE',
+      applied.error ?? 'Freeze unavailable',
+      applied.status ?? 409,
+    );
+  }
+
+  if (!applied.noop) {
+    user.freezes = applied.freezes;
+    user.streakShieldUsedWeek = applied.streakShieldUsedWeek;
+    user.frozenDates = normalizeFrozenDates(applied.frozenDates);
+    user.freezeLedger = applied.freezeLedger;
+    user.lastPlayedDate = applied.lastPlayedDate;
+    user.freezeUsedYesterday = false; // Manual CTA already shows confirmation on client
+    markUserDirty(user.uid);
+    saveStoreToDisk(store);
+  }
+
+  return {
+    ok: true as const,
+    noop: Boolean(applied.noop),
+    streakCurrent: user.streakCurrent,
+    freezes: user.freezes,
+    lastPlayedDate: user.lastPlayedDate,
+    coveredDate: applied.coveredDate,
+    source: applied.source,
+    weeklyShieldAvailable: applied.weeklyShieldAvailable,
+    frozenDates: user.frozenDates ?? [],
+  };
+}
+
+export function resetUserStreak(params: { uid: string }) {
+  const store = getStore();
+  const user = getOrCreateUser({ uid: params.uid });
+  user.streakCurrent = 0;
+  user.lastPlayedDate = undefined;
+  user.freezeUsedYesterday = false;
+  user.streakBeforeToday = 0;
+  user.streakIncreasedDate = undefined;
+  markUserDirty(user.uid);
+  saveStoreToDisk(store);
+  return {
+    ok: true as const,
+    streakCurrent: 0,
+    streakBest: user.streakBest,
+    freezes: user.freezes ?? 0,
+  };
+}
+
 function toClientItem(item: ResolvedRoundItem, relaxedTimer: boolean) {
   return {
     index: item.index,
@@ -1322,6 +1415,7 @@ export function startRound(params: {
   locale: Locale | string;
   nickname?: string;
   relaxedTimer?: boolean;
+  now?: Date;
 }) {
   const store = getStore();
   const user = getOrCreateUser({
@@ -1332,7 +1426,9 @@ export function startRound(params: {
     relaxedTimer: params.relaxedTimer,
   });
 
-  const date = getLocalDateString(new Date(), params.tz);
+  const nowDate = params.now ?? new Date();
+  const effectiveTz = user.tz || params.tz || 'UTC';
+  const date = getLocalDateString(nowDate, effectiveTz);
   const meta = getRoundMeta(date);
   const playId = `${date}_${params.uid}`;
   const resolved = resolveRoundItems(date, params.locale);
@@ -1343,12 +1439,37 @@ export function startRound(params: {
     Object.values(store.plays).find((p) => p.uid === params.uid && p.date === date);
 
   if (play?.status === 'finished') {
-    return { alreadyFinished: true as const, playId: play.playId };
+    return {
+      alreadyFinished: true as const,
+      playId: play.playId,
+      freezeAutoUsed: Boolean(play.freezeAutoUsed),
+    };
   }
 
-  const now = Date.now();
+  const now = nowDate.getTime();
+  let freezeAutoUsed = Boolean(play?.freezeAutoUsed);
   let activePlay: PlayRecord;
   if (!play) {
+    // Auto-apply a single freeze or Pro weekly shield if exactly 1 day was missed and user starts today's round directly
+    const playedDatesSet = new Set(getUniqueFinishedPlays(store, params.uid).map((p) => p.date));
+    const applied = computeFreezeApplication({
+      user,
+      today: date,
+      nowIso: nowDate.toISOString(),
+      auto: true,
+      playedDatesSet,
+    });
+    if (applied.ok && !applied.noop) {
+      user.freezes = applied.freezes;
+      user.streakShieldUsedWeek = applied.streakShieldUsedWeek;
+      user.frozenDates = normalizeFrozenDates(applied.frozenDates);
+      user.freezeLedger = applied.freezeLedger;
+      user.lastPlayedDate = applied.lastPlayedDate;
+      user.freezeUsedYesterday = true;
+      freezeAutoUsed = true;
+      markUserDirty(user.uid);
+    }
+
     activePlay = {
       playId,
       uid: params.uid,
@@ -1361,6 +1482,7 @@ export function startRound(params: {
       totalScore: 0,
       totalMs: 0,
       emojiLine: '',
+      freezeAutoUsed,
     };
     store.plays[playId] = activePlay;
     store.plays[`${params.uid}_${date}`] = activePlay;
@@ -1392,13 +1514,16 @@ export function startRound(params: {
           });
           curr = activePlay.items.find((i) => i.answeredAt === undefined);
         } else {
-          // All questions finished
-          activePlay.status = 'finished';
-          finishRound(params.uid, activePlay.playId);
+          // All questions finished — let finishRound finalize status & streak
+          finishRound(params.uid, activePlay.playId, undefined, effectiveTz, nowDate);
           store.plays[playId] = activePlay;
           store.plays[`${params.uid}_${date}`] = activePlay;
           saveStoreToDisk(store);
-          return { alreadyFinished: true as const, playId: activePlay.playId };
+          return {
+            alreadyFinished: true as const,
+            playId: activePlay.playId,
+            freezeAutoUsed: Boolean(activePlay.freezeAutoUsed),
+          };
         }
       } else {
         // Still has time
@@ -1426,6 +1551,7 @@ export function startRound(params: {
     item: clientItem,
     remainingMs: Math.max(0, clientItem.limitMs - elapsedMs),
     serverNow: now,
+    freezeAutoUsed,
   };
 }
 
@@ -1515,37 +1641,38 @@ export function finishRound(
     emojiLine?: string;
     items?: Array<{ index: number; points: number; emoji?: string }>;
   },
+  tz?: string,
+  nowDate: Date = new Date(),
 ) {
   const store = getStore();
+  const userForLookup = getOrCreateUser({ uid, tz });
+  const effectiveTz = userForLookup.tz || tz || 'UTC';
+
   let foundPlay: PlayRecord | undefined =
     store.plays[playId] ||
-    Object.values(store.plays).find(
-      (p) => p.uid === uid && (p.playId === playId || p.playId.includes(uid)),
-    );
+    Object.values(store.plays).find((p) => p.uid === uid && p.playId === playId);
 
   if (!foundPlay) {
     const parts = playId.split('_');
-    let date = getLocalDateString(new Date(), 'UTC');
+    let date = getLocalDateString(nowDate, effectiveTz);
     if (parts.length >= 2) {
       if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0]!)) date = parts[0]!;
       else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[parts.length - 1]!))
         date = parts[parts.length - 1]!;
     }
     const meta = getRoundMeta(date);
-    const user = getOrCreateUser({ uid });
     foundPlay = {
       playId,
       uid,
       date,
       roundNumber: meta.roundNumber,
-      locale: user.locale || 'ro',
-      relaxedTimer: user.relaxedTimer,
-      status: 'finished',
+      locale: userForLookup.locale || 'ro',
+      relaxedTimer: userForLookup.relaxedTimer,
+      status: 'in_progress',
       items: [],
       totalScore: 0,
       totalMs: 0,
       emojiLine: '',
-      finishedAt: new Date().toISOString(),
     };
     store.plays[playId] = foundPlay;
     store.plays[`${foundPlay.date}_${uid}`] = foundPlay;
@@ -1596,11 +1723,40 @@ export function finishRound(
     }
   }
 
+  let shieldTriggered = false;
   if (play.status !== 'finished') {
     play.status = 'finished';
-    play.finishedAt = new Date().toISOString();
+    play.finishedAt = nowDate.toISOString();
 
-    const user = getOrCreateUser({ uid });
+    const user = getOrCreateUser({ uid, tz });
+    const prevStreak = user.streakCurrent;
+
+    // Auto-apply a single freeze or Pro weekly shield if missedDays === 1 and not already applied at round start
+    if (!play.freezeAutoUsed) {
+      const playedDatesSet = new Set(
+        getUniqueFinishedPlays(store, uid)
+          .filter((p) => p.playId !== play.playId)
+          .map((p) => p.date),
+      );
+      const applied = computeFreezeApplication({
+        user,
+        today: play.date,
+        nowIso: nowDate.toISOString(),
+        auto: true,
+        playedDatesSet,
+      });
+      if (applied.ok && !applied.noop) {
+        user.freezes = applied.freezes;
+        user.streakShieldUsedWeek = applied.streakShieldUsedWeek;
+        user.frozenDates = normalizeFrozenDates(applied.frozenDates);
+        user.freezeLedger = applied.freezeLedger;
+        user.lastPlayedDate = applied.lastPlayedDate;
+        user.freezeUsedYesterday = true;
+        play.freezeAutoUsed = true;
+        shieldTriggered = applied.source === 'weekly_shield';
+      }
+    }
+
     const nextStreak = updateStreakWithShield({
       lastPlayedDate: user.lastPlayedDate,
       currentDate: play.date,
@@ -1613,6 +1769,18 @@ export function finishRound(
     user.streakBest = nextStreak.streakBest;
     user.lastPlayedDate = play.date;
     user.streakShieldUsedWeek = nextStreak.streakShieldUsedWeek;
+    if (nextStreak.shieldTriggered) {
+      shieldTriggered = true;
+    }
+
+    if (user.streakCurrent > prevStreak) {
+      user.streakBeforeToday = prevStreak;
+      user.streakIncreasedDate = play.date;
+    } else if (prevStreak > 0 && user.streakCurrent < prevStreak) {
+      // Streak reset due to 2+ missed days; do not trigger "+1" celebration
+      user.streakBeforeToday = 0;
+      user.streakIncreasedDate = undefined;
+    }
     markUserDirty(user.uid);
 
     // Only update leagues if the player actually played answered questions
@@ -1642,11 +1810,9 @@ export function finishRound(
     }
   }
 
-  const user = getOrCreateUser({ uid });
+  const user = getOrCreateUser({ uid, tz });
   const resolved = resolveRoundItems(play.date, play.locale);
-  const finishedPlaysCount = Object.values(store.plays).filter(
-    (p) => p.uid === uid && p.status === 'finished',
-  ).length;
+  const finishedPlaysCount = getUniqueFinishedPlays(store, uid).length;
 
   const result = {
     playId: play.playId,
@@ -1657,6 +1823,8 @@ export function finishRound(
     emojiLine: play.emojiLine || '',
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
+    freezeAutoUsed: Boolean(play.freezeAutoUsed),
+    shieldTriggered,
     finishedPlaysCount,
     review: resolved.map((r, idx) => {
       const itemState = play.items.find((i) => i.index === idx);
@@ -3227,9 +3395,7 @@ export function upgradeAccount(params: {
 export function getUserProfile(uid: string) {
   const store = getStore();
   const user = getOrCreateUser({ uid });
-  const userPlays = Object.values(store.plays).filter(
-    (p) => p.uid === uid && p.status === 'finished',
-  );
+  const userPlays = getUniqueFinishedPlays(store, uid);
 
   // Compute topic accuracy for Pro stats
   const topicTotals: Record<string, { correct: number; total: number }> = {};

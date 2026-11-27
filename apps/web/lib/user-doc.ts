@@ -24,6 +24,10 @@ export interface UserDocInput extends ExpiryUser {
   streakShieldUsedWeek?: string | null;
   rivals?: unknown;
   freezeLedger?: unknown;
+  frozenDates?: string[];
+  freezeUsedYesterday?: boolean;
+  streakBeforeToday?: number;
+  streakIncreasedDate?: string | null;
 }
 
 /**
@@ -64,6 +68,10 @@ export function formatUserDoc(user: UserDocInput, now = Date.now()) {
     streakShieldUsedWeek: user.streakShieldUsedWeek ?? null,
     rivals: user.rivals ?? {},
     freezeLedger: user.freezeLedger ?? [],
+    frozenDates: Array.isArray(user.frozenDates) ? user.frozenDates : [],
+    freezeUsedYesterday: Boolean(user.freezeUsedYesterday),
+    streakBeforeToday: typeof user.streakBeforeToday === 'number' ? user.streakBeforeToday : null,
+    streakIncreasedDate: user.streakIncreasedDate ?? null,
     expiresAt: computeAnonExpiry(user, now),
   };
 }

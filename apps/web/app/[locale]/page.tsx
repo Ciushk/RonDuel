@@ -3,7 +3,6 @@
 import {
   Check,
   Crown,
-  Flame,
   GlobeHemisphereWest,
   Play,
   Plus,
@@ -25,7 +24,10 @@ import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
+import { MissedDayCard } from '@/components/MissedDayCard';
+import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { PushOptInCard } from '@/components/PushOptInCard';
+import { StreakWeekStrip } from '@/components/StreakWeekStrip';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
@@ -41,6 +43,7 @@ import {
   getSecondsUntilMidnight,
 } from '@/lib/round-clock';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
+import type { WeekStripDay } from '@/lib/streak-logic';
 import { useInstallPrompt } from '@/lib/use-install-prompt';
 
 interface ActiveDuel {
@@ -82,8 +85,19 @@ interface TodayStatus {
   emojiLine?: string | null;
   streakCurrent: number;
   streakBest: number;
+  lastPlayedDate?: string;
   freezes?: number;
+  streakIncreasedToday?: boolean;
+  streakBeforeToday?: number;
+  weekStrip?: WeekStripDay[];
+  missedDays?: number;
+  freezeAvailable?: boolean;
+  freezesNeeded?: number;
+  canCoverMiss?: boolean;
+  weeklyShieldAvailable?: boolean;
+  streakAlive?: boolean;
   streakAtRisk?: boolean;
+  freezeAutoUsed?: boolean;
   freezeNotice?: string | null;
   isPro?: boolean;
   nickname?: string;
@@ -105,12 +119,15 @@ export default function LocaleHomePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const { requireAccount } = usePaymentAuthGate();
 
   const [status, setStatus] = useState<TodayStatus | null>(null);
   const [nickSheetOpen, setNickSheetOpen] = useState(false);
   const [createLeagueOpen, setCreateLeagueOpen] = useState(false);
   const [joinCodeOpen, setJoinCodeOpen] = useState(false);
   const [isLinkSheetOpen, setIsLinkSheetOpen] = useState(false);
+  const [freezeSheetOpen, setFreezeSheetOpen] = useState(false);
+  const [buyingFreeze, setBuyingFreeze] = useState(false);
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [toast, setToast] = useState('');
   const [nickname, setNickname] = useState('');
@@ -128,7 +145,8 @@ export default function LocaleHomePage() {
     ready: Boolean(status?.played),
     finishedPlaysCount: status?.finishedPlaysCount ?? (status?.played ? 1 : 0),
     animationsComplete: true,
-    blockedByOtherSheet: nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen,
+    blockedByOtherSheet:
+      nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen || freezeSheetOpen,
   });
 
   // The account is the source of truth: a nickname confirmed earlier (here or on another device)
@@ -145,6 +163,11 @@ export default function LocaleHomePage() {
     saveLocalSession({ ...session, ...next });
   }, []);
 
+  const showToastMessage = useCallback((msg: string, ms = 4000) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), ms);
+  }, []);
+
   const loadStatus = useCallback(() => {
     const session = getLocalSession();
     const tz = getBrowserTimeZone();
@@ -153,9 +176,10 @@ export default function LocaleHomePage() {
       .then((data: TodayStatus) => {
         setStatus(data);
         applyServerProfile(data);
-        if (data.freezeNotice) {
-          setToast(data.freezeNotice);
-          setTimeout(() => setToast(''), 4000);
+        if (data.freezeAutoUsed && data.streakCurrent > 0) {
+          showToastMessage(t('home.freezeAutoUsed', { days: data.streakCurrent }), 4500);
+        } else if (data.freezeNotice) {
+          showToastMessage(data.freezeNotice, 4000);
         }
         try {
           if (!session.isAnonymous && session.email) {
@@ -172,7 +196,38 @@ export default function LocaleHomePage() {
         }
       })
       .catch(() => {});
-  }, [applyServerProfile]);
+  }, [applyServerProfile, showToastMessage, t]);
+
+  const executeBuyFreeze = async (pack: 'freeze_1' | 'freeze_3') => {
+    const uid = getLocalSession().uid;
+    if (!uid) return;
+    setBuyingFreeze(true);
+    try {
+      const res = await fetch('/api/billing/freeze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, pack }),
+      });
+      if (res.ok) {
+        showToastMessage(t('profile.shieldAddedToast'), 3500);
+        setFreezeSheetOpen(false);
+        loadStatus();
+      } else {
+        showToastMessage(t('profile.purchaseFailed'), 3500);
+      }
+    } catch {
+      showToastMessage(t('common.networkError'), 3500);
+    } finally {
+      setBuyingFreeze(false);
+    }
+  };
+
+  const handleBuyFreeze = (pack: 'freeze_1' | 'freeze_3') => {
+    const label = pack === 'freeze_3' ? '1,99 €' : '0,99 €';
+    void requireAccount({ kind: 'shield_pack', label }, () => {
+      void executeBuyFreeze(pack);
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -366,24 +421,51 @@ export default function LocaleHomePage() {
     <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-4">
       <h1 className="sr-only">{t('home.heroTitle')}</h1>
 
-      {/* Streak badge for returning player */}
-      {status && status.streakCurrent > 0 && (
-        <div className="flex items-center justify-between">
-          <Chip tone="volt" className="gap-1.5 px-3 py-1 font-bold">
-            <Flame size={16} weight="fill" className="text-ron-strong" aria-hidden="true" />
-            <span>{t('common.daysCount', { count: status.streakCurrent })}</span>
-          </Chip>
-        </div>
+      {/* Streak chip (+1 animation once/day) and 7-day week strip */}
+      {status && (status.streakCurrent > 0 || (status.weekStrip?.length ?? 0) === 7) && (
+        <StreakWeekStrip
+          uid={getLocalSession().uid}
+          date={status.date || getLocalDateKey(new Date(), getBrowserTimeZone())}
+          streakCurrent={status.streakCurrent}
+          streakIncreasedToday={status.streakIncreasedToday}
+          streakBeforeToday={status.streakBeforeToday}
+          freezes={status.freezes}
+          weeklyShieldAvailable={status.weeklyShieldAvailable}
+          weekStrip={status.weekStrip}
+          onOpenFreezeSheet={() => setFreezeSheetOpen(true)}
+        />
       )}
 
-      {/* Streak at risk warning banner */}
-      {status?.streakAtRisk && (
+      {/* Missed-day recovery / reset card */}
+      {status && !status.played && (status.missedDays ?? 0) > 0 && status.streakCurrent > 0 && (
+        <MissedDayCard
+          uid={getLocalSession().uid}
+          tz={getBrowserTimeZone()}
+          streakCurrent={status.streakCurrent}
+          missedDays={status.missedDays ?? 0}
+          freezes={status.freezes ?? 0}
+          canCoverMiss={Boolean(status.canCoverMiss)}
+          weeklyShieldAvailable={Boolean(status.weeklyShieldAvailable)}
+          isPro={Boolean(status.isPro)}
+          onActionSuccess={(msg) => {
+            if (msg) showToastMessage(msg, 4000);
+            loadStatus();
+          }}
+          onActionError={(msg) => showToastMessage(msg, 3500)}
+          onOpenFreezeSheet={() => setFreezeSheetOpen(true)}
+        />
+      )}
+
+      {/* Streak at risk warning banner (only when no day has been missed yet) */}
+      {status?.streakAtRisk && !(status.missedDays && status.missedDays > 0) && (
         <Card
           variant="sticker"
           className="border-ron-strong bg-ron/20 space-y-1 border-2 p-3.5 shadow-sm"
         >
           <div className="text-ink flex items-center gap-2.5">
-            <span className="text-xl">⚠️</span>
+            <span className="text-xl" aria-hidden="true">
+              ⚠️
+            </span>
             <div className="space-y-0.5">
               <p className="font-display text-ron-strong text-xs font-black">
                 {t('home.streakAtRiskTitle', { days: status.streakCurrent })}
@@ -981,6 +1063,96 @@ export default function LocaleHomePage() {
           loadStatus();
         }}
       />
+
+      {/* Streak Freeze Explanation & Store Sheet */}
+      <Sheet
+        open={freezeSheetOpen}
+        onClose={() => setFreezeSheetOpen(false)}
+        title={t('profile.shieldsTitle')}
+      >
+        {freezeSheetOpen && (
+          <div className="space-y-4">
+            <div className="text-ink/90 space-y-2 text-xs font-medium leading-relaxed">
+              <p>{t('profile.shieldsIntro')}</p>
+              <p>
+                {typeof t.rich === 'function'
+                  ? t.rich('profile.shieldsHow', { b: (chunks) => <strong>{chunks}</strong> })
+                  : t('profile.shieldsHow')}
+              </p>
+              <p className="text-muted">
+                {typeof t.rich === 'function'
+                  ? t.rich('profile.shieldsInventory', {
+                      max: 5,
+                      count: `${status?.freezes ?? 0}/5`,
+                      b: (chunks) => <strong>{chunks}</strong>,
+                    })
+                  : t('profile.shieldsInventory', {
+                      max: 5,
+                      count: `${status?.freezes ?? 0}/5`,
+                    })}
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <div className="border-border bg-surface-2 flex items-center justify-between rounded-xl border-2 p-3">
+                <div>
+                  <p className="text-ink text-sm font-extrabold">{t('profile.shieldOneTitle')}</p>
+                  <p className="text-muted text-[11px] font-bold">{t('profile.shieldOneBody')}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="volt"
+                  disabled={buyingFreeze || (status?.freezes ?? 0) >= 5}
+                  onClick={() => handleBuyFreeze('freeze_1')}
+                  className="h-9 px-3 text-xs font-black"
+                  data-testid="home-buy-freeze-1"
+                >
+                  0,99 €
+                </Button>
+              </div>
+
+              <div className="border-volt bg-volt/20 relative flex items-center justify-between rounded-xl border-2 p-3">
+                <span className="bg-ron-strong border-border absolute -top-2.5 right-3 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase text-white">
+                  {t('profile.bestPrice')}
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-extrabold">{t('profile.shieldThreeTitle')}</p>
+                  <p className="text-muted text-[11px] font-bold">
+                    {t('profile.savePercent', { percent: 33 })}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="volt"
+                  disabled={buyingFreeze || (status?.freezes ?? 0) >= 5}
+                  onClick={() => handleBuyFreeze('freeze_3')}
+                  className="h-9 px-3 text-xs font-black"
+                  data-testid="home-buy-freeze-3"
+                >
+                  1,99 €
+                </Button>
+              </div>
+            </div>
+
+            {!status?.isPro && (
+              <div className="border-border bg-surface space-y-1.5 rounded-xl border p-3 pt-2 text-center">
+                <p className="text-ink text-xs font-bold">{t('profile.shieldsProQuestion')}</p>
+                <p className="text-muted text-[11px]">{t('profile.shieldsProBody')}</p>
+                <Link href={`/${locale}/pro`} onClick={() => setFreezeSheetOpen(false)}>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    fullWidth
+                    className="mt-1 h-9 text-xs font-black"
+                  >
+                    {t('common.goPro')}
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </Sheet>
 
       {/* PWA install prompt (shown on Home after a finished round, never over /result) */}
       {installPlatform && (

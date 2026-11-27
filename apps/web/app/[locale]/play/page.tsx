@@ -216,7 +216,12 @@ export default function PlayPage() {
         const finishRes = await fetch('/api/game/finish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
+          body: JSON.stringify({
+            uid: session.uid,
+            playId,
+            tz: getBrowserTimeZone(),
+            clientSummary,
+          }),
         });
         if (finishRes.ok) {
           serverResult = (await finishRes.json()) as Record<string, unknown>;

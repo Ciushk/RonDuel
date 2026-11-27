@@ -13,11 +13,13 @@ import {
   consumeDirtyUsers,
   getStore,
   isPlaceholderNickname,
+  isUserDirty,
   markUserDirty,
   purgeAnonymousFromStore,
   syncNicknameToLeagues,
   type UserRecord,
 } from '../../apps/web/lib/server-store.js';
+import { normalizeFrozenDates } from '../../apps/web/lib/streak-logic.js';
 
 export { ANON_RETENTION_DAYS } from '../../apps/web/lib/anon-retention.js';
 
@@ -49,7 +51,7 @@ function timestampLikeToIso(value: unknown): string | null {
   return date ? date.toISOString() : null;
 }
 
-function mapFirestoreUser(uid: string, data: Record<string, unknown>): UserRecord {
+export function mapFirestoreUser(uid: string, data: Record<string, unknown>): UserRecord {
   const email = typeof data.email === 'string' && data.email ? data.email : undefined;
   const isAnon = Boolean(data.isAnonymous) && !email;
   return {
@@ -87,6 +89,14 @@ function mapFirestoreUser(uid: string, data: Record<string, unknown>): UserRecor
     freezeLedger: Array.isArray(data.freezeLedger)
       ? (data.freezeLedger as UserRecord['freezeLedger'])
       : undefined,
+    frozenDates: Array.isArray(data.frozenDates)
+      ? normalizeFrozenDates(data.frozenDates as string[])
+      : undefined,
+    freezeUsedYesterday: Boolean(data.freezeUsedYesterday),
+    streakBeforeToday:
+      typeof data.streakBeforeToday === 'number' ? data.streakBeforeToday : undefined,
+    streakIncreasedDate:
+      typeof data.streakIncreasedDate === 'string' ? data.streakIncreasedDate : undefined,
     duelStats: (data.duelStats as UserRecord['duelStats']) || undefined,
     rivals: (data.rivals as UserRecord['rivals']) || {},
     createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date().toISOString(),
@@ -229,9 +239,47 @@ export async function getUserFromFirestore(uid: string): Promise<UserRecord | nu
 }
 
 /**
+ * Merges a Firestore user doc into `store.users[uid]`.
+ * Firestore is the source of truth for progress and identity fields unless the
+ * in-memory user has unflushed dirty writes (`dirty === true`).
+ */
+export function mergeHydratedUserFromFirestore(
+  store: { users: Record<string, UserRecord> },
+  uid: string,
+  data: Record<string, unknown>,
+  dirty: boolean,
+): UserRecord {
+  const userRecord = mapFirestoreUser(uid, data);
+  const existing = store.users[uid];
+  if (!existing) {
+    store.users[uid] = userRecord;
+    return userRecord;
+  }
+  if (dirty) {
+    return existing;
+  }
+  const mergedLeagueIds = Array.from(
+    new Set([...(userRecord.leagueIds ?? ['lg_world']), ...(existing.leagueIds ?? [])]),
+  );
+  const nickname =
+    !isPlaceholderNickname(userRecord.nickname) || isPlaceholderNickname(existing.nickname)
+      ? userRecord.nickname
+      : existing.nickname;
+
+  const merged: UserRecord = {
+    ...existing,
+    ...userRecord,
+    nickname,
+    leagueIds: mergedLeagueIds,
+  };
+  store.users[uid] = merged;
+  return merged;
+}
+
+/**
  * Loads all user docs into store.users once per Cloud Functions instance so every
  * league leaderboard, admin panel, and world ranking resolves from user.nickname
- * rather than stale Player_xxxx rows in store_leagues.
+ * and real Firestore progress rather than stale in-memory rows.
  */
 export function ensureUsersHydratedFromFirestore(): Promise<void> {
   if (!usersHydrationPromise) {
@@ -241,11 +289,7 @@ export function ensureUsersHydratedFromFirestore(): Promise<void> {
       let loaded = 0;
       for (const doc of snap.docs) {
         const data = doc.data() ?? {};
-        const userRecord = mapFirestoreUser(doc.id, data);
-        const existing = store.users[doc.id];
-        if (!existing || (isPlaceholderNickname(existing.nickname) && !isPlaceholderNickname(userRecord.nickname))) {
-          store.users[doc.id] = userRecord;
-        }
+        mergeHydratedUserFromFirestore(store, doc.id, data, isUserDirty(doc.id));
         loaded += 1;
       }
       const backfilled = backfillLeagueNicknamesFromUsers();

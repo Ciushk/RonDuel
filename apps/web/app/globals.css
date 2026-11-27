@@ -1476,3 +1476,64 @@ html[data-theme='dark'] {
     transform: none !important;
   }
 }
+
+/* --- HOME: Streak +1 celebration (transform & opacity only) --- */
+@keyframes rd-streak-flame-bump {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes rd-streak-plus-one {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes rd-streak-plus-one-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.rd-streak-flame-bump {
+  animation: rd-streak-flame-bump 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.rd-streak-plus-one {
+  animation: rd-streak-plus-one 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-streak-flame-bump {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rd-streak-plus-one {
+    animation: rd-streak-plus-one-fade 150ms ease-out both !important;
+    transform: none !important;
+  }
+}
