@@ -19,7 +19,7 @@ import {
   type TownTileDoc,
 } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { debitWallet, prepareCreditWallet } from './town-wallet.js';
+import { debitWallet, prepareCreditWallet, type DebitWalletParams } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 
 export async function getTownCatalog(db: Firestore): Promise<TownCatalogDoc> {
@@ -39,13 +39,14 @@ export interface BuildItemParams {
   x: number;
   y: number;
   rot?: number;
+  adminSkip?: DebitWalletParams['adminSkip'];
 }
 
 export async function buildItem(
   db: Firestore,
   uid: string,
   params: BuildItemParams,
-): Promise<{ success: boolean; town: TownDoc; tile: TownTileDoc }> {
+): Promise<{ success: boolean; town: TownDoc; tile: TownTileDoc; adminSkipped?: boolean }> {
   const economy = await assertTownFeatureEnabled(db);
   const catalog = await getTownCatalog(db);
   const item: CatalogItem | undefined = catalog.items[params.itemId];
@@ -135,8 +136,9 @@ export async function buildItem(
     }
 
     // Debit wallet if price > 0
+    let adminSkipped = false;
     if (item.priceCoins > 0) {
-      await debitWallet({
+      const debitRes = await debitWallet({
         transaction: tx,
         db,
         uid,
@@ -144,7 +146,9 @@ export async function buildItem(
         reason: 'spend',
         refId: params.itemId,
         idempotencyKey: `build:${uid}:${params.itemId}:${params.x}_${params.y}_${Date.now()}`,
+        adminSkip: params.adminSkip,
       });
+      adminSkipped = Boolean(debitRes.adminSkipped);
     }
 
     // Place new tile
@@ -154,12 +158,13 @@ export async function buildItem(
       .collection('townTiles')
       .doc(`${params.x}_${params.y}`);
 
-    const newTile: TownTileDoc = {
+    const newTile: TownTileDoc & { paidCoins?: number } = {
       itemId: params.itemId,
       x: params.x,
       y: params.y,
       placedAt: FieldValue.serverTimestamp(),
       ...(params.itemId === 'road' && params.rot === 1 ? { rot: 1 as const } : {}),
+      ...(adminSkipped ? { paidCoins: 0 } : {}),
     };
     tx.set(newTileRef, newTile);
 
@@ -231,6 +236,7 @@ export async function buildItem(
       success: true,
       town: updatedTown,
       tile: newTile,
+      ...(adminSkipped ? { adminSkipped: true } : {}),
     };
   });
 
@@ -260,7 +266,7 @@ export async function removeTile(
       throw new Error(`No tile found at (${params.x}, ${params.y})`);
     }
 
-    const tileData = tileSnap.data() as TownTileDoc & { parentTile?: string };
+    const tileData = tileSnap.data() as TownTileDoc & { parentTile?: string; paidCoins?: number };
     if (tileData.parentTile) {
       throw new Error('Please select the main building tile to remove');
     }
@@ -269,7 +275,13 @@ export async function removeTile(
     }
 
     const item = catalog.items[tileData.itemId];
-    const refundCoins = item ? Math.floor(item.priceCoins * economy.removeRefundRate) : 0;
+    // Never refund coins that were never spent (e.g. tiles placed via admin spend skip)
+    const refundCoins =
+      tileData.paidCoins === 0
+        ? 0
+        : item
+          ? Math.floor(item.priceCoins * economy.removeRefundRate)
+          : 0;
 
     const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
     const townSnap = await tx.get(townRef);
@@ -546,8 +558,8 @@ export async function moveTile(
 export async function buyFarmPlot(
   db: Firestore,
   uid: string,
-  params: { x: number; y: number },
-): Promise<{ success: boolean; cost: number; plotsOwned: number }> {
+  params: { x: number; y: number; adminSkip?: DebitWalletParams['adminSkip'] },
+): Promise<{ success: boolean; cost: number; plotsOwned: number; adminSkipped?: boolean }> {
   await assertTownFeatureEnabled(db);
 
   const townRef = db.collection('users').doc(uid).collection('town').doc('main');
@@ -584,9 +596,10 @@ export async function buyFarmPlot(
     }
 
     const cost = getPlotPrice(currentPlots);
+    let adminSkipped = false;
 
     if (cost > 0) {
-      await debitWallet({
+      const debitRes = await debitWallet({
         transaction: tx,
         db,
         uid,
@@ -594,14 +607,17 @@ export async function buyFarmPlot(
         reason: 'spend',
         refId: 'plot',
         idempotencyKey: `buy_plot:${uid}:${params.x}_${params.y}_${Date.now()}`,
+        adminSkip: params.adminSkip,
       });
+      adminSkipped = Boolean(debitRes.adminSkipped);
     }
 
-    const newPlot: TownTileDoc = {
+    const newPlot: TownTileDoc & { paidCoins?: number } = {
       itemId: 'plot',
       x: params.x,
       y: params.y,
       placedAt: FieldValue.serverTimestamp(),
+      ...(adminSkipped ? { paidCoins: 0 } : {}),
     };
     tx.set(tileRef, newPlot);
 
@@ -613,8 +629,9 @@ export async function buyFarmPlot(
 
     return {
       success: true,
-      cost,
+      cost: adminSkipped ? 0 : cost,
       plotsOwned: nextPlotsOwned,
+      ...(adminSkipped ? { adminSkipped: true } : {}),
     };
   });
 
@@ -625,7 +642,12 @@ export async function buyFarmPlot(
 export async function buyLandTile(
   db: Firestore,
   uid: string,
-  params: { x: number; y: number; groundType: string },
+  params: {
+    x: number;
+    y: number;
+    groundType: string;
+    adminSkip?: DebitWalletParams['adminSkip'];
+  },
 ): Promise<{
   success: boolean;
   cost: number;
@@ -633,6 +655,7 @@ export async function buyLandTile(
   y: number;
   groundType: GroundTileType;
   land: Record<string, GroundTileType>;
+  adminSkipped?: boolean;
 }> {
   await assertTownFeatureEnabled(db);
 
@@ -671,8 +694,9 @@ export async function buyLandTile(
     }
 
     const cost = LAND_PRICES[groundType];
+    let adminSkipped = false;
     if (cost > 0) {
-      await debitWallet({
+      const debitRes = await debitWallet({
         transaction: tx,
         db,
         uid,
@@ -680,7 +704,9 @@ export async function buyLandTile(
         reason: 'spend',
         refId: `land:${groundType}`,
         idempotencyKey: `buy_land:${uid}:${params.x}_${params.y}:${Date.now()}`,
+        adminSkip: params.adminSkip,
       });
+      adminSkipped = Boolean(debitRes.adminSkipped);
     }
 
     const nextLand: Record<string, GroundTileType> = {
@@ -695,11 +721,12 @@ export async function buyLandTile(
 
     return {
       success: true,
-      cost,
+      cost: adminSkipped ? 0 : cost,
       x: params.x,
       y: params.y,
       groundType,
       land: nextLand,
+      ...(adminSkipped ? { adminSkipped: true } : {}),
     };
   });
 

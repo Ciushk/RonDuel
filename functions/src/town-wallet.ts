@@ -6,6 +6,8 @@ import {
 } from '@ronduel/shared';
 import { FieldValue, type Firestore, type Transaction } from 'firebase-admin/firestore';
 
+import { prepareTownAdminCheck } from './town-admin.js';
+
 function getCurrentMonthKey(date = new Date()): string {
   const y = date.getUTCFullYear();
   const m = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -141,10 +143,20 @@ export interface DebitWalletParams {
   reason: LedgerReason;
   refId: string;
   idempotencyKey: string;
+  /**
+   * Server-verified admin spend bypass. Only honored when `verifiedActor === true`
+   * (caller verified a Firebase ID token whose `decoded.uid === uid`) AND server-side
+   * admin check confirms `isAdmin` (Firestore flag, `ADMIN_BOOTSTRAP_EMAILS`, or `admin` claim).
+   */
+  adminSkip?: {
+    verifiedActor: boolean;
+    hasAdminClaim?: boolean;
+  };
 }
 
 export interface DebitWalletResult {
   duplicate: boolean;
+  adminSkipped?: boolean;
   balanceBefore?: number;
   balanceAfter?: number;
   spentBuckets?: Partial<Record<CoinBucket, number>>;
@@ -170,10 +182,36 @@ export async function prepareDebitWallet(params: DebitWalletParams): Promise<Pre
     reason,
     refId,
     idempotencyKey,
+    adminSkip,
   } = params;
 
   if (amount <= 0) {
     return { duplicate: false, apply: () => {} };
+  }
+
+  if (adminSkip?.verifiedActor === true) {
+    const adminCheck = await prepareTownAdminCheck({
+      db,
+      transaction,
+      uid,
+      hasAdminClaim: adminSkip.hasAdminClaim,
+      bootstrapOnVerified: true,
+    });
+    if (adminCheck.isAdmin) {
+      const walletRef = db.collection('users').doc(uid).collection('wallet').doc('main');
+      const walletSnap = await transaction.get(walletRef);
+      const realBalance = walletSnap.exists ? Number(walletSnap.data()?.balance ?? 0) : 0;
+      return {
+        duplicate: false,
+        adminSkipped: true,
+        balanceBefore: realBalance,
+        balanceAfter: realBalance,
+        spentBuckets: {},
+        apply: () => {
+          adminCheck.applyBootstrap();
+        },
+      };
+    }
   }
 
   const safeKey = encodeURIComponent(idempotencyKey);

@@ -11,14 +11,19 @@ import {
   type TownTileDoc,
 } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { debitWallet, prepareCreditWallet } from './town-wallet.js';
+import { debitWallet, prepareCreditWallet, type DebitWalletParams } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 
 export async function plantCrop(
   db: Firestore,
   uid: string,
-  params: { x: number; y: number; cropId: string },
-): Promise<{ success: boolean; tile: TownTileDoc }> {
+  params: {
+    x: number;
+    y: number;
+    cropId: string;
+    adminSkip?: DebitWalletParams['adminSkip'];
+  },
+): Promise<{ success: boolean; tile: TownTileDoc; adminSkipped?: boolean }> {
   const economy = await assertTownFeatureEnabled(db);
   const catalog = DEFAULT_TOWN_CATALOG;
   const cropItem: CatalogItem | undefined = catalog.items[params.cropId];
@@ -73,8 +78,9 @@ export async function plantCrop(
     }
 
     // Debit seed price
+    let adminSkipped = false;
     if (cropItem.priceCoins > 0) {
-      await debitWallet({
+      const debitRes = await debitWallet({
         transaction: tx,
         db,
         uid,
@@ -82,7 +88,9 @@ export async function plantCrop(
         reason: 'spend',
         refId: params.cropId,
         idempotencyKey: `plant:${uid}:${params.x}_${params.y}_${Date.now()}`,
+        adminSkip: params.adminSkip,
       });
+      adminSkipped = Boolean(debitRes.adminSkipped);
     }
 
     const nowSeconds = Math.floor(Date.now() / 1000);
@@ -118,6 +126,7 @@ export async function plantCrop(
     return {
       success: true,
       tile: updatedTile,
+      ...(adminSkipped ? { adminSkipped: true } : {}),
     };
   });
 

@@ -59,6 +59,7 @@ interface TownSheetsProps {
   setShopTab: (tab: 'housing' | 'service' | 'plot' | 'decor') => void;
   selectedTile: TileInfo | null;
   walletBalance: number;
+  isAdmin?: boolean;
   inventory: Record<string, number>;
   orders: TownOrderItem[];
   ordersUnlocked: boolean;
@@ -102,6 +103,7 @@ export function TownSheets({
   setShopTab,
   selectedTile,
   walletBalance,
+  isAdmin = false,
   inventory,
   orders,
   ordersUnlocked,
@@ -385,7 +387,7 @@ export function TownSheets({
 
               <div className="space-y-3">
                 {catalogList.map((item) => {
-                  const canAfford = walletBalance >= item.priceCoins;
+                  const canAfford = isAdmin || walletBalance >= item.priceCoins;
                   const levelLocked = item.unlockLevel > maxLevel;
                   const disabled = !canAfford || levelLocked;
                   const sprite = CATALOG_SPRITES[item.spriteKey];
@@ -622,7 +624,7 @@ export function TownSheets({
                 <div className="space-y-2">
                   {cropItems.map((crop) => {
                     const locked = crop.unlockLevel > maxLevel;
-                    const canAfford = walletBalance >= crop.priceCoins;
+                    const canAfford = isAdmin || walletBalance >= crop.priceCoins;
                     const icon = CROP_BUTTON_SPRITES[crop.id];
                     const prevSeedPrice = PREVIOUS_RONCOIN_PRICES.catalog[crop.id] ?? 0;
                     const hasSeedCut =

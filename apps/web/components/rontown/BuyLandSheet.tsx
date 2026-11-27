@@ -17,6 +17,7 @@ import { RonCoinIcon } from './RonCoinIcon';
 interface BuyLandSheetProps {
   targetCell: GridCoord | null;
   walletBalance: number;
+  isAdmin?: boolean;
   purchasing: boolean;
   onConfirm: (x: number, y: number, groundType: GroundTileType) => Promise<void> | void;
   onClose: () => void;
@@ -25,6 +26,7 @@ interface BuyLandSheetProps {
 export function BuyLandSheet({
   targetCell,
   walletBalance,
+  isAdmin = false,
   purchasing,
   onConfirm,
   onClose,
@@ -57,8 +59,8 @@ export function BuyLandSheet({
   if (!targetCell) return null;
 
   const selectedPrice = LAND_PRICES[selectedGround];
-  const canAfford = walletBalance >= selectedPrice;
-  const deficit = Math.max(0, selectedPrice - walletBalance);
+  const canAfford = isAdmin || walletBalance >= selectedPrice;
+  const deficit = isAdmin ? 0 : Math.max(0, selectedPrice - walletBalance);
   const priceCutActive = isRonCoinPriceCutActive();
 
   return (
@@ -87,10 +89,17 @@ export function BuyLandSheet({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="border-border bg-surface-2 flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 shadow-[2px_2px_0px_0px_#0E0D15]">
+            <div
+              aria-label={
+                isAdmin
+                  ? t('town.chips.coinsUnlimited')
+                  : t('town.chips.coins', { count: walletBalance })
+              }
+              className="border-border bg-surface-2 flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 shadow-[2px_2px_0px_0px_#0E0D15]"
+            >
               <RonCoinIcon size={16} />
               <span className="text-ink font-mono text-xs font-black tabular-nums">
-                {walletBalance}
+                {isAdmin ? '∞' : walletBalance}
               </span>
             </div>
             <button
@@ -116,7 +125,7 @@ export function BuyLandSheet({
             const price = LAND_PRICES[groundType];
             const prevPrice = PREVIOUS_RONCOIN_PRICES.land[groundType];
             const hasPriceCut = priceCutActive && price > 0 && prevPrice > price;
-            const affordable = walletBalance >= price;
+            const affordable = isAdmin || walletBalance >= price;
             const isSelected = selectedGround === groundType;
             const label = t(GROUND_LABEL_KEY[groundType]);
             const priceAria = hasPriceCut

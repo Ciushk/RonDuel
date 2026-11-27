@@ -17,6 +17,7 @@ interface SpeedupConfirmSheetProps {
   tile: TileInfo;
   catalog: TownCatalogDoc;
   walletBalance: number;
+  isAdmin?: boolean;
   loading: boolean;
   onConfirm: (x: number, y: number, expectedCost: number) => void;
   onClose: () => void;
@@ -26,6 +27,7 @@ export function SpeedupConfirmSheet({
   tile,
   catalog,
   walletBalance,
+  isAdmin = false,
   loading,
   onConfirm,
   onClose,
@@ -64,7 +66,7 @@ export function SpeedupConfirmSheet({
   const cost = calculateSpeedupCost(growth.remainingSeconds, cropId);
   const prevCost = PREVIOUS_RONCOIN_PRICES.speedupTiers[cropId] ?? 0;
   const hasPriceCut = isRonCoinPriceCutActive(nowMs) && cost > 0 && prevCost > cost;
-  const canAfford = walletBalance >= cost;
+  const canAfford = isAdmin || walletBalance >= cost;
   const cropName = t(`town.crops.${cropId}.name`);
 
   return (
@@ -141,9 +143,11 @@ export function SpeedupConfirmSheet({
         </div>
 
         <p className="mt-2 text-xs font-semibold text-[#5B5668]">
-          {canAfford
-            ? t('town.speedup.balanceAfter', { balance: Math.max(0, walletBalance - cost) })
-            : t('town.speedup.insufficient', { needed: cost, balance: walletBalance })}
+          {isAdmin
+            ? t('town.chips.coinsUnlimited')
+            : canAfford
+              ? t('town.speedup.balanceAfter', { balance: Math.max(0, walletBalance - cost) })
+              : t('town.speedup.insufficient', { needed: cost, balance: walletBalance })}
         </p>
 
         <div className="mt-4 flex items-center gap-2">

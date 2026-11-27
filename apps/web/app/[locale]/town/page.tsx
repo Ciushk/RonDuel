@@ -112,6 +112,7 @@ export default function TownPage() {
     expandRing,
     blockedKeys,
     walletBalance,
+    isAdmin,
     inventory,
     orders,
     ordersUnlocked,
@@ -158,7 +159,7 @@ export default function TownPage() {
 
   useEffect(() => {
     const startVal = displayedWalletRef.current;
-    if (reducedMotion || startVal === walletBalance) {
+    if (isAdmin || reducedMotion || startVal === walletBalance) {
       displayedWalletRef.current = walletBalance;
       setDisplayedWalletBalance(walletBalance);
       return;
@@ -181,7 +182,7 @@ export default function TownPage() {
     };
     rafId = window.requestAnimationFrame(step);
     return () => window.cancelAnimationFrame(rafId);
-  }, [walletBalance, reducedMotion]);
+  }, [walletBalance, isAdmin, reducedMotion]);
 
   useEffect(() => {
     if (!townReady) return;
@@ -901,7 +902,9 @@ export default function TownPage() {
                 onClick={() => openSheet(coinsPurchaseEnabled ? 'coins' : 'orders')}
                 aria-label={
                   townReady
-                    ? t('town.chips.coins', { count: walletBalance })
+                    ? isAdmin
+                      ? t('town.chips.coinsUnlimited')
+                      : t('town.chips.coins', { count: walletBalance })
                     : t('town.map.loading')
                 }
                 className="focus-visible:outline-3 flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border-2 border-[#0E0D15] bg-[#FFF7EC] px-3 shadow-[2px_2px_0px_0px_#0E0D15] focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
@@ -911,7 +914,7 @@ export default function TownPage() {
                   data-testid="town-wallet-balance"
                   className="font-mono text-sm font-black tabular-nums text-[#0E0D15]"
                 >
-                  {townReady ? displayedWalletBalance : '—'}
+                  {townReady ? (isAdmin ? '∞' : displayedWalletBalance) : '—'}
                 </span>
               </button>
 
@@ -1288,6 +1291,7 @@ export default function TownPage() {
         <BuyLandSheet
           targetCell={expandTarget}
           walletBalance={walletBalance}
+          isAdmin={isAdmin}
           purchasing={landPurchasing}
           onConfirm={handleConfirmBuyLand}
           onClose={() => setExpandTarget(null)}
@@ -1300,6 +1304,7 @@ export default function TownPage() {
           tile={speedupTarget}
           catalog={catalog}
           walletBalance={walletBalance}
+          isAdmin={isAdmin}
           loading={speedupLoading}
           onConfirm={(x, y, expectedCost) => void handleConfirmSpeedup(x, y, expectedCost)}
           onClose={() => setSpeedupTarget(null)}
@@ -1326,6 +1331,7 @@ export default function TownPage() {
           setShopTab={setShopTab}
           selectedTile={selectedTile}
           walletBalance={walletBalance}
+          isAdmin={isAdmin}
           inventory={inventory}
           orders={orders}
           ordersUnlocked={ordersUnlocked}

@@ -1,7 +1,7 @@
 import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { calculateSpeedupCost, type TownTileDoc } from '@ronduel/shared';
 import { assertTownFeatureEnabled } from './town-economy.js';
-import { prepareDebitWallet } from './town-wallet.js';
+import { prepareDebitWallet, type DebitWalletParams } from './town-wallet.js';
 import { publishTownSnapshot } from './town-snapshots.js';
 
 export interface SpeedupCropParams {
@@ -9,6 +9,7 @@ export interface SpeedupCropParams {
   y: number;
   expectedCost?: number;
   nowMs?: number;
+  adminSkip?: DebitWalletParams['adminSkip'];
 }
 
 export interface SpeedupCropResult {
@@ -20,6 +21,7 @@ export interface SpeedupCropResult {
   alreadyReady: boolean;
   readyAt: string;
   balanceAfter: number | null;
+  adminSkipped?: boolean;
 }
 
 function toMillis(val: unknown): number | null {
@@ -110,6 +112,7 @@ export async function speedupCrop(
       reason: 'spend',
       refId: `speedup:${tile.cropId}:${tileKey}`,
       idempotencyKey,
+      adminSkip: params.adminSkip,
     });
 
     if (debit.duplicate) {
@@ -138,10 +141,11 @@ export async function speedupCrop(
       x,
       y,
       cropId: tile.cropId,
-      cost,
+      cost: debit.adminSkipped ? 0 : cost,
       alreadyReady: false,
       readyAt: new Date(nowMs).toISOString(),
       balanceAfter: debit.balanceAfter ?? null,
+      ...(debit.adminSkipped ? { adminSkipped: true } : {}),
     };
   });
 

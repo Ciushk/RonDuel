@@ -903,7 +903,8 @@
     "chips": {
       "coins": "{count} RonCoins",
       "population": "{population} / {cap}",
-      "level": "Raz. {level}"
+      "level": "Raz. {level}",
+      "coinsUnlimited": "Neograničeni RonCoins"
     },
     "growth": {
       "limitedByHousing": "Potrebno je više stambenog prostora",

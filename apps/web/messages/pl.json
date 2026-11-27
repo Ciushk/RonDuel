@@ -903,7 +903,8 @@
     "chips": {
       "coins": "{count} RonCoins",
       "population": "{population} / {cap}",
-      "level": "Poz. {level}"
+      "level": "Poz. {level}",
+      "coinsUnlimited": "Nieograniczone RonCoins"
     },
     "growth": {
       "limitedByHousing": "Potrzeba więcej mieszkań",

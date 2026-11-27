@@ -453,6 +453,29 @@ export const PRO_BOOTSTRAP_EMAILS = [
   ...(process.env.PRO_BOOTSTRAP_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()),
 ].filter(Boolean);
 
+export const DEFAULT_ADMIN_BOOTSTRAP_EMAILS = [
+  'admin@ronduel.eu',
+  'eu.andrei89@gmail.com',
+] as const;
+
+export function getAdminBootstrapEmails(
+  envValue: string | undefined = process.env.ADMIN_BOOTSTRAP_EMAILS,
+): string[] {
+  const fromEnv = (envValue ?? '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  return Array.from(new Set([...DEFAULT_ADMIN_BOOTSTRAP_EMAILS, ...fromEnv]));
+}
+
+export function isAdminBootstrapEmail(
+  email: string | null | undefined,
+  envValue: string | undefined = process.env.ADMIN_BOOTSTRAP_EMAILS,
+): boolean {
+  if (typeof email !== 'string' || !email.trim()) return false;
+  return getAdminBootstrapEmails(envValue).includes(email.trim().toLowerCase());
+}
+
 const TOPICS_OF_DAY = [
   'World & Science 🌍',
   'History & Logic ⏳',
@@ -3369,10 +3392,7 @@ export function upgradeAccount(params: {
     };
   }
 
-  const adminEmails = (process.env.ADMIN_BOOTSTRAP_EMAILS ?? 'admin@ronduel.eu')
-    .split(',')
-    .map((entry) => entry.trim().toLowerCase());
-  if (adminEmails.includes(user.email)) {
+  if (isAdminBootstrapEmail(user.email)) {
     user.isAdmin = true;
   }
   markUserDirty(user.uid);
@@ -3424,7 +3444,7 @@ export function getUserProfile(uid: string) {
     email: user.email,
     isAnonymous: user.isAnonymous,
     authProvider: user.authProvider ?? 'anonymous',
-    isAdmin: Boolean(user.isAdmin),
+    isAdmin: Boolean(user.isAdmin) || (!user.isAnonymous && isAdminBootstrapEmail(user.email)),
     expiresAt: user.expiresAt ?? null,
     upgradedAt: user.upgradedAt ?? null,
     createdAt: user.createdAt,

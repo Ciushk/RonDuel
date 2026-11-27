@@ -23,11 +23,28 @@ import {
 } from '@ronduel/shared';
 import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { trackEvent } from '@/lib/analytics';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { getLocalSession } from '@/lib/session';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 import { townErrorKey } from './townErrors';
+
+async function getTownAuthHeaders(withJson = true): Promise<Record<string, string>> {
+  const headers: Record<string, string> = withJson ? { 'Content-Type': 'application/json' } : {};
+  try {
+    const currentUser = getFirebaseAuth()?.currentUser;
+    if (currentUser && typeof currentUser.getIdToken === 'function') {
+      const token = await currentUser.getIdToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch {
+    // Non-admin & guest calls proceed without Bearer token
+  }
+  return headers;
+}
 
 export { townErrorKey };
 
@@ -252,6 +269,7 @@ export function useTownState(params: {
   const [town, setTown] = useState<TownDoc | null>(null);
   const [tiles, setTiles] = useState<Record<string, TileInfo>>({});
   const [walletBalance, setWalletBalance] = useState<number>(100);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [inventory, setInventory] = useState<Record<string, number>>({});
   const [orders, setOrders] = useState<TownOrderItem[]>([]);
   const [ordersUnlocked, setOrdersUnlocked] = useState<boolean>(true);
@@ -496,10 +514,14 @@ export function useTownState(params: {
 
     const runInitAttempt = (retryIndex: number) => {
       if (!active) return;
-      fetch(`/api/town/init?uid=${encodeURIComponent(session.uid)}`, {
-        cache: 'no-store',
-        signal: controller.signal,
-      })
+      void getTownAuthHeaders(false)
+        .then((headers) =>
+          fetch(`/api/town/init?uid=${encodeURIComponent(session.uid)}`, {
+            headers,
+            cache: 'no-store',
+            signal: controller.signal,
+          }),
+        )
         .then((res) => {
           if (!res.ok) throw new Error(`Init failed (${res.status})`);
           return res.json();
@@ -544,6 +566,7 @@ export function useTownState(params: {
           if (typeof data.walletBalance === 'number') {
             setWalletBalance(data.walletBalance);
           }
+          setIsAdmin(Boolean(data.isAdmin));
           setSpeedupEnabled(Boolean(data.features?.speedupEnabled));
           usingLocalFallbackRef.current = false;
           hasServerTownRef.current = true;
@@ -735,15 +758,16 @@ export function useTownState(params: {
     async (x: number, y: number, groundType: GroundTileType): Promise<boolean> => {
       if (!serverReadyRef.current) return false;
       const cost = LAND_PRICES[groundType];
-      if (walletBalance < cost) {
+      if (!isAdmin && walletBalance < cost) {
         return false;
       }
       const session = getLocalSession();
       setLandPurchasing(true);
       try {
+        const headers = await getTownAuthHeaders(true);
         const res = await fetch('/api/town/buy-land', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ uid: session.uid, x, y, groundType }),
         });
         const data = await res.json();
@@ -751,7 +775,9 @@ export function useTownState(params: {
           showErrorToast(data.error, 'town.toast.landPurchaseFailed');
           return false;
         }
-        setWalletBalance((prev) => Math.max(0, prev - (data.cost ?? cost)));
+        if (!data.adminSkipped && !isAdmin) {
+          setWalletBalance((prev) => Math.max(0, prev - (data.cost ?? cost)));
+        }
         setTown((prev) =>
           prev
             ? { ...prev, land: data.land ?? { ...(prev.land ?? {}), [`${x}_${y}`]: groundType } }
@@ -760,7 +786,9 @@ export function useTownState(params: {
         return true;
       } catch {
         // Local fallback
-        setWalletBalance((prev) => Math.max(0, prev - cost));
+        if (!isAdmin) {
+          setWalletBalance((prev) => Math.max(0, prev - cost));
+        }
         setTown((prev) =>
           prev ? { ...prev, land: { ...(prev.land ?? {}), [`${x}_${y}`]: groundType } } : prev,
         );
@@ -769,7 +797,7 @@ export function useTownState(params: {
         setLandPurchasing(false);
       }
     },
-    [walletBalance, showErrorToast],
+    [isAdmin, walletBalance, showErrorToast],
   );
 
   const executeBuild = useCallback(
@@ -784,7 +812,11 @@ export function useTownState(params: {
 
       const roadRot: 1 | undefined = itemId === 'road' && opts?.rot === 1 ? 1 : undefined;
       const session = getLocalSession();
-      const applyLocal = (serverTown?: TownDoc, serverTile?: { rot?: 0 | 1 }) => {
+      const applyLocal = (
+        serverTown?: TownDoc,
+        serverTile?: { rot?: 0 | 1 },
+        adminSkipped?: boolean,
+      ) => {
         const nextTiles: Record<string, TileInfo> = { ...tiles };
         const effectiveRot = serverTile?.rot === 1 || roadRot === 1 ? (1 as const) : undefined;
         nextTiles[`${x}_${y}`] = {
@@ -805,7 +837,7 @@ export function useTownState(params: {
           }
         }
         setTiles(nextTiles);
-        if (item.priceCoins > 0) {
+        if (item.priceCoins > 0 && !adminSkipped && !isAdmin) {
           setWalletBalance((prev) => Math.max(0, prev - item.priceCoins));
         }
         if (serverTown) {
@@ -816,9 +848,10 @@ export function useTownState(params: {
       };
 
       try {
+        const headers = await getTownAuthHeaders(true);
         const res = await fetch('/api/town/build', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             uid: session.uid,
             itemId,
@@ -832,7 +865,7 @@ export function useTownState(params: {
           showErrorToast(data.error, 'town.toast.buildFailed');
           return false;
         }
-        applyLocal(data.town, data.tile);
+        applyLocal(data.town, data.tile, Boolean(data.adminSkipped));
         trackEvent('nav_tab_clicked', { action: 'town_build', itemId });
         return true;
       } catch {
@@ -840,7 +873,17 @@ export function useTownState(params: {
         return true;
       }
     },
-    [catalog, canPlaceAt, tiles, town, recomputeLocalTownStats, showToast, showErrorToast, t],
+    [
+      catalog,
+      canPlaceAt,
+      tiles,
+      town,
+      isAdmin,
+      recomputeLocalTownStats,
+      showToast,
+      showErrorToast,
+      t,
+    ],
   );
 
   const executeMove = useCallback(
@@ -1087,14 +1130,14 @@ export function useTownState(params: {
       if (!serverReadyRef.current) return false;
       const cropItem = catalog.items[cropId];
       if (!cropItem || !canPlantAt(x, y)) return false;
-      if (walletBalance < cropItem.priceCoins) {
+      if (!isAdmin && walletBalance < cropItem.priceCoins) {
         showToast(t('town.toast.notEnoughCoins'));
         return false;
       }
 
       const session = getLocalSession();
-      const applyPlanted = (plantedAtIso: string, readyAtIso: string) => {
-        if (cropItem.priceCoins > 0) {
+      const applyPlanted = (plantedAtIso: string, readyAtIso: string, adminSkipped?: boolean) => {
+        if (cropItem.priceCoins > 0 && !adminSkipped && !isAdmin) {
           setWalletBalance((prev) => Math.max(0, prev - cropItem.priceCoins));
         }
         setTiles((prev) => ({
@@ -1121,9 +1164,10 @@ export function useTownState(params: {
       const readyIso = new Date(now + growMs).toISOString();
 
       try {
+        const headers = await getTownAuthHeaders(true);
         const res = await fetch('/api/town/plant', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ uid: session.uid, x, y, cropId }),
         });
         const data = await res.json();
@@ -1131,14 +1175,14 @@ export function useTownState(params: {
           showErrorToast(data.error, 'town.toast.plantingFailed');
           return false;
         }
-        applyPlanted(plantedIso, readyIso);
+        applyPlanted(plantedIso, readyIso, Boolean(data.adminSkipped));
         return true;
       } catch {
         applyPlanted(plantedIso, readyIso);
         return true;
       }
     },
-    [catalog, canPlantAt, walletBalance, showToast, showErrorToast, t],
+    [catalog, canPlantAt, isAdmin, walletBalance, showToast, showErrorToast, t],
   );
 
   const executeHarvestCrop = useCallback(
@@ -1202,9 +1246,10 @@ export function useTownState(params: {
       const session = getLocalSession();
       setSpeedupLoading(true);
       try {
+        const headers = await getTownAuthHeaders(true);
         const res = await fetch('/api/town/speedup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ uid: session.uid, x, y, expectedCost }),
         });
         const data = await res.json().catch(() => ({}));
@@ -1227,7 +1272,13 @@ export function useTownState(params: {
         });
         if (typeof data.balanceAfter === 'number') {
           setWalletBalance(data.balanceAfter);
-        } else if (!data.alreadyReady && typeof data.cost === 'number' && data.cost > 0) {
+        } else if (
+          !data.alreadyReady &&
+          !data.adminSkipped &&
+          !isAdmin &&
+          typeof data.cost === 'number' &&
+          data.cost > 0
+        ) {
           setWalletBalance((prev) => Math.max(0, prev - data.cost));
         }
         return {
@@ -1242,7 +1293,7 @@ export function useTownState(params: {
         setSpeedupLoading(false);
       }
     },
-    [tiles, speedupLoading, showToast, showErrorToast, t],
+    [tiles, isAdmin, speedupLoading, showToast, showErrorToast, t],
   );
 
   const executeBuyPlot = useCallback(
@@ -1255,9 +1306,10 @@ export function useTownState(params: {
       const session = getLocalSession();
       const localCost = getPlotPrice(town?.plotsOwned ?? 2);
       try {
+        const headers = await getTownAuthHeaders(true);
         const res = await fetch('/api/town/buy-plot', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ uid: session.uid, x, y }),
         });
         const data = await res.json();
@@ -1265,10 +1317,14 @@ export function useTownState(params: {
           showErrorToast(data.error, 'town.toast.buyPlotFailed');
           return false;
         }
-        if (data.cost) setWalletBalance((prev) => Math.max(0, prev - data.cost));
+        if (data.cost && !data.adminSkipped && !isAdmin) {
+          setWalletBalance((prev) => Math.max(0, prev - data.cost));
+        }
         if (town) setTown({ ...town, plotsOwned: data.plotsOwned });
       } catch {
-        if (localCost > 0) setWalletBalance((prev) => Math.max(0, prev - localCost));
+        if (localCost > 0 && !isAdmin) {
+          setWalletBalance((prev) => Math.max(0, prev - localCost));
+        }
         if (town) setTown({ ...town, plotsOwned: (town.plotsOwned ?? 2) + 1 });
       }
       setTiles((prev) => ({ ...prev, [`${x}_${y}`]: { x, y, itemId: 'plot' } }));
@@ -1279,7 +1335,7 @@ export function useTownState(params: {
       );
       return true;
     },
-    [canPlaceAt, town, showToast, showErrorToast, t],
+    [canPlaceAt, isAdmin, town, showToast, showErrorToast, t],
   );
 
   const executeDeliverOrder = useCallback(
@@ -1490,6 +1546,7 @@ export function useTownState(params: {
     expandRing,
     blockedKeys,
     walletBalance,
+    isAdmin,
     inventory,
     orders,
     ordersUnlocked,

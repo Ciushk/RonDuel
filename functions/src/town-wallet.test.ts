@@ -3,6 +3,10 @@ import {
   createStrictMockFirestore,
   FIRESTORE_READ_AFTER_WRITE_ERROR,
 } from './test-firestore-helper.js';
+import { authorizeTownActor, isTownAdmin } from './town-admin.js';
+import { buildItem, removeTile } from './town-actions.js';
+import { clearEconomyConfigCache } from './town-economy.js';
+import { transferCoins } from './town-transfer.js';
 import {
   batchReconcileLedgers,
   creditWallet,
@@ -369,5 +373,304 @@ describe('town-wallet transaction functions', () => {
         await tx.get(strictDb.collection('users').doc('receiver').collection('town').doc('main'));
       }),
     ).rejects.toThrow(FIRESTORE_READ_AFTER_WRITE_ERROR);
+  });
+
+  describe('server-only admin RonCoin spend skip', () => {
+    it('non-admin with balance 10 attempting debit 20 throws INSUFFICIENT_FUNDS and leaves balance unchanged', async () => {
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('users/u_regular', {
+        uid: 'u_regular',
+        isAdmin: false,
+        isAnonymous: false,
+        email: 'player@example.com',
+      });
+      strictStore.set('users/u_regular/wallet/main', {
+        balance: 10,
+        buckets: { trivia: 10, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      await expect(
+        strictDb.runTransaction((tx: any) =>
+          debitWallet({
+            transaction: tx,
+            db: strictDb,
+            uid: 'u_regular',
+            amount: 20,
+            reason: 'spend',
+            refId: 'house',
+            idempotencyKey: 'spend:regular:1',
+            adminSkip: { verifiedActor: true, hasAdminClaim: false },
+          }),
+        ),
+      ).rejects.toThrow('INSUFFICIENT_FUNDS');
+
+      expect((strictStore.get('users/u_regular/wallet/main') as any).balance).toBe(10);
+    });
+
+    it('verified admin (isAdmin=true) with balance 10 succeeds on debit 20 without modifying balance or writing spend ledger', async () => {
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('users/u_admin', {
+        uid: 'u_admin',
+        isAdmin: true,
+        isAnonymous: false,
+        email: 'admin@ronduel.eu',
+      });
+      strictStore.set('users/u_admin/wallet/main', {
+        balance: 10,
+        buckets: { trivia: 10, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      const actor = await authorizeTownActor(
+        { headers: { authorization: 'Bearer valid_admin_token' } },
+        'u_admin',
+        async () => ({ uid: 'u_admin', admin: true }),
+      );
+      expect(actor.verified).toBe(true);
+
+      const res = await strictDb.runTransaction((tx: any) =>
+        debitWallet({
+          transaction: tx,
+          db: strictDb,
+          uid: 'u_admin',
+          amount: 20,
+          reason: 'spend',
+          refId: 'house',
+          idempotencyKey: 'spend:admin:1',
+          adminSkip: { verifiedActor: actor.verified, hasAdminClaim: actor.hasAdminClaim },
+        }),
+      );
+
+      expect(res.adminSkipped).toBe(true);
+      expect(res.balanceBefore).toBe(10);
+      expect(res.balanceAfter).toBe(10);
+      expect((strictStore.get('users/u_admin/wallet/main') as any).balance).toBe(10);
+
+      // Zero spend ledger entries written
+      const ledgerKeys = Array.from(strictStore.keys()).filter((k) => k.startsWith('ledger/'));
+      expect(ledgerKeys).toHaveLength(0);
+    });
+
+    it('admin uid WITHOUT Bearer token or with another uid token never skips debit (throws INSUFFICIENT_FUNDS)', async () => {
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('users/u_admin', {
+        uid: 'u_admin',
+        isAdmin: true,
+        isAnonymous: false,
+        email: 'eu.andrei89@gmail.com',
+      });
+      strictStore.set('users/u_admin/wallet/main', {
+        balance: 10,
+        buckets: { trivia: 10, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      // Case 1: Missing Bearer header
+      const noTokenActor = await authorizeTownActor({ headers: {} }, 'u_admin');
+      expect(noTokenActor.verified).toBe(false);
+
+      await expect(
+        strictDb.runTransaction((tx: any) =>
+          debitWallet({
+            transaction: tx,
+            db: strictDb,
+            uid: 'u_admin',
+            amount: 20,
+            reason: 'spend',
+            refId: 'house',
+            idempotencyKey: 'spend:admin:notoken',
+            adminSkip: noTokenActor.verified
+              ? { verifiedActor: true, hasAdminClaim: noTokenActor.hasAdminClaim }
+              : undefined,
+          }),
+        ),
+      ).rejects.toThrow('INSUFFICIENT_FUNDS');
+
+      // Case 2: Valid Bearer token belonging to a DIFFERENT uid
+      const otherUidActor = await authorizeTownActor(
+        { headers: { authorization: 'Bearer other_user_token' } },
+        'u_admin',
+        async () => ({ uid: 'u_attacker', admin: false }),
+      );
+      expect(otherUidActor.verified).toBe(false);
+
+      await expect(
+        strictDb.runTransaction((tx: any) =>
+          debitWallet({
+            transaction: tx,
+            db: strictDb,
+            uid: 'u_admin',
+            amount: 20,
+            reason: 'spend',
+            refId: 'house',
+            idempotencyKey: 'spend:admin:wronguid',
+            adminSkip: otherUidActor.verified
+              ? { verifiedActor: true, hasAdminClaim: otherUidActor.hasAdminClaim }
+              : undefined,
+          }),
+        ),
+      ).rejects.toThrow('INSUFFICIENT_FUNDS');
+
+      expect((strictStore.get('users/u_admin/wallet/main') as any).balance).toBe(10);
+    });
+
+    it('transferCoins for an admin still requires real balance (never unlimited)', async () => {
+      clearEconomyConfigCache();
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('config/townEconomy', {
+        enabled: true,
+        transfersEnabled: true,
+      });
+      const tenDaysAgo = new Date(Date.now() - 10 * 86_400_000).toISOString();
+      strictStore.set('users/u_admin', {
+        uid: 'u_admin',
+        isAdmin: true,
+        isAnonymous: false,
+        email: 'eu.andrei89@gmail.com',
+        pro: { active: true },
+        createdAt: tenDaysAgo,
+        leagueIds: ['lg_1'],
+      });
+      strictStore.set('users/u_admin/wallet/main', {
+        balance: 10,
+        buckets: { trivia: 10, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      strictStore.set('users/u_friend', {
+        uid: 'u_friend',
+        isAdmin: false,
+        isAnonymous: false,
+        email: 'friend@example.com',
+        leagueIds: ['lg_1'],
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      await expect(
+        transferCoins(strictDb, {
+          senderUid: 'u_admin',
+          receiverUid: 'u_friend',
+          amount: 20,
+          idempotencyKey: 'tx_admin_transfer_1',
+        }),
+      ).rejects.toThrow(/Insufficient trivia coins|INSUFFICIENT_FUNDS/i);
+
+      expect((strictStore.get('users/u_admin/wallet/main') as any).balance).toBe(10);
+      expect(strictStore.get('users/u_friend/wallet/main')).toBeUndefined();
+    });
+
+    it('bootstraps isAdmin=true on Firestore doc for ADMIN_BOOTSTRAP_EMAILS user on authenticated request', async () => {
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('users/u_owner', {
+        uid: 'u_owner',
+        isAdmin: false,
+        isAnonymous: false,
+        email: 'eu.andrei89@gmail.com',
+      });
+      strictStore.set('users/u_owner/wallet/main', {
+        balance: 5,
+        buckets: { trivia: 5, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      // Authenticated debit skips spend AND persists isAdmin: true
+      const res = await strictDb.runTransaction((tx: any) =>
+        debitWallet({
+          transaction: tx,
+          db: strictDb,
+          uid: 'u_owner',
+          amount: 25,
+          reason: 'spend',
+          refId: 'house',
+          idempotencyKey: 'spend:bootstrap:1',
+          adminSkip: { verifiedActor: true, hasAdminClaim: false },
+        }),
+      );
+
+      expect(res.adminSkipped).toBe(true);
+      expect((strictStore.get('users/u_owner') as any).isAdmin).toBe(true);
+      expect((strictStore.get('users/u_owner/wallet/main') as any).balance).toBe(5);
+
+      // Non-transactional isTownAdmin also bootstraps when bootstrapOnVerified is true
+      strictStore.set('users/u_owner_2', {
+        uid: 'u_owner_2',
+        isAdmin: false,
+        isAnonymous: false,
+        email: 'admin@ronduel.eu',
+      });
+      expect(await isTownAdmin(strictDb, 'u_owner_2', { bootstrapOnVerified: true })).toBe(true);
+      expect((strictStore.get('users/u_owner_2') as any).isAdmin).toBe(true);
+    });
+
+    it('admin-built item placed with adminSkip yields 0 refund on removeTile (no fake coin minting)', async () => {
+      clearEconomyConfigCache();
+      const strictStore = new Map<string, Record<string, unknown>>();
+      strictStore.set('config/townEconomy', {
+        enabled: true,
+        removeRefundRate: 0.5,
+        baseServiceCapacity: 10,
+        arrivalIntervalSeconds: 3600,
+      });
+      strictStore.set('users/u_admin', {
+        uid: 'u_admin',
+        isAdmin: true,
+        isAnonymous: false,
+        email: 'eu.andrei89@gmail.com',
+      });
+      strictStore.set('users/u_admin/wallet/main', {
+        balance: 0,
+        buckets: { trivia: 0, town: 0, purchased: 0, gift: 0 },
+        monthPurchasedEUR: 0,
+        monthKey: '2026-11',
+        locked: false,
+      });
+      strictStore.set('users/u_admin/town/main', {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 2,
+        serviceCapacity: 10,
+        populationCap: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: { '3_3': 'basic-block', '3_4': 'basic-block' },
+      });
+      strictStore.set('users/u_admin/townTiles/3_3', {
+        itemId: 'starter_house',
+        x: 3,
+        y: 3,
+      });
+      const strictDb = createStrictMockFirestore(strictStore) as any;
+
+      const built = await buildItem(strictDb, 'u_admin', {
+        itemId: 'cottage',
+        x: 3,
+        y: 4,
+        adminSkip: { verifiedActor: true, hasAdminClaim: true },
+      });
+      expect(built.success).toBe(true);
+      expect(built.adminSkipped).toBe(true);
+      expect((strictStore.get('users/u_admin/wallet/main') as any).balance).toBe(0);
+
+      // Removing the admin-placed cottage must refund 0 coins!
+      const removed = await removeTile(strictDb, 'u_admin', { x: 3, y: 4 });
+      expect(removed.success).toBe(true);
+      expect(removed.refundCoins).toBe(0);
+      expect((strictStore.get('users/u_admin/wallet/main') as any).balance).toBe(0);
+    });
   });
 });

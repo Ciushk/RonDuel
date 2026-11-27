@@ -903,7 +903,8 @@
     "chips": {
       "coins": "{count} RonCoins",
       "population": "{population} / {cap}",
-      "level": "Úr. {level}"
+      "level": "Úr. {level}",
+      "coinsUnlimited": "Neobmedzené RonCoins"
     },
     "growth": {
       "limitedByHousing": "Potrebné ďalšie bývanie",

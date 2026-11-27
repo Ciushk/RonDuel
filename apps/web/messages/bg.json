@@ -903,7 +903,8 @@
     "chips": {
       "coins": "{count} RonCoins",
       "population": "{population} / {cap}",
-      "level": "Ниво {level}"
+      "level": "Ниво {level}",
+      "coinsUnlimited": "Неограничени RonCoins"
     },
     "growth": {
       "limitedByHousing": "Необходими са още жилища",

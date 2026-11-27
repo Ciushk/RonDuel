@@ -88,6 +88,7 @@ import { resetStreakTx, useStreakFreezeTx } from './streak-tx.js';
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
 import { createProCheckout, handleStripeWebhook } from './billing.js';
 import { getStripe, verifyStripeEvent } from './stripe-client.js';
+import { authorizeTownActor, isTownAdmin } from './town-admin.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
 import { rotateTownElement } from './town-rotate.js';
@@ -305,7 +306,18 @@ export const api = onRequest(apiOptions, async (req, res) => {
           childBorn: Boolean(result.town.childBorn),
         };
         const walletBalance = walletSnap.exists ? Number(walletSnap.data()?.balance ?? 0) : 0;
-        res.status(200).json({ ...result, town: serializedTown, tiles, walletBalance });
+        const actor = await authorizeTownActor(req, uid);
+        const adminFlag = await isTownAdmin(db, uid, {
+          hasAdminClaim: actor.hasAdminClaim,
+          bootstrapOnVerified: actor.verified,
+        });
+        res.status(200).json({
+          ...result,
+          town: serializedTown,
+          tiles,
+          walletBalance,
+          isAdmin: adminFlag,
+        });
         return;
       } catch (err: any) {
         if (err.message?.includes('disabled')) {
@@ -358,11 +370,15 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       const db = getDb();
       try {
+        const actor = await authorizeTownActor(req, uid);
         const result = await buildItem(db, uid, {
           itemId: String(body.itemId ?? ''),
           x: Number(body.x),
           y: Number(body.y),
           rot: body.rot === 1 ? 1 : undefined,
+          adminSkip: actor.verified
+            ? { verifiedActor: true, hasAdminClaim: actor.hasAdminClaim }
+            : undefined,
         });
         res.status(200).json(result);
         return;
@@ -444,9 +460,13 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       const db = getDb();
       try {
+        const actor = await authorizeTownActor(req, uid);
         const result = await buyFarmPlot(db, uid, {
           x: Number(body.x),
           y: Number(body.y),
+          adminSkip: actor.verified
+            ? { verifiedActor: true, hasAdminClaim: actor.hasAdminClaim }
+            : undefined,
         });
         res.status(200).json(result);
         return;
@@ -464,10 +484,14 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       const db = getDb();
       try {
+        const actor = await authorizeTownActor(req, uid);
         const result = await buyLandTile(db, uid, {
           x: Number(body.x),
           y: Number(body.y),
           groundType: String(body.groundType ?? ''),
+          adminSkip: actor.verified
+            ? { verifiedActor: true, hasAdminClaim: actor.hasAdminClaim }
+            : undefined,
         });
         res.status(200).json(result);
         return;
@@ -485,10 +509,14 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       const db = getDb();
       try {
+        const actor = await authorizeTownActor(req, uid);
         const result = await plantCrop(db, uid, {
           x: Number(body.x),
           y: Number(body.y),
           cropId: String(body.cropId ?? ''),
+          adminSkip: actor.verified
+            ? { verifiedActor: true, hasAdminClaim: actor.hasAdminClaim }
+            : undefined,
         });
         res.status(200).json(result);
         return;
@@ -526,10 +554,14 @@ export const api = onRequest(apiOptions, async (req, res) => {
       }
       const db = getDb();
       try {
+        const actor = await authorizeTownActor(req, uid);
         const result = await speedupCrop(db, uid, {
           x: Number(body.x),
           y: Number(body.y),
           expectedCost: body.expectedCost !== undefined ? Number(body.expectedCost) : undefined,
+          adminSkip: actor.verified
+            ? { verifiedActor: true, hasAdminClaim: actor.hasAdminClaim }
+            : undefined,
         });
         res.status(200).json(result);
         return;
