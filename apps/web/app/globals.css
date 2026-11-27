@@ -1066,10 +1066,12 @@ html[data-theme='dark'] {
   .rd-gate-scrim-out,
   .rd-gate-panel-in,
   .rd-gate-panel-out,
-  .rd-gate-step {
+  .rd-gate-step,
+  .rd-gate-auth-loading {
     animation: none !important;
     transition: none !important;
     transform: none !important;
+    opacity: 1 !important;
   }
 }
 
@@ -1145,6 +1147,17 @@ html[data-theme='dark'] {
   }
 }
 
+@keyframes rd-gate-auth-loading-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .rd-gate-scrim-in {
   animation: rd-gate-scrim-in 200ms ease-out forwards;
 }
@@ -1173,6 +1186,10 @@ html[data-theme='dark'] {
 
 .rd-gate-step {
   animation: rd-gate-step-fade 150ms ease-out forwards;
+}
+
+.rd-gate-auth-loading {
+  animation: rd-gate-auth-loading-in 160ms ease-out forwards;
 }
 
 /* --- Home "done for today" card & sticker tiles (transform & opacity only) --- */

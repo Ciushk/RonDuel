@@ -25,6 +25,7 @@ import {
 } from 'react';
 
 import { Button, Chip, Sheet } from '@/components/ui';
+import { hasRealAccount, useIsRealAccount } from '@/lib/account-state';
 import { trackEvent } from '@/lib/analytics';
 import { getFriendlyAuthErrorMessage } from '@/lib/auth-errors';
 
@@ -146,8 +147,13 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   const emailInputId = useId();
   const passwordInputId = useId();
 
+  const accountState = useIsRealAccount();
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(false);
   const [step, setStep] = useState<'choose' | 'email'>('choose');
   const [emailMode, setEmailMode] = useState<'signup' | 'login'>('signup');
   const [intent, setIntent] = useState<PaymentIntent>({ kind: 'pro_checkout' });
@@ -163,6 +169,9 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   const googleBtnRef = useRef<HTMLButtonElement | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const checkingAuthRef = useRef(false);
+  const mountedRef = useRef(true);
+  const readyWaitersRef = useRef<Array<() => void>>([]);
 
   const clearTimers = useCallback(() => {
     if (closeTimerRef.current) {
@@ -175,10 +184,33 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => clearTimers, [clearTimers]);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      clearTimers();
+    };
+  }, [clearTimers]);
+
+  useEffect(() => {
+    if (!accountState.ready || readyWaitersRef.current.length === 0) return;
+    const waiters = readyWaitersRef.current.splice(0);
+    for (const resolve of waiters) {
+      resolve();
+    }
+  }, [accountState.ready]);
+
+  const waitForAccountReady = useCallback((): Promise<void> => {
+    if (accountStateRef.current.ready) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      readyWaitersRef.current.push(resolve);
+    });
+  }, []);
 
   // If the page reloaded mid-flow (ref lost, sessionStorage still has fresh item for this path),
-  // never auto-charge; show an inline "Continue to payment" button instead.
+  // never auto-charge; show an inline "Continue to payment" button instead once Auth is ready.
   useEffect(() => {
     if (pendingActionRef.current) return;
     const stored = readPendingPayment(pathname);
@@ -186,21 +218,9 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
       setReloadResume(null);
       return;
     }
-    let cancelled = false;
-    void import('@/lib/account-state')
-      .then(({ hasRealAccount }) => hasRealAccount())
-      .then((real) => {
-        if (cancelled) return;
-        if (real) {
-          setReloadResume(stored);
-        } else {
-          setReloadResume(null);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
+    if (!accountState.ready) return;
+    setReloadResume(accountState.isReal ? stored : null);
+  }, [pathname, accountState.ready, accountState.isReal]);
 
   const finishClose = useCallback(() => {
     setOpen(false);
@@ -254,20 +274,43 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
 
   const requireAccount = useCallback(
     async (nextIntent: PaymentIntent, action?: () => void | Promise<void>): Promise<boolean> => {
-      const { hasRealAccount } = await import('@/lib/account-state');
-      const real = await hasRealAccount();
-      if (real) {
-        setReloadResume(null);
-        clearPendingPaymentStorage();
-        if (action) {
-          void action();
-        }
-        return true;
+      if (checkingAuthRef.current) {
+        return false;
       }
-      openGateModal(nextIntent, action);
-      return false;
+      checkingAuthRef.current = true;
+      setCheckingAuth(true);
+      try {
+        if (!accountStateRef.current.ready) {
+          await waitForAccountReady();
+        }
+        if (!mountedRef.current) {
+          return false;
+        }
+        const real = await hasRealAccount();
+        if (!mountedRef.current) {
+          return false;
+        }
+        checkingAuthRef.current = false;
+        setCheckingAuth(false);
+        if (real) {
+          setReloadResume(null);
+          clearPendingPaymentStorage();
+          if (action) {
+            void action();
+          }
+          return true;
+        }
+        openGateModal(nextIntent, action);
+        return false;
+      } catch {
+        if (mountedRef.current) {
+          checkingAuthRef.current = false;
+          setCheckingAuth(false);
+        }
+        return false;
+      }
     },
-    [openGateModal],
+    [openGateModal, waitForAccountReady],
   );
 
   const openGate = useCallback(
@@ -402,6 +445,26 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
             >
               <X size={18} weight="bold" aria-hidden="true" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {checkingAuth && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          data-testid="payment-gate-auth-loading"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 p-4"
+        >
+          <div className="rd-gate-auth-loading border-border bg-surface text-ink inline-flex items-center gap-2.5 rounded-[16px] border-2 px-5 py-3.5 text-sm font-extrabold shadow-[3px_3px_0px_0px_#0E0D15]">
+            <CircleNotch
+              size={20}
+              weight="bold"
+              aria-hidden="true"
+              className="animate-spin motion-reduce:animate-none"
+            />
+            <span>{tCommon('loading')}</span>
           </div>
         </div>
       )}
@@ -732,7 +795,6 @@ export function usePaymentAuthGate(): PaymentAuthGateContextValue {
   // Graceful fallback when a component is rendered outside AppShell (e.g. isolated unit tests)
   return {
     requireAccount: async (_intent, action) => {
-      const { hasRealAccount } = await import('@/lib/account-state');
       const real = await hasRealAccount();
       if (real && action) {
         void action();

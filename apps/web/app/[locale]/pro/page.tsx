@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Button, Card, Chip, Toast } from '@/components/ui';
+import { useIsRealAccount } from '@/lib/account-state';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { getLocalSession } from '@/lib/session';
@@ -25,10 +26,10 @@ export default function ProPaywallPage() {
   const format = useFormatter();
   const locale = useLocale();
   const { requireAccount, openGate } = usePaymentAuthGate();
+  const accountState = useIsRealAccount();
 
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [euConsent, setEuConsent] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(true);
   const [proActive, setProActive] = useState<{ active: boolean; plan?: string }>({ active: false });
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -46,7 +47,6 @@ export default function ProPaywallPage() {
         const r = await fetch(`/api/me/profile?uid=${encodeURIComponent(s.uid)}`);
         const d = await r.json();
         if (cancelled) return;
-        setIsAnonymous(Boolean(d.isAnonymous));
         const nextPro = d.pro ?? { active: false };
         setProActive(nextPro);
         if (isCheckoutSuccess) {
@@ -71,21 +71,9 @@ export default function ProPaywallPage() {
 
     void fetchProfile(isCheckoutSuccess ? 3 : 0);
 
-    const onSessionUpdated = () => {
-      const updated = getLocalSession();
-      if (
-        updated.isAnonymous === false &&
-        (updated.authProvider === 'google.com' || updated.authProvider === 'password')
-      ) {
-        setIsAnonymous(false);
-      }
-    };
-    window.addEventListener('ronduel_session_updated', onSessionUpdated);
-
     return () => {
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
-      window.removeEventListener('ronduel_session_updated', onSessionUpdated);
     };
   }, [t]);
 
@@ -232,8 +220,11 @@ export default function ProPaywallPage() {
           </div>
         ) : (
           <>
-            {isAnonymous && (
-              <div className="bg-surface-2 text-ink rounded-[12px] p-3 text-xs font-bold">
+            {accountState.ready && !accountState.isReal && (
+              <div
+                data-testid="pro-upgrade-first-box"
+                className="bg-surface-2 text-ink rounded-[12px] p-3 text-xs font-bold"
+              >
                 <p className="mb-2">{t('pro.upgradeFirst')}</p>
                 <button
                   type="button"

@@ -7,11 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import enMessages from '../messages/en.json';
 
 const mockHasRealAccount = vi.fn<() => Promise<boolean>>();
+const mockUseIsRealAccount = vi.fn<() => { ready: boolean; isReal: boolean }>();
 const mockLinkSessionWithGoogle = vi.fn();
 const mockLinkSessionWithPassword = vi.fn();
 const mockGetFirebaseAuth = vi.fn();
 
 vi.mock('next-intl', () => ({
+  useLocale: () => 'en',
+  useFormatter: () => ({
+    number: (val: number) => `€${val.toFixed(2)}`,
+  }),
   useTranslations: (namespace?: string) => {
     const base = namespace
       ? (enMessages as Record<string, unknown>)[namespace]
@@ -43,6 +48,8 @@ vi.mock('@/lib/account-state', async (importOriginal) => {
     ...actual,
     hasRealAccount: (...args: Parameters<typeof actual.hasRealAccount>) =>
       args.length > 0 ? actual.hasRealAccount(...args) : mockHasRealAccount(),
+    useIsRealAccount: (...args: Parameters<typeof actual.useIsRealAccount>) =>
+      args.length > 0 ? actual.useIsRealAccount(...args) : mockUseIsRealAccount(),
   };
 });
 
@@ -60,6 +67,7 @@ vi.mock('@/lib/analytics', () => ({
   trackEvent: vi.fn(),
 }));
 
+import ProPaywallPage from '@/app/[locale]/pro/page';
 import { PaymentAuthGateProvider, usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { hasRealAccount } from '@/lib/account-state';
 import { saveLocalSession } from '@/lib/session';
@@ -82,6 +90,7 @@ function TestTrigger({ onPay }: { onPay: () => void }) {
 describe('PaymentAuthGate & hasRealAccount', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: false });
     window.localStorage.clear();
     window.sessionStorage.clear();
     Object.defineProperty(window, 'matchMedia', {
@@ -97,9 +106,11 @@ describe('PaymentAuthGate & hasRealAccount', () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
-  it('calls the payment action immediately without rendering the gate for a real account', async () => {
+  it('calls the payment action immediately without rendering the gate or leaving loading visible for a real account', async () => {
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: true });
     mockHasRealAccount.mockResolvedValue(true);
     const onPay = vi.fn();
 
@@ -115,6 +126,7 @@ describe('PaymentAuthGate & hasRealAccount', () => {
       expect(onPay).toHaveBeenCalledTimes(1);
     });
     expect(screen.queryByTestId('payment-auth-gate')).toBeNull();
+    expect(screen.queryByTestId('payment-gate-auth-loading')).toBeNull();
   });
 
   it('renders the gate for an anonymous guest, shows success text, and runs the action once after Google link', async () => {
@@ -213,7 +225,78 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     expect(onPay).not.toHaveBeenCalled();
   });
 
-  it('treats legacy email_link-only local sessions as not real accounts', async () => {
+  it('shows payment-gate-auth-loading (not gate) while Auth is not ready, then runs action once ready as real user', async () => {
+    mockUseIsRealAccount.mockReturnValue({ ready: false, isReal: false });
+    mockHasRealAccount.mockResolvedValue(true);
+    const onPay = vi.fn();
+
+    const { rerender } = render(
+      <PaymentAuthGateProvider>
+        <TestTrigger onPay={onPay} />
+      </PaymentAuthGateProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId('pay-trigger'));
+
+    await waitFor(() => {
+      const loader = screen.getByTestId('payment-gate-auth-loading');
+      expect(loader).not.toBeNull();
+      expect(loader.getAttribute('aria-busy')).toBe('true');
+      expect(loader.textContent).toContain('Loading');
+    });
+    expect(screen.queryByTestId('payment-auth-gate')).toBeNull();
+    expect(onPay).not.toHaveBeenCalled();
+
+    // Auth finishes hydrating with a real user
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: true });
+    rerender(
+      <PaymentAuthGateProvider>
+        <TestTrigger onPay={onPay} />
+      </PaymentAuthGateProvider>,
+    );
+
+    await waitFor(() => {
+      expect(onPay).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.queryByTestId('payment-gate-auth-loading')).toBeNull();
+    expect(screen.queryByTestId('payment-auth-gate')).toBeNull();
+  });
+
+  it('shows payment-gate-auth-loading while Auth is not ready, then opens gate once ready as guest', async () => {
+    mockUseIsRealAccount.mockReturnValue({ ready: false, isReal: false });
+    mockHasRealAccount.mockResolvedValue(false);
+    const onPay = vi.fn();
+
+    const { rerender } = render(
+      <PaymentAuthGateProvider>
+        <TestTrigger onPay={onPay} />
+      </PaymentAuthGateProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId('pay-trigger'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('payment-gate-auth-loading')).not.toBeNull();
+    });
+    expect(screen.queryByTestId('payment-auth-gate')).toBeNull();
+    expect(onPay).not.toHaveBeenCalled();
+
+    // Auth finishes hydrating with an anonymous guest
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: false });
+    rerender(
+      <PaymentAuthGateProvider>
+        <TestTrigger onPay={onPay} />
+      </PaymentAuthGateProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('payment-auth-gate')).not.toBeNull();
+    });
+    expect(screen.queryByTestId('payment-gate-auth-loading')).toBeNull();
+    expect(onPay).not.toHaveBeenCalled();
+  });
+
+  it('treats legacy email_link-only local sessions as not real accounts and accepts normalized Google/email providers', async () => {
     saveLocalSession({
       uid: 'u_legacy_email_link',
       nickname: 'Legacy',
@@ -229,19 +312,60 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     const isReal = await hasRealAccount({ getAuthFn: () => null });
     expect(isReal).toBe(false);
 
-    // Verified password provider IS treated as real when Firebase Auth is unavailable
-    saveLocalSession({
-      uid: 'u_verified_pw',
-      nickname: 'Verified',
-      ageConfirmed16: true,
-      relaxedTimer: false,
-      theme: 'light',
-      analyticsConsent: 'rejected',
-      email: 'verified@example.com',
-      isAnonymous: false,
-      authProvider: 'password',
+    // Verified password / google / email_password providers ARE treated as real when Firebase Auth is unavailable
+    for (const provider of ['password', 'google', 'google.com', 'email_password'] as const) {
+      saveLocalSession({
+        uid: `u_verified_${provider}`,
+        nickname: 'Verified',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        email: 'verified@example.com',
+        isAnonymous: false,
+        authProvider: provider,
+      });
+      const isVerifiedReal = await hasRealAccount({ getAuthFn: () => null });
+      expect(isVerifiedReal, `fallback provider ${provider}`).toBe(true);
+    }
+  });
+
+  it('/pro hides upgradeFirst box when isReal is true or ready is false, and renders it only for ready guests', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ isAnonymous: true, pro: { active: false } }),
+      }),
+    );
+
+    // 1. Auth loading (ready: false) -> box must NOT render
+    mockUseIsRealAccount.mockReturnValue({ ready: false, isReal: false });
+    const { rerender } = render(
+      <PaymentAuthGateProvider>
+        <ProPaywallPage />
+      </PaymentAuthGateProvider>,
+    );
+    expect(screen.queryByTestId('pro-upgrade-first-box')).toBeNull();
+
+    // 2. Real user (ready: true, isReal: true) -> box must NOT render
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: true });
+    rerender(
+      <PaymentAuthGateProvider>
+        <ProPaywallPage />
+      </PaymentAuthGateProvider>,
+    );
+    expect(screen.queryByTestId('pro-upgrade-first-box')).toBeNull();
+
+    // 3. Guest (ready: true, isReal: false) -> box renders
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: false });
+    rerender(
+      <PaymentAuthGateProvider>
+        <ProPaywallPage />
+      </PaymentAuthGateProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('pro-upgrade-first-box')).not.toBeNull();
     });
-    const isVerifiedReal = await hasRealAccount({ getAuthFn: () => null });
-    expect(isVerifiedReal).toBe(true);
   });
 });
