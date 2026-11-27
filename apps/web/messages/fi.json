@@ -1269,7 +1269,12 @@
     "submitLogin": "Kirjaudu ja jatka",
     "nextStep": "Seuraava vaihe: turvallinen maksu ({label}).",
     "success": "Tili tallennettu — avataan maksua…",
-    "continueToPayment": "Jatka maksuun"
+    "continueToPayment": "Jatka maksuun",
+    "reauthTitle": "Vahvista tilisi maksaaksesi",
+    "reauthBody": "Kirjautumisistuntosi on vanhentunut. Kirjaudu uudelleen sisään tilillä {email}, jotta ostos hyvitetään tilillesi.",
+    "emailNotVerified": "Vahvista ensin sähköpostiosoitteesi lähettämästämme linkistä ja yritä uudelleen.",
+    "resendVerification": "Lähetä vahvistussähköposti uudelleen",
+    "signingUnavailable": "Maksun tunnistautuminen ei ole tilapäisesti käytettävissä. Yritä uudelleen muutaman minuutin kuluttua."
   },
   "session": {
     "expired": "Sinut kirjattiin ulos 30 päivän tauon jälkeen. Jatka kirjautumalla sisään.",

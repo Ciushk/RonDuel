@@ -1269,7 +1269,12 @@
     "submitLogin": "Log ind og fortsæt",
     "nextStep": "Næste trin: sikker betaling for {label}.",
     "success": "Konto gemt — åbner betaling…",
-    "continueToPayment": "Fortsæt til betaling"
+    "continueToPayment": "Fortsæt til betaling",
+    "reauthTitle": "Bekræft din konto for at betale",
+    "reauthBody": "Din login-session er udløbet. Log ind igen med {email}, så dit køb tilføjes til din konto.",
+    "emailNotVerified": "Bekræft først din e-mailadresse via linket i den e-mail, vi sendte dig, og prøv igen.",
+    "resendVerification": "Send bekræftelsesmail igen",
+    "signingUnavailable": "Betalingsgodkendelse er midlertidigt utilgængelig. Prøv igen om et par minutter."
   },
   "session": {
     "expired": "Du blev logget ud efter 30 dages inaktivitet. Log ind for at fortsætte.",

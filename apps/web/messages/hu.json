@@ -1269,7 +1269,12 @@
     "submitLogin": "Bejelentkezés és folytatás",
     "nextStep": "Következő lépés: biztonságos fizetés ({label}).",
     "success": "Fiók elmentve — fizetés megnyitása…",
-    "continueToPayment": "Tovább a fizetéshez"
+    "continueToPayment": "Tovább a fizetéshez",
+    "reauthTitle": "Erősítsd meg a fiókodat a fizetéshez",
+    "reauthBody": "A bejelentkezési munkameneted lejárt. Jelentkezz be újra a(z) {email} címmel, hogy a vásárlás a fiókodhoz kerüljön.",
+    "emailNotVerified": "Először erősítsd meg az e-mail-címedet a kapott linkkel, majd próbáld újra.",
+    "resendVerification": "Megerősítő e-mail újraküldése",
+    "signingUnavailable": "A fizetési hitelesítés átmenetileg nem érhető el. Próbáld újra néhány perc múlva."
   },
   "session": {
     "expired": "30 nap távollét után kijelentkeztettünk. Jelentkezz be a folytatáshoz.",

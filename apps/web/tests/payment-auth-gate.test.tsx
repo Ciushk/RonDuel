@@ -11,6 +11,10 @@ const mockUseIsRealAccount = vi.fn<() => { ready: boolean; isReal: boolean }>();
 const mockLinkSessionWithGoogle = vi.fn();
 const mockLinkSessionWithPassword = vi.fn();
 const mockGetFirebaseAuth = vi.fn();
+const mockLoginWithGoogle = vi.fn();
+const mockLoginWithEmail = vi.fn();
+const mockResendEmailVerificationSafe = vi.fn();
+const mockAlignFirebaseIdentity = vi.fn();
 
 vi.mock('next-intl', () => ({
   useLocale: () => 'en',
@@ -58,8 +62,20 @@ vi.mock('@/lib/link-account', () => ({
   linkSessionWithPassword: (...args: unknown[]) => mockLinkSessionWithPassword(...args),
 }));
 
+vi.mock('@/lib/billing-identity', () => ({
+  alignFirebaseIdentity: (...args: unknown[]) => mockAlignFirebaseIdentity(...args),
+  getBillingIdToken: vi.fn().mockResolvedValue('mock_aligned_token'),
+  getBillingIdTokenWithResult: vi.fn().mockResolvedValue({
+    token: 'mock_aligned_token',
+    alignment: { status: 'aligned', uid: 'u_linked_1' },
+  }),
+}));
+
 vi.mock('@/lib/firebase', () => ({
   getFirebaseAuth: () => mockGetFirebaseAuth(),
+  loginWithGoogle: (...args: unknown[]) => mockLoginWithGoogle(...args),
+  loginWithEmail: (...args: unknown[]) => mockLoginWithEmail(...args),
+  resendEmailVerificationSafe: (...args: unknown[]) => mockResendEmailVerificationSafe(...args),
   requestPasswordReset: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -92,6 +108,10 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     vi.clearAllMocks();
     clearServerAccountCache();
     mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: false });
+    mockAlignFirebaseIdentity.mockResolvedValue({ status: 'aligned', uid: 'u_linked_1' });
+    mockLoginWithGoogle.mockResolvedValue({ uid: 'fb_google_reauth' });
+    mockLoginWithEmail.mockResolvedValue({ uid: 'fb_email_reauth' });
+    mockResendEmailVerificationSafe.mockResolvedValue(true);
     window.localStorage.clear();
     window.sessionStorage.clear();
     Object.defineProperty(window, 'matchMedia', {
@@ -440,5 +460,134 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     await waitFor(() => {
       expect(screen.getByTestId('pro-upgrade-first-box')).not.toBeNull();
     });
+  });
+
+  it('reauth mode renders confirmation copy without guest chips, aligns identity, and runs the pending action', async () => {
+    vi.useFakeTimers();
+    saveLocalSession({
+      uid: 'u_andrei89',
+      nickname: 'Andrei',
+      ageConfirmed16: true,
+      relaxedTimer: false,
+      theme: 'light',
+      analyticsConsent: 'rejected',
+      email: 'eu.andrei89@gmail.com',
+      isAnonymous: false,
+      authProvider: 'google.com',
+    });
+    mockAlignFirebaseIdentity.mockResolvedValue({ status: 'aligned', uid: 'u_andrei89' });
+    const onPay = vi.fn();
+
+    function ReauthTrigger() {
+      const { openGate } = usePaymentAuthGate();
+      return (
+        <button
+          type="button"
+          data-testid="reauth-trigger"
+          onClick={() =>
+            openGate(
+              { kind: 'pro_checkout', label: '€4.99 / month' },
+              { mode: 'reauth', action: onPay },
+            )
+          }
+        >
+          Reauth Pay
+        </button>
+      );
+    }
+
+    render(
+      <PaymentAuthGateProvider>
+        <ReauthTrigger />
+      </PaymentAuthGateProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId('reauth-trigger'));
+    const gate = screen.getByTestId('payment-auth-gate');
+    expect(gate.getAttribute('data-mode')).toBe('reauth');
+    expect(gate.textContent).toContain('Confirm your account to pay');
+    expect(gate.textContent).toContain('eu.andrei89@gmail.com');
+    expect(gate.textContent).not.toContain('Create an account to keep your data');
+    expect(gate.textContent).not.toContain('Your guest progress moves');
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('payment-gate-google-btn'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockLoginWithGoogle).toHaveBeenCalledTimes(1);
+    expect(mockLinkSessionWithGoogle).not.toHaveBeenCalled();
+    expect(mockAlignFirebaseIdentity).toHaveBeenCalledTimes(1);
+    expect(onPay).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(onPay).toHaveBeenCalledTimes(1);
+  });
+
+  it('reauth mode blocks pending action on EMAIL_NOT_VERIFIED (with resend button) and on ACCOUNT_MISMATCH', async () => {
+    saveLocalSession({
+      uid: 'u_andrei89',
+      nickname: 'Andrei',
+      ageConfirmed16: true,
+      relaxedTimer: false,
+      theme: 'light',
+      analyticsConsent: 'rejected',
+      email: 'eu.andrei89@gmail.com',
+      isAnonymous: false,
+      authProvider: 'google.com',
+    });
+    const onPay = vi.fn();
+
+    function ReauthTrigger() {
+      const { openGate } = usePaymentAuthGate();
+      return (
+        <button
+          type="button"
+          data-testid="reauth-trigger"
+          onClick={() =>
+            openGate({ kind: 'town_coins', label: 'RonCoins' }, { mode: 'reauth', action: onPay })
+          }
+        >
+          Reauth Pay
+        </button>
+      );
+    }
+
+    render(
+      <PaymentAuthGateProvider>
+        <ReauthTrigger />
+      </PaymentAuthGateProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId('reauth-trigger'));
+
+    // 1. EMAIL_NOT_VERIFIED shows error + resend button and blocks action
+    mockAlignFirebaseIdentity.mockResolvedValueOnce({
+      status: 'error',
+      code: 'EMAIL_NOT_VERIFIED',
+    });
+    fireEvent.click(screen.getByTestId('payment-gate-google-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('payment-gate-resend-verification-btn')).not.toBeNull();
+    });
+    fireEvent.click(screen.getByTestId('payment-gate-resend-verification-btn'));
+    await waitFor(() => {
+      expect(mockResendEmailVerificationSafe).toHaveBeenCalledTimes(1);
+    });
+    expect(onPay).not.toHaveBeenCalled();
+
+    // 2. ACCOUNT_MISMATCH (foreign uid) keeps gate open and never runs payment action
+    mockAlignFirebaseIdentity.mockResolvedValueOnce({
+      status: 'needs_sign_in',
+      code: 'ACCOUNT_MISMATCH',
+    });
+    fireEvent.click(screen.getByTestId('payment-gate-google-btn'));
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toContain('eu.andrei89@gmail.com');
+    });
+    expect(onPay).not.toHaveBeenCalled();
   });
 });

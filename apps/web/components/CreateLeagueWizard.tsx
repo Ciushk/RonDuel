@@ -19,7 +19,7 @@ import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { getBillingIdTokenWithResult } from '@/lib/billing-identity';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import { formatYearlyPrice } from '@/lib/pricing';
 import {
@@ -50,7 +50,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
   const t = useTranslations('league');
   const tRoot = useTranslations();
   const locale = useLocale() as Locale;
-  const { requireAccount } = usePaymentAuthGate();
+  const { requireAccount, openGate } = usePaymentAuthGate();
 
   const router = useRouter();
 
@@ -200,23 +200,32 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
 
     if (plan === 'pro_trial' && !isPro) {
       try {
-        const s = getLocalSession();
-        let idToken: string | null = null;
-        try {
-          const auth = getFirebaseAuth();
-          idToken = (await auth?.currentUser?.getIdToken()) ?? null;
-        } catch {
-          idToken = null;
-        }
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (idToken) {
-          headers.Authorization = `Bearer ${idToken}`;
+        const { token: idToken, alignment } = await getBillingIdTokenWithResult();
+        if (!idToken) {
+          setLoading(false);
+          if (alignment.status === 'error' && alignment.code === 'TOKEN_SIGNING_UNAVAILABLE') {
+            setError(tRoot('paymentGate.signingUnavailable'));
+            return;
+          }
+          openGate(
+            { kind: 'pro_trial', label: t('goProTrialBtn') },
+            {
+              mode: 'reauth',
+              action: () => {
+                void runProceedToTheme('pro_trial');
+              },
+              initialErrorCode: alignment.status === 'error' ? alignment.code : undefined,
+            },
+          );
+          return;
         }
         const res = await fetch('/api/billing/checkout', {
           method: 'POST',
-          headers,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
           body: JSON.stringify({
-            uid: s.uid,
             plan: 'yearly',
             trial: true,
             euWithdrawalConsent: true,

@@ -1269,7 +1269,12 @@
     "submitLogin": "Logi sisse ja jätka",
     "nextStep": "Järgmine samm: turvaline makse ({label}).",
     "success": "Konto salvestatud — avame makse…",
-    "continueToPayment": "Jätka maksmisega"
+    "continueToPayment": "Jätka maksmisega",
+    "reauthTitle": "Kinnita oma konto maksmiseks",
+    "reauthBody": "Sinu sisselogimisseanss aegus. Logi uuesti sisse kontoga {email}, et ost lisataks sinu kontole.",
+    "emailNotVerified": "Kinnita esmalt oma e-posti aadress saadetud lingi kaudu ja proovi uuesti.",
+    "resendVerification": "Saada kinnituskiri uuesti",
+    "signingUnavailable": "Maksete autentimine pole ajutiselt saadaval. Proovi mõne minuti pärast uuesti."
   },
   "session": {
     "expired": "Sind logiti välja 30 päeva tegevusetuse tõttu. Jätkamiseks logi sisse.",

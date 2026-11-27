@@ -1269,7 +1269,12 @@
     "submitLogin": "Prisijungti ir tęsti",
     "nextStep": "Kitas žingsnis: saugus apmokėjimas už {label}.",
     "success": "Paskyra išsaugota — atidaromas mokėjimas…",
-    "continueToPayment": "Tęsti mokėjimą"
+    "continueToPayment": "Tęsti mokėjimą",
+    "reauthTitle": "Patvirtink paskyrą, kad galėtum mokėti",
+    "reauthBody": "Tavo prisijungimo sesija baigėsi. Prisijunk iš naujo su {email}, kad pirkinys būtų pridėtas prie tavo paskyros.",
+    "emailNotVerified": "Pirmiausia patvirtink savo el. pašto adresą paspaudęs gautą nuorodą ir bandyk dar kartą.",
+    "resendVerification": "Siųsti patvirtinimo laišką iš naujo",
+    "signingUnavailable": "Mokėjimų autentifikavimas laikinai nepasiekiamas. Bandyk dar kartą po kelių minučių."
   },
   "session": {
     "expired": "Buvai atjungtas po 30 dienų neaktyvumo. Prisijunk, kad tęstum.",

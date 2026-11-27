@@ -1269,7 +1269,12 @@
     "submitLogin": "Logga in & fortsätt",
     "nextStep": "Nästa steg: säker betalning för {label}.",
     "success": "Konto sparat — öppnar betalning…",
-    "continueToPayment": "Fortsätt till betalning"
+    "continueToPayment": "Fortsätt till betalning",
+    "reauthTitle": "Bekräfta ditt konto för att betala",
+    "reauthBody": "Din inloggningssession har gått ut. Logga in igen med {email} så att köpet kopplas till ditt konto.",
+    "emailNotVerified": "Bekräfta först din e-postadress via länken vi skickade och försök igen.",
+    "resendVerification": "Skicka verifieringsmejl igen",
+    "signingUnavailable": "Betalningsautentisering är tillfälligt otillgänglig. Försök igen om några minuter."
   },
   "session": {
     "expired": "Du loggades ut efter 30 dagars inaktivitet. Logga in för att fortsätta.",

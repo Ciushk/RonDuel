@@ -72,7 +72,7 @@ import {
 } from '../../apps/web/lib/server-store.js';
 import { generateLiveGeminiTemplates } from '../../apps/web/lib/ai-question-bank.js';
 import { runRonBotChat } from '../../apps/web/lib/gemini-assistant.js';
-import { authorizeRonBotChat } from '../../apps/web/lib/ronbot-auth.js';
+import { authorizeRonBotChat, extractBearerToken } from '../../apps/web/lib/ronbot-auth.js';
 import {
   adoptAuthUid,
   deleteUserFromFirestore,
@@ -86,8 +86,9 @@ import {
 } from './firestore-users.js';
 import { resetStreakTx, useStreakFreezeTx } from './streak-tx.js';
 import { createStorePersistence, type FirestoreLike } from './store-persistence.js';
-import { createProCheckout, handleStripeWebhook } from './billing.js';
-import { getStripe, verifyStripeEvent } from './stripe-client.js';
+import { handleAuthExchange, type AuthLinkDoc } from './auth-exchange.js';
+import { createFreezeCheckout, createProCheckout, handleStripeWebhook } from './billing.js';
+import { getStripe, isFunctionsEmulator, verifyStripeEvent } from './stripe-client.js';
 import { authorizeTownActor, isTownAdmin } from './town-admin.js';
 import { processAwardTriviaCoins } from './town-award.js';
 import { initPlayerTown } from './town-init.js';
@@ -200,7 +201,13 @@ export const api = onRequest(apiOptions, async (req, res) => {
       didInitialNicknameBackfill = true;
       backfillLeagueNicknamesFromUsers();
     }
-    if (!isStripeWebhookRoute && pathname !== '/billing/checkout') {
+    const skipBodyUidPreload =
+      isStripeWebhookRoute ||
+      pathname === '/billing/checkout' ||
+      pathname === '/billing/freeze' ||
+      pathname === '/auth/exchange' ||
+      pathname === '/town/checkout';
+    if (!skipBodyUidPreload) {
       for (const uid of collectRequestUids(body, url)) {
         const existing = getStore().users[uid];
         if (!existing || (!isUserDirty(uid) && isPlaceholderNickname(existing.nickname))) {
@@ -217,6 +224,48 @@ export const api = onRequest(apiOptions, async (req, res) => {
         originalJson(payload),
       );
     }) as typeof res.json;
+
+    if (method === 'POST' && pathname === '/auth/exchange') {
+      const db = getDb();
+      const result = await handleAuthExchange(
+        {
+          authHeader:
+            typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null,
+        },
+        {
+          verifyIdToken: async (token, checkRevoked) =>
+            getAuth().verifyIdToken(token, Boolean(checkRevoked)),
+          getUser: async (uid) => {
+            const cached = getStore().users[uid];
+            if (cached) return cached;
+            return getUserFromFirestore(uid);
+          },
+          findUserByEmail,
+          getAuthLink: async (firebaseUid) => {
+            try {
+              const snap = await db.collection('authLinks').doc(firebaseUid).get();
+              if (!snap.exists) return null;
+              const data = snap.data() as Partial<AuthLinkDoc> | undefined;
+              if (!data || typeof data.ronduelUid !== 'string' || !data.ronduelUid) return null;
+              return {
+                ronduelUid: data.ronduelUid,
+                provider: typeof data.provider === 'string' ? data.provider : '',
+                linkedAt: typeof data.linkedAt === 'string' ? data.linkedAt : '',
+              };
+            } catch {
+              return null;
+            }
+          },
+          setAuthLink: async (firebaseUid, link) => {
+            await db.collection('authLinks').doc(firebaseUid).set(link, { merge: true });
+          },
+          createCustomToken: async (uid, developerClaims) =>
+            getAuth().createCustomToken(uid, developerClaims),
+        },
+      );
+      res.status(result.status).json(result.body);
+      return;
+    }
 
     if (method === 'POST' && pathname === '/chat') {
       const auth = await authorizeRonBotChat({
@@ -704,14 +753,47 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
 
     if (method === 'POST' && pathname === '/town/checkout') {
-      const uid = String(body.uid ?? '');
-      const packId = String(body.packId ?? '');
-      if (!uid || uid === 'anon' || uid === 'u_ssr') {
-        res
-          .status(401)
-          .json({ error: 'Please sign in or link your account before purchasing coins' });
+      const authHeader =
+        typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null;
+      const testUidHeader =
+        typeof req.headers['x-test-uid'] === 'string' ? req.headers['x-test-uid'] : null;
+      let decoded: { uid: string; firebase?: { sign_in_provider?: string } } | null = null;
+      const bearerToken = extractBearerToken(authHeader);
+      if (bearerToken) {
+        try {
+          const verified = await getAuth().verifyIdToken(bearerToken);
+          if (verified?.uid) {
+            decoded = verified;
+          }
+        } catch {
+          decoded = null;
+        }
+      }
+      if (!decoded && isFunctionsEmulator()) {
+        const testUid = testUidHeader?.trim();
+        if (testUid) {
+          decoded = { uid: testUid };
+        }
+      }
+      if (
+        !decoded?.uid ||
+        decoded.uid === 'anon' ||
+        decoded.uid === 'u_ssr' ||
+        decoded.firebase?.sign_in_provider === 'anonymous'
+      ) {
+        res.status(401).json({
+          error: 'Please sign in or link your account before purchasing coins',
+          code: 'UNAUTHENTICATED',
+        });
         return;
       }
+      const uid = decoded.uid;
+      const bodyUid = body.uid !== undefined && body.uid !== null ? String(body.uid).trim() : '';
+      if (bodyUid && bodyUid !== uid) {
+        res.status(403).json({ error: 'UID mismatch', code: 'UID_MISMATCH' });
+        return;
+      }
+      const packId = String(body.packId ?? '');
       if (!packId) {
         res.status(400).json({ error: 'Missing packId' });
         return;
@@ -1179,17 +1261,123 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
 
     if (method === 'POST' && pathname === '/me/upgrade') {
-      const oldUid = String(body.uid);
-      const email = String(body.email ?? '');
+      const oldUid = String(body.uid ?? '');
+      const rawBodyEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
       const provider = String(body.provider ?? 'password');
-      if (body.targetUid) {
-        const targetUid = String(body.targetUid);
-        if (!getStore().users[targetUid]) await getUserFromFirestore(targetUid);
+      const isAuthProvider =
+        provider === 'google' ||
+        provider === 'google.com' ||
+        provider === 'password' ||
+        provider === 'email_password';
+
+      let effectiveEmail = rawBodyEmail;
+
+      if (isAuthProvider) {
+        const authHeader =
+          typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null;
+        const bearerToken = extractBearerToken(authHeader);
+        if (!bearerToken) {
+          res.status(403).json({
+            error: 'Authentication required for account upgrade',
+            code: 'AUTH_REQUIRED',
+          });
+          return;
+        }
+        let decoded: {
+          uid: string;
+          email?: string;
+          email_verified?: boolean;
+          firebase?: { sign_in_provider?: string };
+        } | null = null;
+        try {
+          const verified = await getAuth().verifyIdToken(bearerToken);
+          if (verified?.uid) {
+            decoded = verified;
+          }
+        } catch {
+          decoded = null;
+        }
+        if (!decoded?.uid) {
+          res.status(403).json({
+            error: 'Invalid authentication token',
+            code: 'AUTH_REQUIRED',
+          });
+          return;
+        }
+        if (decoded.firebase?.sign_in_provider === 'anonymous') {
+          res.status(403).json({
+            error: 'Anonymous token not allowed',
+            code: 'ANONYMOUS',
+          });
+          return;
+        }
+        const tokenEmail =
+          typeof decoded.email === 'string' ? decoded.email.trim().toLowerCase() : '';
+        if (!tokenEmail) {
+          res.status(403).json({
+            error: 'Token email required',
+            code: 'EMAIL_REQUIRED',
+          });
+          return;
+        }
+        if (rawBodyEmail && rawBodyEmail !== tokenEmail) {
+          res.status(403).json({
+            error: 'Email mismatch with authenticated token',
+            code: 'EMAIL_MISMATCH',
+          });
+          return;
+        }
+        effectiveEmail = tokenEmail;
+
+        if (body.targetUid) {
+          const targetUid = String(body.targetUid);
+          if (!getStore().users[targetUid]) await getUserFromFirestore(targetUid);
+        }
+        await findUserByEmail(effectiveEmail);
+        const existingTarget = Object.values(getStore().users).find(
+          (candidate) =>
+            candidate.uid !== oldUid &&
+            typeof candidate.email === 'string' &&
+            candidate.email.trim().toLowerCase() === effectiveEmail &&
+            !candidate.isAnonymous,
+        );
+        if (existingTarget && decoded.email_verified !== true) {
+          res.status(403).json({
+            error: 'Email verification required before merging into an existing account',
+            code: 'EMAIL_NOT_VERIFIED',
+          });
+          return;
+        }
+      } else if (provider === 'email_link') {
+        if (effectiveEmail) {
+          await findUserByEmail(effectiveEmail);
+          const existingTarget = Object.values(getStore().users).find(
+            (candidate) =>
+              candidate.uid !== oldUid &&
+              typeof candidate.email === 'string' &&
+              candidate.email.trim().toLowerCase() === effectiveEmail &&
+              !candidate.isAnonymous,
+          );
+          if (existingTarget) {
+            res.status(409).json({
+              accountExists: true,
+              code: 'SIGN_IN_REQUIRED',
+              error: 'Sign in with Google or password to access this account',
+            });
+            return;
+          }
+        }
+      } else {
+        if (body.targetUid) {
+          const targetUid = String(body.targetUid);
+          if (!getStore().users[targetUid]) await getUserFromFirestore(targetUid);
+        }
+        if (effectiveEmail) await findUserByEmail(effectiveEmail);
       }
-      if (email) await findUserByEmail(email);
+
       const result = upgradeAccount({
         uid: oldUid,
-        email,
+        email: effectiveEmail,
         provider: provider as
           'email_link' | 'google' | 'google.com' | 'password' | 'email_password',
         nickname: body.nickname ? String(body.nickname) : undefined,
@@ -1259,6 +1447,31 @@ export const api = onRequest(apiOptions, async (req, res) => {
             monthly: STRIPE_PRICE_PRO_MONTHLY.value(),
             yearly: STRIPE_PRICE_PRO_YEARLY.value(),
           },
+          publicBaseUrl: PUBLIC_BASE_URL.value(),
+        },
+      );
+      res.status(result.status).json(result.body);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/billing/freeze') {
+      const result = await createFreezeCheckout(
+        {
+          authHeader:
+            typeof req.headers['authorization'] === 'string' ? req.headers['authorization'] : null,
+          testUidHeader:
+            typeof req.headers['x-test-uid'] === 'string' ? req.headers['x-test-uid'] : null,
+          body,
+        },
+        {
+          verifyIdToken: async (token) => getAuth().verifyIdToken(token),
+          getStoreUser: (uid) => getStore().users[uid],
+          getUserFromFirestore,
+          getOrCreateUser,
+          markUserDirty,
+          syncUserToFirestore,
+          processStripeWebhook,
+          getStripe,
           publicBaseUrl: PUBLIC_BASE_URL.value(),
         },
       );

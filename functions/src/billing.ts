@@ -7,6 +7,12 @@ import type { processStripeWebhook, UserRecord } from '../../apps/web/lib/server
 import { isFunctionsEmulator, mapToStripeCheckoutLocale } from './stripe-client.js';
 
 export type ProPlan = 'monthly' | 'yearly';
+export type FreezePack = 'freeze_1' | 'freeze_3';
+
+export const FREEZE_PACK_PRICES_EUR: Readonly<Record<FreezePack, number>> = {
+  freeze_1: 0.99,
+  freeze_3: 1.99,
+};
 
 export interface DecodedIdTokenLike {
   uid: string;
@@ -43,6 +49,8 @@ export interface ProCheckoutDeps {
   publicBaseUrl: string;
   isEmulator?: boolean;
 }
+
+export type FreezeCheckoutDeps = Omit<ProCheckoutDeps, 'priceIds'>;
 
 export interface StripeWebhookInput {
   rawBody: Buffer | undefined;
@@ -316,8 +324,156 @@ export async function createProCheckout(
 }
 
 /**
- * Verifies the Stripe webhook signature from `rawBody` and dispatches both Pro subscription
- * events and RonTown coin purchase events. Never reads `req.body`.
+ * Handles `POST /billing/freeze` for one-time Streak Freeze pack purchases (`freeze_1` / `freeze_3`).
+ * Requires a verified non-anonymous Firebase ID token (ignores `body.uid`) and grants shields
+ * exclusively via verified Stripe webhooks (or emulator simulation when Stripe is unconfigured).
+ */
+export async function createFreezeCheckout(
+  input: ProCheckoutInput,
+  deps: FreezeCheckoutDeps,
+): Promise<BillingHttpResult> {
+  const emulator = deps.isEmulator ?? isFunctionsEmulator();
+
+  // 1. Identity: require cryptographic Firebase ID token (ignore body.uid).
+  let decoded: DecodedIdTokenLike | null = null;
+  const bearerToken = extractBearerToken(input.authHeader);
+  if (bearerToken) {
+    try {
+      const verified = await deps.verifyIdToken(bearerToken);
+      if (verified?.uid) {
+        decoded = verified;
+      }
+    } catch {
+      decoded = null;
+    }
+  }
+
+  // Emulator-only test bypass, mirroring createProCheckout
+  if (!decoded && emulator) {
+    const testUid = input.testUidHeader?.trim();
+    if (testUid) {
+      decoded = { uid: testUid };
+    }
+  }
+
+  if (!decoded?.uid) {
+    return {
+      status: 401,
+      body: { error: 'Authentication required', code: 'UNAUTHENTICATED' },
+    };
+  }
+
+  if (decoded.firebase?.sign_in_provider === 'anonymous') {
+    return {
+      status: 403,
+      body: {
+        error: 'Please upgrade your anonymous account before purchasing Streak Freezes.',
+        code: 'FORBIDDEN',
+      },
+    };
+  }
+
+  const uid = decoded.uid;
+
+  // 2. Load real user record from store / Firestore and reject anonymous accounts.
+  if (!deps.getStoreUser(uid)) {
+    await deps.getUserFromFirestore(uid);
+  }
+  const user = deps.getOrCreateUser({ uid });
+  if (user.isAnonymous) {
+    return {
+      status: 403,
+      body: {
+        error: 'Please upgrade your anonymous account before purchasing Streak Freezes.',
+        code: 'FORBIDDEN',
+      },
+    };
+  }
+
+  // 3. Validate freeze pack
+  const rawPack = typeof input.body.pack === 'string' ? input.body.pack.trim() : '';
+  if (rawPack !== 'freeze_1' && rawPack !== 'freeze_3') {
+    return {
+      status: 400,
+      body: { error: 'Unsupported freeze pack', code: 'INVALID_PACK' },
+    };
+  }
+  const pack: FreezePack = rawPack;
+  const urlLocale = resolveUrlLocale(input.body.locale);
+
+  // 4. Create Stripe Checkout Session (or emulate locally in emulator mode without Stripe key)
+  const stripe = deps.getStripe();
+  if (!stripe) {
+    if (emulator) {
+      const eventId = `evt_emu_freeze_${Date.now()}_${uid}`;
+      const result = deps.processStripeWebhook({
+        eventId,
+        type: 'checkout.session.completed',
+        uid,
+        plan: pack,
+      });
+      const updatedUser = deps.getOrCreateUser({ uid });
+      await deps.syncUserToFirestore(updatedUser);
+      return {
+        status: 200,
+        body: {
+          mode: 'emulator_simulated',
+          eventId,
+          freezes: result.freezes,
+        },
+      };
+    }
+    return {
+      status: 503,
+      body: { error: 'Stripe billing is not configured', code: 'STRIPE_NOT_CONFIGURED' },
+    };
+  }
+
+  const baseUrl = (deps.publicBaseUrl || 'https://ronduel.web.app').replace(/\/+$/, '');
+  const unitAmount = Math.round(FREEZE_PACK_PRICES_EUR[pack] * 100);
+  const productName =
+    pack === 'freeze_3' ? 'RonDuel 3× Streak Shields' : 'RonDuel 1× Streak Shield';
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    client_reference_id: uid,
+    customer_email: user.email || decoded.email || undefined,
+    locale: mapToStripeCheckoutLocale(urlLocale),
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: 'eur',
+          unit_amount: unitAmount,
+          tax_behavior: 'inclusive',
+          product_data: {
+            name: productName,
+          },
+        },
+      },
+    ],
+    metadata: {
+      type: 'freeze_pack',
+      uid,
+      pack,
+    },
+    success_url: `${baseUrl}/${urlLocale}/me?shield=success`,
+    cancel_url: `${baseUrl}/${urlLocale}/me?shield=canceled`,
+  });
+
+  return {
+    status: 200,
+    body: {
+      mode: 'stripe_checkout',
+      sessionId: session.id,
+      checkoutUrl: session.url,
+    },
+  };
+}
+
+/**
+ * Verifies the Stripe webhook signature from `rawBody` and dispatches Pro subscription,
+ * Streak Freeze pack, and RonTown coin purchase events. Never reads `req.body`.
  */
 export async function handleStripeWebhook(
   input: StripeWebhookInput,
@@ -394,6 +550,34 @@ export async function handleStripeWebhook(
         uid,
         plan,
         currentPeriodEnd,
+      });
+      return { status: 200, body: result as Record<string, unknown> };
+    }
+
+    if (metadata.type === 'freeze_pack') {
+      if (session.payment_status !== 'paid') {
+        return {
+          status: 200,
+          body: { processed: false, reason: 'Checkout session not paid' },
+        };
+      }
+
+      const uid = typeof metadata.uid === 'string' ? metadata.uid.trim() : '';
+      const pack: FreezePack | null =
+        metadata.pack === 'freeze_1' || metadata.pack === 'freeze_3' ? metadata.pack : null;
+      if (!uid || !pack) {
+        return {
+          status: 200,
+          body: { processed: false, reason: 'Missing uid or invalid pack in session metadata' },
+        };
+      }
+
+      await ensureUserLoaded(uid);
+      const result = deps.processStripeWebhook({
+        eventId: event.id,
+        type: 'checkout.session.completed',
+        uid,
+        plan: pack,
       });
       return { status: 200, body: result as Record<string, unknown> };
     }

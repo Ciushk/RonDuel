@@ -30,6 +30,7 @@ import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Avatar, Button, Card, Chip, Sheet, Switch, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { getBillingIdTokenWithResult } from '@/lib/billing-identity';
 import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import {
@@ -92,7 +93,7 @@ export default function ProfilePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { requireAccount } = usePaymentAuthGate();
+  const { requireAccount, openGate } = usePaymentAuthGate();
   const pushStatusId = useId();
   const emailStatusId = useId();
 
@@ -155,16 +156,46 @@ export default function ProfilePage() {
   };
 
   const executeBuyFreeze = async (pack: 'freeze_1' | 'freeze_3') => {
-    const uid = getLocalSession().uid || profile?.uid;
-    if (!uid) return;
+    const label = pack === 'freeze_3' ? '1,99 €' : '0,99 €';
+    const { token: idToken, alignment } = await getBillingIdTokenWithResult();
+    if (!idToken) {
+      if (alignment.status === 'error' && alignment.code === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setToast(t('paymentGate.signingUnavailable'));
+        setTimeout(() => setToast(''), 4000);
+        return;
+      }
+      openGate(
+        { kind: 'shield_pack', label },
+        {
+          mode: 'reauth',
+          action: () => {
+            void executeBuyFreeze(pack);
+          },
+          initialErrorCode: alignment.status === 'error' ? alignment.code : undefined,
+        },
+      );
+      return;
+    }
+
     setBuyingFreeze(true);
     try {
       const res = await fetch('/api/billing/freeze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, pack }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ pack, locale }),
       });
+      const data = (await res.json().catch(() => ({}))) as {
+        checkoutUrl?: string;
+        freezes?: number;
+      };
       if (res.ok) {
+        if (typeof data.checkoutUrl === 'string' && data.checkoutUrl) {
+          window.location.assign(data.checkoutUrl);
+          return;
+        }
         setToast(t('profile.shieldAddedToast'));
         loadProfile();
         setFreezeSheetOpen(false);
@@ -243,6 +274,21 @@ export default function ProfilePage() {
 
     // Fetch latest profile from server
     loadProfile();
+
+    if (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('shield') === 'success'
+    ) {
+      setToast(t('profile.shieldAddedToast'));
+      const retryTimer = setTimeout(() => {
+        loadProfile();
+      }, 2000);
+      const clearToastTimer = setTimeout(() => setToast(''), 4000);
+      return () => {
+        clearTimeout(retryTimer);
+        clearTimeout(clearToastTimer);
+      };
+    }
   }, [loadProfile]);
 
   const getNicknameCooldownDays = () => {
@@ -373,6 +419,15 @@ export default function ProfilePage() {
         provider,
       }),
     });
+    if (res.status === 409) {
+      const data = (await res.json().catch(() => ({}))) as { code?: string };
+      if (data.code === 'SIGN_IN_REQUIRED') {
+        setToast(t('auth.errors.emailInUse'));
+        handleOpenAuth('login');
+        setTimeout(() => setToast(''), 4000);
+        return;
+      }
+    }
     if (res.ok) {
       loadProfile();
       setToast(t('profile.linkedBadge', { email: targetEmail }));

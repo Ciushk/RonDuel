@@ -95,6 +95,10 @@ export function AccountLinkingSheet({
 
       const data = await res.json();
       if (!res.ok) {
+        if (data?.code === 'SIGN_IN_REQUIRED') {
+          setError(t('auth.errors.emailInUse'));
+          return;
+        }
         setError(apiErrorMessage(t, data, 'account.saveError'));
         return;
       }

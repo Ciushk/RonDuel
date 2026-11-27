@@ -10,6 +10,7 @@ import {
   type UserRecord,
 } from '../../apps/web/lib/server-store.js';
 import {
+  createFreezeCheckout,
   createProCheckout,
   handleStripeWebhook,
   type ProCheckoutDeps,
@@ -639,6 +640,169 @@ describe('Stripe Pro billing checkout & verified webhooks', () => {
       const res = await handleStripeWebhook(signed, deps);
       expect(res.status).toBe(200);
       expect(res.body.processed).toBe(false);
+    });
+
+    it('credits +1 / +3 freezes on paid freeze_pack checkout.session.completed, stays idempotent, and ignores unpaid sessions', async () => {
+      const user = makeRegisteredUser('u_shield_buyer', { freezes: 1 });
+      const { deps } = buildWebhookDeps();
+
+      const unpaid = signStripePayload({
+        id: 'evt_freeze_unpaid_1',
+        object: 'event',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            id: 'cs_freeze_unpaid',
+            object: 'checkout.session',
+            mode: 'payment',
+            payment_status: 'unpaid',
+            metadata: { type: 'freeze_pack', uid: 'u_shield_buyer', pack: 'freeze_1' },
+          },
+        },
+      });
+      const unpaidRes = await handleStripeWebhook(unpaid, deps);
+      expect(unpaidRes.status).toBe(200);
+      expect(unpaidRes.body.processed).toBe(false);
+      expect(user.freezes).toBe(1);
+
+      const paidOne = signStripePayload({
+        id: 'evt_freeze_paid_1',
+        object: 'event',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            id: 'cs_freeze_paid_1',
+            object: 'checkout.session',
+            mode: 'payment',
+            payment_status: 'paid',
+            metadata: { type: 'freeze_pack', uid: 'u_shield_buyer', pack: 'freeze_1' },
+          },
+        },
+      });
+      const res1 = await handleStripeWebhook(paidOne, deps);
+      expect(res1.status).toBe(200);
+      expect(user.freezes).toBe(2);
+
+      // Replaying the same Stripe event ID must be idempotent (no double credit)
+      const replay = await handleStripeWebhook(paidOne, deps);
+      expect(replay.status).toBe(200);
+      expect(user.freezes).toBe(2);
+
+      // freeze_3 adds +3 and respects the cap of 5
+      const paidThree = signStripePayload({
+        id: 'evt_freeze_paid_3',
+        object: 'event',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            id: 'cs_freeze_paid_3',
+            object: 'checkout.session',
+            mode: 'payment',
+            payment_status: 'paid',
+            metadata: { type: 'freeze_pack', uid: 'u_shield_buyer', pack: 'freeze_3' },
+          },
+        },
+      });
+      const res3 = await handleStripeWebhook(paidThree, deps);
+      expect(res3.status).toBe(200);
+      expect(user.freezes).toBe(5);
+    });
+  });
+
+  describe('custom-token Pro checkout & createFreezeCheckout', () => {
+    it('accepts a Firebase custom token (sign_in_provider=custom) under RonDuel uid for Pro checkout', async () => {
+      makeRegisteredUser('u_real');
+      const { deps, sessionsCreate } = buildCheckoutDeps({
+        verifyIdToken: vi.fn().mockResolvedValue({
+          uid: 'u_real',
+          firebase: { sign_in_provider: 'custom' },
+        }),
+      });
+
+      const res = await createProCheckout(
+        {
+          authHeader: 'Bearer custom_token_u_real',
+          body: { plan: 'monthly', euWithdrawalConsent: true, locale: 'ro' },
+        },
+        deps,
+      );
+
+      expect(res.status).toBe(200);
+      expect(sessionsCreate).toHaveBeenCalledTimes(1);
+      const createArg = sessionsCreate.mock.calls[0][0];
+      expect(createArg.client_reference_id).toBe('u_real');
+      expect(createArg.metadata.uid).toBe('u_real');
+      expect(createArg.subscription_data.metadata.uid).toBe('u_real');
+    });
+
+    it('createFreezeCheckout requires verified non-anonymous token, validates pack, ignores body.uid, and creates Stripe payment session', async () => {
+      makeRegisteredUser('u_real', { email: 'real@ronduel.test' });
+      const { deps, sessionsCreate } = buildCheckoutDeps({
+        verifyIdToken: vi.fn().mockResolvedValue({
+          uid: 'u_real',
+          firebase: { sign_in_provider: 'custom' },
+        }),
+      });
+
+      const noAuth = await createFreezeCheckout(
+        { authHeader: null, body: { uid: 'u_real', pack: 'freeze_1' } },
+        deps,
+      );
+      expect(noAuth.status).toBe(401);
+
+      const badPack = await createFreezeCheckout(
+        { authHeader: 'Bearer custom_tok', body: { pack: 'freeze_99' } },
+        deps,
+      );
+      expect(badPack.status).toBe(400);
+      expect(badPack.body.code).toBe('INVALID_PACK');
+
+      const res1 = await createFreezeCheckout(
+        {
+          authHeader: 'Bearer custom_tok',
+          body: { uid: 'u_spoofed_victim', pack: 'freeze_1', locale: 'ro' },
+        },
+        deps,
+      );
+      expect(res1.status).toBe(200);
+      expect(sessionsCreate).toHaveBeenCalledTimes(1);
+      const arg1 = sessionsCreate.mock.calls[0][0];
+      expect(arg1.mode).toBe('payment');
+      expect(arg1.client_reference_id).toBe('u_real');
+      expect(arg1.metadata).toEqual({ type: 'freeze_pack', uid: 'u_real', pack: 'freeze_1' });
+      expect(arg1.line_items[0].price_data.currency).toBe('eur');
+      expect(arg1.line_items[0].price_data.unit_amount).toBe(99);
+      expect(arg1.line_items[0].price_data.tax_behavior).toBe('inclusive');
+      expect(arg1.success_url).toBe('https://ronduel.web.app/ro/me?shield=success');
+
+      const res3 = await createFreezeCheckout(
+        {
+          authHeader: 'Bearer custom_tok',
+          body: { pack: 'freeze_3', locale: 'en' },
+        },
+        deps,
+      );
+      expect(res3.status).toBe(200);
+      const arg3 = sessionsCreate.mock.calls[1][0];
+      expect(arg3.line_items[0].price_data.unit_amount).toBe(199);
+      expect(arg3.metadata).toEqual({ type: 'freeze_pack', uid: 'u_real', pack: 'freeze_3' });
+    });
+
+    it('createFreezeCheckout rejects anonymous Firebase token with 403 FORBIDDEN', async () => {
+      makeRegisteredUser('u_anon_freeze');
+      const { deps } = buildCheckoutDeps({
+        verifyIdToken: vi.fn().mockResolvedValue({
+          uid: 'u_anon_freeze',
+          firebase: { sign_in_provider: 'anonymous' },
+        }),
+      });
+
+      const res = await createFreezeCheckout(
+        { authHeader: 'Bearer anon_tok', body: { pack: 'freeze_1' } },
+        deps,
+      );
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('FORBIDDEN');
     });
   });
 });

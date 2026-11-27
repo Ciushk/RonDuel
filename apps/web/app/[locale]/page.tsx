@@ -31,6 +31,7 @@ import { StreakWeekStrip } from '@/components/StreakWeekStrip';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { getBillingIdTokenWithResult } from '@/lib/billing-identity';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
@@ -119,7 +120,7 @@ export default function LocaleHomePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { requireAccount } = usePaymentAuthGate();
+  const { requireAccount, openGate } = usePaymentAuthGate();
 
   const [status, setStatus] = useState<TodayStatus | null>(null);
   const [nickSheetOpen, setNickSheetOpen] = useState(false);
@@ -199,16 +200,45 @@ export default function LocaleHomePage() {
   }, [applyServerProfile, showToastMessage, t]);
 
   const executeBuyFreeze = async (pack: 'freeze_1' | 'freeze_3') => {
-    const uid = getLocalSession().uid;
-    if (!uid) return;
+    const label = pack === 'freeze_3' ? '1,99 €' : '0,99 €';
+    const { token: idToken, alignment } = await getBillingIdTokenWithResult();
+    if (!idToken) {
+      if (alignment.status === 'error' && alignment.code === 'TOKEN_SIGNING_UNAVAILABLE') {
+        showToastMessage(t('paymentGate.signingUnavailable'), 4000);
+        return;
+      }
+      openGate(
+        { kind: 'shield_pack', label },
+        {
+          mode: 'reauth',
+          action: () => {
+            void executeBuyFreeze(pack);
+          },
+          initialErrorCode: alignment.status === 'error' ? alignment.code : undefined,
+        },
+      );
+      return;
+    }
+
     setBuyingFreeze(true);
     try {
       const res = await fetch('/api/billing/freeze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, pack }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ pack, locale }),
       });
+      const data = (await res.json().catch(() => ({}))) as {
+        checkoutUrl?: string;
+        freezes?: number;
+      };
       if (res.ok) {
+        if (typeof data.checkoutUrl === 'string' && data.checkoutUrl) {
+          window.location.assign(data.checkoutUrl);
+          return;
+        }
         showToastMessage(t('profile.shieldAddedToast'), 3500);
         setFreezeSheetOpen(false);
         loadStatus();

@@ -242,9 +242,20 @@ export function JoinLeagueClient({
       const session = getLocalSession();
       const userNick = user.displayName || session.nickname;
 
+      let idToken: string | null = null;
+      try {
+        idToken = await user.getIdToken();
+      } catch {
+        idToken = null;
+      }
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (idToken) {
+        headers.Authorization = `Bearer ${idToken}`;
+      }
+
       const res = await fetch('/api/me/upgrade', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           uid: session.uid,
           email: user.email,
@@ -268,6 +279,8 @@ export function JoinLeagueClient({
         isAnonymous: false,
         authProvider: 'google',
       });
+      const { alignFirebaseIdentity } = await import('@/lib/billing-identity');
+      await alignFirebaseIdentity().catch(() => undefined);
       setToast(t('googleLinkedToast'));
       setTimeout(() => setToast(''), 2500);
     } catch (err: unknown) {

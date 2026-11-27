@@ -28,6 +28,9 @@ import { Button, Chip, Sheet } from '@/components/ui';
 import { hasRealAccount, useIsRealAccount } from '@/lib/account-state';
 import { trackEvent } from '@/lib/analytics';
 import { getFriendlyAuthErrorMessage } from '@/lib/auth-errors';
+import { alignFirebaseIdentity, type AlignIdentityResult } from '@/lib/billing-identity';
+import { loginWithEmail, loginWithGoogle, resendEmailVerificationSafe } from '@/lib/firebase';
+import { getLocalSession } from '@/lib/session';
 
 const AuthModal = dynamic(() => import('@/components/AuthModal').then((m) => m.AuthModal), {
   ssr: false,
@@ -35,9 +38,18 @@ const AuthModal = dynamic(() => import('@/components/AuthModal').then((m) => m.A
 
 export type PaymentIntentKind = 'pro_checkout' | 'pro_trial' | 'town_coins' | 'shield_pack';
 
+export type PaymentGateMode = 'guest' | 'reauth';
+
 export interface PaymentIntent {
   kind: PaymentIntentKind;
   label?: string;
+}
+
+export interface OpenGateOptions {
+  mode?: PaymentGateMode;
+  action?: () => void | Promise<void>;
+  email?: string;
+  initialErrorCode?: string;
 }
 
 export const PENDING_PAYMENT_STORAGE_KEY = 'rd_pending_payment';
@@ -54,7 +66,7 @@ interface StoredPendingPayment {
 
 interface PaymentAuthGateContextValue {
   requireAccount: (intent: PaymentIntent, action?: () => void | Promise<void>) => Promise<boolean>;
-  openGate: (intent?: PaymentIntent) => void;
+  openGate: (intent?: PaymentIntent, options?: OpenGateOptions) => void;
 }
 
 const PaymentAuthGateContext = createContext<PaymentAuthGateContextValue | null>(null);
@@ -154,6 +166,8 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
+  const [mode, setMode] = useState<PaymentGateMode>('guest');
+  const [reauthEmail, setReauthEmail] = useState('');
   const [step, setStep] = useState<'choose' | 'email'>('choose');
   const [emailMode, setEmailMode] = useState<'signup' | 'login'>('signup');
   const [intent, setIntent] = useState<PaymentIntent>({ kind: 'pro_checkout' });
@@ -161,6 +175,9 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
   const [loadingMethod, setLoadingMethod] = useState<'google' | 'email' | null>(null);
   const [error, setError] = useState('');
+  const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
+  const [verificationResent, setVerificationResent] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [success, setSuccess] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [reloadResume, setReloadResume] = useState<StoredPendingPayment | null>(null);
@@ -225,11 +242,16 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   const finishClose = useCallback(() => {
     setOpen(false);
     setClosing(false);
+    setMode('guest');
+    setReauthEmail('');
     setStep('choose');
     setEmailMode('signup');
     setEmail('');
     setPassword('');
     setError('');
+    setNeedsEmailVerification(false);
+    setVerificationResent(false);
+    setResendingVerification(false);
     setLoadingMethod(null);
     setSuccess(false);
   }, []);
@@ -251,25 +273,40 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   }, [loadingMethod, success, finishClose, clearTimers]);
 
   const openGateModal = useCallback(
-    (nextIntent: PaymentIntent, action?: () => void | Promise<void>) => {
+    (nextIntent: PaymentIntent, options?: OpenGateOptions) => {
       clearTimers();
-      pendingActionRef.current = action ?? null;
+      const nextMode: PaymentGateMode = options?.mode ?? 'guest';
+      const sessionEmail = options?.email || getLocalSession().email || '';
+      pendingActionRef.current = options?.action ?? null;
       setIntent(nextIntent);
+      setMode(nextMode);
+      setReauthEmail(nextMode === 'reauth' ? sessionEmail : '');
       setStep('choose');
-      setEmailMode('signup');
-      setEmail('');
+      setEmailMode(nextMode === 'reauth' ? 'login' : 'signup');
+      setEmail(nextMode === 'reauth' ? sessionEmail : '');
       setPassword('');
-      setError('');
+      setVerificationResent(false);
+      setResendingVerification(false);
+      if (options?.initialErrorCode === 'EMAIL_NOT_VERIFIED') {
+        setError(t('emailNotVerified'));
+        setNeedsEmailVerification(true);
+      } else if (options?.initialErrorCode === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setError(t('signingUnavailable'));
+        setNeedsEmailVerification(false);
+      } else {
+        setError('');
+        setNeedsEmailVerification(false);
+      }
       setLoadingMethod(null);
       setSuccess(false);
       setClosing(false);
       setReloadResume(null);
-      if (action) {
+      if (options?.action) {
         writePendingPayment(nextIntent, pathname);
       }
       setOpen(true);
     },
-    [clearTimers, pathname],
+    [clearTimers, pathname, t],
   );
 
   const requireAccount = useCallback(
@@ -300,7 +337,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
           }
           return true;
         }
-        openGateModal(nextIntent, action);
+        openGateModal(nextIntent, { mode: 'guest', action });
         return false;
       } catch {
         if (mountedRef.current) {
@@ -314,10 +351,34 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   );
 
   const openGate = useCallback(
-    (nextIntent?: PaymentIntent) => {
-      openGateModal(nextIntent ?? { kind: 'pro_checkout' });
+    (nextIntent?: PaymentIntent, options?: OpenGateOptions) => {
+      openGateModal(nextIntent ?? { kind: 'pro_checkout' }, options);
     },
     [openGateModal],
+  );
+
+  const handleAlignmentFailure = useCallback(
+    (alignment: AlignIdentityResult) => {
+      const code = alignment.status === 'aligned' ? '' : (alignment.code ?? '');
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        setNeedsEmailVerification(true);
+        setError(t('emailNotVerified'));
+        return;
+      }
+      if (code === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setNeedsEmailVerification(false);
+        setError(t('signingUnavailable'));
+        return;
+      }
+      setNeedsEmailVerification(false);
+      const targetEmail = reauthEmail || getLocalSession().email || '';
+      if (targetEmail) {
+        setError(t('reauthBody', { email: targetEmail }));
+      } else {
+        setError(tAuth('errors.invalidCredentials'));
+      }
+    },
+    [reauthEmail, t, tAuth],
   );
 
   const handleAuthSuccess = useCallback(() => {
@@ -328,6 +389,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
     }
     setLoadingMethod(null);
     setError('');
+    setNeedsEmailVerification(false);
     setSuccess(true);
     clearPendingPaymentStorage();
     setReloadResume(null);
@@ -344,17 +406,65 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
     }, GATE_SUCCESS_HOLD_MS);
   }, [clearTimers, finishClose]);
 
+  const handleResendVerification = async () => {
+    if (resendingVerification || verificationResent) return;
+    setResendingVerification(true);
+    try {
+      const sent = await resendEmailVerificationSafe();
+      if (sent) {
+        setVerificationResent(true);
+      }
+    } catch {
+      // Keep button enabled on transient error
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
   const handleGoogleContinue = async () => {
     if (loadingMethod || success) return;
     setError('');
+    setNeedsEmailVerification(false);
     setLoadingMethod('google');
     try {
+      if (mode === 'reauth') {
+        await loginWithGoogle();
+        const alignment = await alignFirebaseIdentity();
+        if (alignment.status !== 'aligned') {
+          setLoadingMethod(null);
+          handleAlignmentFailure(alignment);
+          return;
+        }
+        trackEvent('login_completed', { method: 'google', source: 'payment_gate_reauth' });
+        handleAuthSuccess();
+        return;
+      }
+
       const { linkSessionWithGoogle } = await import('@/lib/link-account');
       await linkSessionWithGoogle();
+      const alignment = await alignFirebaseIdentity();
+      if (alignment.status !== 'aligned') {
+        setLoadingMethod(null);
+        handleAlignmentFailure(alignment);
+        return;
+      }
       trackEvent('login_completed', { method: 'google', source: 'payment_gate' });
       handleAuthSuccess();
     } catch (err) {
       setLoadingMethod(null);
+      const errCode =
+        err && typeof err === 'object' && 'code' in err
+          ? String((err as { code?: unknown }).code ?? '')
+          : '';
+      if (errCode === 'EMAIL_NOT_VERIFIED') {
+        setNeedsEmailVerification(true);
+        setError(t('emailNotVerified'));
+        return;
+      }
+      if (errCode === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setError(t('signingUnavailable'));
+        return;
+      }
       setError(
         getFriendlyAuthErrorMessage(err, (key) => tAuth(key as Parameters<typeof tAuth>[0])),
       );
@@ -365,6 +475,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
     e.preventDefault();
     if (loadingMethod || success) return;
     setError('');
+    setNeedsEmailVerification(false);
 
     const cleanEmail = email.trim();
     if (!cleanEmail) {
@@ -378,12 +489,34 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
 
     setLoadingMethod('email');
     try {
+      if (mode === 'reauth') {
+        await loginWithEmail(cleanEmail, password);
+        const alignment = await alignFirebaseIdentity();
+        if (alignment.status !== 'aligned') {
+          setLoadingMethod(null);
+          handleAlignmentFailure(alignment);
+          return;
+        }
+        trackEvent('login_completed', {
+          method: 'email_password',
+          source: 'payment_gate_reauth',
+        });
+        handleAuthSuccess();
+        return;
+      }
+
       const { linkSessionWithPassword } = await import('@/lib/link-account');
       await linkSessionWithPassword({
         email: cleanEmail,
         password,
         mode: emailMode,
       });
+      const alignment = await alignFirebaseIdentity();
+      if (alignment.status !== 'aligned') {
+        setLoadingMethod(null);
+        handleAlignmentFailure(alignment);
+        return;
+      }
       trackEvent(emailMode === 'signup' ? 'signup_completed' : 'login_completed', {
         method: 'email_password',
         source: 'payment_gate',
@@ -391,6 +524,19 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
       handleAuthSuccess();
     } catch (err) {
       setLoadingMethod(null);
+      const errCode =
+        err && typeof err === 'object' && 'code' in err
+          ? String((err as { code?: unknown }).code ?? '')
+          : '';
+      if (errCode === 'EMAIL_NOT_VERIFIED') {
+        setNeedsEmailVerification(true);
+        setError(t('emailNotVerified'));
+        return;
+      }
+      if (errCode === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setError(t('signingUnavailable'));
+        return;
+      }
       setError(
         getFriendlyAuthErrorMessage(err, (key) => tAuth(key as Parameters<typeof tAuth>[0])),
       );
@@ -407,12 +553,18 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
   };
 
   const isLoading = loadingMethod !== null;
+  const isReauth = mode === 'reauth';
   const dialogTitle =
     step === 'choose'
-      ? t('title')
+      ? isReauth
+        ? t('reauthTitle')
+        : t('title')
       : emailMode === 'signup'
         ? t('emailTitleSignup')
         : t('emailTitleLogin');
+  const dialogBody = isReauth
+    ? t('reauthBody', { email: reauthEmail || getLocalSession().email || '' })
+    : t('body');
 
   return (
     <PaymentAuthGateContext.Provider value={{ requireAccount, openGate }}>
@@ -485,7 +637,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
         closing={closing}
         className="max-h-[92dvh] overflow-y-auto"
       >
-        <div data-testid="payment-auth-gate" className="space-y-4">
+        <div data-testid="payment-auth-gate" data-mode={mode} className="space-y-4">
           {/* Header with sticker icon tile, title, and close button */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -507,7 +659,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
                   {dialogTitle}
                 </h2>
                 <p id={bodyId} className="text-muted mt-1 text-sm leading-snug">
-                  {t('body')}
+                  {dialogBody}
                 </p>
               </div>
             </div>
@@ -535,35 +687,54 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
             </div>
           ) : (
             <>
-              {/* "What you keep" chips */}
-              <div className="flex flex-wrap gap-1.5" aria-hidden="false">
-                <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
-                  {t('keepStreak')}
-                </Chip>
-                <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
-                  {t('keepScore')}
-                </Chip>
-                <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
-                  {t('keepTown')}
-                </Chip>
-                <Chip tone="volt" className="px-2.5 py-1 text-xs font-bold">
-                  {t('keepPro')}
-                </Chip>
-              </div>
+              {/* "What you keep" chips — shown only when upgrading from guest mode */}
+              {!isReauth && (
+                <div className="flex flex-wrap gap-1.5" aria-hidden="false">
+                  <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
+                    {t('keepStreak')}
+                  </Chip>
+                  <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
+                    {t('keepScore')}
+                  </Chip>
+                  <Chip tone="neutral" className="px-2.5 py-1 text-xs font-bold">
+                    {t('keepTown')}
+                  </Chip>
+                  <Chip tone="volt" className="px-2.5 py-1 text-xs font-bold">
+                    {t('keepPro')}
+                  </Chip>
+                </div>
+              )}
 
               {/* Error alert */}
               {error && (
                 <div
                   role="alert"
-                  className="border-wrong bg-wrong/10 text-wrong flex items-start gap-2 rounded-xl border-2 p-3 text-xs font-bold leading-snug"
+                  className="border-wrong bg-wrong/10 text-wrong space-y-2 rounded-xl border-2 p-3 text-xs font-bold leading-snug"
                 >
-                  <WarningCircle
-                    size={18}
-                    weight="fill"
-                    aria-hidden="true"
-                    className="mt-0.5 shrink-0"
-                  />
-                  <span>{error}</span>
+                  <div className="flex items-start gap-2">
+                    <WarningCircle
+                      size={18}
+                      weight="fill"
+                      aria-hidden="true"
+                      className="mt-0.5 shrink-0"
+                    />
+                    <span>{error}</span>
+                  </div>
+                  {needsEmailVerification && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      fullWidth
+                      data-testid="payment-gate-resend-verification-btn"
+                      disabled={resendingVerification || verificationResent}
+                      onClick={() => void handleResendVerification()}
+                      className="min-h-11"
+                    >
+                      {verificationResent ? '✓ ' : ''}
+                      {t('resendVerification')}
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -614,6 +785,7 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
                     disabled={isLoading}
                     onClick={() => {
                       setError('');
+                      setNeedsEmailVerification(false);
                       setStep('email');
                     }}
                     className="min-h-12"
@@ -641,7 +813,11 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
                     {t('notNow')}
                   </Button>
 
-                  <p className="text-muted text-center text-[11px] leading-relaxed">{t('note')}</p>
+                  {!isReauth && (
+                    <p className="text-muted text-center text-[11px] leading-relaxed">
+                      {t('note')}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -748,20 +924,22 @@ export function PaymentAuthGateProvider({ children }: { children: ReactNode }) {
                     </p>
                   )}
 
-                  <div className="text-muted flex items-center justify-center gap-1.5 text-xs font-medium">
-                    <span>{emailMode === 'signup' ? t('haveAccount') : t('noAccount')}</span>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => {
-                        setError('');
-                        setEmailMode((m) => (m === 'signup' ? 'login' : 'signup'));
-                      }}
-                      className="text-ink hover:text-ron-strong inline-flex min-h-11 cursor-pointer items-center font-black underline"
-                    >
-                      {emailMode === 'signup' ? t('logIn') : t('signUp')}
-                    </button>
-                  </div>
+                  {!isReauth && (
+                    <div className="text-muted flex items-center justify-center gap-1.5 text-xs font-medium">
+                      <span>{emailMode === 'signup' ? t('haveAccount') : t('noAccount')}</span>
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => {
+                          setError('');
+                          setEmailMode((m) => (m === 'signup' ? 'login' : 'signup'));
+                        }}
+                        className="text-ink hover:text-ron-strong inline-flex min-h-11 cursor-pointer items-center font-black underline"
+                      >
+                        {emailMode === 'signup' ? t('logIn') : t('signUp')}
+                      </button>
+                    </div>
+                  )}
 
                   <Button
                     type="button"

@@ -1269,7 +1269,12 @@
     "submitLogin": "Zaloguj się i kontynuuj",
     "nextStep": "Następny krok: bezpieczna płatność za {label}.",
     "success": "Konto zapisane — otwieranie płatności…",
-    "continueToPayment": "Przejdź do płatności"
+    "continueToPayment": "Przejdź do płatności",
+    "reauthTitle": "Potwierdź swoje konto, aby zapłacić",
+    "reauthBody": "Twoja sesja logowania wygasła. Zaloguj się ponownie za pomocą {email}, aby zakup został przypisany do Twojego konta.",
+    "emailNotVerified": "Najpierw potwierdź swój adres e-mail za pomocą wysłanego linku, a potem spróbuj ponownie.",
+    "resendVerification": "Wyślij ponownie e-mail weryfikacyjny",
+    "signingUnavailable": "Uwierzytelnianie płatności jest tymczasowo niedostępne. Spróbuj ponownie za kilka minut."
   },
   "session": {
     "expired": "Wylogowano Cię po 30 dniach nieaktywności. Zaloguj się, aby kontynuować.",

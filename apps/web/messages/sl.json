@@ -1269,7 +1269,12 @@
     "submitLogin": "Prijavi se in nadaljuj",
     "nextStep": "Naslednji korak: varno plačilo za {label}.",
     "success": "Račun shranjen — odpiramo plačilo…",
-    "continueToPayment": "Nadaljuj na plačilo"
+    "continueToPayment": "Nadaljuj na plačilo",
+    "reauthTitle": "Potrdi svoj račun za plačilo",
+    "reauthBody": "Tvoja prijava je potekla. Ponovno se prijavi z {email}, da se nakup doda na tvoj račun.",
+    "emailNotVerified": "Najprej potrdi svoj e-poštni naslov prek povezave, ki smo ti jo poslali, nato poskusi znova.",
+    "resendVerification": "Ponovno pošlji potrditveno e-pošto",
+    "signingUnavailable": "Preverjanje pristnosti za plačila začasno ni na voljo. Poskusi znova čez nekaj minut."
   },
   "session": {
     "expired": "Po 30 dneh neaktivnosti si bil odjavljen. Prijavi se za nadaljevanje.",

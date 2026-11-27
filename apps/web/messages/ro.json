@@ -1269,7 +1269,12 @@
     "submitLogin": "Autentifică-te și continuă",
     "nextStep": "Pasul următor: plată securizată pentru {label}.",
     "success": "Cont salvat — deschidem plata…",
-    "continueToPayment": "Continuă spre plată"
+    "continueToPayment": "Continuă spre plată",
+    "reauthTitle": "Confirmă-ți contul ca să plătești",
+    "reauthBody": "Sesiunea de autentificare a expirat. Conectează-te din nou cu {email} ca achiziția să intre pe contul tău.",
+    "emailNotVerified": "Confirmă mai întâi adresa de email din mesajul primit, apoi încearcă din nou.",
+    "resendVerification": "Retrimite emailul de verificare",
+    "signingUnavailable": "Serviciul de autentificare pentru plăți este temporar indisponibil. Încearcă din nou peste câteva minute."
   },
   "session": {
     "expired": "Ai fost deconectat după 30 de zile de inactivitate. Autentifică-te pentru a continua.",

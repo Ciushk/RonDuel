@@ -9,11 +9,13 @@ import {
   EmailAuthProvider,
   signInWithPopup,
   signInWithCredential,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signInAnonymously,
   createUserWithEmailAndPassword,
   linkWithPopup,
   linkWithCredential,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
   updateProfile,
@@ -234,6 +236,32 @@ export async function getSignedInAccount(): Promise<SignedInAccount | null> {
   const user = auth.currentUser;
   if (!user || user.isAnonymous) return null;
   return { uid: user.uid, email: user.email };
+}
+
+export async function signInWithCustomTokenSafe(token: string): Promise<User> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase Auth is not initialized');
+  const credential = await signInWithCustomToken(auth, token);
+  return credential.user;
+}
+
+export async function resendEmailVerificationSafe(): Promise<boolean> {
+  const auth = getFirebaseAuth();
+  const user = auth?.currentUser;
+  if (!user || user.isAnonymous) return false;
+  await sendEmailVerification(user);
+  return true;
+}
+
+export async function getCurrentIdTokenSafe(forceRefresh = false): Promise<string | null> {
+  const auth = getFirebaseAuth();
+  const user = auth?.currentUser;
+  if (!user) return null;
+  try {
+    return await user.getIdToken(forceRefresh);
+  } catch {
+    return null;
+  }
 }
 
 export async function getSignedInUid(): Promise<string | null> {

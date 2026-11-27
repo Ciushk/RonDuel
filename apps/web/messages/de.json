@@ -1269,7 +1269,12 @@
     "submitLogin": "Anmelden & weiter",
     "nextStep": "Nächster Schritt: sichere Zahlung für {label}.",
     "success": "Konto gespeichert — Zahlung wird geöffnet…",
-    "continueToPayment": "Weiter zur Zahlung"
+    "continueToPayment": "Weiter zur Zahlung",
+    "reauthTitle": "Bestätige dein Konto zum Bezahlen",
+    "reauthBody": "Deine Anmeldesitzung ist abgelaufen. Melde dich erneut mit {email} an, damit der Kauf deinem Konto gutgeschrieben wird.",
+    "emailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse über den gesendeten Link und versuche es erneut.",
+    "resendVerification": "Bestätigungs-E-Mail erneut senden",
+    "signingUnavailable": "Die Zahlungsauthentifizierung ist vorübergehend nicht verfügbar. Bitte versuche es in einigen Minuten erneut."
   },
   "session": {
     "expired": "Du wurdest nach 30 Tagen Inaktivität abgemeldet. Melde dich an, um fortzufahren.",

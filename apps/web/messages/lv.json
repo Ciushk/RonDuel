@@ -1269,7 +1269,12 @@
     "submitLogin": "Pierakstīties un turpināt",
     "nextStep": "Nākamais solis: droša apmaksa par {label}.",
     "success": "Konts saglabāts — atveram apmaksu…",
-    "continueToPayment": "Turpināt uz apmaksu"
+    "continueToPayment": "Turpināt uz apmaksu",
+    "reauthTitle": "Apstiprini savu kontu, lai maksātu",
+    "reauthBody": "Tava pierakstīšanās sesija ir beigusies. Pieraksties vēlreiz ar {email}, lai pirkums tiktu pievienots tavam kontam.",
+    "emailNotVerified": "Vispirms apstiprini savu e-pasta adresi ar saņemto saiti un mēģini vēlreiz.",
+    "resendVerification": "Nosūtīt apstiprinājuma e-pastu vēlreiz",
+    "signingUnavailable": "Maksājumu autentifikācija īslaicīgi nav pieejama. Mēģini vēlreiz pēc dažām minūtēm."
   },
   "session": {
     "expired": "Tu tiki izrakstīts pēc 30 dienu neaktivitātes. Pieraksties, lai turpinātu.",

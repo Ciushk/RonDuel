@@ -1269,7 +1269,12 @@
     "submitLogin": "Entrar e continuar",
     "nextStep": "Próximo passo: pagamento seguro para {label}.",
     "success": "Conta guardada — a abrir o pagamento…",
-    "continueToPayment": "Continuar para o pagamento"
+    "continueToPayment": "Continuar para o pagamento",
+    "reauthTitle": "Confirma a tua conta para pagar",
+    "reauthBody": "A tua sessão expirou. Inicia sessão novamente com {email} para que a compra fique associada à tua conta.",
+    "emailNotVerified": "Verifica primeiro o teu endereço de email através da ligação que enviámos e tenta novamente.",
+    "resendVerification": "Reenviar email de verificação",
+    "signingUnavailable": "A autenticação de pagamentos está temporariamente indisponível. Tenta novamente dentro de alguns minutos."
   },
   "session": {
     "expired": "A tua sessão terminou após 30 dias de ausência. Inicia sessão para continuar.",

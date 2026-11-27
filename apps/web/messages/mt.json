@@ -1269,7 +1269,12 @@
     "submitLogin": "Idħol u kompli",
     "nextStep": "Il-pass li jmiss: ħlas sigur għal {label}.",
     "success": "Kont salvat — qed niftħu l-ħlas…",
-    "continueToPayment": "Kompli għall-ħlas"
+    "continueToPayment": "Kompli għall-ħlas",
+    "reauthTitle": "Ikkonferma l-kont tiegħek biex tħallas",
+    "reauthBody": "Is-sessjoni tad-dħul tiegħek skadiet. Idħol mill-ġdid b’{email} biex ix-xiri jiżdied mal-kont tiegħek.",
+    "emailNotVerified": "L-ewwel ivverifika l-indirizz tal-email tiegħek mil-link li bgħatnielek, imbagħad erġa’ pprova.",
+    "resendVerification": "Erġa’ ibgħat l-email ta’ verifika",
+    "signingUnavailable": "L-awtentikazzjoni għall-ħlasijiet mhix disponibbli temporanjament. Erġa’ pprova fi ftit minuti."
   },
   "session": {
     "expired": "Ħriġt mill-kont wara 30 jum mingħajr attività. Idħol biex tkompli.",

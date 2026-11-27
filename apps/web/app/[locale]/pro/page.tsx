@@ -16,7 +16,7 @@ import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { Button, Card, Chip, Toast } from '@/components/ui';
 import { useIsRealAccount } from '@/lib/account-state';
 import { trackEvent } from '@/lib/analytics';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { getBillingIdTokenWithResult } from '@/lib/billing-identity';
 import { getLocalSession } from '@/lib/session';
 
 import { PRO_CONSENT_TEXT_VERSION } from './consent';
@@ -81,18 +81,35 @@ export default function ProPaywallPage() {
     trackEvent('paywall_viewed');
   }, []);
 
+  const selectedPlanLabel =
+    plan === 'yearly'
+      ? t('pro.yearly', {
+          price: format.number(39.99, { style: 'currency', currency: 'EUR' }),
+          percent: 33,
+        })
+      : t('pro.monthly', {
+          price: format.number(4.99, { style: 'currency', currency: 'EUR' }),
+        });
+
   const handleCheckout = async () => {
     setError('');
     trackEvent('checkout_started', { plan });
-    let idToken: string | null = null;
-    try {
-      const auth = getFirebaseAuth();
-      idToken = (await auth?.currentUser?.getIdToken()) ?? null;
-    } catch {
-      idToken = null;
-    }
+    const { token: idToken, alignment } = await getBillingIdTokenWithResult();
     if (!idToken) {
-      setError(t('pro.checkoutError'));
+      if (alignment.status === 'error' && alignment.code === 'TOKEN_SIGNING_UNAVAILABLE') {
+        setError(t('paymentGate.signingUnavailable'));
+        return;
+      }
+      openGate(
+        { kind: 'pro_checkout', label: selectedPlanLabel },
+        {
+          mode: 'reauth',
+          action: () => {
+            void handleCheckout();
+          },
+          initialErrorCode: alignment.status === 'error' ? alignment.code : undefined,
+        },
+      );
       return;
     }
 
@@ -135,16 +152,6 @@ export default function ProPaywallPage() {
     window.addEventListener('ronduel_resume_payment', onResume);
     return () => window.removeEventListener('ronduel_resume_payment', onResume);
   });
-
-  const selectedPlanLabel =
-    plan === 'yearly'
-      ? t('pro.yearly', {
-          price: format.number(39.99, { style: 'currency', currency: 'EUR' }),
-          percent: 33,
-        })
-      : t('pro.monthly', {
-          price: format.number(4.99, { style: 'currency', currency: 'EUR' }),
-        });
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">

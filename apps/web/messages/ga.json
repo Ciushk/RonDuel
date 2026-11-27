@@ -1269,7 +1269,12 @@
     "submitLogin": "Logáil isteach & lean ar aghaidh",
     "nextStep": "An chéad chéim eile: íocaíocht shlán do {label}.",
     "success": "Cuntas sábháilte — ag oscailt íocaíochta…",
-    "continueToPayment": "Lean ar aghaidh chuig íocaíocht"
+    "continueToPayment": "Lean ar aghaidh chuig íocaíocht",
+    "reauthTitle": "Deimhnigh do chuntas chun íoc",
+    "reauthBody": "Chuaigh do sheisiún logála isteach in éag. Logáil isteach arís le {email} ionas go gcuirfear do cheannach le do chuntas.",
+    "emailNotVerified": "Deimhnigh do sheoladh ríomhphoist ar dtús ón nasc a sheolamar chugat, ansin bain triail eile as.",
+    "resendVerification": "Athsheol ríomhphost deimhnithe",
+    "signingUnavailable": "Níl fíordheimhniú íocaíochta ar fáil go sealadach. Bain triail eile as i gceann cúpla nóiméad."
   },
   "session": {
     "expired": "Síníodh amach thú tar éis 30 lá gan ghníomhaíocht. Sínigh isteach chun leanúint ar aghaidh.",

@@ -605,7 +605,7 @@ test.describe('PaymentAuthGate on RonTown coin packs', () => {
     { name: '390x844', width: 390, height: 844 },
     { name: '1280x800', width: 1280, height: 800 },
   ]) {
-    test(`signed-in RonDuel account without Firebase Auth user buys coins from RonTown (${viewport.name})`, async ({
+    test(`signed-in RonDuel account without Firebase Auth user opens reauth confirmation (not guest gate) and blocks unauthenticated RonTown checkout (${viewport.name})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -690,11 +690,13 @@ test.describe('PaymentAuthGate on RonTown coin packs', () => {
       await expect(dialog).toBeVisible({ timeout: 5_000 });
       await dialog.getByRole('button', { name: /€4\.99/i }).click();
 
-      // Gate must NEVER appear at any point; checkout request fires with uid u_e2e_real
-      await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
-      await expect.poll(() => checkoutBodies.length, { timeout: 10_000 }).toBe(1);
-      expect(checkoutBodies[0]?.uid).toBe('u_e2e_real');
-      await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
+      // Reauth confirmation sheet appears (NOT guest account creation) and no unauthenticated checkout fires
+      const gate = page.getByTestId('payment-auth-gate');
+      await expect(gate).toBeVisible({ timeout: 5_000 });
+      await expect(gate).toHaveAttribute('data-mode', 'reauth');
+      await expect(gate).toContainText('Confirmă-ți contul ca să plătești');
+      await expect(gate).toContainText('e2e@ronduel.test');
+      expect(checkoutBodies.length).toBe(0);
     });
   }
 

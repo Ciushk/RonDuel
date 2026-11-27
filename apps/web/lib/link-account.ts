@@ -1,7 +1,9 @@
 'use client';
 
+import { alignFirebaseIdentity } from '@/lib/billing-identity';
 import {
   ensureAnonymousAuth,
+  getCurrentIdTokenSafe,
   getSignedInAccount,
   linkAnonymousWithEmail,
   linkAnonymousWithGoogle,
@@ -62,15 +64,26 @@ async function alignAnonymousUid() {
   return next;
 }
 
-async function postUpgrade(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function postUpgrade(
+  body: Record<string, unknown>,
+  idToken?: string | null,
+): Promise<Record<string, unknown>> {
+  const token = idToken ?? (await getCurrentIdTokenSafe());
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
   const res = await fetch('/api/me/upgrade', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) {
     const error = new Error(typeof data.error === 'string' ? data.error : 'upgrade failed');
+    if (typeof data.code === 'string') {
+      (error as { code?: string }).code = data.code;
+    }
     throw error;
   }
   return data;
@@ -109,14 +122,23 @@ export async function linkSessionWithGoogle(): Promise<SavedAccount> {
       await updateProfile(linked.user, { displayName: nickname });
     } catch {}
   }
-  const data = await postUpgrade({
-    uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
-    targetUid: linked.merged ? linked.user.uid : undefined,
-    email: linked.user.email,
-    nickname,
-    provider: 'google.com',
-    confirmMerge: true,
-  });
+  let idToken: string | null = null;
+  try {
+    idToken = await linked.user.getIdToken();
+  } catch {
+    idToken = null;
+  }
+  const data = await postUpgrade(
+    {
+      uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
+      targetUid: linked.merged ? linked.user.uid : undefined,
+      email: linked.user.email,
+      nickname,
+      provider: 'google.com',
+      confirmMerge: true,
+    },
+    idToken,
+  );
   const saved = {
     uid: String(data.uid || linked.user.uid),
     email: String(data.email || linked.user.email),
@@ -124,6 +146,7 @@ export async function linkSessionWithGoogle(): Promise<SavedAccount> {
     authProvider: 'google.com' as const,
   };
   persistSavedAccount(saved);
+  await alignFirebaseIdentity().catch(() => undefined);
   return saved;
 }
 
@@ -168,14 +191,23 @@ export async function linkSessionWithPassword(params: {
       await updateProfile(linked.user, { displayName: nickname });
     } catch {}
   }
-  const data = await postUpgrade({
-    uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
-    targetUid: linked.merged ? linked.user.uid : undefined,
-    email,
-    nickname,
-    provider: 'password',
-    confirmMerge: true,
-  });
+  let idToken: string | null = null;
+  try {
+    idToken = await linked.user.getIdToken();
+  } catch {
+    idToken = null;
+  }
+  const data = await postUpgrade(
+    {
+      uid: linked.merged ? linked.previousUid || session.uid : linked.user.uid,
+      targetUid: linked.merged ? linked.user.uid : undefined,
+      email,
+      nickname,
+      provider: 'password',
+      confirmMerge: true,
+    },
+    idToken,
+  );
   const saved = {
     uid: String(data.uid || linked.user.uid),
     email: String(data.email || email),
@@ -183,6 +215,7 @@ export async function linkSessionWithPassword(params: {
     authProvider: 'password' as const,
   };
   persistSavedAccount(saved);
+  await alignFirebaseIdentity().catch(() => undefined);
   return saved;
 }
 
@@ -195,8 +228,12 @@ export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
   const account = await getSignedInAccount();
   const session = getLocalSession();
   if (!account || account.uid === session.uid) return session;
-  // Only a guest session is adopted; a signed-in local account keeps its own uid.
-  if (session.isAnonymous === false || session.email) return session;
+  // Only a guest session is adopted; a signed-in local account keeps its own uid
+  // and silently aligns Firebase Auth to the RonDuel uid via custom token exchange.
+  if (session.isAnonymous === false || session.email) {
+    await alignFirebaseIdentity().catch(() => undefined);
+    return session;
+  }
 
   let adopted: { uid?: string; moved?: boolean } | null = null;
   try {
@@ -228,9 +265,14 @@ export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
   // dropping the guest uid (and its plays) when the request fails.
   if (adopted?.uid === account.uid && account.email) {
     try {
+      const idToken = await getCurrentIdTokenSafe();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (idToken) {
+        headers.Authorization = `Bearer ${idToken}`;
+      }
       const upgrade = await fetch('/api/me/upgrade', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           uid: session.uid,
           targetUid: account.uid,
@@ -256,6 +298,7 @@ export async function syncSessionWithSignedInUser(): Promise<LocalSession> {
         expiresAt: undefined,
       };
       saveLocalSession(next);
+      await alignFirebaseIdentity().catch(() => undefined);
       return next;
     } catch {
       return session;

@@ -23,6 +23,7 @@ import {
 } from '@ronduel/shared';
 import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
 import { trackEvent } from '@/lib/analytics';
+import { getBillingIdTokenWithResult } from '@/lib/billing-identity';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { getLocalSession } from '@/lib/session';
 
@@ -260,7 +261,7 @@ export function useTownState(params: {
   const { townEnabled, isVisitMode, visitHostUid } = params;
   const t = useTranslations();
   const locale = useLocale();
-  const { requireAccount } = usePaymentAuthGate();
+  const { requireAccount, openGate } = usePaymentAuthGate();
 
   const [catalog] = useState<TownCatalogDoc>(DEFAULT_TOWN_CATALOG);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1434,16 +1435,37 @@ export function useTownState(params: {
 
   const executeCoinCheckout = useCallback(
     async (packId: string) => {
-      await requireAccount({ kind: 'town_coins', label: t('town.coinStore.unit') }, async () => {
+      const runCheckout = async () => {
         const session = getLocalSession();
         if (!session?.uid || session.uid === 'anon' || session.uid === 'u_ssr') {
           showToast(t('town.toast.signInBeforePurchase'));
           return;
         }
+        const { token: idToken, alignment } = await getBillingIdTokenWithResult();
+        if (!idToken) {
+          if (alignment.status === 'error' && alignment.code === 'TOKEN_SIGNING_UNAVAILABLE') {
+            showToast(t('paymentGate.signingUnavailable'));
+            return;
+          }
+          openGate(
+            { kind: 'town_coins', label: t('town.coinStore.unit') },
+            {
+              mode: 'reauth',
+              action: () => {
+                void runCheckout();
+              },
+              initialErrorCode: alignment.status === 'error' ? alignment.code : undefined,
+            },
+          );
+          return;
+        }
         try {
           const res = await fetch('/api/town/checkout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
             body: JSON.stringify({
               uid: session.uid,
               packId,
@@ -1462,9 +1484,11 @@ export function useTownState(params: {
         } catch {
           showToast(t('town.toast.checkoutRequestFailed'));
         }
-      });
+      };
+
+      await requireAccount({ kind: 'town_coins', label: t('town.coinStore.unit') }, runCheckout);
     },
-    [locale, requireAccount, showToast, showErrorToast, t],
+    [locale, openGate, requireAccount, showToast, showErrorToast, t],
   );
 
   const loadTransferStatus = useCallback(async () => {

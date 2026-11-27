@@ -1269,7 +1269,12 @@
     "submitLogin": "Prihlásiť sa a pokračovať",
     "nextStep": "Ďalší krok: bezpečná platba za {label}.",
     "success": "Účet uložený — otvárame platbu…",
-    "continueToPayment": "Pokračovať k platbe"
+    "continueToPayment": "Pokračovať k platbe",
+    "reauthTitle": "Potvrď svoj účet pred platbou",
+    "reauthBody": "Tvoje prihlásenie vypršalo. Prihlás sa znova účtom {email}, aby sa nákup pripísal na tvoj účet.",
+    "emailNotVerified": "Najprv over svoju e-mailovú adresu cez odkaz v e-maile a skús to znova.",
+    "resendVerification": "Znova poslať overovací e-mail",
+    "signingUnavailable": "Overovanie pre platby je dočasne nedostupné. Skús to znova o pár minút."
   },
   "session": {
     "expired": "Po 30 dňoch nečinnosti si bol odhlásený. Prihlás sa, aby si mohol pokračovať.",

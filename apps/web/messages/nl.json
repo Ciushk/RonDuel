@@ -1269,7 +1269,12 @@
     "submitLogin": "Inloggen & doorgaan",
     "nextStep": "Volgende stap: veilig afrekenen voor {label}.",
     "success": "Account opgeslagen — betaling openen…",
-    "continueToPayment": "Doorgaan naar betaling"
+    "continueToPayment": "Doorgaan naar betaling",
+    "reauthTitle": "Bevestig je account om te betalen",
+    "reauthBody": "Je inlogsessie is verlopen. Log opnieuw in met {email} zodat je aankoop op je account wordt bijgeschreven.",
+    "emailNotVerified": "Bevestig eerst je e-mailadres via de link die we hebben gestuurd en probeer het opnieuw.",
+    "resendVerification": "Verificatie-e-mail opnieuw verzenden",
+    "signingUnavailable": "Betalingsverificatie is tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw."
   },
   "session": {
     "expired": "Je bent uitgelogd na 30 dagen inactiviteit. Log in om door te gaan.",

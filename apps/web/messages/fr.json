@@ -1269,7 +1269,12 @@
     "submitLogin": "Se connecter et continuer",
     "nextStep": "Étape suivante : paiement sécurisé pour {label}.",
     "success": "Compte enregistré — ouverture du paiement…",
-    "continueToPayment": "Continuer vers le paiement"
+    "continueToPayment": "Continuer vers le paiement",
+    "reauthTitle": "Confirme ton compte pour payer",
+    "reauthBody": "Ta session a expiré. Reconnecte-toi avec {email} pour que ton achat soit crédité sur ton compte.",
+    "emailNotVerified": "Vérifie d’abord ton adresse e-mail via le lien reçu, puis réessaie.",
+    "resendVerification": "Renvoyer l’e-mail de vérification",
+    "signingUnavailable": "L’authentification de paiement est temporairement indisponible. Réessaie dans quelques minutes."
   },
   "session": {
     "expired": "Vous avez été déconnecté après 30 jours d’inactivité. Connectez-vous pour continuer.",

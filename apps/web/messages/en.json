@@ -1269,7 +1269,12 @@
     "submitLogin": "Log in & continue",
     "nextStep": "Next step: secure checkout for {label}.",
     "success": "Account saved — opening payment…",
-    "continueToPayment": "Continue to payment"
+    "continueToPayment": "Continue to payment",
+    "reauthTitle": "Confirm your account to pay",
+    "reauthBody": "Your sign-in session expired. Sign in again with {email} so your purchase goes to your account.",
+    "emailNotVerified": "Please verify your email address from the link we sent you, then try again.",
+    "resendVerification": "Resend verification email",
+    "signingUnavailable": "Payment authentication is temporarily unavailable. Please try again in a few minutes."
   },
   "session": {
     "expired": "You were signed out after 30 days away. Sign in to continue.",

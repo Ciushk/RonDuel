@@ -1269,7 +1269,12 @@
     "submitLogin": "Accedi e continua",
     "nextStep": "Prossimo passo: pagamento sicuro per {label}.",
     "success": "Account salvato — apertura pagamento…",
-    "continueToPayment": "Continua al pagamento"
+    "continueToPayment": "Continua al pagamento",
+    "reauthTitle": "Conferma il tuo account per pagare",
+    "reauthBody": "La tua sessione è scaduta. Accedi di nuovo con {email} così l’acquisto verrà accreditato sul tuo account.",
+    "emailNotVerified": "Verifica prima il tuo indirizzo email dal link che ti abbiamo inviato, poi riprova.",
+    "resendVerification": "Invia di nuovo l’email di verifica",
+    "signingUnavailable": "L’autenticazione per i pagamenti non è temporaneamente disponibile. Riprova tra qualche minuto."
   },
   "session": {
     "expired": "Sei stato disconnesso dopo 30 giorni di inattività. Accedi per continuare.",
