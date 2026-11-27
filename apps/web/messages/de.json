@@ -61,7 +61,7 @@
     "streak": "{days}-Tage-Serie",
     "shareCta": "In deiner Gruppe teilen",
     "shareHint": "Teile es in deiner Gruppe. Es wird zu eurer Liga.",
-    "copied": "Ergebnis in die Zwischenablage kopiert!",
+    "copied": "Ergebnis kopiert! Füge es in der Gruppe ein.",
     "reviewTitle": "Antworten überprüfen",
     "openLeague": "Liga-Rangliste öffnen",
     "challengeFriend": "Freund herausfordern (1v1-Duell)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Deine Runde wurde erfasst. Tippe auf Erneut versuchen, um deine Punktzahl und die Bestenliste zu sehen.",
     "backHome": "Zurück zur Startseite",
     "shareStreak": "🔥 {count, plural, one {#-Tage-Serie} other {#-Tage-Serie}}",
-    "shareBeatMe": "Schlag mich → {url}"
+    "shareBeatMe": "Schlag mich → {url}",
+    "returningHomeIn": "Zurück zur Startseite in {seconds} s"
   },
   "league": {
     "joinTitle": "Du bist eingeladen zu {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Du bist der Liga beigetreten!",
     "privateJoinSheetHint": "Diese Liga ist privat. Gib den Code ein, den du vom Eigentümer erhalten hast:",
     "joinErrorGeneric": "Falscher Code oder Fehler beim Beitreten.",
-    "full": "Liga ist voll ({count}/{max})"
+    "full": "Liga ist voll ({count}/{max})",
+    "notFoundTitle": "Liga nicht gefunden"
   },
   "duel": {
-    "title": "1v1 Split Court Duell",
+    "title": "1v1-Duell",
     "subtitle": "5 schnelle Fragen · 24 Std. Zeit",
     "yourTurn": "Spiele deine 5 Fragen",
     "waitingOpponent": "Warte auf den Zug des Gegners (24-Std.-Zeitfenster)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil & Serie",
-    "bestStreak": "Beste Serie: {days} Tage",
+    "bestStreak": "{days, plural, one {Beste Serie: 1 Tag} other {Beste Serie: # Tage}}",
     "upgradeTitle": "Speichere deine Serie geräteübergreifend",
     "upgradeBody": "Verknüpfe eine E-Mail-Adresse oder ein Google-Konto. Deine UID, Serie und Ligen bleiben erhalten.",
     "emailPlaceholder": "du@beispiel.de",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligen bis zu 200 Mitglieder & private Beitrittsgenehmigung",
     "benefitDuels": "Unbegrenzte 1v1-Duelle (statt 4/Monat gratis)",
     "benefitShield": "1 automatischer wöchentlicher Streak-Schild",
-    "benefitThemes": "3 exklusive Split Court Themes (Midnight, Clay, Neon)",
+    "benefitThemes": "3 exklusive Designs (Mitternachtsplatz, Sandplatz, Neon-Arkade)",
     "benefitStats": "Erweiterte Themen-Genauigkeit & Archiv vergangener Runden",
     "euConsent": "Ich verlange sofortigen Zugang zu den digitalen Inhalten von RonDuel Pro und bestätige, dass mein 14-tägiges EU-Widerrufsrecht mit der Aktivierung erlischt.",
     "upgradeFirst": "Gastdaten werden nur 7 Tage gespeichert. Melde dich an oder erstelle ein kostenloses Konto, um ein Abo abzuschließen. So bleibt dein Pro mit einem dauerhaften Profil verknüpft.",
@@ -400,8 +402,8 @@
     "deleted": "Deine lokale Sitzung und Daten wurden entfernt.",
     "languageSearchPlaceholder": "Sprache suchen…",
     "languageNoResults": "Keine Sprache gefunden",
-    "themeLight": "Hell (Cream Paper)",
-    "themeDark": "Dunkel (Ink Night)",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
     "themeHighContrast": "Hoher Kontrast",
     "themeProMidnight": "Pro: Mitternachtsplatz",
     "themeProClay": "Pro: Sandplatz",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Keine Ligen gefunden.",
     "emptyTitle": "Spiele mit deinen Freunden!",
     "emptyBody": "Erstelle eine Liga für dein Büro, deine Familie oder dein Team. Kostenlos für bis zu {max} Mitglieder.",
-    "createFirst": "Erstelle deine erste Liga"
+    "createFirst": "Erstelle deine erste Liga",
+    "leagueWorldRank": "Liga auf Platz #{rank} weltweit"
   },
   "duels": {
     "shareText": "Ich fordere dich zu einem Duell auf RonDuel heraus! 5 schnelle Fragen warten auf dich: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Du hast bereits ein aktives Duell. Beende es oder hol dir Pro für unbegrenzte Duelle.",
     "errorCreate": "Duell konnte nicht erstellt werden",
     "yourTurn": "Dein Zug",
-    "waitingOpponent": "Warten auf deinen Gegner"
+    "waitingOpponent": "Warten auf deinen Gegner",
+    "tabActive": "Aktiv",
+    "tabFinished": "Beendet",
+    "tabStats": "Mein Punktestand",
+    "emptyActiveTitle": "Keine laufenden Duelle",
+    "emptyActiveBody": "Fordere einen Freund zu einem schnellen 1v1-Duell heraus oder warte auf eine Antwort!",
+    "emptyFinishedTitle": "Noch keine beendeten Duelle",
+    "emptyFinishedBody": "Hier erscheinen deine abgeschlossenen Duelle und Ergebnisse.",
+    "statsTotalScore": "Gesamtpunktzahl Duelle",
+    "statsPointsUnit": "Punkte",
+    "statsWins": "Siege",
+    "statsLosses": "Niederlagen",
+    "statsDraws": "Unentschieden",
+    "statsTotalDuels": "Duelle gesamt",
+    "statsWinRate": "Siegesquote",
+    "waitingForOpponent": "Wartet auf Gegner",
+    "copyLink": "Link kopieren"
   },
   "themes": {
     "worldScience": "Welt & Wissenschaft 🌍",
@@ -857,7 +876,7 @@
       "visit": "Besuchen",
       "hideBar": "Aktionsleiste ausblenden",
       "showBar": "Aktionsleiste einblenden",
-      "seedMenu": "Saatgut",
+      "seedMenu": "Anbau",
       "plantSeed": "{crop} pflanzen",
       "more": "Stadtmenü",
       "rotate": "Drehen"
@@ -1123,12 +1142,13 @@
       "movingDestBanner": "Tippe auf ein freies Feld, um ({x}, {y}) zu bewegen",
       "plantingBanner": "Tippe auf Wiese, Erde oder ein leeres Beet für {crop}",
       "cancel": "Abbrechen",
-      "helpBody": "Tippe auf grüne X-Randfelder zum Erweitern, nutze Bauen für Häuser und Dienste, Anbau für Saatgut und goldene Sicheln zum Ernten.",
+      "helpBody": "Tippe auf grüne X-Randfelder zum Erweitern, nutze Bauen für Häuser und Dienste, Anbau für Pflanzen und goldene Sicheln zum Ernten.",
       "zoomControls": "Karten-Zoom-Steuerung",
       "zoomIn": "Vergrößern",
       "zoomOut": "Verkleinern",
       "loading": "RonTown wird geladen…",
-      "rotatingBanner": "Tippe auf ein Feld oder Gebäude zum Drehen"
+      "rotatingBanner": "Tippe auf ein Feld oder Gebäude zum Drehen",
+      "cellItemAria": "{item} bei ({x}, {y})"
     },
     "status": {
       "connecting": "Verbindet…",
@@ -1170,7 +1190,7 @@
       "moveFailed": "Verschieben fehlgeschlagen",
       "rotateFailed": "Drehen fehlgeschlagen",
       "removeFailed": "Entfernen fehlgeschlagen",
-      "notEnoughCoins": "Nicht genug RonCoins",
+      "notEnoughCoins": "Nicht genügend RonCoins",
       "plantingFailed": "Pflanzen fehlgeschlagen",
       "harvestFailed": "Ernte fehlgeschlagen",
       "speedupFailed": "Beschleunigung fehlgeschlagen",
@@ -1186,7 +1206,7 @@
       "transferredCoins": "{amount} RonCoins gesendet!"
     },
     "errors": {
-      "insufficientFunds": "Nicht genug RonCoins",
+      "insufficientFunds": "Nicht genügend RonCoins",
       "priceChanged": "Preis geändert, bitte erneut versuchen",
       "notRotatable": "Dieses Feld kann nicht gedreht werden",
       "disabled": "Diese Funktion ist derzeit deaktiviert",

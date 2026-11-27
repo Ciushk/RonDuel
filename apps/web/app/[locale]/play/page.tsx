@@ -47,6 +47,7 @@ export default function PlayPage() {
   const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const [isFastAnswer, setIsFastAnswer] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [todayInfo, setTodayInfo] = useState<{ roundNumber: number; theme: string } | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
 
@@ -132,7 +133,9 @@ export default function PlayPage() {
 
   const handleSubmit = useCallback(
     async (choice: number | string[] | null) => {
-      if (!item || !playId || submitting || feedback) return;
+      if (!item || !playId || submitting || feedback || finishing) return;
+      const frozenRemaining = Math.max(0, deadlineRef.current - Date.now());
+      setRemainingMs(frozenRemaining);
       if (typeof choice === 'number') {
         setSelectedChoice(choice);
         setLockedIndex(choice);
@@ -140,8 +143,7 @@ export default function PlayPage() {
       }
       setSubmitting(true);
 
-      const currentRemaining = Math.max(0, deadlineRef.current - Date.now());
-      const isFast = item.limitMs > 0 && currentRemaining >= item.limitMs * 0.67;
+      const isFast = item.limitMs > 0 && frozenRemaining >= item.limitMs * 0.67;
       setIsFastAnswer(isFast);
 
       const session = getLocalSession();
@@ -178,76 +180,92 @@ export default function PlayPage() {
         vibrate([40, 30, 40]);
       }
 
-      setTimeout(async () => {
-        if (data.next) {
-          setItem(data.next);
-          setOrderList(data.next.options);
-          setRemainingMs(data.next.limitMs);
-          deadlineRef.current = Date.now() + data.next.limitMs;
+      if (data.next) {
+        const nextItem = data.next;
+        setTimeout(() => {
+          setItem(nextItem);
+          setOrderList(nextItem.options);
+          setRemainingMs(nextItem.limitMs);
+          deadlineRef.current = Date.now() + nextItem.limitMs;
           setFeedback(null);
           setSelectedChoice(null);
           setLockedIndex(null);
           setIsFastAnswer(false);
-        } else {
-          const totalScore = clientAnswersRef.current.reduce((sum, a) => sum + (a.points || 0), 0);
-          const emojiLine = clientAnswersRef.current.map((a) => a.emoji).join('');
-          const clientSummary = {
-            totalScore,
-            emojiLine,
-            items: clientAnswersRef.current,
-          };
+        }, 1200);
+        return;
+      }
 
-          if (typeof window !== 'undefined') {
-            try {
-              localStorage.setItem(
-                `rd_play_${playId}`,
-                JSON.stringify({
-                  playId,
-                  date: new Date().toISOString().slice(0, 10),
-                  roundNumber: todayInfo?.roundNumber ?? 1,
-                  totalScore,
-                  totalMs: 0,
-                  emojiLine,
-                  streakCurrent: 1,
-                  streakBest: 1,
-                  review: [],
-                  leagueRanks: [],
-                  primaryLeague: null,
-                }),
-              );
-            } catch {}
-          }
+      // Last question: immediately show calculating state and finalize with the server
+      setFinishing(true);
+      const totalScore = clientAnswersRef.current.reduce((sum, a) => sum + (a.points || 0), 0);
+      const emojiLine = clientAnswersRef.current.map((a) => a.emoji).join('');
+      const clientSummary = {
+        totalScore,
+        emojiLine,
+        items: clientAnswersRef.current,
+      };
 
-          trackEvent('round_finished', {
-            play_id: playId,
-            score: totalScore,
-            round_number: todayInfo?.roundNumber,
-          });
+      trackEvent('round_finished', {
+        play_id: playId,
+        score: totalScore,
+        round_number: todayInfo?.roundNumber,
+      });
 
-          await fetch('/api/game/finish', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
-          }).catch(() => {});
-
-          const returnTo =
-            typeof window !== 'undefined'
-              ? new URLSearchParams(window.location.search).get('returnTo')
-              : null;
-          router.replace(
-            returnTo
-              ? `/${locale}/result/${encodeURIComponent(playId)}?returnTo=${encodeURIComponent(returnTo)}`
-              : `/${locale}/result/${encodeURIComponent(playId)}`,
-          );
+      let serverResult: Record<string, unknown> | null = null;
+      try {
+        const finishRes = await fetch('/api/game/finish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: session.uid, playId, clientSummary }),
+        });
+        if (finishRes.ok) {
+          serverResult = (await finishRes.json()) as Record<string, unknown>;
         }
-      }, 1500);
+      } catch {
+        // Fallback to local summary below
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(
+            `rd_play_${playId}`,
+            JSON.stringify(
+              serverResult && typeof serverResult.totalScore === 'number'
+                ? serverResult
+                : {
+                    playId,
+                    date: new Date().toISOString().slice(0, 10),
+                    roundNumber: todayInfo?.roundNumber ?? 1,
+                    totalScore,
+                    totalMs: 0,
+                    emojiLine,
+                    streakCurrent: 1,
+                    streakBest: 1,
+                    review: [],
+                    leagueRanks: [],
+                    primaryLeague: null,
+                  },
+            ),
+          );
+        } catch {}
+      }
+
+      const returnTo =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('returnTo')
+          : null;
+      router.replace(
+        returnTo
+          ? `/${locale}/result/${encodeURIComponent(playId)}?returnTo=${encodeURIComponent(returnTo)}`
+          : `/${locale}/result/${encodeURIComponent(playId)}`,
+      );
     },
-    [item, playId, submitting, feedback, locale, router, todayInfo?.roundNumber, t],
+    [item, playId, submitting, feedback, finishing, locale, router, todayInfo?.roundNumber, t],
   );
 
-  // Item countdown tick
+  // Item countdown tick — freezes immediately as soon as submitting, feedback, or finishing is set
   useEffect(() => {
-    if (phase !== 'playing' || !item || feedback) return;
+    if (phase !== 'playing' || !item || feedback || submitting || finishing) return;
     const interval = setInterval(() => {
       const left = Math.max(0, deadlineRef.current - Date.now());
       setRemainingMs(left);
@@ -257,7 +275,7 @@ export default function PlayPage() {
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [phase, item, feedback, handleSubmit]);
+  }, [phase, item, feedback, submitting, finishing, handleSubmit]);
 
   const moveOrderItem = (idx: number, delta: -1 | 1) => {
     const target = idx + delta;
@@ -385,7 +403,12 @@ export default function PlayPage() {
         </div>
       </div>
 
-      <TimerBar remainingMs={remainingMs} limitMs={item.limitMs} label={t('play.timeLeft')} />
+      <TimerBar
+        remainingMs={remainingMs}
+        limitMs={item.limitMs}
+        label={t('play.timeLeft')}
+        paused={Boolean(submitting || feedback || finishing)}
+      />
 
       <Card className="space-y-5">
         <h1 className="font-display text-2xl font-extrabold leading-snug">{item.prompt}</h1>
@@ -513,17 +536,29 @@ export default function PlayPage() {
       </Card>
 
       <div className="min-h-10 text-center">
-        {feedback && (
-          <div className="inline-flex items-center gap-2">
-            <Chip tone={feedback.correct ? 'volt' : 'wrong'}>
-              {feedback.correct && <Lightning size={14} weight="fill" aria-hidden="true" />}
-              {feedback.timedOut
-                ? t('play.timedOut')
-                : feedback.correct
-                  ? `${t('play.correct')} +${feedback.points}${isFastAnswer ? ` · ${t('play.fastBonus')}` : ''}`
-                  : t('play.wrong')}
-            </Chip>
+        {finishing ? (
+          <div
+            role="status"
+            aria-live="polite"
+            data-testid="play-calculating"
+            className="text-muted inline-flex items-center gap-2 text-sm font-bold"
+          >
+            <span className="border-volt inline-block h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+            <span>{t('result.calculating')}</span>
           </div>
+        ) : (
+          feedback && (
+            <div className="inline-flex items-center gap-2">
+              <Chip tone={feedback.correct ? 'volt' : 'wrong'}>
+                {feedback.correct && <Lightning size={14} weight="fill" aria-hidden="true" />}
+                {feedback.timedOut
+                  ? t('play.timedOut')
+                  : feedback.correct
+                    ? `${t('play.correct')} +${feedback.points}${isFastAnswer ? ` · ${t('play.fastBonus')}` : ''}`
+                    : t('play.wrong')}
+              </Chip>
+            </div>
+          )
         )}
       </div>
     </main>

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useBottomStack } from '@/lib/bottom-stack';
+import { setPwaToastHeight } from '@/lib/bottom-stack';
 import {
   DISMISSED_BUILD_KEY,
   isNewerBuildId,
@@ -50,10 +50,7 @@ export interface PwaUpdateToastProps {
   hideBottomNav?: boolean;
 }
 
-export function PwaUpdateToast({
-  hasConsentBanner = false,
-  hideBottomNav = false,
-}: PwaUpdateToastProps) {
+export function PwaUpdateToast({ hideBottomNav = false }: PwaUpdateToastProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const isPlayRoute = isPlayFocusPath(pathname);
@@ -65,6 +62,7 @@ export function PwaUpdateToast({
   const toastRef = useRef<HTMLDivElement>(null);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const waitingWorkerRef = useRef<ServiceWorker | null>(null);
+  const remoteBuildIdRef = useRef<string | null>(null);
   const isPlayRouteRef = useRef(isPlayRoute);
   const userRequestedReloadRef = useRef(false);
   const pendingReloadRef = useRef(false);
@@ -73,8 +71,32 @@ export function PwaUpdateToast({
 
   isPlayRouteRef.current = isPlayRoute;
 
-  const visible = Boolean(updateTargetId) && !dismissed && !isPlayRoute;
-  useBottomStack('pwa-update-toast', toastRef, visible);
+  const visible = Boolean(updateTargetId) && !dismissed && !reloading && !isPlayRoute;
+
+  // Publish the toast's own height via --pwa-toast-height (NOT --bottom-stack, avoiding any
+  // positioning feedback loop) so main content padding and RonBot stay clear of the banner.
+  useEffect(() => {
+    if (!visible) {
+      setPwaToastHeight(0);
+      return;
+    }
+    const measure = () => {
+      const el = toastRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setPwaToastHeight(rect.height > 0 ? rect.height + 16 : 0);
+    };
+    const frame = window.requestAnimationFrame(measure);
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (observer && toastRef.current) observer.observe(toastRef.current);
+    window.addEventListener('resize', measure);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+      setPwaToastHeight(0);
+    };
+  }, [visible]);
 
   const performReloadOnce = useCallback(() => {
     if (hasReloadedRef.current) return;
@@ -88,6 +110,8 @@ export function PwaUpdateToast({
       window.clearTimeout(fallbackTimerRef.current);
       fallbackTimerRef.current = null;
     }
+    setUpdateTargetId(null);
+    setDismissed(true);
     window.location.reload();
   }, []);
 
@@ -104,14 +128,24 @@ export function PwaUpdateToast({
         waitingWorkerRef.current = waitingWorker;
       }
 
+      const effectiveId =
+        targetId === 'waiting' && remoteBuildIdRef.current ? remoteBuildIdRef.current : targetId;
+
       const reloadingId = readSession(RELOAD_GUARD_KEY);
-      if (!waitingWorker && shouldSuppressForReloadGuard(targetId, reloadingId)) {
+      if (
+        shouldSuppressForReloadGuard(effectiveId, reloadingId) ||
+        shouldSuppressForReloadGuard(targetId, reloadingId) ||
+        reloadingId === 'waiting'
+      ) {
         return;
       }
 
       const dismissedId = readSession(DISMISSED_BUILD_KEY);
-      setUpdateTargetId(targetId);
-      setDismissed(dismissedId === targetId);
+      const isAlreadyDismissed =
+        dismissedId === effectiveId || dismissedId === targetId || dismissedId === 'waiting';
+
+      setUpdateTargetId(effectiveId);
+      setDismissed(isAlreadyDismissed);
     },
     [],
   );
@@ -127,7 +161,7 @@ export function PwaUpdateToast({
     const inspectWaiting = (reg: ServiceWorkerRegistration) => {
       if (!active) return;
       if (reg.waiting && navigator.serviceWorker.controller) {
-        markUpdateAvailable('waiting', reg.waiting);
+        markUpdateAvailable(remoteBuildIdRef.current ?? 'waiting', reg.waiting);
       }
     };
 
@@ -139,11 +173,17 @@ export function PwaUpdateToast({
         const remoteBuildId = typeof data?.buildId === 'string' ? data.buildId.trim() : '';
         if (!remoteBuildId || !active) return;
 
+        remoteBuildIdRef.current = remoteBuildId;
+
         if (CURRENT_BUILD_ID) {
           if (isNewerBuildId(remoteBuildId, CURRENT_BUILD_ID)) {
             markUpdateAvailable(remoteBuildId, registrationRef.current?.waiting ?? null);
-          } else if (readSession(RELOAD_GUARD_KEY) === remoteBuildId) {
-            removeSession(RELOAD_GUARD_KEY);
+          } else {
+            // We are already running the latest build: clear stale reload/dismiss guards and hide banner
+            if (readSession(RELOAD_GUARD_KEY)) {
+              removeSession(RELOAD_GUARD_KEY);
+            }
+            setUpdateTargetId(null);
           }
           return;
         }
@@ -171,14 +211,23 @@ export function PwaUpdateToast({
     };
 
     if ('serviceWorker' in navigator) {
+      const hadControllerAtMount = Boolean(navigator.serviceWorker.controller);
+
       const handleControllerChange = () => {
         if (!active) return;
-        if (!userRequestedReloadRef.current) return;
-        if (isPlayRouteRef.current) {
-          pendingReloadRef.current = true;
+        if (userRequestedReloadRef.current) {
+          if (isPlayRouteRef.current) {
+            pendingReloadRef.current = true;
+            return;
+          }
+          performReloadOnce();
           return;
         }
-        performReloadOnce();
+        // New SW activated via skipWaiting() while this tab was already open:
+        // verify version.json before prompting so first-install claims don't flash the banner.
+        if (hadControllerAtMount) {
+          void checkVersionManifest();
+        }
       };
 
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
@@ -199,7 +248,7 @@ export function PwaUpdateToast({
             const handleStateChange = () => {
               if (!active) return;
               if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-                markUpdateAvailable('waiting', installing);
+                markUpdateAvailable(remoteBuildIdRef.current ?? 'waiting', installing);
               }
             };
             installing.addEventListener('statechange', handleStateChange);
@@ -252,10 +301,12 @@ export function PwaUpdateToast({
     }
     if (reloading) return;
 
+    const targetId = remoteBuildIdRef.current ?? updateTargetId ?? 'waiting';
     setReloading(true);
+    setDismissed(true);
+    setUpdateTargetId(null);
     userRequestedReloadRef.current = true;
 
-    const targetId = updateTargetId ?? 'waiting';
     writeSession(RELOAD_GUARD_KEY, targetId);
     if (!CURRENT_BUILD_ID && targetId !== 'waiting') {
       writeSession(SEEN_BUILD_KEY, targetId);
@@ -278,23 +329,21 @@ export function PwaUpdateToast({
   };
 
   const handleDismiss = () => {
-    const targetId = updateTargetId ?? 'waiting';
+    const targetId = remoteBuildIdRef.current ?? updateTargetId ?? 'waiting';
     writeSession(DISMISSED_BUILD_KEY, targetId);
     setDismissed(true);
   };
 
   if (!visible) return null;
 
+  // Always sit cleanly above --bottom-stack (BottomNav, ConsentBanner, StickyUserRank)
   const bottomPositionClass = hideBottomNav
-    ? hasConsentBanner
-      ? 'bottom-[calc(80px+env(safe-area-inset-bottom,0px)+12px)] lg:bottom-[92px]'
-      : 'bottom-[calc(env(safe-area-inset-bottom,0px)+12px)] lg:bottom-5'
-    : hasConsentBanner
-      ? 'bottom-[calc(4rem+80px+env(safe-area-inset-bottom,0px)+16px)] lg:bottom-[92px]'
-      : 'bottom-[calc(4rem+env(safe-area-inset-bottom,0px)+20px)] lg:bottom-5';
+    ? 'bottom-[calc(var(--bottom-stack,0px)+12px+env(safe-area-inset-bottom,0px))] lg:bottom-[calc(var(--bottom-stack,0px)+20px)]'
+    : 'bottom-[calc(var(--bottom-stack,64px)+12px+env(safe-area-inset-bottom,0px))] lg:bottom-[calc(var(--bottom-stack,0px)+20px)]';
 
   return (
     <div
+      data-testid="pwa-update-container"
       className={`pointer-events-none fixed inset-x-3 z-50 flex justify-center ${
         !hideBottomNav ? 'lg:left-60 lg:right-0' : ''
       } ${bottomPositionClass}`}
@@ -321,6 +370,7 @@ export function PwaUpdateToast({
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
+            data-testid="pwa-update-reload"
             onClick={handleReload}
             disabled={reloading}
             className="border-border bg-volt inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[10px] border-2 px-3.5 text-sm font-extrabold tracking-tight text-[#16131F] shadow-[2px_2px_0px_0px_var(--rd-border)] transition-transform duration-100 active:translate-y-[2px] disabled:cursor-wait disabled:opacity-75"
@@ -330,6 +380,7 @@ export function PwaUpdateToast({
 
           <button
             type="button"
+            data-testid="pwa-update-dismiss"
             onClick={handleDismiss}
             aria-label={t('pwa.dismiss')}
             className="text-muted hover:bg-surface-2 hover:text-ink inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px]"

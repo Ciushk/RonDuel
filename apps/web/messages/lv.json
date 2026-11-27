@@ -61,7 +61,7 @@
     "streak": "{days} dienu sērija",
     "shareCta": "Kopīgot grupā",
     "shareHint": "Kopīgo ar savu grupu. Tā kļūs par tavu līgu.",
-    "copied": "Rezultāts nokopēts starpliktuvē!",
+    "copied": "Rezultāts nokopēts! Ielīmē to grupā.",
     "reviewTitle": "Atbilžu pārskats",
     "openLeague": "Atvērt līgas tabulu",
     "challengeFriend": "Izaicināt draugu (1 pret 1 duelis)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Tava kārta ir reģistrēta. Pieskaries Mēģināt vēlreiz, lai redzētu savus punktus un līderu sarakstu.",
     "backHome": "Atpakaļ uz sākumu",
     "shareStreak": "🔥 {count, plural, zero {# dienu sērija} one {# dienas sērija} other {# dienu sērija}}",
-    "shareBeatMe": "Pārspēj mani → {url}"
+    "shareBeatMe": "Pārspēj mani → {url}",
+    "returningHomeIn": "Atgriešanās sākumlapā pēc {seconds} s"
   },
   "league": {
     "joinTitle": "Tu esi uzaicināts uz {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Tu pievienojies līgai!",
     "privateJoinSheetHint": "Šī līga ir privāta. Ievadi no īpašnieka saņemto kodu, lai pievienotos:",
     "joinErrorGeneric": "Nepareizs kods vai neizdevās pievienoties līgai.",
-    "full": "Līga ir pilna ({count}/{max})"
+    "full": "Līga ir pilna ({count}/{max})",
+    "notFoundTitle": "Līga nav atrasta"
   },
   "duel": {
-    "title": "1 pret 1 Split Court duelis",
+    "title": "1 pret 1 duelis",
     "subtitle": "5 ātri jautājumi · 24 stundas laikā",
     "yourTurn": "Izspēlē savus 5 jautājumus",
     "waitingOpponent": "Gaida pretinieka gājienu (24 h logs)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profils un sērija",
-    "bestStreak": "Labākā sērija: {days} dienas",
+    "bestStreak": "{days, plural, zero {Labākā sērija: # dienu} one {Labākā sērija: # diena} other {Labākā sērija: # dienas}}",
     "upgradeTitle": "Saglabā savu sēriju visās ierīcēs",
     "upgradeBody": "Piesaisti e-pasta vai Google kontu. Tavs lietotāja ID, sērija un līgas paliks neskartas.",
     "emailPlaceholder": "tu@piemers.lv",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Līgas ar līdz pat 200 dalībniekiem un privāts apstiprinājums",
     "benefitDuels": "Neierobežoti 1 pret 1 dueļi (bezmaksas versijā 4 mēnesī)",
     "benefitShield": "1 automātisks iknedēļas sērijas vairogs",
-    "benefitThemes": "3 ekskluzīvas Split Court tēmas (Midnight, Clay, Neon)",
+    "benefitThemes": "3 ekskluzīvas tēmas (Pusnakts korts, Māla korts, Neona pasāža)",
     "benefitStats": "Uzlabota tēmu precizitātes statistika un iepriekšējo kārtu arhīvs",
     "euConsent": "Pieprasu tūlītēju piekļuvi RonDuel Pro digitālajam saturam un apzinos, ka mana 14 dienu ES atteikuma tiesība zaudē spēku līdz ar aktivizēšanu.",
     "upgradeFirst": "Viesa dati tiek glabāti tikai 7 dienas. Piesakies vai izveido bezmaksas kontu, lai abonētu un tavs Pro paliktu piesaistīts pastāvīgam profilam.",
@@ -400,8 +402,8 @@
     "deleted": "Tava vietējā sesija un dati ir dzēsti.",
     "languageSearchPlaceholder": "Meklēt valodu…",
     "languageNoResults": "Valoda nav atrasta",
-    "themeLight": "Gaišs (Cream Paper)",
-    "themeDark": "Tumšs (Ink Night)",
+    "themeLight": "Gaišs",
+    "themeDark": "Tumšs",
     "themeHighContrast": "Augsts kontrasts",
     "themeProMidnight": "Pro: Pusnakts korts",
     "themeProClay": "Pro: Māla korts",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Līgas nav atrastas.",
     "emptyTitle": "Spēlē ar draugiem!",
     "emptyBody": "Izveido līgu birojam, ģimenei vai draugu grupai. Tā ir bezmaksas līdz {max} dalībniekiem.",
-    "createFirst": "Izveido savu pirmo līgu"
+    "createFirst": "Izveido savu pirmo līgu",
+    "leagueWorldRank": "Līga ir #{rank}. vietā pasaulē"
   },
   "duels": {
     "shareText": "Es izaicināju tevi uz divcīņu RonDuel! Tevi gaida 5 ātri jautājumi: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Tev jau ir aktīva divcīņa. Pabeidz to vai iegūsti Pro neierobežotām divcīņām.",
     "errorCreate": "Neizdevās izveidot divcīņu",
     "yourTurn": "Tavs gājiens",
-    "waitingOpponent": "Gaida tavu pretinieku"
+    "waitingOpponent": "Gaida tavu pretinieku",
+    "tabActive": "Aktīvie",
+    "tabFinished": "Pabeigtie",
+    "tabStats": "Mans rezultāts",
+    "emptyActiveTitle": "Nav aktīvu dueļu",
+    "emptyActiveBody": "Izaicini draugu uz ātru 1v1 dueli vai gaidi atbildi!",
+    "emptyFinishedTitle": "Vēl nav pabeigtu dueļu",
+    "emptyFinishedBody": "Šeit parādīsies tavi pabeigtie dueļi un rezultāti.",
+    "statsTotalScore": "Kopējais dueļu rezultāts",
+    "statsPointsUnit": "punkti",
+    "statsWins": "Uzvaras",
+    "statsLosses": "Zaudējumi",
+    "statsDraws": "Neizšķirti",
+    "statsTotalDuels": "Kopā dueļi",
+    "statsWinRate": "Uzvaru īpatsvars",
+    "waitingForOpponent": "Gaida pretinieku",
+    "copyLink": "Kopēt saiti"
   },
   "themes": {
     "worldScience": "Pasaule un zinātne 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Tuvināt",
       "zoomOut": "Tālināt",
       "loading": "Ielādē RonTown…",
-      "rotatingBanner": "Pieskaries lauciņam vai ēkai, lai pagrieztu"
+      "rotatingBanner": "Pieskaries lauciņam vai ēkai, lai pagrieztu",
+      "cellItemAria": "{item} vietā ({x}, {y})"
     },
     "status": {
       "connecting": "Savienojas…",

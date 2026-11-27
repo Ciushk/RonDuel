@@ -223,8 +223,11 @@ export const UI_SPRITES = {
   visit: { src: spriteUrl('button-vizit.png'), width: 128, height: 128 },
   coinsShop: { src: spriteUrl('button-coins.png'), width: 128, height: 128 },
   hideBar: { src: spriteUrl('button-hide-bar.png'), width: 128, height: 128 },
+  seedOats: { src: spriteUrl('button-oats.png'), width: 128, height: 128 },
   seedWheat: { src: spriteUrl('button-wheat.png'), width: 128, height: 128 },
   seedCabbage: { src: spriteUrl('button-cabage.png'), width: 128, height: 128 },
+  seedCarrots: { src: spriteUrl('button-carrots.png'), width: 128, height: 128 },
+  seedSunflower: { src: spriteUrl('button-sunflower.png'), width: 128, height: 128 },
   seedPumpkin: { src: spriteUrl('button-pumpkin.png'), width: 128, height: 128 },
   farmGrowing: { src: spriteUrl('farm-done-icon.png'), width: 56, height: 56 },
   farmReady: { src: spriteUrl('farm-done-icon-gold.png'), width: 56, height: 56 },
@@ -240,8 +243,7 @@ export const CATALOG_SPRITES: Record<string, SpriteSpec> = {
   // Confirm whether cottage footprint should become 2x1 or swap PNG.
   cottage: { src: spriteUrl('building-two-blocks-house.png'), width: 182, height: 143 },
   house: { src: spriteUrl('building-two-level-house.png'), width: 111, height: 140 },
-  // TODO(art): building-apartment.png missing — swap filename when art arrives.
-  apartment: { src: '', width: 192, height: 192, isPlaceholder: true },
+  apartment: { src: spriteUrl('building-apartment.png'), width: 192, height: 192 },
   // TODO(art): building-villa.png is 199px wide (< 256px for 2x2); centered on 2x2.
   villa: { src: spriteUrl('building-villa.png'), width: 199, height: 147 },
   shop: { src: spriteUrl('building-shop.png'), width: 132, height: 130 },
@@ -263,25 +265,23 @@ export const CATALOG_SPRITES: Record<string, SpriteSpec> = {
   fence: { src: spriteUrl('decor-fence.png'), width: 125, height: 104 },
   tree: { src: spriteUrl('decor-tree.png'), width: 117, height: 119 },
   lantern: { src: spriteUrl('decor-lantern.png'), width: 55, height: 130 },
-  // TODO(art): Missing decor art — swap by filename when PNGs arrive.
-  bench: { src: '', width: 96, height: 80, isPlaceholder: true },
-  fountain: { src: '', width: 112, height: 112, isPlaceholder: true },
-  golden_fountain: { src: '', width: 112, height: 112, isPlaceholder: true },
-  windmill: { src: '', width: 128, height: 160, isPlaceholder: true },
-  clock_tower: { src: '', width: 128, height: 176, isPlaceholder: true },
-  ronduel_statue: { src: '', width: 128, height: 176, isPlaceholder: true },
+  bench: { src: spriteUrl('decor-bench.png'), width: 96, height: 80 },
+  fountain: { src: spriteUrl('decor-fountain.png'), width: 112, height: 112 },
+  golden_fountain: { src: spriteUrl('decor-golden-fountain.png'), width: 112, height: 112 },
+  windmill: { src: spriteUrl('decor-windmill.png'), width: 128, height: 160 },
+  clock_tower: { src: spriteUrl('decor-clock-tower.png'), width: 128, height: 176 },
+  ronduel_statue: { src: spriteUrl('decor-ronduel-statue.png'), width: 128, height: 176 },
 };
 
 export type CropGrowthStage = 'sprout' | 'half' | 'done';
 
 export const CROP_BUTTON_SPRITES: Record<string, SpriteSpec> = {
+  oats: UI_SPRITES.seedOats,
   wheat: UI_SPRITES.seedWheat,
   cabbage: UI_SPRITES.seedCabbage,
+  carrots: UI_SPRITES.seedCarrots,
+  sunflower: UI_SPRITES.seedSunflower,
   pumpkin: UI_SPRITES.seedPumpkin,
-  // TODO(art): oats, carrots, sunflower lack seed button art; fall back to sprout icon.
-  oats: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
-  carrots: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
-  sunflower: { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 },
 };
 
 // TODO(art): Re-export the crop PNGs so the bottom 76 rows match basic-block-dirt.png's

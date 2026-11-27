@@ -3,6 +3,7 @@
 import { useEffect, type RefObject } from 'react';
 
 const contributors = new Map<string, number>();
+let pwaToastHeightPx = 0;
 
 function publishBottomStack() {
   if (typeof document === 'undefined') return;
@@ -15,6 +16,14 @@ function publishBottomStack() {
   } else {
     document.documentElement.style.setProperty('--bottom-stack', `${Math.ceil(max)}px`);
   }
+  if (pwaToastHeightPx <= 0) {
+    document.documentElement.style.removeProperty('--pwa-toast-height');
+  } else {
+    document.documentElement.style.setProperty(
+      '--pwa-toast-height',
+      `${Math.ceil(pwaToastHeightPx)}px`,
+    );
+  }
 }
 
 export function setBottomStack(id: string, px: number) {
@@ -25,6 +34,11 @@ export function setBottomStack(id: string, px: number) {
 
 export function clearBottomStack(id: string) {
   contributors.delete(id);
+  publishBottomStack();
+}
+
+export function setPwaToastHeight(px: number) {
+  pwaToastHeightPx = Math.max(0, px);
   publishBottomStack();
 }
 

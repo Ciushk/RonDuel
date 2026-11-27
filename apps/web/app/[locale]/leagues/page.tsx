@@ -353,8 +353,8 @@ export default function LeaguesPage() {
                       </Chip>
                     </div>
                     <p className="text-muted break-words text-xs font-medium [overflow-wrap:anywhere]">
-                      {t('league.membersCount', { count: worldLeague?.memberCount ?? 1 })}{' '}
-                      {t('leagues.publicNoLimitSuffix')}
+                      {t('league.membersCount', { count: worldLeague?.memberCount ?? 1 })} ·{' '}
+                      {t('common.playedTodayCount', { count: worldLeague?.playedTodayCount ?? 0 })}
                     </p>
                   </div>
                 </div>
@@ -466,8 +466,7 @@ export default function LeaguesPage() {
                             )}
                           </div>
                           <p className="text-muted break-words text-xs [overflow-wrap:anywhere]">
-                            {t('league.membersCount', { count: league.memberCount })} /{' '}
-                            {league.maxMembers ?? 5} ·{' '}
+                            {t('league.membersCount', { count: league.memberCount })} ·{' '}
                             {t('common.playedTodayCount', { count: league.playedTodayCount })}
                           </p>
                         </div>
@@ -476,7 +475,7 @@ export default function LeaguesPage() {
                       <div className="shrink-0 text-right">
                         {league.intlRank ? (
                           <Chip tone="volt" className="text-xs font-black">
-                            🏆 {t('leagues.worldRank', { rank: league.intlRank })}
+                            🏆 {t('leagues.leagueWorldRank', { rank: league.intlRank })}
                           </Chip>
                         ) : (
                           <span className="text-muted text-xs font-bold">{t('leagues.open')}</span>

@@ -229,6 +229,18 @@ export default function TownPage() {
   const [farmMenuOpen, setFarmMenuOpen] = useState<boolean>(false);
   const [selectedSeed, setSelectedSeed] = useState<SeedChoiceId | null>(null);
 
+  const placingItemIdRef = useRef<string | null>(null);
+  placingItemIdRef.current = placingItemId;
+  const rotateModeActiveRef = useRef<boolean>(false);
+  rotateModeActiveRef.current = rotateModeActive;
+  const moveModeActiveRef = useRef<boolean>(false);
+  moveModeActiveRef.current = moveModeActive;
+  const movingTileRef = useRef<TileInfo | null>(null);
+  movingTileRef.current = movingTile;
+  const selectedSeedRef = useRef<SeedChoiceId | null>(null);
+  selectedSeedRef.current = selectedSeed;
+  const buildInFlightRef = useRef<boolean>(false);
+
   const [transferRecipient, setTransferRecipient] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<number>(10);
   const [lastTownEvent, setLastTownEvent] = useState<{
@@ -300,6 +312,11 @@ export default function TownPage() {
   }, [placingItemId, toggleRoadRot]);
 
   const clearModes = useCallback(() => {
+    placingItemIdRef.current = null;
+    rotateModeActiveRef.current = false;
+    moveModeActiveRef.current = false;
+    movingTileRef.current = null;
+    selectedSeedRef.current = null;
     setPlacingItemId(null);
     setRoadRot(0);
     setRoadRotateTick(0);
@@ -370,11 +387,27 @@ export default function TownPage() {
   const handleExpandTap = useCallback(
     (x: number, y: number) => {
       if (isVisitMode || !isServerReady) return;
-      clearModes();
+      // Never exit active Rotate / Build / Move / Plant mode or open BuyLandSheet during those modes
+      if (rotateModeActiveRef.current) {
+        showToast(t('town.rotate.notRotatable'));
+        return;
+      }
+      if (placingItemIdRef.current || moveModeActiveRef.current || movingTileRef.current) {
+        showToast(t('town.toast.cannotPlaceHere'));
+        return;
+      }
+      if (selectedSeedRef.current) {
+        showToast(
+          t('town.map.plantingBanner', {
+            crop: t(`town.crops.${selectedSeedRef.current}.name`),
+          }),
+        );
+        return;
+      }
       closeSheet();
       setExpandTarget({ x, y });
     },
-    [isVisitMode, isServerReady, clearModes, closeSheet],
+    [isVisitMode, isServerReady, closeSheet, showToast, t],
   );
 
   const handleConfirmBuyLand = useCallback(
@@ -527,55 +560,69 @@ export default function TownPage() {
         return;
       }
 
-      if (rotateModeActive) {
+      if (rotateModeActiveRef.current) {
         handleRotateCell(x, y);
         return;
       }
 
-      if (placingItemId) {
-        const ok = await executeBuild(
-          placingItemId,
-          x,
-          y,
-          placingItemId === 'road' ? { rot: roadRot } : undefined,
-        );
-        if (ok) {
-          setPlacingItemId(null);
-          setRoadRot(0);
-          setRoadRotateTick(0);
-          setLastTownEvent({ id: Date.now(), x, y, type: 'build' });
+      const activePlacingId = placingItemIdRef.current;
+      if (activePlacingId) {
+        if (buildInFlightRef.current) return;
+        buildInFlightRef.current = true;
+        try {
+          const ok = await executeBuild(
+            activePlacingId,
+            x,
+            y,
+            activePlacingId === 'road' ? { rot: roadRot } : undefined,
+          );
+          if (ok) {
+            placingItemIdRef.current = null;
+            setPlacingItemId(null);
+            setRoadRot(0);
+            setRoadRotateTick(0);
+            setLastTownEvent({ id: Date.now(), x, y, type: 'build' });
+          }
+        } finally {
+          buildInFlightRef.current = false;
         }
         return;
       }
 
-      if (movingTile) {
-        if (movingTile.x === x && movingTile.y === y) {
+      const activeMovingTile = movingTileRef.current;
+      if (activeMovingTile) {
+        if (activeMovingTile.x === x && activeMovingTile.y === y) {
+          movingTileRef.current = null;
           setMovingTile(null);
           return;
         }
-        const ok = await executeMove(movingTile.x, movingTile.y, x, y);
+        const ok = await executeMove(activeMovingTile.x, activeMovingTile.y, x, y);
         if (ok) {
+          movingTileRef.current = null;
+          moveModeActiveRef.current = false;
           setMovingTile(null);
           setMoveModeActive(false);
         }
         return;
       }
 
-      if (moveModeActive) {
+      if (moveModeActiveRef.current) {
         if (!tile) {
           showToast(t('town.map.movingPickBanner'));
           return;
         }
+        movingTileRef.current = tile;
         setMovingTile(tile);
         return;
       }
 
-      if (selectedSeed) {
+      const activeSeed = selectedSeedRef.current;
+      if (activeSeed) {
         if (!canPlantAt(x, y)) {
-          showToast(t('town.map.plantingBanner', { crop: t(`town.crops.${selectedSeed}.name`) }));
+          showToast(t('town.map.plantingBanner', { crop: t(`town.crops.${activeSeed}.name`) }));
           return;
         }
-        const ok = await executePlantCrop(x, y, selectedSeed);
+        const ok = await executePlantCrop(x, y, activeSeed);
         if (ok) {
           setLastTownEvent({ id: Date.now(), x, y, type: 'plant' });
         }
@@ -589,13 +636,8 @@ export default function TownPage() {
       tiles,
       isVisitMode,
       isServerReady,
-      rotateModeActive,
       handleRotateCell,
-      placingItemId,
       roadRot,
-      movingTile,
-      moveModeActive,
-      selectedSeed,
       canPlantAt,
       executeBuild,
       executeMove,
@@ -608,6 +650,14 @@ export default function TownPage() {
 
   const handleHarvestComplete = useCallback(
     (x: number, y: number) => {
+      if (
+        rotateModeActiveRef.current ||
+        placingItemIdRef.current ||
+        moveModeActiveRef.current ||
+        movingTileRef.current
+      ) {
+        return;
+      }
       void executeHarvestCrop(x, y);
     },
     [executeHarvestCrop],
@@ -615,13 +665,22 @@ export default function TownPage() {
 
   const handleSpeedupTap = useCallback(
     (tile: TileInfo) => {
-      if (isVisitMode || !isServerReady || !speedupEnabled) return;
-      clearModes();
+      if (
+        isVisitMode ||
+        !isServerReady ||
+        !speedupEnabled ||
+        rotateModeActiveRef.current ||
+        placingItemIdRef.current ||
+        moveModeActiveRef.current ||
+        movingTileRef.current
+      ) {
+        return;
+      }
       closeSheet();
       setExpandTarget(null);
       setSpeedupTarget(tile);
     },
-    [isVisitMode, isServerReady, speedupEnabled, clearModes, closeSheet],
+    [isVisitMode, isServerReady, speedupEnabled, closeSheet],
   );
 
   const handleConfirmSpeedup = useCallback(
@@ -1029,114 +1088,139 @@ export default function TownPage() {
             </div>
           </div>
         )}
-      </div>
 
-      {/* 3. RIGHT VERTICAL PIXEL-ART ACTION BAR */}
-      {!isVisitMode && isServerReady && (
-        <ActionBar
-          visible={toolbarVisible}
-          onToggleVisible={toggleToolbar}
-          moveModeActive={moveModeActive || Boolean(movingTile)}
-          rotateModeActive={rotateModeActive}
-          farmMenuOpen={farmMenuOpen}
-          selectedSeed={selectedSeed}
-          maxLevel={maxLevel}
-          onOpenBuild={() => {
-            clearModes();
-            setShopTab('housing');
-            openSheet('shop');
-          }}
-          onToggleMoveMode={() => {
-            const next = !(moveModeActive || Boolean(movingTile));
-            clearModes();
-            setMoveModeActive(next);
-          }}
-          onToggleRotateMode={() => {
-            const next = !rotateModeActive;
-            clearModes();
-            setRotateModeActive(next);
-          }}
-          onToggleFarmMenu={() => {
-            setPlacingItemId(null);
-            setMoveModeActive(false);
-            setMovingTile(null);
-            setRotateModeActive(false);
-            setFarmMenuOpen((prev) => {
-              const next = !prev;
-              if (!next) setSelectedSeed(null);
-              return next;
-            });
-          }}
-          onSelectSeed={(seed) => {
-            setPlacingItemId(null);
-            setMoveModeActive(false);
-            setMovingTile(null);
-            setRotateModeActive(false);
-            setSelectedSeed((prev) => (prev === seed ? null : seed));
-          }}
-          onOpenVisit={() => {
-            clearModes();
-            openSheet('visit');
-          }}
-          onOpenShop={() => {
-            clearModes();
-            openSheet(coinsPurchaseEnabled ? 'coins' : 'shop');
-          }}
-        />
-      )}
-
-      {/* 4. TUTORIAL PIXEL-ART SPEECH BUBBLE */}
-      {!isVisitMode &&
-        isServerReady &&
-        !tutorialDone &&
-        tutorialStep < 3 &&
-        !activeSheet &&
-        !expandTarget && (
-          <div
-            data-testid="town-tutorial-card"
-            className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-16 z-20 max-w-[260px] p-3"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
-                {tutorialStep + 1}/3
-              </span>
-              <button
-                type="button"
-                onClick={skipTutorial}
-                className="min-h-[32px] cursor-pointer px-1 font-mono text-xs font-bold text-[#0E0D15]/70 hover:text-[#0E0D15]"
-              >
-                {t('town.tutorial.skip')}
-              </button>
-            </div>
-            <h2 className="mt-1.5 font-mono text-sm font-black text-[#0E0D15]">
-              {tutorialStep === 0 && t('town.tutorial.step1Title')}
-              {tutorialStep === 1 && t('town.tutorial.step2Title')}
-              {tutorialStep === 2 && t('town.tutorial.step3Title')}
-            </h2>
-            <p className="mt-1 font-mono text-xs leading-snug text-[#0E0D15]/80">
-              {tutorialStep === 0 && t('town.tutorial.step1Desc')}
-              {tutorialStep === 1 && t('town.tutorial.step2Desc')}
-              {tutorialStep === 2 && t('town.tutorial.step3Desc')}
-            </p>
-            <div className="mt-2.5 flex justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  if (tutorialStep === 1) {
-                    setShopTab('housing');
-                    openSheet('shop');
-                  } else if (tutorialStep === 2) {
-                    openSheet('orders');
-                  }
-                  advanceTutorial(tutorialStep + 1);
-                }}
-                className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
-              >
-                {tutorialStep === 2 ? t('town.tutorial.finish') : t('town.tutorial.next')}
-              </button>
-            </div>
-          </div>
+        {/* 3. RIGHT VERTICAL PIXEL-ART ACTION BAR (strictly inside map viewport, below header) */}
+        {!isVisitMode && isServerReady && (
+          <ActionBar
+            visible={toolbarVisible}
+            onToggleVisible={toggleToolbar}
+            moveModeActive={moveModeActive || Boolean(movingTile)}
+            rotateModeActive={rotateModeActive}
+            farmMenuOpen={farmMenuOpen}
+            selectedSeed={selectedSeed}
+            maxLevel={maxLevel}
+            onOpenBuild={() => {
+              clearModes();
+              setShopTab('housing');
+              openSheet('shop');
+            }}
+            onToggleMoveMode={() => {
+              const next = !(moveModeActive || Boolean(movingTile));
+              clearModes();
+              moveModeActiveRef.current = next;
+              setMoveModeActive(next);
+            }}
+            onToggleRotateMode={() => {
+              const next = !rotateModeActive;
+              clearModes();
+              rotateModeActiveRef.current = next;
+              setRotateModeActive(next);
+            }}
+            onToggleFarmMenu={() => {
+              placingItemIdRef.current = null;
+              moveModeActiveRef.current = false;
+              movingTileRef.current = null;
+              rotateModeActiveRef.current = false;
+              setPlacingItemId(null);
+              setMoveModeActive(false);
+              setMovingTile(null);
+              setRotateModeActive(false);
+              setFarmMenuOpen((prev) => {
+                const next = !prev;
+                if (!next) {
+                  selectedSeedRef.current = null;
+                  setSelectedSeed(null);
+                }
+                return next;
+              });
+            }}
+            onSelectSeed={(seed) => {
+              placingItemIdRef.current = null;
+              moveModeActiveRef.current = false;
+              movingTileRef.current = null;
+              rotateModeActiveRef.current = false;
+              setPlacingItemId(null);
+              setMoveModeActive(false);
+              setMovingTile(null);
+              setRotateModeActive(false);
+              setSelectedSeed((prev) => {
+                const next = prev === seed ? null : seed;
+                selectedSeedRef.current = next;
+                return next;
+              });
+            }}
+            onOpenVisit={() => {
+              clearModes();
+              openSheet('visit');
+            }}
+            onOpenShop={() => {
+              clearModes();
+              openSheet(coinsPurchaseEnabled ? 'coins' : 'shop');
+            }}
+          />
         )}
+
+        {/* 4. TUTORIAL PIXEL-ART SPEECH BUBBLE (offset below header inside map viewport) */}
+        {!isVisitMode &&
+          isServerReady &&
+          !tutorialDone &&
+          tutorialStep < 3 &&
+          !activeSheet &&
+          !expandTarget && (
+            <div
+              data-testid="town-tutorial-card"
+              className="rt-pixel-bubble rt-pixel-bubble--tail absolute start-3 top-3 z-20 max-w-[260px] p-3"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#0E0D15]">
+                  {tutorialStep + 1}/3
+                </span>
+                <button
+                  type="button"
+                  onClick={skipTutorial}
+                  className="min-h-[32px] cursor-pointer px-1 font-mono text-xs font-bold text-[#0E0D15]/70 hover:text-[#0E0D15]"
+                >
+                  {t('town.tutorial.skip')}
+                </button>
+              </div>
+              <h2 className="mt-1.5 font-mono text-sm font-black text-[#0E0D15]">
+                {tutorialStep === 0 && t('town.tutorial.step1Title')}
+                {tutorialStep === 1 && t('town.tutorial.step2Title')}
+                {tutorialStep === 2 && t('town.tutorial.step3Title')}
+              </h2>
+              <p className="mt-1 font-mono text-xs leading-snug text-[#0E0D15]/80">
+                {tutorialStep === 0 && t('town.tutorial.step1Desc')}
+                {tutorialStep === 1 && t('town.tutorial.step2Desc')}
+                {tutorialStep === 2 && t('town.tutorial.step3Desc')}
+              </p>
+              <div className="mt-2.5 flex flex-wrap items-center justify-end gap-2">
+                {tutorialStep === 1 && (
+                  <button
+                    type="button"
+                    data-testid="town-tutorial-open-catalog"
+                    onClick={() => {
+                      setShopTab('housing');
+                      openSheet('shop');
+                    }}
+                    className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#FFF7EC] px-2.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+                  >
+                    {t('town.shop.title')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  data-testid="town-tutorial-next"
+                  onClick={() => {
+                    advanceTutorial(tutorialStep + 1);
+                  }}
+                  className="min-h-[36px] cursor-pointer border-2 border-[#0E0D15] bg-[#C6FF3D] px-3.5 font-mono text-xs font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+                >
+                  {tutorialStep === 2 ? t('town.tutorial.finish') : t('town.tutorial.next')}
+                </button>
+              </div>
+            </div>
+          )}
+      </div>
 
       {/* 5. BUY LAND BOTTOM SHEET (lazy-loaded on demand) */}
       {expandTarget && (
@@ -1193,10 +1277,15 @@ export default function TownPage() {
           openSheet={openSheet}
           closeSheet={closeSheet}
           onStartPlace={(itemId) => {
+            clearModes();
+            placingItemIdRef.current = itemId;
             setPlacingItemId(itemId);
             closeSheet();
           }}
           onStartMove={(tile) => {
+            clearModes();
+            moveModeActiveRef.current = true;
+            movingTileRef.current = tile;
             setMovingTile(tile);
             setMoveModeActive(true);
             closeSheet();

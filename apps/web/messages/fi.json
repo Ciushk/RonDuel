@@ -61,7 +61,7 @@
     "streak": "{days} päivän putki",
     "shareCta": "Jaa ryhmällesi",
     "shareHint": "Jaa ryhmällesi. Siitä tulee liigasi.",
-    "copied": "Tulos kopioitu leikepöydälle!",
+    "copied": "Tulos kopioitu! Liitä se ryhmään.",
     "reviewTitle": "Vastausten tarkistus",
     "openLeague": "Avaa liigan tulostaulu",
     "challengeFriend": "Haasta kaveri (1v1-kaksinkamppailu)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Kierroksesi on tallennettu. Napauta Yritä uudelleen nähdäksesi pisteesi ja tulostaulukon.",
     "backHome": "Takaisin alkuun",
     "shareStreak": "🔥 {count, plural, one {# päivän putki} other {# päivän putki}}",
-    "shareBeatMe": "Voita minut → {url}"
+    "shareBeatMe": "Voita minut → {url}",
+    "returningHomeIn": "Palataan etusivulle {seconds} s kuluttua"
   },
   "league": {
     "joinTitle": "Sinut on kutsuttu liigaan {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Liityit liigaan!",
     "privateJoinSheetHint": "Tämä liiga on yksityinen. Syötä omistajalta saamasi koodi liittyäksesi:",
     "joinErrorGeneric": "Virheellinen koodi tai liittyminen epäonnistui.",
-    "full": "Liiga on täynnä ({count}/{max})"
+    "full": "Liiga on täynnä ({count}/{max})",
+    "notFoundTitle": "Liigaa ei löytynyt"
   },
   "duel": {
-    "title": "1v1 Split Court -kaksinkamppailu",
+    "title": "1v1-kaksinkamppailu",
     "subtitle": "5 nopeaa kysymystä · 24 tuntia aikaa",
     "yourTurn": "Pelaa omat 5 kysymystäsi",
     "waitingOpponent": "Odotetaan vastustajan pelaamista (24 tunnin ikkuna)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profiili & Putki",
-    "bestStreak": "Paras putki: {days} päivää",
+    "bestStreak": "{days, plural, one {Paras putki: 1 päivä} other {Paras putki: # päivää}}",
     "upgradeTitle": "Tallenna putkesi eri laitteiden välillä",
     "upgradeBody": "Yhdistä sähköposti- tai Google-tili. Tunnuksesi, putkesi ja liigasi säilyvät ennallaan.",
     "emailPlaceholder": "sinä@esimerkki.fi",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Jopa 200 jäsenen liigat ja yksityinen hyväksyntä",
     "benefitDuels": "Rajattomat 1v1-kaksinkamppailut (ilmaisversiossa 4/kk)",
     "benefitShield": "1 automaattinen viikoittainen putkisuoja",
-    "benefitThemes": "3 ainutlaatuista Split Court -teemaa (Midnight, Clay, Neon)",
+    "benefitThemes": "3 ainutlaatuista teemaa (Keskiyön kenttä, Massakenttä, Neon-arkadi)",
     "benefitStats": "Tarkat aihekohtaiset tilastot ja menneiden kierrosten arkisto",
     "euConsent": "Pyydän välitöntä pääsyä RonDuel Pro -digisisältöön ja hyväksyn, että 14 päivän EU-peruutusoikeuteni raukeaa heti aktivoinnin yhteydessä.",
     "upgradeFirst": "Vieraan tietoja säilytetään vain 7 päivää. Kirjaudu sisään tai luo ilmainen tili tilausta varten, jotta Pro pysyy liitettynä pysyvään profiiliin.",
@@ -400,8 +402,8 @@
     "deleted": "Paikallinen istuntosi ja tietosi on poistettu.",
     "languageSearchPlaceholder": "Etsi kieltä…",
     "languageNoResults": "Kieltä ei löytynyt",
-    "themeLight": "Vaalea (Cream Paper)",
-    "themeDark": "Tumma (Ink Night)",
+    "themeLight": "Vaalea",
+    "themeDark": "Tumma",
     "themeHighContrast": "Suuri kontrasti",
     "themeProMidnight": "Pro: Keskiyön kenttä",
     "themeProClay": "Pro: Massakenttä",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Liigoja ei löytynyt.",
     "emptyTitle": "Pelaa ystäviesi kanssa!",
     "emptyBody": "Luo liiga työpaikalle, perheelle tai kavereille. Se on ilmainen jopa {max} jäsenelle.",
-    "createFirst": "Luo ensimmäinen liigasi"
+    "createFirst": "Luo ensimmäinen liigasi",
+    "leagueWorldRank": "Liiga on sijalla #{rank} maailmassa"
   },
   "duels": {
     "shareText": "Haastan sinut RonDuel-kaksintaisteluun! Saat 5 nopeaa kysymystä: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Sinulla on jo käynnissä oleva kaksintaistelu. Pelaa se loppuun tai hanki Pro saadaksesi rajattomat kaksintaistelut.",
     "errorCreate": "Kaksintaistelun luominen epäonnistui",
     "yourTurn": "Sinun vuorosi",
-    "waitingOpponent": "Odotetaan vastustajaasi"
+    "waitingOpponent": "Odotetaan vastustajaasi",
+    "tabActive": "Käynnissä",
+    "tabFinished": "Päättyneet",
+    "tabStats": "Omat pisteet",
+    "emptyActiveTitle": "Ei käynnissä olevia kaksinkamppailuja",
+    "emptyActiveBody": "Haasta kaveri nopeaan 1v1-kaksinkamppailuun tai odota vastausta!",
+    "emptyFinishedTitle": "Ei vielä päättyneitä kaksinkamppailuja",
+    "emptyFinishedBody": "Täällä näkyvät päättyneet kaksinkamppailusi ja tulokset.",
+    "statsTotalScore": "Kaksinkamppailujen kokonaispisteet",
+    "statsPointsUnit": "pistettä",
+    "statsWins": "Voitot",
+    "statsLosses": "Tappiot",
+    "statsDraws": "Tasapelit",
+    "statsTotalDuels": "Kaksinkamppailuja yhteensä",
+    "statsWinRate": "Voittoprosentti",
+    "waitingForOpponent": "Odotetaan vastustajaa",
+    "copyLink": "Kopioi linkki"
   },
   "themes": {
     "worldScience": "Maailma ja tiede 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Lähennä",
       "zoomOut": "Loitonna",
       "loading": "Ladataan RonTownia…",
-      "rotatingBanner": "Napauta ruutua tai rakennusta kääntääksesi sen"
+      "rotatingBanner": "Napauta ruutua tai rakennusta kääntääksesi sen",
+      "cellItemAria": "{item} ruudussa ({x}, {y})"
     },
     "status": {
       "connecting": "Yhdistetään…",

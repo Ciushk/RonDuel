@@ -61,7 +61,7 @@
     "streak": "{days}-day streak",
     "shareCta": "Share to your group",
     "shareHint": "Share to your group. It becomes your league.",
-    "copied": "Result copied to clipboard!",
+    "copied": "Result copied! Paste it in your group.",
     "reviewTitle": "Answer review",
     "openLeague": "Open league leaderboard",
     "challengeFriend": "Challenge a friend (1v1 Duel)",
@@ -107,12 +107,13 @@
     "savedRetryHint": "Your round has been recorded. Tap Try again to see your score and the leaderboard.",
     "backHome": "Back home",
     "shareStreak": "🔥 {count, plural, one {#-day streak} other {#-day streak}}",
-    "shareBeatMe": "Beat me → {url}"
+    "shareBeatMe": "Beat me → {url}",
+    "returningHomeIn": "Returning to home in {seconds}s"
   },
   "league": {
     "joinTitle": "You're invited to {name}",
     "joinCta": "Join & play today's round",
-    "membersCount": "{count, plural, one {# player} other {# players}}",
+    "membersCount": "{count, plural, one {# member} other {# members}}",
     "tabToday": "Today",
     "tabWeek": "This week",
     "tabAllTime": "All-time",
@@ -256,10 +257,11 @@
     "joinedSuccess": "You joined the league!",
     "privateJoinSheetHint": "This league is private. Please enter the code you received from the owner to join:",
     "joinErrorGeneric": "Incorrect code, or we couldn't add you to the league.",
-    "full": "League is full ({count}/{max})"
+    "full": "League is full ({count}/{max})",
+    "notFoundTitle": "League not found"
   },
   "duel": {
-    "title": "1v1 Split Court Duel",
+    "title": "1v1 Duel",
     "subtitle": "5 quick questions · 24h on the clock",
     "yourTurn": "Play your 5 items",
     "waitingOpponent": "Waiting for opponent to play (24h window)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profile & Streak",
-    "bestStreak": "Best streak: {days} days",
+    "bestStreak": "{days, plural, one {Best streak: 1 day} other {Best streak: # days}}",
     "upgradeTitle": "Save your streak across devices",
     "upgradeBody": "Link an email or Google account. Your uid, streak, and leagues stay intact.",
     "emailPlaceholder": "you@example.com",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Leagues up to 200 members & private join approval",
     "benefitDuels": "Unlimited 1v1 duels (vs. 4/month free)",
     "benefitShield": "1 automatic weekly streak shield",
-    "benefitThemes": "3 exclusive Split Court themes (Midnight, Clay, Neon)",
+    "benefitThemes": "3 exclusive themes (Midnight Court, Clay Court, Neon Arcade)",
     "benefitStats": "Advanced topic accuracy & past rounds archive",
     "euConsent": "I request immediate access to RonDuel Pro digital content and acknowledge that my 14-day EU right of withdrawal lapses upon activation.",
     "upgradeFirst": "Guest data is kept for only 7 days. Log in or create a free account to subscribe, so your Pro stays on a permanent profile.",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "No leagues found.",
     "emptyTitle": "Play with your friends!",
     "emptyBody": "Create a league for your office, family or crew. It's free for up to {max} members.",
-    "createFirst": "Create your first league"
+    "createFirst": "Create your first league",
+    "leagueWorldRank": "League ranked #{rank} worldwide"
   },
   "duels": {
     "shareText": "I challenge you to a duel on RonDuel! You get 5 quick questions: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "You already have an active duel. Finish it or go Pro for unlimited duels.",
     "errorCreate": "Couldn't create the duel",
     "yourTurn": "Your turn",
-    "waitingOpponent": "Waiting for your opponent"
+    "waitingOpponent": "Waiting for your opponent",
+    "tabActive": "Active",
+    "tabFinished": "Finished",
+    "tabStats": "My score",
+    "emptyActiveTitle": "No active duels",
+    "emptyActiveBody": "Challenge a friend to a quick 1v1 duel or wait for them to accept!",
+    "emptyFinishedTitle": "No finished duels yet",
+    "emptyFinishedBody": "Your completed duels and match results will appear here.",
+    "statsTotalScore": "Total duel score",
+    "statsPointsUnit": "points",
+    "statsWins": "Wins",
+    "statsLosses": "Losses",
+    "statsDraws": "Draws",
+    "statsTotalDuels": "Total duels",
+    "statsWinRate": "Win rate",
+    "waitingForOpponent": "Waiting for opponent",
+    "copyLink": "Copy link"
   },
   "themes": {
     "worldScience": "World & Science 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "loading": "Loading RonTown…",
-      "rotatingBanner": "Tap a tile or building to rotate it"
+      "rotatingBanner": "Tap a tile or building to rotate it",
+      "cellItemAria": "{item} at ({x}, {y})"
     },
     "status": {
       "connecting": "Connecting…",

@@ -61,7 +61,7 @@
     "streak": "Niz {days} dni",
     "shareCta": "Deli s svojo skupino",
     "shareHint": "Deli v svojo skupino. Postala bo vaša liga.",
-    "copied": "Rezultat je kopiran v odložišče!",
+    "copied": "Rezultat kopiran! Prilepi ga v skupino.",
     "reviewTitle": "Pregled odgovorov",
     "openLeague": "Odpri lestvico lige",
     "challengeFriend": "Izzovi prijatelja (Dvoboj 1v1)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Tvoja runda je bila zabeležena. Dotakni se Poskusi znova, da vidiš svoj rezultat in lestvico.",
     "backHome": "Nazaj domov",
     "shareStreak": "🔥 {count, plural, one {niz # dneva} few {niz # dni} many {niz # dni} other {niz # dni}}",
-    "shareBeatMe": "Premagaj me → {url}"
+    "shareBeatMe": "Premagaj me → {url}",
+    "returningHomeIn": "Vrnitev na začetno stran čez {seconds} s"
   },
   "league": {
     "joinTitle": "Povabljen si v ligo {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Pridružil si se ligi!",
     "privateJoinSheetHint": "Ta liga je zasebna. Za pridružitev vnesi kodo, ki si jo prejel od lastnika:",
     "joinErrorGeneric": "Napačna koda ali napaka pri pridruževanju ligi.",
-    "full": "Liga je polna ({count}/{max})"
+    "full": "Liga je polna ({count}/{max})",
+    "notFoundTitle": "Liga ni bila najdena"
   },
   "duel": {
-    "title": "Dvoboj 1v1 Split Court",
+    "title": "Dvoboj 1v1",
     "subtitle": "5 hitrih vprašanj · 24 ur časa",
     "yourTurn": "Odigraj svojih 5 vprašanj",
     "waitingOpponent": "Čakanje na nasprotnika (rok 24 ur)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil in niz",
-    "bestStreak": "Najboljši niz: {days} dni",
+    "bestStreak": "{days, plural, one {Najboljši niz: 1 dan} two {Najboljši niz: # dni} few {Najboljši niz: # dni} other {Najboljši niz: # dni}}",
     "upgradeTitle": "Ohrani svoj niz na vseh napravah",
     "upgradeBody": "Poveži e-pošto ali Google račun. Tvoj UID, niz in lige ostanejo nedotaknjeni.",
     "emailPlaceholder": "ti@primer.si",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Lige do 200 članov in zasebna odobritev včlanitev",
     "benefitDuels": "Neomejeni dvoboji 1v1 (brezplačno: 4 na mesec)",
     "benefitShield": "1 samodejni tedenski ščit za niz",
-    "benefitThemes": "3 ekskluzivne Split Court teme (Midnight, Clay, Neon)",
+    "benefitThemes": "3 ekskluzivne teme (Polnočno igrišče, Peščeno igrišče, Neonska arkada)",
     "benefitStats": "Napredna natančnost po temah in arhiv preteklih krogov",
     "euConsent": "Zahtevam takojšen dostop do digitalnih vsebin RonDuel Pro in potrjujem, da se s tem odpovedujem svoji 14-dnevni pravici EU do odstopa od pogodbe.",
     "upgradeFirst": "Podatki gostov se hranijo le 7 dni. Za sklenitev naročnine se prijavi ali ustvari brezplačen račun, da tvoj Pro ostane povezan s trajnim profilom.",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Ni najdenih lig.",
     "emptyTitle": "Igraj s prijatelji!",
     "emptyBody": "Ustvari ligo za pisarno, družino ali družbo. Brezplačno je za do {max} članov.",
-    "createFirst": "Ustvari svojo prvo ligo"
+    "createFirst": "Ustvari svojo prvo ligo",
+    "leagueWorldRank": "Liga je #{rank}. na svetu"
   },
   "duels": {
     "shareText": "Izzivam te na dvoboj v RonDuel! Čaka te 5 hitrih vprašanj: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Že imaš aktiven dvoboj. Dokončaj ga ali preidi na Pro za neomejene dvoboje.",
     "errorCreate": "Dvoboja ni bilo mogoče ustvariti",
     "yourTurn": "Tvoja poteza",
-    "waitingOpponent": "Čakanje na nasprotnika"
+    "waitingOpponent": "Čakanje na nasprotnika",
+    "tabActive": "Aktivni",
+    "tabFinished": "Končani",
+    "tabStats": "Moj rezultat",
+    "emptyActiveTitle": "Ni aktivnih dvobojev",
+    "emptyActiveBody": "Izzovi prijatelja na hiter 1v1 dvoboj ali počakaj na odgovor!",
+    "emptyFinishedTitle": "Še ni končanih dvobojev",
+    "emptyFinishedBody": "Tukaj bodo prikazani tvoji končani dvoboji in rezultati.",
+    "statsTotalScore": "Skupni rezultat dvobojev",
+    "statsPointsUnit": "točk",
+    "statsWins": "Zmage",
+    "statsLosses": "Porazi",
+    "statsDraws": "Neodločeno",
+    "statsTotalDuels": "Skupaj dvobojev",
+    "statsWinRate": "Delež zmag",
+    "waitingForOpponent": "Čaka nasprotnika",
+    "copyLink": "Kopiraj povezavo"
   },
   "themes": {
     "worldScience": "Svet in Znanost 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Povečaj",
       "zoomOut": "Pomanjšaj",
       "loading": "Nalaganje RonTown…",
-      "rotatingBanner": "Tapni polje ali stavbo za vrtenje"
+      "rotatingBanner": "Tapni polje ali stavbo za vrtenje",
+      "cellItemAria": "{item} na ({x}, {y})"
     },
     "status": {
       "connecting": "Povezovanje…",

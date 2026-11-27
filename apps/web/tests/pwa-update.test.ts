@@ -76,7 +76,7 @@ describe('pwa-update helpers', () => {
 describe('sw.js & firebase.json PWA caching contract', () => {
   const repoRoot = path.resolve(__dirname, '../../..');
 
-  it('versions CACHE_NAME and waits for SKIP_WAITING instead of skipping in install', () => {
+  it('versions CACHE_NAME and activates immediately via skipWaiting + clients.claim while keeping SKIP_WAITING handler', () => {
     const sw = fs.readFileSync(path.join(repoRoot, 'apps/web/public/sw.js'), 'utf8');
     expect(sw).toContain("const BUILD_ID = '__RONDUEL_BUILD_ID__'");
     expect(sw).toContain('ronduel-shell-${BUILD_ID}');
@@ -85,7 +85,11 @@ describe('sw.js & firebase.json PWA caching contract', () => {
 
     const installMatch = sw.match(/addEventListener\('install'[\s\S]*?\}\);/);
     expect(installMatch).toBeTruthy();
-    expect(installMatch?.[0]).not.toContain('skipWaiting');
+    expect(installMatch?.[0]).toContain('skipWaiting');
+
+    const activateMatch = sw.match(/addEventListener\('activate'[\s\S]*?\}\);/);
+    expect(activateMatch).toBeTruthy();
+    expect(activateMatch?.[0]).toContain('clients.claim');
   });
 
   it('defines expected Cache-Control headers in firebase.json', () => {

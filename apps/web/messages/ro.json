@@ -61,7 +61,7 @@
     "streak": "{days, plural, one {Serie de 1 zi} few {Serie de # zile} other {Serie de # de zile}}",
     "shareCta": "Trimite pe grup",
     "shareHint": "Trimite pe grup. Devine automat liga voastră.",
-    "copied": "Rezultatul a fost copiat!",
+    "copied": "Rezultat copiat! Lipește-l în grup.",
     "reviewTitle": "Răspunsurile rundei",
     "openLeague": "Deschide clasamentul ligii",
     "challengeFriend": "Provoacă un prieten (Duel 1v1)",
@@ -107,12 +107,13 @@
     "savedRetryHint": "Runda ta a fost înregistrată. Apasă pe Reîncearcă ca să vezi scorul și clasamentul.",
     "backHome": "Înapoi acasă",
     "shareStreak": "🔥 {count, plural, one {serie de # zi} few {serie de # zile} other {serie de # de zile}}",
-    "shareBeatMe": "Bate-mă dacă poți → {url}"
+    "shareBeatMe": "Bate-mă dacă poți → {url}",
+    "returningHomeIn": "Revenire la pagina principală în {seconds}s"
   },
   "league": {
     "joinTitle": "Ești invitat în {name}",
     "joinCta": "Intră și joacă runda de azi",
-    "membersCount": "{count, plural, one {# jucător} few {# jucători} other {# de jucători}}",
+    "membersCount": "{count, plural, one {# membru} few {# membri} other {# de membri}}",
     "tabToday": "Azi",
     "tabWeek": "Săptămâna",
     "tabAllTime": "Dintotdeauna",
@@ -208,7 +209,7 @@
     "privateApprovalOff": "Aprobare privată dezactivată",
     "memberRemovedToast": "Membrul a fost eliminat",
     "loading": "Se încarcă liga…",
-    "backToLeagues": "Înapoi la ligi",
+    "backToLeagues": "Vezi ligile tale",
     "inviteCodeLabel": "Cod de invitație",
     "fullBannerFree": "Liga ta e plină ({count}/{max}). Cu Pro pot intra până la {proMax} de prieteni.",
     "playedTodayScore": "Ai jucat azi: {points} pct",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Te-ai alăturat ligii cu succes!",
     "privateJoinSheetHint": "Această ligă este privată. Te rugăm să introduci codul primit de la proprietar pentru a te alătura:",
     "joinErrorGeneric": "Cod incorect sau eroare la alăturare",
-    "full": "Liga e plină ({count}/{max})"
+    "full": "Liga e plină ({count}/{max})",
+    "notFoundTitle": "Liga nu a fost găsită"
   },
   "duel": {
-    "title": "Duel 1v1 Split Court",
+    "title": "Duel 1v1",
     "subtitle": "5 întrebări rapide · 24h la dispoziție",
     "yourTurn": "Joacă cele 5 întrebări",
     "waitingOpponent": "Așteptăm adversarul să joace (fereastră de 24h)",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligi de până la 200 de membri & aprobare privată",
     "benefitDuels": "Dueluri 1v1 nelimitate (față de 4/lună gratuit)",
     "benefitShield": "1 scut automat pe săptămână pentru serie",
-    "benefitThemes": "3 teme exclusive Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 teme exclusive (Teren Nocturn, Zgură, Arcade Neon)",
     "benefitStats": "Statistici avansate pe teme & arhiva rundelor trecute",
     "euConsent": "Solicit acces imediat la conținutul digital RonDuel Pro și confirm că dreptul legal de retragere de 14 zile în UE încetează la activare.",
     "upgradeFirst": "Datele oaspeților sunt păstrate doar 7 zile. Autentifică-te sau creează un cont gratuit pentru a te abona, astfel încât Pro să rămână asociat unui profil permanent.",
@@ -400,8 +402,8 @@
     "deleted": "Sesiunea și datele tale au fost șterse.",
     "languageSearchPlaceholder": "Caută o limbă…",
     "languageNoResults": "Nicio limbă găsită",
-    "themeLight": "Luminos (Cream Paper)",
-    "themeDark": "Întunecat (Ink Night)",
+    "themeLight": "Luminos",
+    "themeDark": "Întunecat",
     "themeHighContrast": "Contrast ridicat",
     "themeProMidnight": "Pro: Teren Nocturn",
     "themeProClay": "Pro: Zgură",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Nicio ligă găsită.",
     "emptyTitle": "Joacă cu prietenii tăi!",
     "emptyBody": "Creează o ligă pentru birou, familie sau gașcă. E gratuit până la {max} membri.",
-    "createFirst": "Creează prima ta ligă"
+    "createFirst": "Creează prima ta ligă",
+    "leagueWorldRank": "Liga e pe locul #{rank} mondial"
   },
   "duels": {
     "shareText": "Te provoc la un duel pe RonDuel! Ai 5 întrebări rapide: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Ai deja un duel activ. Termină-l sau treci la Pro pentru dueluri nelimitate.",
     "errorCreate": "Nu s-a putut crea duelul",
     "yourTurn": "Rândul tău",
-    "waitingOpponent": "Așteaptă adversarul"
+    "waitingOpponent": "Așteaptă adversarul",
+    "tabActive": "Începute",
+    "tabFinished": "Terminate",
+    "tabStats": "Scorul meu",
+    "emptyActiveTitle": "Niciun duel în derulare",
+    "emptyActiveBody": "Provoacă un prieten la un duel 1v1 rapid sau așteaptă să răspundă la provocare!",
+    "emptyFinishedTitle": "Niciun duel finalizat încă",
+    "emptyFinishedBody": "Aici vor apărea duelurile tale terminate și rezultatele confruntărilor!",
+    "statsTotalScore": "Scor total dueluri",
+    "statsPointsUnit": "puncte",
+    "statsWins": "Câștiguri",
+    "statsLosses": "Pierderi",
+    "statsDraws": "Egalități",
+    "statsTotalDuels": "Total dueluri",
+    "statsWinRate": "Rată de victorie",
+    "waitingForOpponent": "Așteaptă adversar",
+    "copyLink": "Copiază linkul"
   },
   "themes": {
     "worldScience": "Lumea și știința 🌍",
@@ -1029,7 +1048,7 @@
       "proOnly": "Exclusiv Pro",
       "streakOnly": "Necesită o serie de {days} zile",
       "buy": "Construiește",
-      "insufficientFunds": "Monede RonCoins insuficiente",
+      "insufficientFunds": "RonCoins insuficiente",
       "maxCountReached": "Numărul maxim a fost deja atins"
     },
     "tiles": {
@@ -1128,7 +1147,8 @@
       "zoomIn": "Mărește",
       "zoomOut": "Micșorează",
       "loading": "Se încarcă RonTown…",
-      "rotatingBanner": "Atinge o parcelă sau o clădire pentru a o roti"
+      "rotatingBanner": "Atinge o parcelă sau o clădire pentru a o roti",
+      "cellItemAria": "{item} la ({x}, {y})"
     },
     "status": {
       "connecting": "Se conectează…",
@@ -1170,7 +1190,7 @@
       "moveFailed": "Mutarea a eșuat",
       "rotateFailed": "Rotirea a eșuat",
       "removeFailed": "Ștergerea a eșuat",
-      "notEnoughCoins": "Nu ai destui RonCoins",
+      "notEnoughCoins": "RonCoins insuficiente",
       "plantingFailed": "Plantarea a eșuat",
       "harvestFailed": "Recoltarea a eșuat",
       "speedupFailed": "Grăbirea a eșuat",
@@ -1186,7 +1206,7 @@
       "transferredCoins": "Ai transferat {amount} RonCoins!"
     },
     "errors": {
-      "insufficientFunds": "Nu ai destui RonCoins",
+      "insufficientFunds": "RonCoins insuficiente",
       "priceChanged": "Prețul s-a schimbat, încearcă din nou",
       "notRotatable": "Această parcelă nu poate fi rotită",
       "disabled": "Această funcție este dezactivată momentan",

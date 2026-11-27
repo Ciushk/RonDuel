@@ -184,8 +184,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               isTownRoute
                 ? 'h-full min-h-0 overflow-hidden pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0 lg:pl-60'
                 : hideBottomNav
-                  ? ''
-                  : 'pb-24 lg:pb-8 lg:pl-60'
+                  ? 'pb-[var(--pwa-toast-height,0px)]'
+                  : 'pb-[calc(6rem+var(--pwa-toast-height,0px))] lg:pb-[calc(2rem+var(--pwa-toast-height,0px))] lg:pl-60'
             }`}
           >
             {children}

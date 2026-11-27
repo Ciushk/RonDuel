@@ -327,10 +327,11 @@ export function getCropGrowthInfo(params: {
 
 export function formatDurationShort(totalSeconds: number): string {
   if (totalSeconds <= 0) return '0m';
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.ceil((totalSeconds % 3600) / 60);
+  const totalMinutes = Math.ceil(totalSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
   if (hours > 0) {
-    return minutes > 0 && minutes < 60 ? `${hours}h ${minutes}m` : `${hours}h`;
+    return `${hours}h ${minutes}m`;
   }
-  return `${Math.max(1, minutes)}m`;
+  return `${minutes}m`;
 }

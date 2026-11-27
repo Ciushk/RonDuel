@@ -343,16 +343,15 @@ describe('install prompt state machine & ResultPage orchestration', () => {
     ).toBe(false);
   });
 
-  it('waits until AccountLinkingSheet closes (then opens 600ms later) and pauses the auto-home timer while open', async () => {
+  it('does NOT show InstallAppSheet on /result so first tap on Share works and shows copied toast fallback', async () => {
     vi.useFakeTimers();
 
-    // Guest on round 1 -> AccountLinkingSheet is scheduled at 1000ms
     mockSession = {
       uid: 'u_guest_1',
       nickname: 'Guest1',
       ageConfirmed16: true,
-      isAnonymous: true,
-      email: undefined,
+      isAnonymous: false,
+      email: 'guest@example.com',
     };
 
     const fakeDeferred = {
@@ -360,6 +359,16 @@ describe('install prompt state machine & ResultPage orchestration', () => {
       userChoice: Promise.resolve({ outcome: 'dismissed' as const, platform: 'web' }),
     } as unknown as BeforeInstallPromptEvent;
     __setDeferredPromptForTests(fakeDeferred);
+
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, 'share', {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
 
     globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
@@ -378,7 +387,7 @@ describe('install prompt state machine & ResultPage orchestration', () => {
             finishedPlaysCount: 1,
             review: [],
             leagueRanks: [],
-            primaryLeague: null,
+            primaryLeague: { id: 'lg_1', name: 'Test League', inviteCode: 'ABC123' },
           }),
         } as Response;
       }
@@ -387,70 +396,39 @@ describe('install prompt state machine & ResultPage orchestration', () => {
 
     render(React.createElement(ResultPage));
 
-    // Let fetch resolve
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();
     });
 
-    // At 1000ms AccountLinkingSheet opens; InstallAppSheet MUST NOT open yet
+    // Even after waiting several seconds, InstallAppSheet MUST NEVER pop up over /result
     await act(async () => {
-      vi.advanceTimersByTime(1000);
-    });
-    expect(screen.getByTestId('mock-account-link-sheet')).toBeTruthy();
-    expect(screen.queryByTestId('install-app-sheet')).toBeNull();
-
-    // Even after 5 seconds with link sheet still open, InstallAppSheet stays hidden
-    await act(async () => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(3000);
     });
     expect(screen.queryByTestId('install-app-sheet')).toBeNull();
 
-    // Close the account linking sheet
-    fireEvent.click(screen.getByTestId('close-link-sheet'));
-
-    // Before 600ms -> still closed
+    // First tap on Share works immediately and copies emoji card + shows toast
+    const shareBtn = screen.getByTestId('result-share-cta');
     await act(async () => {
-      vi.advanceTimersByTime(400);
+      fireEvent.click(shareBtn);
+      await Promise.resolve();
+      await Promise.resolve();
     });
-    expect(screen.queryByTestId('install-app-sheet')).toBeNull();
 
-    // At 600ms -> InstallAppSheet opens!
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText.mock.calls[0]?.[0]).toContain('🟩🟩🟩🟩🟥🟥');
+    expect(screen.getByTestId('result-toast').textContent).toContain(enMessages.result.copied);
+
+    // Wall-clock countdown finishes at 15s total elapsed (12s remaining after initial 3s)
     await act(async () => {
-      vi.advanceTimersByTime(250);
-    });
-    expect(screen.getByTestId('install-app-sheet')).toBeTruthy();
-    expect(mockTrackEvent).toHaveBeenCalledWith('install_prompt_shown', {
-      platform: 'chromium-prompt',
-    });
-
-    // While InstallAppSheet is open, neither the 10s auto-home nor the 15s countdown navigates away
-    await act(async () => {
-      vi.advanceTimersByTime(20_000);
-    });
-    expect(mockRouterReplace).not.toHaveBeenCalled();
-    expect(mockRouterPush).not.toHaveBeenCalled();
-
-    // Dismissing with Later records laterCount = 1 and closes the sheet
-    fireEvent.click(screen.getByTestId('install-later-btn'));
-    expect(screen.queryByTestId('install-app-sheet')).toBeNull();
-    expect(readInstallState().laterCount).toBe(1);
-    expect(mockTrackEvent).toHaveBeenCalledWith('install_prompt_result', {
-      platform: 'chromium-prompt',
-      outcome: 'later',
-    });
-
-    // After InstallAppSheet closes, auto-home fires 10s later
-    await act(async () => {
-      vi.advanceTimersByTime(10_000);
+      vi.advanceTimersByTime(12_200);
     });
     expect(mockRouterReplace).toHaveBeenCalledWith('/en');
   });
 
-  it('shows InstallAppSheet 800ms after data loads with reduced motion and renders iOS steps + iPhone pointer (hidden on iPad)', async () => {
+  it('shows InstallAppSheet via useInstallPrompt on non-result screens and renders iOS steps + iPhone pointer', async () => {
     vi.useFakeTimers();
 
-    // iPhone iOS 16.4+ with reduced motion
     mockEnv({
       userAgent:
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
@@ -459,35 +437,26 @@ describe('install prompt state machine & ResultPage orchestration', () => {
       reducedMotion: true,
     });
 
-    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('/api/game/result/')) {
-        return {
-          ok: true,
-          json: async () => ({
-            playId: 'play_1',
-            date: '2026-11-26',
-            roundNumber: 42,
-            totalScore: 810,
-            totalMs: 11000,
-            emojiLine: '⚡🟩🟩🟩🟩🟥',
-            streakCurrent: 1,
-            streakBest: 1,
-            finishedPlaysCount: 1,
-            review: [],
-            leagueRanks: [],
-            primaryLeague: null,
-          }),
-        } as Response;
-      }
-      return { ok: true, json: async () => ({}) } as Response;
-    }) as unknown as typeof fetch;
+    const { InstallAppSheet } = await import('@/components/InstallAppSheet');
+    const { useInstallPrompt } = await import('@/lib/use-install-prompt');
 
-    render(React.createElement(ResultPage));
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    function HomeHost() {
+      const { isInstallOpen, installPlatform, closeInstall } = useInstallPrompt({
+        ready: true,
+        finishedPlaysCount: 1,
+        animationsComplete: true,
+        blockedByOtherSheet: false,
+      });
+      return installPlatform
+        ? React.createElement(InstallAppSheet, {
+            open: isInstallOpen,
+            platform: installPlatform,
+            onClose: closeInstall,
+          })
+        : null;
+    }
+
+    render(React.createElement(HomeHost));
 
     await act(async () => {
       vi.advanceTimersByTime(800);
@@ -503,5 +472,9 @@ describe('install prompt state machine & ResultPage orchestration', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByTestId('install-app-sheet')).toBeNull();
     expect(readInstallState().laterCount).toBe(1);
+    expect(mockTrackEvent).toHaveBeenCalledWith('install_prompt_result', {
+      platform: 'ios-howto',
+      outcome: 'later',
+    });
   });
 });

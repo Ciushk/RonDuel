@@ -61,7 +61,7 @@
     "streak": "Seria {days} dni",
     "shareCta": "Udostępnij grupie",
     "shareHint": "Udostępnij swojej grupie. Stanie się Waszą ligą.",
-    "copied": "Wynik skopiowany do schowka!",
+    "copied": "Wynik skopiowany! Wklej go na grupie.",
     "reviewTitle": "Przegląd odpowiedzi",
     "openLeague": "Otwórz tabelę ligi",
     "challengeFriend": "Rzuć wyzwanie znajomemu (Pojedynek 1v1)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Twoja runda została zapisana. Dotknij Spróbuj ponownie, aby zobaczyć swój wynik i ranking.",
     "backHome": "Powrót do strony głównej",
     "shareStreak": "🔥 {count, plural, one {seria # dnia} few {seria # dni} many {seria # dni} other {seria # dnia}}",
-    "shareBeatMe": "Pobij mnie → {url}"
+    "shareBeatMe": "Pobij mnie → {url}",
+    "returningHomeIn": "Powrót na stronę główną za {seconds} s"
   },
   "league": {
     "joinTitle": "Masz zaproszenie do {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Dołączyłeś do ligi!",
     "privateJoinSheetHint": "Ta liga jest prywatna. Wpisz kod otrzymany od właściciela, aby dołączyć:",
     "joinErrorGeneric": "Nieprawidłowy kod lub błąd podczas dołączania do ligi.",
-    "full": "Liga jest pełna ({count}/{max})"
+    "full": "Liga jest pełna ({count}/{max})",
+    "notFoundTitle": "Nie znaleziono ligi"
   },
   "duel": {
-    "title": "Pojedynek 1v1 Split Court",
+    "title": "Pojedynek 1v1",
     "subtitle": "5 szybkich pytań · 24h na zegarze",
     "yourTurn": "Rozegraj swoje 5 pytań",
     "waitingOpponent": "Oczekiwanie na ruch przeciwnika (okno 24h)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil i seria",
-    "bestStreak": "Najlepsza seria: {days} dni",
+    "bestStreak": "{days, plural, one {Najlepsza seria: 1 dzień} few {Najlepsza seria: # dni} many {Najlepsza seria: # dni} other {Najlepsza seria: # dnia}}",
     "upgradeTitle": "Zachowaj serię na wszystkich urządzeniach",
     "upgradeBody": "Połącz adres e-mail lub konto Google. Twój identyfikator, seria i ligi pozostaną nienaruszone.",
     "emailPlaceholder": "twoj@przyklad.pl",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligi do 200 członków i prywatne zatwierdzanie dołączeń",
     "benefitDuels": "Nielimitowane pojedynki 1v1 (w wersji darmowej: 4/miesiąc)",
     "benefitShield": "1 automatyczna tarcza serii tygodniowo",
-    "benefitThemes": "3 ekskluzywne motywy Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 ekskluzywne motywy (Nocny kort, Kort ceglany, Neonowy salon gier)",
     "benefitStats": "Zaawansowana dokładność tematów i archiwum minionych rund",
     "euConsent": "Żądam natychmiastowego dostępu do treści cyfrowych RonDuel Pro i przyjmuję do wiadomości, że moje 14-dniowe prawo odstąpienia od umowy w UE wygasa z chwilą aktywacji.",
     "upgradeFirst": "Dane gości są przechowywane tylko przez 7 dni. Zaloguj się lub utwórz bezpłatne konto, aby wykupić subskrypcję. Dzięki temu Twoje Pro pozostanie powiązane ze stałym profilem.",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Nie znaleziono lig.",
     "emptyTitle": "Graj ze znajomymi!",
     "emptyBody": "Stwórz ligę dla biura, rodziny lub ekipy. Jest bezpłatna dla maksymalnie {max} członków.",
-    "createFirst": "Załóż swoją pierwszą ligę"
+    "createFirst": "Załóż swoją pierwszą ligę",
+    "leagueWorldRank": "Liga na #{rank}. miejscu na świecie"
   },
   "duels": {
     "shareText": "Wyzynam Cię na pojedynek w RonDuel! Masz 5 szybkich pytań: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Masz już aktywny pojedynek. Dokończ go lub przejdź na Pro, aby grać bez ograniczeń.",
     "errorCreate": "Nie udało się utworzyć pojedynku",
     "yourTurn": "Twój ruch",
-    "waitingOpponent": "Oczekiwanie na przeciwnika"
+    "waitingOpponent": "Oczekiwanie na przeciwnika",
+    "tabActive": "Aktywne",
+    "tabFinished": "Zakończone",
+    "tabStats": "Mój wynik",
+    "emptyActiveTitle": "Brak trwających pojedynków",
+    "emptyActiveBody": "Rzuć znajomemu wyzwanie w szybkim pojedynku 1v1 lub poczekaj na odpowiedź!",
+    "emptyFinishedTitle": "Brak zakończonych pojedynków",
+    "emptyFinishedBody": "Tutaj pojawią się Twoje zakończone pojedynki i ich wyniki.",
+    "statsTotalScore": "Łączny wynik pojedynków",
+    "statsPointsUnit": "pkt",
+    "statsWins": "Wygrane",
+    "statsLosses": "Przegrane",
+    "statsDraws": "Remisy",
+    "statsTotalDuels": "Wszystkie pojedynki",
+    "statsWinRate": "Skuteczność",
+    "waitingForOpponent": "Czeka na rywala",
+    "copyLink": "Kopiuj link"
   },
   "themes": {
     "worldScience": "Świat i Nauka 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Powiększ",
       "zoomOut": "Pomniejsz",
       "loading": "Ładowanie RonTown…",
-      "rotatingBanner": "Dotknij pola lub budynku, aby go obrócić"
+      "rotatingBanner": "Dotknij pola lub budynku, aby go obrócić",
+      "cellItemAria": "{item} na ({x}, {y})"
     },
     "status": {
       "connecting": "Łączenie…",

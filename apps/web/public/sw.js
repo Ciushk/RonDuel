@@ -3,7 +3,12 @@ const CACHE_NAME = `ronduel-shell-${BUILD_ID}`;
 const SHELL_URLS = ['/offline', '/brand/icon.svg', '/brand/icon-maskable.svg'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS)));
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(SHELL_URLS))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('message', (event) => {

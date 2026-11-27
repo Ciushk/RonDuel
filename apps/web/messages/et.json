@@ -61,7 +61,7 @@
     "streak": "{days}-päevane seeria",
     "shareCta": "Jaga oma grupiga",
     "shareHint": "Jaga oma grupiga. Sellest saab sinu liiga.",
-    "copied": "Tulemus kopeeritud lõikelauale!",
+    "copied": "Tulemus kopeeritud! Kleebi see gruppi.",
     "reviewTitle": "Vastuste ülevaade",
     "openLeague": "Ava liiga edetabel",
     "challengeFriend": "Kutsu sõber duellile (1v1 duell)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Sinu voor on salvestatud. Puuduta Proovi uuesti, et näha oma punkte ja edetabelit.",
     "backHome": "Tagasi avalehele",
     "shareStreak": "🔥 {count, plural, one {#-päevane seeria} other {#-päevane seeria}}",
-    "shareBeatMe": "Mängi mind üle → {url}"
+    "shareBeatMe": "Mängi mind üle → {url}",
+    "returningHomeIn": "Tagasi avalehele {seconds} s pärast"
   },
   "league": {
     "joinTitle": "Sind on kutsutud liigasse {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Liitusid liigaga!",
     "privateJoinSheetHint": "See liiga on privaatne. Sisesta omanikult saadud kood liitumiseks:",
     "joinErrorGeneric": "Vale kood või liitumine ebaõnnestus.",
-    "full": "Liiga on täis ({count}/{max})"
+    "full": "Liiga on täis ({count}/{max})",
+    "notFoundTitle": "Liigat ei leitud"
   },
   "duel": {
-    "title": "1v1 Split Court duell",
+    "title": "1v1 duell",
     "subtitle": "5 kiiret küsimust · 24 tundi aega",
     "yourTurn": "Mängi oma 5 küsimust",
     "waitingOpponent": "Ootab vastase mängimist (24-tunnine aken)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profiil ja seeria",
-    "bestStreak": "Parim seeria: {days} päeva",
+    "bestStreak": "{days, plural, one {Parim seeria: 1 päev} other {Parim seeria: # päeva}}",
     "upgradeTitle": "Salvesta oma seeria kõigis seadmetes",
     "upgradeBody": "Seo e-posti või Google'i konto. Sinu UID, seeria ja liigad jäävad alles.",
     "emailPlaceholder": "sina@naide.ee",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Kuni 200 liikmega liigad ja privaatne liitumise kinnitamine",
     "benefitDuels": "Piiramatud 1v1 duellid (tasuta versioonis 4/kuus)",
     "benefitShield": "1 automaatne iganädalane seeriakilp",
-    "benefitThemes": "3 eksklusiivset Split Court teemat (Midnight, Clay, Neon)",
+    "benefitThemes": "3 eksklusiivset teemat (Südaöö väljak, Saviliivaväljak, Neoon-arkaad)",
     "benefitStats": "Põhjalik teemade täpsuse statistika ja varasemate voorude arhiiv",
     "euConsent": "Taotlen kohest juurdepääsu RonDuel Pro digitaalsele sisule ja kinnitan, et minu 14-päevane EL-i taganemisõigus lõpeb aktiveerimisel.",
     "upgradeFirst": "Külalise andmeid säilitatakse ainult 7 päeva. Tellimiseks logi sisse või loo tasuta konto, et sinu Pro jääks seotuks püsiva profiiliga.",
@@ -400,8 +402,8 @@
     "deleted": "Sinu kohalik seanss ja andmed on kustutatud.",
     "languageSearchPlaceholder": "Otsi keelt…",
     "languageNoResults": "Keelt ei leitud",
-    "themeLight": "Hele (Cream Paper)",
-    "themeDark": "Tume (Ink Night)",
+    "themeLight": "Hele",
+    "themeDark": "Tume",
     "themeHighContrast": "Kõrge kontrast",
     "themeProMidnight": "Pro: Südaöö väljak",
     "themeProClay": "Pro: Saviliivaväljak",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Liigasid ei leitud.",
     "emptyTitle": "Mängi oma sõpradega!",
     "emptyBody": "Loo liiga kontori, pere või sõpruskonna jaoks. See on tasuta kuni {max} liikmele.",
-    "createFirst": "Loo oma esimene liiga"
+    "createFirst": "Loo oma esimene liiga",
+    "leagueWorldRank": "Liiga on #{rank} maailmas"
   },
   "duels": {
     "shareText": "Esitan sulle RonDueli väljakutse! Sind ootab 5 kiiret küsimust: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Sul on juba pooleliolev duell. Lõpeta see või vali Pro piiramatuteks duellideks.",
     "errorCreate": "Duelli loomine ebaõnnestus",
     "yourTurn": "Sinu kord",
-    "waitingOpponent": "Ootab sinu vastast"
+    "waitingOpponent": "Ootab sinu vastast",
+    "tabActive": "Käimas",
+    "tabFinished": "Lõppenud",
+    "tabStats": "Minu skoor",
+    "emptyActiveTitle": "Aktiivseid duelle pole",
+    "emptyActiveBody": "Esita sõbrale väljakutse kiireks 1v1 duelliks või oota vastust!",
+    "emptyFinishedTitle": "Lõppenud duelle veel pole",
+    "emptyFinishedBody": "Siin kuvatakse sinu lõppenud duellid ja tulemused.",
+    "statsTotalScore": "Duellide koguskoor",
+    "statsPointsUnit": "punkti",
+    "statsWins": "Võidud",
+    "statsLosses": "Kaotused",
+    "statsDraws": "Viigid",
+    "statsTotalDuels": "Duelle kokku",
+    "statsWinRate": "Võiduprotsent",
+    "waitingForOpponent": "Ootab vastast",
+    "copyLink": "Kopeeri link"
   },
   "themes": {
     "worldScience": "Maailm ja teadus 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Suurenda",
       "zoomOut": "Vähenda",
       "loading": "RonTowni laadimine…",
-      "rotatingBanner": "Puuduta ruutu või hoonet selle pööramiseks"
+      "rotatingBanner": "Puuduta ruutu või hoonet selle pööramiseks",
+      "cellItemAria": "{item} kohal ({x}, {y})"
     },
     "status": {
       "connecting": "Ühendamine…",

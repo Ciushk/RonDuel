@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { UI_SPRITES } from './sprites';
+import { CROP_BUTTON_SPRITES, UI_SPRITES, type SpriteSpec } from './sprites';
 
-export type SeedChoiceId = 'wheat' | 'cabbage' | 'pumpkin';
+export type SeedChoiceId = 'oats' | 'wheat' | 'cabbage' | 'carrots' | 'sunflower' | 'pumpkin';
 
 interface ActionBarProps {
   visible: boolean;
@@ -24,39 +24,50 @@ interface ActionBarProps {
 
 const FAN_OUT_SEEDS: ReadonlyArray<{
   id: SeedChoiceId;
-  sprite:
-    | (typeof UI_SPRITES)['seedWheat']
-    | (typeof UI_SPRITES)['seedCabbage']
-    | (typeof UI_SPRITES)['seedPumpkin'];
+  sprite: SpriteSpec;
   unlockLevel: number;
   labelKey: string;
-  staggerMs: number;
 }> = [
   {
+    id: 'oats',
+    sprite: CROP_BUTTON_SPRITES.oats!,
+    unlockLevel: 1,
+    labelKey: 'town.crops.oats.name',
+  },
+  {
     id: 'wheat',
-    sprite: UI_SPRITES.seedWheat,
+    sprite: CROP_BUTTON_SPRITES.wheat!,
     unlockLevel: 1,
     labelKey: 'town.crops.wheat.name',
-    staggerMs: 0,
   },
   {
     id: 'cabbage',
-    sprite: UI_SPRITES.seedCabbage,
+    sprite: CROP_BUTTON_SPRITES.cabbage!,
     unlockLevel: 1,
     labelKey: 'town.crops.cabbage.name',
-    staggerMs: 60,
+  },
+  {
+    id: 'carrots',
+    sprite: CROP_BUTTON_SPRITES.carrots!,
+    unlockLevel: 2,
+    labelKey: 'town.crops.carrots.name',
+  },
+  {
+    id: 'sunflower',
+    sprite: CROP_BUTTON_SPRITES.sunflower!,
+    unlockLevel: 3,
+    labelKey: 'town.crops.sunflower.name',
   },
   {
     id: 'pumpkin',
-    sprite: UI_SPRITES.seedPumpkin,
+    sprite: CROP_BUTTON_SPRITES.pumpkin!,
     unlockLevel: 4,
     labelKey: 'town.crops.pumpkin.name',
-    staggerMs: 120,
   },
 ];
 
 const ACTION_BTN_CLASS =
-  'pointer-events-auto flex h-14 w-14 min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16';
+  'pointer-events-auto flex h-11 w-11 min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#0E0D15] bg-[#FFF7EC] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-transform hover:scale-105 active:translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none sm:h-12 sm:w-12 lg:h-14 lg:w-14';
 
 export function ActionBar({
   visible,
@@ -75,11 +86,13 @@ export function ActionBar({
   onOpenShop,
 }: ActionBarProps) {
   const t = useTranslations();
+  const unlockedSeeds = FAN_OUT_SEEDS.filter((seed) => seed.unlockLevel <= maxLevel);
 
   return (
     <aside
       aria-label={t('town.toolbar.ariaLabel')}
-      className="pointer-events-none absolute end-2 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-1.5 lg:end-4 lg:gap-2"
+      data-testid="town-action-bar"
+      className="pointer-events-none absolute end-2 top-[max(0.5rem,env(safe-area-inset-top,0px))] z-20 flex max-h-[calc(100%-1rem)] flex-col items-end gap-1.5 overflow-visible lg:end-4 lg:top-1/2 lg:-translate-y-1/2 lg:gap-2"
     >
       {/* Main vertical stack of hi-res controls (slides off-screen when collapsed) */}
       <div
@@ -148,51 +161,42 @@ export function ActionBar({
           />
         </button>
 
-        {/* 3. Farm / Plant with staggered 3-seed fan-out (60ms stagger, 200ms total) */}
+        {/* 3. Farm / Plant with quick-seed fan-out showing every unlocked crop */}
         <div className="relative flex items-center justify-end">
           <div
             role="group"
             aria-label={t('town.toolbar.seedMenu')}
             aria-hidden={!farmMenuOpen || !visible}
-            className={`me-2 flex items-center gap-1.5 lg:gap-2 ${
+            className={`me-2 flex max-w-[calc(100vw-88px)] flex-wrap items-center justify-end gap-1.5 lg:max-w-none lg:flex-nowrap lg:gap-2 ${
               farmMenuOpen && visible
                 ? 'pointer-events-auto visible'
                 : 'pointer-events-none invisible'
             }`}
           >
-            {FAN_OUT_SEEDS.map((seed) => {
-              const locked = seed.unlockLevel > maxLevel;
+            {unlockedSeeds.map((seed, idx) => {
               const isSelected = selectedSeed === seed.id;
               const cropName = t(seed.labelKey);
-              const seedAria = locked
-                ? `${cropName} (${t('town.shop.unlockLevel', { level: seed.unlockLevel })})`
-                : t('town.toolbar.plantSeed', { crop: cropName });
+              const seedAria = t('town.toolbar.plantSeed', { crop: cropName });
               const open = farmMenuOpen && visible;
 
               return (
                 <button
                   key={seed.id}
                   type="button"
+                  data-testid={`quick-seed-${seed.id}`}
                   tabIndex={open ? 0 : -1}
-                  disabled={locked}
                   onClick={() => onSelectSeed(seed.id)}
                   aria-label={seedAria}
                   aria-pressed={isSelected}
                   title={seedAria}
                   style={{
-                    transitionDelay: farmMenuOpen ? `${seed.staggerMs}ms` : '0ms',
+                    transitionDelay: farmMenuOpen ? `${idx * 40}ms` : '0ms',
                   }}
-                  className={`focus-visible:outline-3 relative flex h-14 min-h-[44px] w-14 min-w-[44px] items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none lg:h-16 lg:w-16 ${
-                    locked
-                      ? 'cursor-not-allowed bg-[#E7E2D8]'
-                      : isSelected
-                        ? 'cursor-pointer bg-[#C6FF3D]'
-                        : 'cursor-pointer bg-[#FFF7EC] hover:scale-105'
+                  className={`focus-visible:outline-3 relative flex h-11 min-h-[44px] w-11 min-w-[44px] cursor-pointer items-center justify-center rounded-full border-2 border-[#0E0D15] p-1 shadow-[2px_2px_0px_0px_#0E0D15] transition-[transform,opacity] duration-[80ms] ease-out focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none sm:h-12 sm:w-12 lg:h-14 lg:w-14 ${
+                    isSelected ? 'bg-[#C6FF3D]' : 'bg-[#FFF7EC] hover:scale-105'
                   } ${
                     open
-                      ? locked
-                        ? 'translate-x-0 scale-100 opacity-65'
-                        : 'translate-x-0 scale-100 opacity-100'
+                      ? 'translate-x-0 scale-100 opacity-100'
                       : 'translate-x-3 scale-75 opacity-0'
                   }`}
                 >
@@ -206,11 +210,6 @@ export function ActionBar({
                     className="block h-full w-full select-none object-contain"
                     draggable={false}
                   />
-                  {locked && (
-                    <span className="absolute -bottom-1 rounded bg-[#0E0D15] px-1 font-mono text-[10px] font-black text-[#FFF7EC]">
-                      Lv{seed.unlockLevel}
-                    </span>
-                  )}
                 </button>
               );
             })}

@@ -23,11 +23,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
+import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { PushOptInCard } from '@/components/PushOptInCard';
 import { Avatar, Button, Card, Chip, Sheet, Toast, Wordmark } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { getLeagueTheme } from '@/lib/league-theme';
 import { syncSessionWithSignedInUser } from '@/lib/link-account';
 import { generateReadableNickname } from '@/lib/nickname-words';
@@ -39,6 +41,7 @@ import {
   getSecondsUntilMidnight,
 } from '@/lib/round-clock';
 import { getBrowserTimeZone, getLocalSession, saveLocalSession } from '@/lib/session';
+import { useInstallPrompt } from '@/lib/use-install-prompt';
 
 interface ActiveDuel {
   id: string;
@@ -120,6 +123,13 @@ export default function LocaleHomePage() {
   });
   const [duelError, setDuelError] = useState('');
   const lastDateKeyRef = useRef<string | null>(null);
+
+  const { isInstallOpen, installPlatform, closeInstall } = useInstallPrompt({
+    ready: Boolean(status?.played),
+    finishedPlaysCount: status?.finishedPlaysCount ?? (status?.played ? 1 : 0),
+    animationsComplete: true,
+    blockedByOtherSheet: nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen,
+  });
 
   // The account is the source of truth: a nickname confirmed earlier (here or on another device)
   // is adopted instead of asking the player to pick one again after signing in.
@@ -253,7 +263,10 @@ export default function LocaleHomePage() {
       roundNumber: status.roundNumber,
       totalScore: status.score ?? status.totalScore ?? 0,
       emojiLine: status.emojiLine || '',
-      streakText: t('result.streak', { count: status.streakCurrent }),
+      streakText:
+        status.streakCurrent > 0
+          ? t('result.shareStreak', { count: status.streakCurrent })
+          : undefined,
       beatMeText: t('result.shareBeatMe', { url: inviteUrl }),
     });
 
@@ -269,13 +282,16 @@ export default function LocaleHomePage() {
       try {
         await navigator.share({ text: cardText });
         return;
-      } catch {
+      } catch (err: unknown) {
+        if ((err as { name?: string })?.name === 'AbortError') {
+          return;
+        }
         // fallback to clipboard
       }
     }
-    await navigator.clipboard.writeText(cardText).catch(() => {});
+    await copyTextToClipboard(cardText);
     setToast(t('result.copied'));
-    setTimeout(() => setToast(''), 3000);
+    setTimeout(() => setToast(''), 3500);
   };
 
   const handlePrimaryCta = () => {
@@ -385,8 +401,10 @@ export default function LocaleHomePage() {
 
       {/* Toast notification */}
       {toast && (
-        <div className="flex justify-center">
-          <Toast message={toast} tone="success" />
+        <div className="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-stack,64px)+var(--pwa-toast-height,0px)+16px+env(safe-area-inset-bottom,0px))] z-50 flex justify-center lg:left-60 lg:right-0">
+          <div className="pointer-events-auto">
+            <Toast message={toast} tone="success" />
+          </div>
         </div>
       )}
 
@@ -589,7 +607,9 @@ export default function LocaleHomePage() {
       {status && (
         <PushOptInCard
           finishedPlaysCount={status.finishedPlaysCount ?? (status.played ? 1 : 0)}
-          anySheetOpen={nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen}
+          anySheetOpen={
+            nickSheetOpen || createLeagueOpen || joinCodeOpen || isLinkSheetOpen || isInstallOpen
+          }
         />
       )}
 
@@ -723,6 +743,14 @@ export default function LocaleHomePage() {
                         RonDuel World 🌍
                       </p>
                       <p className="text-muted text-xs font-medium">
+                        {t('league.membersCount', {
+                          count:
+                            status.worldLeague.memberCount ??
+                            (status.worldLeague as unknown as { membersCount?: number })
+                              .membersCount ??
+                            1,
+                        })}{' '}
+                        ·{' '}
                         {t('common.playedTodayCount', {
                           count: status.worldLeague.playedTodayCount,
                         })}
@@ -766,6 +794,7 @@ export default function LocaleHomePage() {
                           {lg.name}
                         </p>
                         <p className="text-muted text-xs font-medium">
+                          {t('league.membersCount', { count: lg.memberCount })} ·{' '}
                           {t('common.playedTodayCount', { count: lg.playedTodayCount })}
                         </p>
                         {/* Member initials */}
@@ -831,31 +860,41 @@ export default function LocaleHomePage() {
             </div>
 
             {status?.activeDuels && status.activeDuels.length > 0
-              ? status.activeDuels.map((d) => (
-                  <Link key={d.id} href={`/${locale}/duel/${d.id}`} className="block">
-                    <Card
-                      variant="subtle"
-                      className="hover:border-border flex items-center justify-between gap-3 p-3.5 transition"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <Sword size={22} weight="bold" className="text-duel-strong shrink-0" />
-                        <div className="min-w-0">
-                          <p className="font-display text-ink truncate text-sm font-extrabold">
-                            {t('common.versus', { name: d.opponentNickname })}
-                          </p>
-                          <p className="text-muted text-xs">
-                            {t('common.hoursLeft', {
-                              hours: Math.max(1, Math.ceil(d.timeLeftMs / (1000 * 60 * 60))),
-                            })}
-                          </p>
+              ? status.activeDuels.map((d) => {
+                  const hasOpponent = Boolean(d.opponentNickname?.trim());
+                  return (
+                    <Link key={d.id} href={`/${locale}/duel/${d.id}`} className="block">
+                      <Card
+                        variant="subtle"
+                        className="hover:border-border flex items-center justify-between gap-3 p-3.5 transition"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Sword size={22} weight="bold" className="text-duel-strong shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-display text-ink truncate text-sm font-extrabold">
+                              {hasOpponent
+                                ? t('common.versus', { name: d.opponentNickname })
+                                : t('duels.waitingForOpponent')}
+                            </p>
+                            <p className="text-muted text-xs">
+                              {t('common.hoursLeft', {
+                                hours: Math.max(1, Math.ceil(d.timeLeftMs / (1000 * 60 * 60))),
+                              })}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <Chip tone={d.myTurn ? 'volt' : 'neutral'} className="text-[11px] font-bold">
-                        {d.myTurn ? t('duels.yourTurn') : t('duels.waitingOpponent')}
-                      </Chip>
-                    </Card>
-                  </Link>
-                ))
+                        <Chip
+                          tone={hasOpponent && d.myTurn ? 'volt' : 'neutral'}
+                          className="text-[11px] font-bold"
+                        >
+                          {hasOpponent && d.myTurn
+                            ? t('duels.yourTurn')
+                            : t('duels.waitingOpponent')}
+                        </Chip>
+                      </Card>
+                    </Link>
+                  );
+                })
               : null}
 
             {duelError && <p className="text-wrong text-xs font-bold">{duelError}</p>}
@@ -942,6 +981,11 @@ export default function LocaleHomePage() {
           loadStatus();
         }}
       />
+
+      {/* PWA install prompt (shown on Home after a finished round, never over /result) */}
+      {installPlatform && (
+        <InstallAppSheet open={isInstallOpen} platform={installPlatform} onClose={closeInstall} />
+      )}
     </main>
   );
 }

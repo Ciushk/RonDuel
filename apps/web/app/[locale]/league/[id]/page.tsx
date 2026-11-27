@@ -15,10 +15,12 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { getPodiumStyle, RankBadge, StickyUserRank } from '@/components/LeaderboardPodium';
 import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { apiErrorMessage } from '@/lib/api-error';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { resolveLeagueDisplayName } from '@/lib/league-name';
 import { getLeagueTheme } from '@/lib/league-theme';
@@ -79,6 +81,8 @@ export default function LeaguePage() {
   const [league, setLeague] = useState<LeagueView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<'not_found' | 'transient' | null>(null);
+  const [joinByCodeOpen, setJoinByCodeOpen] = useState(false);
   const [tab, setTab] = useState<'today' | 'alltime'>('today');
   const [searchQuery, setSearchQuery] = useState('');
   const [sessionUid, setSessionUid] = useState<string>('');
@@ -101,6 +105,7 @@ export default function LeaguePage() {
         setLoading(true);
       }
       setError(null);
+      setErrorKind(null);
       const s = getLocalSession();
       if (s?.uid) setSessionUid(s.uid);
       if (s?.nickname) setSessionNickname(s.nickname);
@@ -118,7 +123,8 @@ export default function LeaguePage() {
 
       if (!resolvedId || resolvedId === '_shell') {
         setLoading(false);
-        setError(t('league.errorInvalidId'));
+        setErrorKind('not_found');
+        setError(t('league.errorNotFound'));
         return;
       }
 
@@ -131,6 +137,11 @@ export default function LeaguePage() {
       })
         .then((r) => {
           clearTimeout(timer);
+          if (r.status === 404 || r.status === 400) {
+            const notFoundErr = new Error('League not found') as Error & { notFound?: boolean };
+            notFoundErr.notFound = true;
+            throw notFoundErr;
+          }
           if (!r.ok) {
             throw new Error(`Status ${r.status}`);
           }
@@ -140,8 +151,11 @@ export default function LeaguePage() {
           if (d && d.id) {
             setLeague({ ...d, name: resolveLeagueDisplayName(d) });
             setError(null);
+            setErrorKind(null);
           } else {
-            throw new Error('League not found');
+            const notFoundErr = new Error('League not found') as Error & { notFound?: boolean };
+            notFoundErr.notFound = true;
+            throw notFoundErr;
           }
         })
         .catch((err) => {
@@ -161,10 +175,18 @@ export default function LeaguePage() {
               allTime: [],
             });
             setError(null);
+            setErrorKind(null);
           } else if (!opts?.silent) {
-            setError(
-              err?.name === 'AbortError' ? t('league.errorTimeout') : t('league.errorNotFound'),
-            );
+            if (err?.name === 'AbortError') {
+              setErrorKind('transient');
+              setError(t('league.errorTimeout'));
+            } else if (err?.notFound) {
+              setErrorKind('not_found');
+              setError(t('league.errorNotFound'));
+            } else {
+              setErrorKind('transient');
+              setError(t('common.networkErrorRetry'));
+            }
           }
         })
         .finally(() => {
@@ -203,7 +225,7 @@ export default function LeaguePage() {
   const copyInvite = async () => {
     const url = getInviteUrl();
     if (!url) return;
-    await navigator.clipboard.writeText(url).catch(() => {});
+    await copyTextToClipboard(url);
     trackEvent('invite_shared', { method: 'copy', leagueId: league?.id });
     setToast(t('league.inviteCopied'));
     setTimeout(() => setToast(''), 2500);
@@ -446,6 +468,7 @@ export default function LeaguePage() {
   }
 
   if (error || !league) {
+    const isNotFound = errorKind !== 'transient';
     return (
       <main className="mx-auto flex max-w-[480px] flex-col gap-4 px-4 py-12 text-center">
         <Card variant="sticker" className="space-y-4 p-6">
@@ -454,23 +477,39 @@ export default function LeaguePage() {
           </div>
           <div className="space-y-1">
             <h1 className="font-display text-ink text-xl font-extrabold">
-              {t('league.errorNotFound')}
+              {isNotFound ? t('league.notFoundTitle') : t('league.errorTimeout')}
             </h1>
             <p className="text-muted mx-auto max-w-[280px] text-xs leading-relaxed">
               {error || t('league.errorNotFound')}
             </p>
           </div>
           <div className="flex flex-col gap-2 pt-2">
-            <Button variant="volt" fullWidth onClick={() => loadLeague()}>
-              {t('common.retry')}
-            </Button>
-            <Link href={`/${locale}/leagues`} className="block">
-              <Button variant="secondary" fullWidth>
-                {t('league.backToLeagues')}
-              </Button>
-            </Link>
+            {isNotFound ? (
+              <>
+                <Link href={`/${locale}/leagues`} className="block">
+                  <Button variant="volt" fullWidth>
+                    {t('league.backToLeagues')}
+                  </Button>
+                </Link>
+                <Button variant="secondary" fullWidth onClick={() => setJoinByCodeOpen(true)}>
+                  {t('leagues.joinWithCode')}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="volt" fullWidth onClick={() => loadLeague()}>
+                  {t('common.retry')}
+                </Button>
+                <Link href={`/${locale}/leagues`} className="block">
+                  <Button variant="secondary" fullWidth>
+                    {t('league.backToLeagues')}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </Card>
+        <JoinByCodeDialog open={joinByCodeOpen} onClose={() => setJoinByCodeOpen(false)} />
       </main>
     );
   }

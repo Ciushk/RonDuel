@@ -61,7 +61,7 @@
     "streak": "{days} dages stribe",
     "shareCta": "Del med din gruppe",
     "shareHint": "Del med din gruppe. Den bliver din liga.",
-    "copied": "Resultat kopieret til udklipsholder!",
+    "copied": "Resultat kopieret! Indsæt det i gruppen.",
     "reviewTitle": "Gennemgang af svar",
     "openLeague": "Åbn ligaranglisten",
     "challengeFriend": "Udfordr en ven (1v1-duel)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Din runde er blevet registreret. Tryk på Prøv igen for at se din score og ranglisten.",
     "backHome": "Tilbage til start",
     "shareStreak": "🔥 {count, plural, one {# dags stime} other {# dages stime}}",
-    "shareBeatMe": "Slå mig → {url}"
+    "shareBeatMe": "Slå mig → {url}",
+    "returningHomeIn": "Vender tilbage til forsiden om {seconds} s"
   },
   "league": {
     "joinTitle": "Du er inviteret til {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Du er nu med i ligaen!",
     "privateJoinSheetHint": "Denne liga er privat. Indtast koden fra ejeren for at deltage:",
     "joinErrorGeneric": "Forkert kode, eller vi kunne ikke tilføje dig til ligaen.",
-    "full": "Ligaen er fuld ({count}/{max})"
+    "full": "Ligaen er fuld ({count}/{max})",
+    "notFoundTitle": "Liga blev ikke fundet"
   },
   "duel": {
-    "title": "1v1 Duel",
+    "title": "1v1-duel",
     "subtitle": "5 hurtige spørgsmål · 24 timer på uret",
     "yourTurn": "Spil dine 5 spørgsmål",
     "waitingOpponent": "Venter på modstanderen (24 timers vindue)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil & Stribe",
-    "bestStreak": "Bedste stribe: {days} dage",
+    "bestStreak": "{days, plural, one {Bedste stribe: 1 dag} other {Bedste stribe: # dage}}",
     "upgradeTitle": "Gem din stribe på tværs af enheder",
     "upgradeBody": "Tilknyt en e-mail- eller Google-konto. Dit bruger-id, din stribe og dine ligaer forbliver intakte.",
     "emailPlaceholder": "dig@eksempel.dk",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligaer med op til 200 medlemmer og privat godkendelse",
     "benefitDuels": "Ubegrænsede 1v1-dueller (mod 4/måned gratis)",
     "benefitShield": "1 automatisk ugentligt stribeskjold",
-    "benefitThemes": "3 eksklusive Split Court-temaer (Midnight, Clay, Neon)",
+    "benefitThemes": "3 eksklusive temaer (Midnatbane, Grusbane, Neon-arkade)",
     "benefitStats": "Avanceret præcision pr. emne og arkiv over tidligere runder",
     "euConsent": "Jeg anmoder om øjeblikkelig adgang til RonDuel Pro digitalt indhold og anerkender, at min 14-dages EU-fortrydelsesret bortfalder ved aktivering.",
     "upgradeFirst": "Gæstedata gemmes kun i 7 dage. Log ind, eller opret en gratis konto for at abonnere, så dit Pro er knyttet til en permanent profil.",
@@ -400,8 +402,8 @@
     "deleted": "Din lokale session og data er blevet slettet.",
     "languageSearchPlaceholder": "Søg efter et sprog…",
     "languageNoResults": "Intet sprog fundet",
-    "themeLight": "Lyst (Cream Paper)",
-    "themeDark": "Mørkt (Ink Night)",
+    "themeLight": "Lyst",
+    "themeDark": "Mørkt",
     "themeHighContrast": "Høj kontrast",
     "themeProMidnight": "Pro: Midnatbane",
     "themeProClay": "Pro: Grusbane",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Ingen ligaer fundet.",
     "emptyTitle": "Spil med dine venner!",
     "emptyBody": "Opret en liga for kontoret, familien eller vennerne. Det er gratis for op til {max} medlemmer.",
-    "createFirst": "Opret din første liga"
+    "createFirst": "Opret din første liga",
+    "leagueWorldRank": "Ligaen er #{rank} i verden"
   },
   "duels": {
     "shareText": "Jeg udfordrer dig til en duel i RonDuel! Du får 5 hurtige spørgsmål: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Du har allerede en aktiv duel. Gør den færdig eller få Pro for ubegrænsede dueller.",
     "errorCreate": "Kunne ikke oprette duellen",
     "yourTurn": "Din tur",
-    "waitingOpponent": "Venter på din modstander"
+    "waitingOpponent": "Venter på din modstander",
+    "tabActive": "I gang",
+    "tabFinished": "Afsluttede",
+    "tabStats": "Min score",
+    "emptyActiveTitle": "Ingen igangværende dueller",
+    "emptyActiveBody": "Udfordr en ven til en hurtig 1v1-duel eller vent på svar på din udfordring!",
+    "emptyFinishedTitle": "Ingen afsluttede dueller endnu",
+    "emptyFinishedBody": "Her vises dine afsluttede dueller og resultater.",
+    "statsTotalScore": "Samlet duelscore",
+    "statsPointsUnit": "point",
+    "statsWins": "Sejre",
+    "statsLosses": "Nederlag",
+    "statsDraws": "Uafgjorte",
+    "statsTotalDuels": "Dueller i alt",
+    "statsWinRate": "Sejrsrate",
+    "waitingForOpponent": "Venter på modstander",
+    "copyLink": "Kopiér link"
   },
   "themes": {
     "worldScience": "Verden og videnskab 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Zoom ind",
       "zoomOut": "Zoom ud",
       "loading": "Indlæser RonTown…",
-      "rotatingBanner": "Tryk på et felt eller en bygning for at rotere"
+      "rotatingBanner": "Tryk på et felt eller en bygning for at rotere",
+      "cellItemAria": "{item} ved ({x}, {y})"
     },
     "status": {
       "connecting": "Opretter forbindelse…",

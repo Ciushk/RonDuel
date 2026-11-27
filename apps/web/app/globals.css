@@ -582,12 +582,18 @@ html[data-theme='dark'] {
 }
 
 .ronbot-anchor {
-  bottom: calc(var(--bottom-stack, 80px) + 12px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(
+    var(--bottom-stack, 80px) + var(--pwa-toast-height, 0px) + 12px +
+      env(safe-area-inset-bottom, 0px)
+  );
 }
 
 @media (min-width: 640px) {
   .ronbot-anchor {
-    bottom: calc(var(--bottom-stack, 12px) + 12px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(
+      var(--bottom-stack, 12px) + var(--pwa-toast-height, 0px) + 12px +
+        env(safe-area-inset-bottom, 0px)
+    );
   }
 }
 

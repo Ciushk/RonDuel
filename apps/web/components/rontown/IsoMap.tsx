@@ -108,6 +108,7 @@ interface StaticWorldProps {
   boundsMinY: number;
   isVisitMode: boolean;
   rotateModeActive: boolean;
+  interactiveMode: boolean;
   rotatingTarget: RotatingTarget | null;
   speedupEnabled: boolean;
   speedupSparkleKey: string | null;
@@ -133,6 +134,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   boundsMinY,
   isVisitMode,
   rotateModeActive,
+  interactiveMode,
   rotatingTarget,
   speedupEnabled,
   speedupSparkleKey,
@@ -245,10 +247,19 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 : tile.itemId
               : t(GROUND_LABEL_KEY[ground]);
           cellLabel = t('town.rotate.cellAria', { item: itemLabel, x, y });
+        } else if (tile) {
+          const itemMeta = catalog.items[tile.itemId];
+          const itemLabel =
+            tile.itemId === 'plot'
+              ? tile.cropId
+                ? `${t(`town.crops.${tile.cropId}.name`)} · ${t('town.catalog.farm_plot.name')}`
+                : t('town.tiles.emptyPlot')
+              : itemMeta?.nameKey
+                ? t(itemMeta.nameKey)
+                : t(GROUND_LABEL_KEY[ground]);
+          cellLabel = t('town.map.cellItemAria', { item: itemLabel, x, y });
         } else {
-          cellLabel = rawTile
-            ? `${rawTile.cropId ? `${rawTile.cropId} ` : ''}${rawTile.itemId} (${x}, ${y})`
-            : `${t('town.map.groundCell', { x, y })}`;
+          cellLabel = t('town.map.groundCell', { x, y });
         }
 
         return (
@@ -462,10 +473,10 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               {growth.isReady ? (
                 <button
                   type="button"
-                  disabled={isVisitMode}
+                  disabled={isVisitMode || interactiveMode}
                   onClick={() => onHarvestTap(tile.x, tile.y)}
                   aria-label={t('town.map.harvestBadgeAria', {
-                    crop: tile.cropId,
+                    crop: t(`town.crops.${tile.cropId}.name`),
                     x: tile.x,
                     y: tile.y,
                   })}
@@ -475,7 +486,9 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     zIndex: objectZ(sortKey, Z_LAYER.badge),
                     transform: 'translate(-50%, -35%)',
                   }}
-                  className="focus-visible:outline-3 absolute flex min-h-[88px] min-w-[88px] cursor-pointer flex-col items-center justify-center gap-1 bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default"
+                  className={`focus-visible:outline-3 absolute flex min-h-[88px] min-w-[88px] flex-col items-center justify-center gap-1 bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#C6FF3D] disabled:cursor-default ${
+                    interactiveMode ? 'pointer-events-none' : 'cursor-pointer'
+                  }`}
                 >
                   <img
                     src={UI_SPRITES.farmReady.src}
@@ -514,7 +527,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     <span className="rt-pixel-bubble rt-pixel-bubble--tail whitespace-nowrap px-1.5 py-0.5 text-[14px] font-bold leading-tight">
                       {formatDurationShort(growth.remainingSeconds)}
                     </span>
-                    {!isVisitMode && speedupEnabled && onSpeedupTap && (
+                    {!isVisitMode && !interactiveMode && speedupEnabled && onSpeedupTap && (
                       <button
                         type="button"
                         data-testid={`speedup-chip-${key}`}
@@ -585,7 +598,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               key={`obj_${key}`}
               data-item-tile={key}
               aria-hidden="true"
-              className={`rt-pixel-bubble pointer-events-none absolute flex items-center justify-center px-2 text-sm font-black uppercase ${itemFlipClass}`}
+              className={`rt-pixel-bubble pointer-events-none absolute flex items-center justify-center p-2 ${itemFlipClass}`}
               style={{
                 left: anchor.x - boundsMinX,
                 top: anchor.y - boundsMinY,
@@ -595,7 +608,11 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 transform: isFlipped ? 'scaleX(-1)' : undefined,
               }}
             >
-              {tile.itemId.slice(0, 3)}
+              <svg width="48" height="48" viewBox="0 0 16 16" shapeRendering="crispEdges">
+                <polygon points="8,2 14,7 2,7" fill="#D45C44" />
+                <rect x="3" y="7" width="10" height="7" fill="#F2E0C4" />
+                <rect x="6" y="10" width="4" height="4" fill="#6C422C" />
+              </svg>
             </div>
           );
         }
@@ -1448,6 +1465,9 @@ export function IsoMap({
           boundsMinY={bounds.minY}
           isVisitMode={isVisitMode}
           rotateModeActive={rotateModeActive}
+          interactiveMode={Boolean(
+            placingItemId || moveModeActive || movingTile || rotateModeActive || selectedSeed,
+          )}
           rotatingTarget={rotatingTarget}
           speedupEnabled={speedupEnabled}
           speedupSparkleKey={speedupSparkleKey}

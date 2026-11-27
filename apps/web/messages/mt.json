@@ -61,7 +61,7 @@
     "streak": "Serje ta' {days} ijiem",
     "shareCta": "Ixxerja mal-grupp tiegħek",
     "shareHint": "Ixxerja mal-grupp tiegħek. Issir il-kampjonat tagħkom awtomatikament.",
-    "copied": "Ir-riżultat ġie kkupjat fil-clipboard!",
+    "copied": "Riżultat ikkupjat! Waħħlu fil-grupp tiegħek.",
     "reviewTitle": "Reviżjoni tat-tweġibiet",
     "openLeague": "Iftaħ il-klassifika tal-kampjonat",
     "challengeFriend": "Sfida ħabib (Dwell 1v1)",
@@ -107,12 +107,13 @@
     "savedRetryHint": "Ir-rawnd tiegħek ġie rreġistrat. Agħfas Erġa' pprova biex tara l-punteġġ u l-klassifika tiegħek.",
     "backHome": "Lura d-dar",
     "shareStreak": "🔥 {count, plural, one {serje ta' jum #} two {serje ta' jumejn} few {serje ta' # ijiem} many {serje ta' #-il jum} other {serje ta' # jum}}",
-    "shareBeatMe": "Għelibni → {url}"
+    "shareBeatMe": "Għelibni → {url}",
+    "returningHomeIn": "Lura lejn il-paġna ewlenija fi {seconds}s"
   },
   "league": {
     "joinTitle": "Int mistieden għal {name}",
     "joinCta": "Ingħaqad & ilgħab ir-rawnd tal-lum",
-    "membersCount": "{count, plural, one {plejer #} two {żewġ plejers} few {# plejers} many {#-il plejer} other {# plejer}}",
+    "membersCount": "{count, plural, one {membru #} two {żewġ membri} few {# membri} many {#-il membru} other {# membru}}",
     "tabToday": "Illum",
     "tabWeek": "Din il-ġimgħa",
     "tabAllTime": "Kull żmien",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Ingħaqadt mal-liga!",
     "privateJoinSheetHint": "Din il-liga hija privata. Daħħal il-kodiċi li rċevejt mingħand is-sid biex tingħaqad:",
     "joinErrorGeneric": "Kodiċi ħażin jew żball waqt li ppruvajna nżiduk mal-liga.",
-    "full": "Il-liga hija mimlija ({count}/{max})"
+    "full": "Il-liga hija mimlija ({count}/{max})",
+    "notFoundTitle": "Il-kampjonat ma nstabx"
   },
   "duel": {
-    "title": "Dwell 1v1 Split Court",
+    "title": "Dwell 1v1",
     "subtitle": "5 mistoqsijiet ta' malajr · 24 siegħa fuq l-arloġġ",
     "yourTurn": "Ilgħab il-5 mistoqsijiet tiegħek",
     "waitingOpponent": "Qed tistenna lill-avversarju jilgħab (tieqa ta' 24 siegħa)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil & Serje",
-    "bestStreak": "L-aqwa serje: {days} ijiem",
+    "bestStreak": "{days, plural, one {L-aqwa serje: jum 1} two {L-aqwa serje: jumejn} few {L-aqwa serje: # ijiem} many {L-aqwa serje: #-il jum} other {L-aqwa serje: # jum}}",
     "upgradeTitle": "Salva s-serje tiegħek fuq kull apparat",
     "upgradeBody": "Qabbad email jew kont tal-Google. Il-UID, is-serje, u l-kampjonati tiegħek jibqgħu intatti.",
     "emailPlaceholder": "int@ezempju.mt",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Kampjonati sa 200 membru & approvazzjoni privata tad-dħul",
     "benefitDuels": "Dwellijiet 1v1 bla limitu (meta mqabbla ma' 4/xahar b'xejn)",
     "benefitShield": "Tarka tas-serje awtomatika waħda kull ġimgħa",
-    "benefitThemes": "3 temi esklussivi Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 temi esklussivi (Qorti ta Nofs il-Lejl, Qorti tat-Tafal, Arkata Neon)",
     "benefitStats": "Preċiżjoni avvanzata skont is-suġġett & arkivju ta' rawnds passati",
     "euConsent": "Nitlob aċċess immedjat għall-kontenut diġitali ta' RonDuel Pro u nirrikonoxxi li d-dritt legali tiegħi ta' reċess ta' 14-il jum tal-UE jiskadi malli jiġi attivat.",
     "upgradeFirst": "Id-dejta tal-mistednin tinżamm għal 7 ijiem biss. Idħol jew oħloq kont b’xejn biex tabbona, sabiex il-Pro tiegħek jibqa’ marbut ma’ profil permanenti.",
@@ -400,8 +402,8 @@
     "deleted": "Is-sessjoni u d-dejta lokali tiegħek tneħħew.",
     "languageSearchPlaceholder": "Fittex lingwa…",
     "languageNoResults": "L-ebda lingwa ma nstabet",
-    "themeLight": "Ċar (Cream Paper)",
-    "themeDark": "Mudlam (Ink Night)",
+    "themeLight": "Ċar",
+    "themeDark": "Mudlam",
     "themeHighContrast": "Kuntrast għoli",
     "themeProMidnight": "Pro: Qorti ta Nofs il-Lejl",
     "themeProClay": "Pro: Qorti tat-Tafal",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "L-ebda kampjonat ma nstab.",
     "emptyTitle": "Ilgħab ma' sħabek!",
     "emptyBody": "Oħloq kampjonat għall-uffiċċju, il-familja jew sħabek. Huwa b'xejn għal sa {max} membri.",
-    "createFirst": "Oħloq l-ewwel kampjonat tiegħek"
+    "createFirst": "Oħloq l-ewwel kampjonat tiegħek",
+    "leagueWorldRank": "Il-kampjonat jinsab #{rank} fid-dinja"
   },
   "duels": {
     "shareText": "Nisfidak għal dwell fuq RonDuel! Għandek 5 mistoqsijiet ta' malajr: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Diġà għandek dwell attiv. Lestih jew għaddi għal Pro għal dwellijiet bla limitu.",
     "errorCreate": "Ma setax jinħoloq id-dwell",
     "yourTurn": "Imissek int",
-    "waitingOpponent": "Qed tistenna lill-avversarju tiegħek"
+    "waitingOpponent": "Qed tistenna lill-avversarju tiegħek",
+    "tabActive": "Attivi",
+    "tabFinished": "Lesti",
+    "tabStats": "Il-punteġġ tiegħi",
+    "emptyActiveTitle": "L-ebda dwell attiv",
+    "emptyActiveBody": "Sfida ħabib għal dwell 1v1 malajr jew stenna r-risposta tiegħu!",
+    "emptyFinishedTitle": "Għad m’hemm l-ebda dwell lest",
+    "emptyFinishedBody": "Hawnhekk jidhru d-dwelli lesti tiegħek u r-riżultati.",
+    "statsTotalScore": "Punteġġ totali tad-dwelli",
+    "statsPointsUnit": "punti",
+    "statsWins": "Rebħiet",
+    "statsLosses": "Telfiet",
+    "statsDraws": "Pari",
+    "statsTotalDuels": "Dwelli totali",
+    "statsWinRate": "Rata ta’ rebħ",
+    "waitingForOpponent": "Jistenna avversarju",
+    "copyLink": "Ikkopja l-link"
   },
   "themes": {
     "worldScience": "Id-Dinja u x-Xjenza 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Kabbar",
       "zoomOut": "Ċekken",
       "loading": "Qed jgħabbi RonTown…",
-      "rotatingBanner": "Agħfas maduma jew bini biex iddawwru"
+      "rotatingBanner": "Agħfas maduma jew bini biex iddawwru",
+      "cellItemAria": "{item} f’({x}, {y})"
     },
     "status": {
       "connecting": "Qiegħed jikkonnettja…",

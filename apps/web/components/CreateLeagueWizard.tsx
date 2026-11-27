@@ -268,6 +268,7 @@ export function CreateLeagueWizard({ open, onClose, onCreated }: CreateLeagueWiz
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           uid: s.uid,
+          nickname: s.nickname || undefined,
           name: name.trim(),
           tz,
           locale,

@@ -61,7 +61,7 @@
     "streak": "{days} d. serija",
     "shareCta": "Dalintis su grupe",
     "shareHint": "Pasidalinkite su grupe. Ji taps jūsų lyga.",
-    "copied": "Rezultatas nukopijuotas į iškarpinę!",
+    "copied": "Rezultatas nukopijuotas! Įklijuok jį į grupę.",
     "reviewTitle": "Atsakymų peržiūra",
     "openLeague": "Atidaryti lygos lyderių lentelę",
     "challengeFriend": "Mesti iššūkį draugui (1 prieš 1 dvikova)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Tavo etapas užfiksuotas. Bakstelėk Bandyti dar kartą, kad pamatytum savo taškus ir lyderių lentelę.",
     "backHome": "Grįžti į pradžią",
     "shareStreak": "🔥 {count, plural, one {# dienos serija} few {# dienų serija} many {# dienų serija} other {# dienų serija}}",
-    "shareBeatMe": "Nugalėk mane → {url}"
+    "shareBeatMe": "Nugalėk mane → {url}",
+    "returningHomeIn": "Grįžtama į pradžią po {seconds} s"
   },
   "league": {
     "joinTitle": "Esate pakviesti į {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Prisijungei prie lygos!",
     "privateJoinSheetHint": "Ši lyga yra privati. Įvesk iš savininko gautą kodą, kad prisijungtum:",
     "joinErrorGeneric": "Neteisingas kodas arba nepavyko prisijungti prie lygos.",
-    "full": "Lyga pilna ({count}/{max})"
+    "full": "Lyga pilna ({count}/{max})",
+    "notFoundTitle": "Lyga nerasta"
   },
   "duel": {
-    "title": "1 prieš 1 „Split Court“ dvikova",
+    "title": "1 prieš 1 dvikova",
     "subtitle": "5 greiti klausimai · 24 valandos",
     "yourTurn": "Sužaiskite savo 5 klausimus",
     "waitingOpponent": "Laukiama, kol sužais varžovas (24 val. langas)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profilis ir serija",
-    "bestStreak": "Geriausia serija: {days} d.",
+    "bestStreak": "{days, plural, one {Geriausia serija: 1 diena} few {Geriausia serija: # dienos} many {Geriausia serija: # dienos} other {Geriausia serija: # dienų}}",
     "upgradeTitle": "Išsaugokite savo seriją visuose įrenginiuose",
     "upgradeBody": "Susiekite el. pašto arba „Google“ paskyrą. Jūsų UID, serija ir lygos išliks.",
     "emailPlaceholder": "jus@pavyzdys.lt",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Lygos iki 200 narių ir privatus patvirtinimas",
     "benefitDuels": "Neribotos 1v1 dvikovos (nemokamai tik 4 per mėnesį)",
     "benefitShield": "1 automatinis savaitinis serijos skydas",
-    "benefitThemes": "3 išskirtinės „Split Court“ temos („Midnight“, „Clay“, „Neon“)",
+    "benefitThemes": "3 išskirtinės temos (Vidurnakčio kortas, Grunto kortas, Neono arkada)",
     "benefitStats": "Išsami temų statistika ir ankstesnių raundų archyvas",
     "euConsent": "Prašau nedelsiant suteikti prieigą prie „RonDuel Pro“ skaitmeninio turinio ir patvirtinu, kad mano 14 dienų ES atsisakymo teisė nustoja galioti jį aktyvavus.",
     "upgradeFirst": "Svečio duomenys saugomi tik 7 dienas. Norėdamas užsiprenumeruoti, prisijunk arba susikurk nemokamą paskyrą, kad tavo „Pro“ liktų susietas su nuolatiniu profiliu.",
@@ -400,8 +402,8 @@
     "deleted": "Jūsų vietinė sesija ir duomenys buvo pašalinti.",
     "languageSearchPlaceholder": "Ieškoti kalbos…",
     "languageNoResults": "Kalba nerasta",
-    "themeLight": "Šviesi (Cream Paper)",
-    "themeDark": "Tamsi (Ink Night)",
+    "themeLight": "Šviesi",
+    "themeDark": "Tamsi",
     "themeHighContrast": "Didelis kontrastas",
     "themeProMidnight": "Pro: Vidurnakčio kortas",
     "themeProClay": "Pro: Grunto kortas",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Lygų nerasta.",
     "emptyTitle": "Žaisk su draugais!",
     "emptyBody": "Sukurk lygą kolegoms, šeimai ar bičiuliams. Nemokama iki {max} narių.",
-    "createFirst": "Sukurk savo pirmąją lygą"
+    "createFirst": "Sukurk savo pirmąją lygą",
+    "leagueWorldRank": "Lyga yra #{rank} pasaulyje"
   },
   "duels": {
     "shareText": "Kviečiu tave į RonDuel dvikovą! Tavęs laukia 5 greiti klausimai: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Jau turi aktyvią dvikovą. Užbaik ją arba užsisakyk Pro neribotoms dvikovoms.",
     "errorCreate": "Nepavyko sukurti dvikovos",
     "yourTurn": "Tavo eilė",
-    "waitingOpponent": "Laukiama tavo varžovo"
+    "waitingOpponent": "Laukiama tavo varžovo",
+    "tabActive": "Vykstančios",
+    "tabFinished": "Baigtos",
+    "tabStats": "Mano rezultatas",
+    "emptyActiveTitle": "Nėra vykstančių dvikovų",
+    "emptyActiveBody": "Pakviesk draugą į greitą 1v1 dvikovą arba palauk atsakymo!",
+    "emptyFinishedTitle": "Dar nėra baigtų dvikovų",
+    "emptyFinishedBody": "Čia bus rodomos tavo baigtos dvikovos ir rezultatai.",
+    "statsTotalScore": "Bendras dvikovų rezultatas",
+    "statsPointsUnit": "taškų",
+    "statsWins": "Pergalės",
+    "statsLosses": "Pralaimėjimai",
+    "statsDraws": "Lygiosios",
+    "statsTotalDuels": "Iš viso dvikovų",
+    "statsWinRate": "Pergalių dalis",
+    "waitingForOpponent": "Laukia priešininko",
+    "copyLink": "Kopijuoti nuorodą"
   },
   "themes": {
     "worldScience": "Pasaulis ir mokslas 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Priartinti",
       "zoomOut": "Atitolinti",
       "loading": "Įkeliamas RonTown…",
-      "rotatingBanner": "Palieskite langelį ar pastatą, kad pasuktumėte"
+      "rotatingBanner": "Palieskite langelį ar pastatą, kad pasuktumėte",
+      "cellItemAria": "{item} vietoje ({x}, {y})"
     },
     "status": {
       "connecting": "Jungiamasi…",

@@ -304,13 +304,31 @@ if (fs.existsSync(notFoundPath)) {
   var data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), function(c) { return c.charCodeAt(0); })));
   var seg = window.location.pathname.split('/').filter(Boolean)[0] || '';
   if (seg === 'no' || seg === 'nn') seg = 'nb';
-  var loc = data[seg] ? seg : 'en';
+  var loc = data[seg] ? seg : '';
+  if (!loc) {
+    try {
+      var cm = document.cookie.match(/(?:^|;\\s*)NEXT_LOCALE=([^;]+)/);
+      if (cm) {
+        var cc = decodeURIComponent(cm[1]).trim().toLowerCase().split('-')[0];
+        if (cc === 'no' || cc === 'nn') cc = 'nb';
+        if (data[cc]) loc = cc;
+      }
+    } catch (e) {}
+  }
+  if (!loc) {
+    try {
+      var sl = (localStorage.getItem('ronduel_locale') || '').trim().toLowerCase().split('-')[0];
+      if (sl === 'no' || sl === 'nn') sl = 'nb';
+      if (data[sl]) loc = sl;
+    } catch (e) {}
+  }
+  if (!loc) loc = 'en';
   var t = data[loc] || data.en;
   if (!t) return;
   document.documentElement.lang = loc;
   document.title = t.title + ' — RonDuel';
   var codeEl = document.getElementById('nf-code');
-  if (codeEl) codeEl.textContent = '404 · ' + t.code;
+  if (codeEl) codeEl.textContent = t.code;
   var titleEl = document.getElementById('nf-title');
   if (titleEl) titleEl.textContent = t.title;
   var bodyEl = document.getElementById('nf-body');

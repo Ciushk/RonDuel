@@ -634,29 +634,108 @@ export function consumeDirtyUsers(): UserRecord[] {
   return users;
 }
 
-/** Write the current nickname onto league members and day scores when it actually changed. */
-export function syncNicknameToLeagues(uid: string, nickname: string): boolean {
+export function isPlaceholderNickname(raw?: string | null): boolean {
+  const trimmed = (raw ?? '').trim();
+  if (!trimmed) return true;
+  return /^Player_[A-Za-z0-9]{2,8}$/.test(trimmed);
+}
+
+/**
+ * Single source of truth for displaying any player's nickname across leagues,
+ * admin panels, world ranking, duels, and profile. Always prefers user.nickname
+ * when it is a real (non-placeholder) name.
+ */
+export function resolveUserDisplayName(uid: string, fallbackNickname?: string | null): string {
   const store = getStore();
-  const user = store.users[uid];
-  const leagueIds = user?.leagueIds ?? [];
+  const userNick = store.users[uid]?.nickname?.trim() ?? '';
+  if (userNick && !isPlaceholderNickname(userNick)) {
+    return sanitizeDisplayName(userNick, uid);
+  }
+  const fallback = (fallbackNickname ?? '').trim();
+  if (fallback && !isPlaceholderNickname(fallback)) {
+    return sanitizeDisplayName(fallback, uid);
+  }
+  return sanitizeDisplayName(userNick || fallback, uid);
+}
+
+/** Write the current nickname onto every league member, day score, and duel side when it changed. */
+export function syncNicknameToLeagues(uid: string, nickname: string): boolean {
+  const trimmed = nickname.trim();
+  if (!trimmed) return false;
+  const isPlaceholder = isPlaceholderNickname(trimmed);
+  const store = getStore();
   let changed = false;
-  for (const lid of leagueIds) {
-    const league = store.leagues[lid];
-    if (!league) continue;
-    const member = league.members[uid];
-    if (member && member.nickname !== nickname) {
-      member.nickname = nickname;
-      changed = true;
+
+  for (const league of Object.values(store.leagues)) {
+    const member = league.members?.[uid];
+    if (member && member.nickname !== trimmed) {
+      if (!isPlaceholder || isPlaceholderNickname(member.nickname)) {
+        member.nickname = trimmed;
+        changed = true;
+      }
     }
     for (const day of Object.values(league.days ?? {})) {
-      const entry = day[uid];
-      if (entry && entry.nickname !== nickname) {
-        entry.nickname = nickname;
+      const entry = day?.[uid];
+      if (entry && entry.nickname !== trimmed) {
+        if (!isPlaceholder || isPlaceholderNickname(entry.nickname)) {
+          entry.nickname = trimmed;
+          changed = true;
+        }
+      }
+    }
+  }
+
+  if (!isPlaceholder) {
+    for (const duel of Object.values(store.duels)) {
+      const side = duel.sides?.[uid];
+      if (side && side.nickname !== trimmed) {
+        side.nickname = trimmed;
         changed = true;
       }
     }
   }
+
   return changed;
+}
+
+/**
+ * Backfill league members, league day rows, and duel sides that still hold a stale
+ * or Player_xxxx placeholder nickname when store.users[uid] has a real nickname.
+ */
+export function backfillLeagueNicknamesFromUsers(): number {
+  const store = getStore();
+  let updated = 0;
+
+  for (const league of Object.values(store.leagues)) {
+    for (const member of Object.values(league.members ?? {})) {
+      const realNick = store.users[member.uid]?.nickname?.trim();
+      if (realNick && !isPlaceholderNickname(realNick) && member.nickname !== realNick) {
+        member.nickname = realNick;
+        updated += 1;
+      }
+    }
+    for (const day of Object.values(league.days ?? {})) {
+      for (const entry of Object.values(day ?? {})) {
+        const realNick = store.users[entry.uid]?.nickname?.trim();
+        if (realNick && !isPlaceholderNickname(realNick) && entry.nickname !== realNick) {
+          entry.nickname = realNick;
+          updated += 1;
+        }
+      }
+    }
+  }
+
+  for (const duel of Object.values(store.duels)) {
+    for (const side of Object.values(duel.sides ?? {})) {
+      const realNick = store.users[side.uid]?.nickname?.trim();
+      if (realNick && !isPlaceholderNickname(realNick) && side.nickname !== realNick) {
+        side.nickname = realNick;
+        updated += 1;
+      }
+    }
+  }
+
+  return updated;
 }
 
 export function getOrCreateUser(params: {
@@ -669,10 +748,11 @@ export function getOrCreateUser(params: {
 }): UserRecord {
   const store = getStore();
   let user = store.users[params.uid];
+  const incomingNick = params.nickname?.trim();
   if (!user) {
     user = {
       uid: params.uid,
-      nickname: params.nickname ?? `Player_${params.uid.slice(-4)}`,
+      nickname: incomingNick || `Player_${params.uid.slice(-4)}`,
       locale: params.locale ?? 'en',
       tz: params.tz ?? 'UTC',
       ageConfirmed16: params.ageConfirmed16 ?? true,
@@ -706,7 +786,12 @@ export function getOrCreateUser(params: {
     markUserDirty(user.uid);
   } else {
     const before = `${user.nickname}|${user.locale}|${user.tz}|${user.relaxedTimer}`;
-    if (params.nickname) user.nickname = params.nickname;
+    if (
+      incomingNick &&
+      (!isPlaceholderNickname(incomingNick) || isPlaceholderNickname(user.nickname))
+    ) {
+      user.nickname = incomingNick;
+    }
     if (params.locale) user.locale = params.locale;
     if (params.tz) user.tz = params.tz;
     if (typeof params.relaxedTimer === 'boolean') user.relaxedTimer = params.relaxedTimer;
@@ -921,7 +1006,7 @@ export function getGlobalPlayersLeaderboard(dateStr?: string, viewerUid?: string
   const today = rawToday.map((entry, idx) => ({
     rank: idx + 1,
     uid: entry.uid,
-    nickname: sanitizeDisplayName(store.users[entry.uid]?.nickname || entry.nickname, entry.uid),
+    nickname: resolveUserDisplayName(entry.uid, entry.nickname),
     score: entry.score,
     totalMs: entry.totalMs,
     emojiLine: entry.emojiLine || '',
@@ -943,7 +1028,7 @@ export function getGlobalPlayersLeaderboard(dateStr?: string, viewerUid?: string
   const allTime = rawAllTime.map((member, idx) => ({
     rank: idx + 1,
     uid: member.uid,
-    nickname: sanitizeDisplayName(store.users[member.uid]?.nickname || member.nickname, member.uid),
+    nickname: resolveUserDisplayName(member.uid, member.nickname),
     allTimeScore: member.allTimeScore,
     roundsPlayed: member.roundsPlayed,
     isCurrentUser: Boolean(viewerUid && member.uid === viewerUid),
@@ -1052,9 +1137,14 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
       return {
         id: d.id,
         status: d.status,
-        challengerNickname: d.sides[d.challengerUid]?.nickname ?? '',
-        opponentNickname: d.opponentUid ? (d.sides[d.opponentUid]?.nickname ?? '') : '',
-        myTurn: !d.sides[uid]?.finishedAt,
+        challengerNickname: resolveUserDisplayName(
+          d.challengerUid,
+          d.sides[d.challengerUid]?.nickname,
+        ),
+        opponentNickname: d.opponentUid
+          ? resolveUserDisplayName(d.opponentUid, d.sides[d.opponentUid]?.nickname)
+          : '',
+        myTurn: Boolean(d.opponentUid) && !d.sides[uid]?.finishedAt,
         timeLeftMs,
       };
     });
@@ -1099,7 +1189,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
         playedTodayCount: worldTodayEntries.length,
         myRankToday: myWorldRankToday,
         myScore: play?.status === 'finished' ? play.totalScore : null,
-        myNickname: user.nickname,
+        myNickname: resolveUserDisplayName(uid, user.nickname),
       }
     : null;
 
@@ -1133,7 +1223,7 @@ export function getTodayStatus(uid: string, tz: string, clientLeagueIds?: string
     const memberList = Object.values(l.members);
     const initials = memberList
       .slice(0, 4)
-      .map((m) => (m.nickname || 'P').slice(0, 2).toUpperCase());
+      .map((m) => resolveUserDisplayName(m.uid, m.nickname).slice(0, 2).toUpperCase());
     const intlRankIdx = leaguesLeaderboard.findIndex((lb) => lb.id === l.id);
     const intlRank = intlRankIdx >= 0 ? intlRankIdx + 1 : null;
     const intlTotalPoints = intlRankIdx >= 0 ? leaguesLeaderboard[intlRankIdx]!.allTimePoints : 0;
@@ -1600,9 +1690,16 @@ export function finishRound(
       .map((id) => store.leagues[id])
       .filter((l): l is LeagueRecord => Boolean(l))
       .map((lg) => {
-        const todayEntries = Object.values(lg.days[play.date] ?? {}).sort((a, b) =>
-          b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs,
-        );
+        const todayEntries = Object.values(lg.days[play.date] ?? {})
+          .filter((entry) => {
+            if (!entry.finishedAt) return false;
+            const correctCount = entry.emojiLine
+              ? (entry.emojiLine.match(/[⚡🟩]/gu) || []).length
+              : 0;
+            if (correctCount > 0 && entry.score < 100 * correctCount) return false;
+            return true;
+          })
+          .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs));
         const rankIdx = todayEntries.findIndex((e) => e.uid === uid);
         return {
           id: lg.id,
@@ -1611,6 +1708,7 @@ export function finishRound(
           isWorld: lg.id === 'lg_world',
           rank: rankIdx >= 0 ? rankIdx + 1 : 1,
           totalMembers: Object.keys(lg.members).length,
+          playedTodayCount: todayEntries.length,
         };
       }),
     primaryLeague: (() => {
@@ -1707,6 +1805,7 @@ export function getPlayResult(playId: string) {
 export function createLeague(params: {
   uid: string;
   name?: string;
+  nickname?: string;
   tz: string;
   locale: Locale;
   themeEmoji?: string;
@@ -1714,7 +1813,12 @@ export function createLeague(params: {
   plan?: 'free' | 'pro_trial' | 'pro';
 }) {
   const store = getStore();
-  const user = getOrCreateUser({ uid: params.uid, tz: params.tz, locale: params.locale });
+  const user = getOrCreateUser({
+    uid: params.uid,
+    nickname: params.nickname,
+    tz: params.tz,
+    locale: params.locale,
+  });
 
   if (params.plan === 'pro_trial' && !user.pro.active) {
     const trialEndsAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
@@ -1839,7 +1943,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
     if (!league.days[today]![viewerUid]) {
       league.days[today]![viewerUid] = {
         uid: viewerUid,
-        nickname: viewerMember.nickname,
+        nickname: resolveUserDisplayName(viewerUid, viewerMember.nickname),
         score: globalPlay.totalScore,
         totalMs: globalPlay.totalMs,
         emojiLine: globalPlay.emojiLine,
@@ -1891,7 +1995,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const todayScores = filteredToday.map((entry, idx) => ({
     rank: idx + 1,
     uid: entry.uid,
-    nickname: sanitizeDisplayName(store.users[entry.uid]?.nickname || entry.nickname, entry.uid),
+    nickname: resolveUserDisplayName(entry.uid, entry.nickname),
     score: viewerFinishedToday || !isWorld ? entry.score : null,
     totalMs: viewerFinishedToday || !isWorld ? entry.totalMs : null,
     emojiLine: viewerFinishedToday || !isWorld ? entry.emojiLine : null,
@@ -1921,7 +2025,7 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   const allTime = allTimeMembers.map((member, idx) => ({
     rank: idx + 1,
     uid: member.uid,
-    nickname: sanitizeDisplayName(store.users[member.uid]?.nickname || member.nickname, member.uid),
+    nickname: resolveUserDisplayName(member.uid, member.nickname),
     allTimeScore: member.allTimeScore || 0,
     roundsPlayed: member.roundsPlayed || 0,
     joinedAt: member.joinedAt,
@@ -1931,8 +2035,9 @@ export function getLeagueByCodeOrId(codeOrId: string, viewerUid?: string, countr
   }));
 
   const adminMember = league.members[league.ownerUid];
-  const adminUser = store.users[league.ownerUid];
-  const adminName = adminMember?.nickname ?? adminUser?.nickname ?? 'Admin';
+  const adminName = league.ownerUid
+    ? resolveUserDisplayName(league.ownerUid, adminMember?.nickname)
+    : 'Admin';
 
   const leaguesLb = getLeagueLeaderboard(today);
   const intlRankIdx = leaguesLb.findIndex((l) => l.id === league.id);
@@ -2368,7 +2473,7 @@ export function getDuelView(duelId: string, locale: Locale = 'en') {
         uid,
         {
           uid: s.uid,
-          nickname: s.nickname,
+          nickname: resolveUserDisplayName(s.uid, s.nickname),
           score: s.score,
           totalMs: s.totalMs,
           finishedAt: s.finishedAt,
@@ -2459,8 +2564,8 @@ export function getUserDuels(uid: string) {
     const mySide = d.sides[uid];
     const oppSide = opponentUid ? d.sides[opponentUid] : null;
 
-    const oppNickname = oppSide?.nickname || '';
-    const myNickname = mySide?.nickname || '';
+    const oppNickname = opponentUid ? resolveUserDisplayName(opponentUid, oppSide?.nickname) : '';
+    const myNickname = resolveUserDisplayName(uid, mySide?.nickname);
     const createdAtMs = new Date(d.createdAt).getTime();
     const expiresAtMs = createdAtMs + 24 * 3600 * 1000;
     const timeLeftMs = Math.max(0, expiresAtMs - now);
@@ -2498,10 +2603,10 @@ export function getUserDuels(uid: string) {
 
     if (d.status === 'complete' || d.status === 'expired') {
       finished.push(summary);
-    } else if (!mySide?.finishedAt) {
-      yourTurn.push(summary);
-    } else {
+    } else if (!opponentUid || mySide?.finishedAt) {
       waiting.push(summary);
+    } else {
+      yourTurn.push(summary);
     }
   }
 

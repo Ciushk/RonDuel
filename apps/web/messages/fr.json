@@ -61,7 +61,7 @@
     "streak": "Série de {days} jours",
     "shareCta": "Partager à ton groupe",
     "shareHint": "Partage à ton groupe. Ça devient votre ligue.",
-    "copied": "Résultat copié dans le presse-papiers !",
+    "copied": "Résultat copié ! Colle-le dans ton groupe.",
     "reviewTitle": "Détail des réponses",
     "openLeague": "Voir le classement de la ligue",
     "challengeFriend": "Défier un ami (Duel 1v1)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Ta manche a bien été enregistrée. Appuie sur Réessayer pour voir ton score et le classement.",
     "backHome": "Retour à l'accueil",
     "shareStreak": "🔥 {count, plural, one {série de # jour} other {série de # jours}}",
-    "shareBeatMe": "Bats-moi si tu peux → {url}"
+    "shareBeatMe": "Bats-moi si tu peux → {url}",
+    "returningHomeIn": "Retour à l'accueil dans {seconds} s"
   },
   "league": {
     "joinTitle": "Tu es invité dans {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Tu as rejoint la ligue !",
     "privateJoinSheetHint": "Cette ligue est privée. Saisis le code reçu du propriétaire pour la rejoindre :",
     "joinErrorGeneric": "Code incorrect ou impossible de rejoindre la ligue.",
-    "full": "La ligue est complète ({count}/{max})"
+    "full": "La ligue est complète ({count}/{max})",
+    "notFoundTitle": "Ligue introuvable"
   },
   "duel": {
-    "title": "Duel 1v1 Split Court",
+    "title": "Duel 1v1",
     "subtitle": "5 questions rapides · 24h au chrono",
     "yourTurn": "Joue tes 5 questions",
     "waitingOpponent": "En attente du tour de l'adversaire (délai de 24h)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil & Série",
-    "bestStreak": "Meilleure série : {days} jours",
+    "bestStreak": "{days, plural, one {Meilleure série : 1 jour} other {Meilleure série : # jours}}",
     "upgradeTitle": "Sauvegarde ta série sur tous tes appareils",
     "upgradeBody": "Associe un e-mail ou un compte Google. Ton UID, ta série et tes ligues restent intacts.",
     "emailPlaceholder": "toi@exemple.fr",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligues jusqu'à 200 membres & approbation privée d'adhésion",
     "benefitDuels": "Duels 1v1 illimités (au lieu de 4/mois en gratuit)",
     "benefitShield": "1 bouclier de série automatique par semaine",
-    "benefitThemes": "3 thèmes exclusifs Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 thèmes exclusifs (Court de Minuit, Terre Battue, Arcade Néon)",
     "benefitStats": "Précision détaillée par thème & archives des manches passées",
     "euConsent": "Je demande l'accès immédiat au contenu numérique RonDuel Pro et reconnais que mon droit de rétractation légal de 14 jours dans l'UE s'éteint dès l'activation.",
     "upgradeFirst": "Les données des invités ne sont conservées que 7 jours. Connecte-toi ou crée un compte gratuit pour t’abonner, afin que ton Pro reste lié à un profil permanent.",
@@ -400,8 +402,8 @@
     "deleted": "Ta session locale et tes données ont été supprimées.",
     "languageSearchPlaceholder": "Rechercher une langue…",
     "languageNoResults": "Aucune langue trouvée",
-    "themeLight": "Clair (Cream Paper)",
-    "themeDark": "Sombre (Ink Night)",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
     "themeHighContrast": "Contraste élevé",
     "themeProMidnight": "Pro : Court de Minuit",
     "themeProClay": "Pro : Terre Battue",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Aucune ligue trouvée.",
     "emptyTitle": "Joue avec tes amis !",
     "emptyBody": "Crée une ligue pour ton bureau, ta famille ou tes potes. C'est gratuit jusqu'à {max} membres.",
-    "createFirst": "Crée ta première ligue"
+    "createFirst": "Crée ta première ligue",
+    "leagueWorldRank": "La ligue est #{rank} mondiale"
   },
   "duels": {
     "shareText": "Je te défie en duel sur RonDuel ! Tu as 5 questions rapides : {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Tu as déjà un duel en cours. Termine-le ou passe à Pro pour des duels illimités.",
     "errorCreate": "Impossible de créer le duel",
     "yourTurn": "À ton tour",
-    "waitingOpponent": "En attente de ton adversaire"
+    "waitingOpponent": "En attente de ton adversaire",
+    "tabActive": "En cours",
+    "tabFinished": "Terminés",
+    "tabStats": "Mon score",
+    "emptyActiveTitle": "Aucun duel en cours",
+    "emptyActiveBody": "Défie un ami en duel 1v1 rapide ou attends sa réponse !",
+    "emptyFinishedTitle": "Aucun duel terminé pour le moment",
+    "emptyFinishedBody": "Tes duels terminés et leurs résultats apparaîtront ici.",
+    "statsTotalScore": "Score total en duels",
+    "statsPointsUnit": "points",
+    "statsWins": "Victoires",
+    "statsLosses": "Défaites",
+    "statsDraws": "Égalités",
+    "statsTotalDuels": "Total des duels",
+    "statsWinRate": "Taux de victoire",
+    "waitingForOpponent": "En attente d'adversaire",
+    "copyLink": "Copier le lien"
   },
   "themes": {
     "worldScience": "Monde et science 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Zoomer",
       "zoomOut": "Dézoomer",
       "loading": "Chargement de RonTown…",
-      "rotatingBanner": "Touchez une case ou un bâtiment pour le pivoter"
+      "rotatingBanner": "Touchez une case ou un bâtiment pour le pivoter",
+      "cellItemAria": "{item} en ({x}, {y})"
     },
     "status": {
       "connecting": "Connexion…",

@@ -19,17 +19,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AccountLinkingSheet } from '@/components/AccountLinkingSheet';
 import { CreateLeagueDialog } from '@/components/CreateLeagueDialog';
-import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { JoinByCodeDialog } from '@/components/JoinByCodeDialog';
 import { EmojiTiles } from '@/components/result/EmojiTiles';
 import { ScoreCountUp } from '@/components/result/ScoreCountUp';
 import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
 import { Button, Card, Chip, Sheet, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { cn } from '@/lib/cn';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { getBrowserTimeZone, getLocalSession, vibrate } from '@/lib/session';
-import { useInstallPrompt } from '@/lib/use-install-prompt';
+
+const AUTO_REDIRECT_MS = 15_000;
 
 interface LeagueRankInfo {
   id: string;
@@ -38,6 +39,7 @@ interface LeagueRankInfo {
   isWorld: boolean;
   rank: number;
   totalMembers: number;
+  playedTodayCount?: number;
 }
 
 interface ResultData {
@@ -81,8 +83,6 @@ export default function ResultPage() {
   const [isJoinCodeOpen, setIsJoinCodeOpen] = useState(false);
   const [isSharePickerOpen, setIsSharePickerOpen] = useState(false);
   const [isLinkSheetOpen, setIsLinkSheetOpen] = useState(false);
-  const [isLinkSheetScheduled, setIsLinkSheetScheduled] = useState(false);
-  const [linkSheetJustClosed, setLinkSheetJustClosed] = useState(false);
   const [isAccountLinked, setIsAccountLinked] = useState(false);
   const [showSlimBanner, setShowSlimBanner] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
@@ -96,35 +96,38 @@ export default function ResultPage() {
   const townEnabled = useFeatureFlag('town_enabled');
   const [userIsPro, setUserIsPro] = useState(false);
   const [animated, setAnimated] = useState(false);
-  const [resultAnimDone, setResultAnimDone] = useState(false);
   const [showPB, setShowPB] = useState(false);
   const [showTiles, setShowTiles] = useState(false);
   const [flameBumping, setFlameBumping] = useState(false);
   const [showRows, setShowRows] = useState(false);
   const [isPB, setIsPB] = useState(false);
 
-  const { isInstallOpen, installPlatform, closeInstall } = useInstallPrompt({
-    ready: Boolean(data),
-    finishedPlaysCount: data?.finishedPlaysCount ?? 1,
-    animationsComplete: resultAnimDone,
-    blockedByOtherSheet:
-      isLinkSheetScheduled ||
-      isLinkSheetOpen ||
-      isCreateLeagueOpen ||
-      isJoinCodeOpen ||
-      isSharePickerOpen ||
-      Boolean(reportingQuestionId),
-    afterOtherSheetClosed: linkSheetJustClosed,
-  });
-
-  const isAnySheetOpenRef = useRef(false);
-  isAnySheetOpenRef.current =
+  const isAnySheetOpen =
     isLinkSheetOpen ||
     isSharePickerOpen ||
     isCreateLeagueOpen ||
     isJoinCodeOpen ||
-    Boolean(reportingQuestionId) ||
-    isInstallOpen;
+    Boolean(reportingQuestionId);
+  const isAnySheetOpenRef = useRef(isAnySheetOpen);
+  isAnySheetOpenRef.current = isAnySheetOpen;
+  const remainingMsRef = useRef<number>(AUTO_REDIRECT_MS);
+  const hasRedirectedRef = useRef(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToastMessage = useCallback((message: string, durationMs = 3000) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(message);
+    toastTimerRef.current = setTimeout(() => {
+      toastTimerRef.current = null;
+      setToast('');
+    }, durationMs);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const s = getLocalSession();
@@ -143,7 +146,6 @@ export default function ResultPage() {
   const skipAnimation = useCallback(() => {
     if (!animated) return;
     setAnimated(false);
-    setResultAnimDone(true);
     setShowPB(isPB);
     setShowTiles(true);
     setShowRows(true);
@@ -175,7 +177,6 @@ export default function ResultPage() {
 
     if (alreadySeen || prefersReduced) {
       setAnimated(false);
-      setResultAnimDone(true);
       setShowPB(personalBest);
       setShowTiles(true);
       setShowRows(true);
@@ -184,7 +185,6 @@ export default function ResultPage() {
     }
 
     setAnimated(true);
-    setResultAnimDone(false);
 
     const pbTimer = setTimeout(() => {
       if (personalBest) setShowPB(true);
@@ -219,7 +219,6 @@ export default function ResultPage() {
 
     const completeTimer = setTimeout(() => {
       setAnimated(false);
-      setResultAnimDone(true);
       sessionStorage.setItem(storageKeySeen, '1');
     }, 1600);
 
@@ -233,23 +232,46 @@ export default function ResultPage() {
     };
   }, [data]);
 
+  // Reset wall-clock auto-redirect timer whenever a new play result loads
+  const loadedPlayId = data?.playId ?? null;
   useEffect(() => {
-    if (!data) return;
-    setSecondsRemaining(15);
-    const interval = setInterval(() => {
-      if (isAnySheetOpenRef.current) return;
-      setSecondsRemaining((prev) => {
-        if (prev === null) return null;
-        if (prev <= 1) {
-          clearInterval(interval);
-          router.push(returnTo || `/${locale}`);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [data, locale, returnTo, router]);
+    if (!loadedPlayId) return;
+    remainingMsRef.current = AUTO_REDIRECT_MS;
+    hasRedirectedRef.current = false;
+    setSecondsRemaining(Math.ceil(AUTO_REDIRECT_MS / 1000));
+  }, [loadedPlayId]);
+
+  // Wall-clock countdown computed from Date.now() - start so 13s on screen equals 13 real seconds (±1s),
+  // pausing cleanly whenever a modal/sheet is open.
+  useEffect(() => {
+    if (!loadedPlayId || isAnySheetOpen || hasRedirectedRef.current) return;
+
+    const segmentStart = Date.now();
+    const budgetAtStart = remainingMsRef.current;
+
+    const updateRemaining = () => {
+      if (hasRedirectedRef.current) return;
+      const elapsed = Date.now() - segmentStart;
+      const leftMs = Math.max(0, budgetAtStart - elapsed);
+      const nextSeconds = Math.ceil(leftMs / 1000);
+      setSecondsRemaining((prev) => (prev === nextSeconds ? prev : nextSeconds));
+      if (leftMs <= 0) {
+        hasRedirectedRef.current = true;
+        remainingMsRef.current = 0;
+        router.replace(returnTo || `/${locale}`);
+      }
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 200);
+
+    return () => {
+      clearInterval(interval);
+      if (!hasRedirectedRef.current) {
+        remainingMsRef.current = Math.max(0, budgetAtStart - (Date.now() - segmentStart));
+      }
+    };
+  }, [loadedPlayId, isAnySheetOpen, locale, returnTo, router]);
 
   useEffect(() => {
     const session = getLocalSession();
@@ -261,7 +283,6 @@ export default function ResultPage() {
   }, []);
 
   const loadResult = async () => {
-    setLoading(true);
     setError(null);
     const resolvedPlayId =
       rawPlayId === '_shell' && typeof window !== 'undefined'
@@ -282,9 +303,17 @@ export default function ResultPage() {
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed.totalScore === 'number') {
             cached = parsed;
+            if (Array.isArray(parsed.review) && parsed.review.length > 0) {
+              setData(parsed);
+              setLoading(false);
+            }
           }
         }
       } catch {}
+    }
+
+    if (!cached || !Array.isArray(cached.review) || cached.review.length === 0) {
+      setLoading(true);
     }
 
     try {
@@ -325,9 +354,7 @@ export default function ResultPage() {
               state.showCount < 3 &&
               (playsCount === 1 || res.streakCurrent === 3)
             ) {
-              setIsLinkSheetScheduled(true);
               const timer = setTimeout(() => {
-                setIsLinkSheetScheduled(false);
                 setIsLinkSheetOpen(true);
                 const trigger = playsCount === 1 ? 'round_1' : 'streak_3';
                 trackEvent('account_link_prompt_shown', { trigger });
@@ -364,42 +391,8 @@ export default function ResultPage() {
     loadResult();
   }, [rawPlayId]);
 
-  // After the score is shown, go back to the home screen, which switches to the
-  // "already played today" state with the live countdown to the next round.
-  useEffect(() => {
-    if (!data || returnTo || typeof window === 'undefined') return;
-    if (
-      isLinkSheetOpen ||
-      isSharePickerOpen ||
-      isCreateLeagueOpen ||
-      isJoinCodeOpen ||
-      isInstallOpen
-    ) {
-      return;
-    }
-    const key = `rd_result_auto_home_${data.playId}`;
-    if (sessionStorage.getItem(key)) return;
-    const timer = setTimeout(() => {
-      sessionStorage.setItem(key, '1');
-      router.replace(`/${locale}`);
-    }, 10_000);
-    return () => clearTimeout(timer);
-  }, [
-    data,
-    locale,
-    returnTo,
-    router,
-    isLinkSheetOpen,
-    isSharePickerOpen,
-    isCreateLeagueOpen,
-    isJoinCodeOpen,
-    isInstallOpen,
-  ]);
-
   const handleLinkDismissed = () => {
     setIsLinkSheetOpen(false);
-    setIsLinkSheetScheduled(false);
-    setLinkSheetJustClosed(true);
     if (!data) return;
     try {
       const stored = localStorage.getItem('rd_link_sheet_state');
@@ -421,10 +414,7 @@ export default function ResultPage() {
     setIsAccountLinked(true);
     setShowSlimBanner(false);
     setIsLinkSheetOpen(false);
-    setIsLinkSheetScheduled(false);
-    setLinkSheetJustClosed(true);
-    setToast(t('result.accountSaved'));
-    setTimeout(() => setToast(''), 3500);
+    showToastMessage(t('result.accountSaved'), 3500);
   };
 
   const triggerShareWithLink = async (inviteUrl: string) => {
@@ -441,17 +431,19 @@ export default function ResultPage() {
       inviteUrl,
     });
 
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({ text: cardText });
         return;
-      } catch {
+      } catch (err: unknown) {
+        if ((err as { name?: string })?.name === 'AbortError') {
+          return;
+        }
         // fallback to clipboard
       }
     }
-    await navigator.clipboard.writeText(cardText).catch(() => {});
-    setToast(t('result.copied'));
-    setTimeout(() => setToast(''), 3000);
+    await copyTextToClipboard(cardText);
+    showToastMessage(t('result.copied'), 3500);
   };
 
   const [createdLeague, setCreatedLeague] = useState<{
@@ -467,13 +459,14 @@ export default function ResultPage() {
   const handleShareClick = async () => {
     if (!data) return;
     const session = getLocalSession();
-    if (privateLeagues.length === 0 && !createdLeague) {
+    if (privateLeagues.length === 0 && !createdLeague && !data.primaryLeague?.inviteCode) {
       try {
         const res = await fetch('/api/leagues', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             uid: session.uid,
+            nickname: session.nickname || undefined,
             tz: getBrowserTimeZone(),
             locale,
           }),
@@ -488,20 +481,21 @@ export default function ResultPage() {
           setCreatedLeague(info);
           const origin = window.location.origin;
           const url = `${origin}/${locale}/l/${created.inviteCode}?r=${session.uid}`;
-          void triggerShareWithLink(url);
+          await triggerShareWithLink(url);
           return;
         }
       } catch {
-        // fallback to dialog
+        // fallback to sharing general link / dialog
       }
-      setIsCreateLeagueOpen(true);
+      const origin = window.location.origin;
+      await triggerShareWithLink(`${origin}/${locale}?r=${session.uid}`);
     } else if (privateLeagues.length <= 1) {
       const lg = createdLeague || privateLeagues[0] || data?.primaryLeague;
       const origin = window.location.origin;
       const url = lg?.inviteCode
         ? `${origin}/${locale}/l/${lg.inviteCode}?r=${session.uid}`
         : `${origin}/${locale}?r=${session.uid}`;
-      void triggerShareWithLink(url);
+      await triggerShareWithLink(url);
     } else {
       setIsSharePickerOpen(true);
     }
@@ -539,16 +533,15 @@ export default function ResultPage() {
         }),
       });
       if (res.ok) {
-        setToast(t('result.reportSent'));
+        showToastMessage(t('result.reportSent'));
       } else {
-        setToast(t('result.reportFailed'));
+        showToastMessage(t('result.reportFailed'));
       }
     } catch {
-      setToast(t('common.networkError'));
+      showToastMessage(t('common.networkError'));
     } finally {
       setIsReporting(false);
       setReportingQuestionId(null);
-      setTimeout(() => setToast(''), 3000);
     }
   };
 
@@ -597,12 +590,14 @@ export default function ResultPage() {
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
       {/* 15-second Auto-Redirect Countdown */}
       {secondsRemaining !== null && (
-        <div className="border-border bg-surface text-ink flex items-center justify-between gap-2 rounded-2xl border-2 p-3 text-xs font-bold shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]">
+        <div
+          data-testid="result-redirect-countdown"
+          className="border-border bg-surface text-ink flex items-center justify-between gap-2 rounded-2xl border-2 p-3 text-xs font-bold shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]"
+        >
           <div className="flex items-center gap-2">
             <span className="bg-volt-strong flex h-2.5 w-2.5 animate-pulse rounded-full" />
-            <span>
-              Revenire la pagina principală în{' '}
-              <strong className="rd-tabular text-ron-strong font-black">{secondsRemaining}s</strong>
+            <span className="rd-tabular">
+              {t('result.returningHomeIn', { seconds: secondsRemaining })}
             </span>
           </div>
           <Button
@@ -747,13 +742,18 @@ export default function ResultPage() {
                     weight="bold"
                     className="text-duel-strong shrink-0"
                   />
-                  <span className="text-ink truncate">{t('league.worldLeagueName')}</span>
+                  <div className="min-w-0">
+                    <span className="text-ink block truncate">{t('league.worldLeagueName')}</span>
+                    <span className="text-muted block text-[11px] font-medium">
+                      {t('league.membersCount', { count: worldRank.totalMembers })}
+                      {worldRank.playedTodayCount != null
+                        ? ` · ${t('common.playedTodayCount', { count: worldRank.playedTodayCount })}`
+                        : ''}
+                    </span>
+                  </div>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
-                  {t('common.rankPlace', { rank: worldRank.rank })}{' '}
-                  <span className="text-muted font-medium">
-                    ({t('league.membersCount', { count: worldRank.totalMembers })})
-                  </span>
+                  {t('common.rankPlace', { rank: worldRank.rank })}
                 </span>
               </div>
             )}
@@ -775,13 +775,18 @@ export default function ResultPage() {
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <Trophy size={16} weight="fill" className="text-volt-strong shrink-0" />
-                  <span className="text-ink truncate">{lg.name}</span>
+                  <div className="min-w-0">
+                    <span className="text-ink block truncate">{lg.name}</span>
+                    <span className="text-muted block text-[11px] font-medium">
+                      {t('league.membersCount', { count: lg.totalMembers })}
+                      {lg.playedTodayCount != null
+                        ? ` · ${t('common.playedTodayCount', { count: lg.playedTodayCount })}`
+                        : ''}
+                    </span>
+                  </div>
                 </div>
                 <span className="rd-tabular text-ink shrink-0 font-extrabold">
-                  {t('common.rankPlace', { rank: lg.rank })}{' '}
-                  <span className="text-muted font-medium">
-                    ({t('league.membersCount', { count: lg.totalMembers })})
-                  </span>
+                  {t('common.rankPlace', { rank: lg.rank })}
                 </span>
               </div>
             ))}
@@ -789,7 +794,13 @@ export default function ResultPage() {
         </div>
 
         {/* Primary action: Share to group */}
-        <Button fullWidth size="lg" variant="primary" onClick={handleShareClick}>
+        <Button
+          fullWidth
+          size="lg"
+          variant="primary"
+          data-testid="result-share-cta"
+          onClick={() => void handleShareClick()}
+        >
           <ShareNetwork size={20} weight="bold" aria-hidden="true" />
           {t('result.shareCta')}
         </Button>
@@ -912,8 +923,13 @@ export default function ResultPage() {
       <JoinByCodeDialog open={isJoinCodeOpen} onClose={() => setIsJoinCodeOpen(false)} />
 
       {toast && (
-        <div className="flex justify-center">
-          <Toast message={toast} tone="success" />
+        <div
+          data-testid="result-toast"
+          className="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-stack,64px)+var(--pwa-toast-height,0px)+16px+env(safe-area-inset-bottom,0px))] z-50 flex justify-center lg:left-60 lg:right-0"
+        >
+          <div className="pointer-events-auto">
+            <Toast message={toast} tone="success" />
+          </div>
         </div>
       )}
 
@@ -1044,10 +1060,6 @@ export default function ResultPage() {
           </div>
         </div>
       </Sheet>
-
-      {installPlatform && (
-        <InstallAppSheet open={isInstallOpen} platform={installPlatform} onClose={closeInstall} />
-      )}
     </main>
   );
 }

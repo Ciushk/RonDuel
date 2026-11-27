@@ -61,7 +61,7 @@
     "streak": "{days} napos széria",
     "shareCta": "Megosztás a csoporttal",
     "shareHint": "Oszd meg a csoportoddal. Ez lesz a ligátok.",
-    "copied": "Eredmény a vágólapra másolva!",
+    "copied": "Eredmény másolva! Illeszd be a csoportba.",
     "reviewTitle": "Válaszok áttekintése",
     "openLeague": "Liga ranglista megnyitása",
     "challengeFriend": "Hívd ki egy barátodat (1v1 párbaj)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "A fordulódat rögzítettük. Koppints a Próbáld újra gombra a pontszámod és a ranglista megtekintéséhez.",
     "backHome": "Vissza a kezdőlapra",
     "shareStreak": "🔥 {count, plural, one {# napos sorozat} other {# napos sorozat}}",
-    "shareBeatMe": "Győzz le engem → {url}"
+    "shareBeatMe": "Győzz le engem → {url}",
+    "returningHomeIn": "Vissza a főoldalra {seconds} mp múlva"
   },
   "league": {
     "joinTitle": "Meghívást kaptál a következő ligába: {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Csatlakoztál a ligához!",
     "privateJoinSheetHint": "Ez a liga privát. Add meg a tulajdonostól kapott kódot a csatlakozáshoz:",
     "joinErrorGeneric": "Hibás kód vagy nem sikerült csatlakozni a ligához.",
-    "full": "A liga megtelt ({count}/{max})"
+    "full": "A liga megtelt ({count}/{max})",
+    "notFoundTitle": "A liga nem található"
   },
   "duel": {
-    "title": "1v1 Split Court párbaj",
+    "title": "1v1 párbaj",
     "subtitle": "5 gyors kérdés · 24 óra áll rendelkezésre",
     "yourTurn": "Válaszolj az 5 kérdésedre",
     "waitingOpponent": "Várakozás az ellenfél játékára (24 órás időablak)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil és széria",
-    "bestStreak": "Legjobb széria: {days} nap",
+    "bestStreak": "{days, plural, one {Legjobb széria: 1 nap} other {Legjobb széria: # nap}}",
     "upgradeTitle": "Mentsd el a szériádat minden eszközödön",
     "upgradeBody": "Kapcsolj össze egy e-mail vagy Google-fiókot. Az azonosítód, a szériád és a ligáid megmaradnak.",
     "emailPlaceholder": "te@pelda.hu",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Akár 200 fős ligák és privát belépési jóváhagyás",
     "benefitDuels": "Korlátlan 1v1 párbaj (az ingyenes 4/hó helyett)",
     "benefitShield": "1 automatikus heti szériapajzs",
-    "benefitThemes": "3 exkluzív Split Court téma (Midnight, Clay, Neon)",
+    "benefitThemes": "3 exkluzív téma (Éjféli pálya, Salakos pálya, Neon Játékterem)",
     "benefitStats": "Részletes témaköri pontosság és korábbi fordulók archívuma",
     "euConsent": "Kérem az azonnali hozzáférést a RonDuel Pro digitális tartalomhoz, és tudomásul veszem, hogy a 14 napos EU elállási jogom az aktiválással megszűnik.",
     "upgradeFirst": "A vendégadatokat csak 7 napig őrizzük meg. Az előfizetéshez jelentkezz be, vagy hozz létre ingyenes fiókot, hogy a Pro hozzáférésed állandó profilhoz kapcsolódjon.",
@@ -400,8 +402,8 @@
     "deleted": "A helyi munkamenet és az adatok törölve lettek.",
     "languageSearchPlaceholder": "Nyelv keresése…",
     "languageNoResults": "Nem található nyelv",
-    "themeLight": "Világos (Cream Paper)",
-    "themeDark": "Sötét (Ink Night)",
+    "themeLight": "Világos",
+    "themeDark": "Sötét",
     "themeHighContrast": "Nagy kontraszt",
     "themeProMidnight": "Pro: Éjféli pálya",
     "themeProClay": "Pro: Salakos pálya",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Nem találhatók ligák.",
     "emptyTitle": "Játssz a barátaiddal!",
     "emptyBody": "Hozz létre ligát az irodának, a családnak vagy a csapatnak. Akár {max} tagig ingyenes.",
-    "createFirst": "Hozd létre az első ligádat"
+    "createFirst": "Hozd létre az első ligádat",
+    "leagueWorldRank": "A liga #{rank}. a világon"
   },
   "duels": {
     "shareText": "Kihívlak egy RonDuel párbajra! 5 gyors kérdés vár rád: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Már van egy aktív párbajod. Fejezd be, vagy válts Pro-ra a korlátlan párbajokért.",
     "errorCreate": "Nem sikerült létrehozni a párbajt",
     "yourTurn": "Te következel",
-    "waitingOpponent": "Várakozás az ellenfeledre"
+    "waitingOpponent": "Várakozás az ellenfeledre",
+    "tabActive": "Aktív",
+    "tabFinished": "Befejezett",
+    "tabStats": "Pontszámom",
+    "emptyActiveTitle": "Nincs folyamatban lévő párbaj",
+    "emptyActiveBody": "Hívj ki egy barátot egy gyors 1v1 párbajra, vagy várd meg a választ!",
+    "emptyFinishedTitle": "Még nincs befejezett párbaj",
+    "emptyFinishedBody": "Itt jelennek meg a befejezett párbajaid és az eredmények.",
+    "statsTotalScore": "Összes párbajpont",
+    "statsPointsUnit": "pont",
+    "statsWins": "Győzelmek",
+    "statsLosses": "Vereségek",
+    "statsDraws": "Döntetlenek",
+    "statsTotalDuels": "Összes párbaj",
+    "statsWinRate": "Győzelmi arány",
+    "waitingForOpponent": "Ellenfélre vár",
+    "copyLink": "Link másolása"
   },
   "themes": {
     "worldScience": "Világ és tudomány 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Nagyítás",
       "zoomOut": "Kicsinyítés",
       "loading": "RonTown betöltése…",
-      "rotatingBanner": "Érints egy mezőt vagy épületet a forgatáshoz"
+      "rotatingBanner": "Érints egy mezőt vagy épületet a forgatáshoz",
+      "cellItemAria": "{item} itt: ({x}, {y})"
     },
     "status": {
       "connecting": "Csatlakozás…",

@@ -19,6 +19,7 @@ import { AuthModal } from '@/components/AuthModal';
 import { VersusCard } from '@/components/duel/VersusCard';
 import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { Avatar, Button, Card, Chip, TimerBar, Toast } from '@/components/ui';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { getBrowserTimeZone, getLocalSession, recordPlayedDuel, vibrate } from '@/lib/session';
 import { useInstallPrompt } from '@/lib/use-install-prompt';
 
@@ -173,6 +174,8 @@ export default function DuelPage() {
   const submitTurnAnswer = useCallback(
     async (choice: number | string[] | null) => {
       if (!item || feedback || submitting) return;
+      const frozenRemaining = Math.max(0, deadlineRef.current - Date.now());
+      setRemainingMs(frozenRemaining);
       if (typeof choice === 'number') {
         setSelectedChoice(choice);
         setLockedIndex(choice);
@@ -180,8 +183,7 @@ export default function DuelPage() {
       }
       setSubmitting(true);
 
-      const currentRemaining = Math.max(0, deadlineRef.current - Date.now());
-      const isFast = item.limitMs > 0 && currentRemaining >= item.limitMs * 0.67;
+      const isFast = item.limitMs > 0 && frozenRemaining >= item.limitMs * 0.67;
       setIsFastAnswer(isFast);
 
       const s = getLocalSession();
@@ -229,7 +231,7 @@ export default function DuelPage() {
   );
 
   useEffect(() => {
-    if (!playing || !item || feedback) return;
+    if (!playing || !item || feedback || submitting) return;
     const interval = setInterval(() => {
       const left = Math.max(0, deadlineRef.current - Date.now());
       setRemainingMs(left);
@@ -239,7 +241,7 @@ export default function DuelPage() {
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [playing, item, feedback, submitTurnAnswer]);
+  }, [playing, item, feedback, submitting, submitTurnAnswer]);
 
   const moveOrderItem = (idx: number, delta: -1 | 1) => {
     const target = idx + delta;
@@ -251,7 +253,7 @@ export default function DuelPage() {
 
   const copyLink = async () => {
     const url = `${window.location.origin}/${locale}/duel/${duelId}`;
-    await navigator.clipboard.writeText(url).catch(() => {});
+    await copyTextToClipboard(url);
     setToast(t('duel.linkCopied'));
     setTimeout(() => setToast(''), 2500);
   };
@@ -290,7 +292,11 @@ export default function DuelPage() {
           </Chip>
         </div>
 
-        <TimerBar remainingMs={remainingMs} limitMs={item.limitMs} />
+        <TimerBar
+          remainingMs={remainingMs}
+          limitMs={item.limitMs}
+          paused={Boolean(submitting || feedback)}
+        />
 
         <Card className="space-y-4">
           <h1 className="font-display text-2xl font-extrabold">{item.prompt}</h1>

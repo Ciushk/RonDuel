@@ -61,7 +61,7 @@
     "streak": "Série {days} dní",
     "shareCta": "Sdílet do skupiny",
     "shareHint": "Sdílej do své skupiny. Automaticky se stane vaší ligou.",
-    "copied": "Výsledek zkopírován do schránky!",
+    "copied": "Výsledek zkopírován! Vlož ho do skupiny.",
     "reviewTitle": "Přehled odpovědí",
     "openLeague": "Otevřít žebříček ligy",
     "challengeFriend": "Vyzvat kamaráda (Souboj 1v1)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Tvoje kolo bylo zaznamenáno. Klepni na Zkusit znovu a uvidíš své skóre a žebříček.",
     "backHome": "Zpět domů",
     "shareStreak": "🔥 {count, plural, one {série # dne} few {série # dní} many {série # dní} other {série # dne}}",
-    "shareBeatMe": "Poraž mě → {url}"
+    "shareBeatMe": "Poraž mě → {url}",
+    "returningHomeIn": "Návrat na domovskou stránku za {seconds} s"
   },
   "league": {
     "joinTitle": "Máš pozvánku do ligy {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Připojil ses do ligy!",
     "privateJoinSheetHint": "Tato liga je soukromá. Zadej kód od majitele pro připojení:",
     "joinErrorGeneric": "Nesprávný kód nebo chyba při připojení k lize.",
-    "full": "Liga je plná ({count}/{max})"
+    "full": "Liga je plná ({count}/{max})",
+    "notFoundTitle": "Liga nenalezena"
   },
   "duel": {
-    "title": "Souboj 1v1 Split Court",
+    "title": "Souboj 1v1",
     "subtitle": "5 rychlých otázek · 24 hodin na odehrání",
     "yourTurn": "Odehrej svých 5 otázek",
     "waitingOpponent": "Čeká se na tah soupeře (limit 24 h)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profil a série",
-    "bestStreak": "Nejdelší série: {days} dní",
+    "bestStreak": "{days, plural, one {Nejdelší série: 1 den} few {Nejdelší série: # dny} many {Nejdelší série: # dne} other {Nejdelší série: # dní}}",
     "upgradeTitle": "Uchovej si sérii na všech zařízeních",
     "upgradeBody": "Propoj svůj e-mail nebo Google účet. Tvé UID, série i ligy zůstanou zachovány.",
     "emailPlaceholder": "ty@priklad.cz",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Ligy až pro 200 členů a schvalování žádostí o vstup",
     "benefitDuels": "Neomezené souboje 1v1 (oproti 4 za měsíc zdarma)",
     "benefitShield": "1 automatický týdenní štít série",
-    "benefitThemes": "3 exkluzivní motivy Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 exkluzivní motivy (Půlnoční kurt, Antukový kurt, Neonová arkáda)",
     "benefitStats": "Pokročilá úspěšnost podle témat a archiv minulých kol",
     "euConsent": "Žádám o okamžitý přístup k digitálnímu obsahu RonDuel Pro a beru na vědomí, že mé 14denní právo EU na odstoupení od smlouvy aktivací zaniká.",
     "upgradeFirst": "Data hostů se uchovávají jen 7 dní. Pro předplatné se přihlas nebo si vytvoř bezplatný účet, aby tvoje Pro bylo spojené s trvalým profilem.",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Nebyly nalezeny žádné ligy.",
     "emptyTitle": "Hraj s přáteli!",
     "emptyBody": "Vytvoř ligu pro kancelář, rodinu nebo partu. Pro až {max} členů je to zdarma.",
-    "createFirst": "Vytvoř svou první ligu"
+    "createFirst": "Vytvoř svou první ligu",
+    "leagueWorldRank": "Liga je #{rank} na světě"
   },
   "duels": {
     "shareText": "Vyzývám tě na duel v RonDuel! Čeká tě 5 rychlých otázek: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Už máš aktivní duel. Dokonči ho nebo přejdi na Pro pro neomezené duely.",
     "errorCreate": "Duel se nepodařilo vytvořit",
     "yourTurn": "Tvůj tah",
-    "waitingOpponent": "Čekání na soupeře"
+    "waitingOpponent": "Čekání na soupeře",
+    "tabActive": "Rozehrané",
+    "tabFinished": "Dokončené",
+    "tabStats": "Moje skóre",
+    "emptyActiveTitle": "Žádné probíhající duely",
+    "emptyActiveBody": "Vyzvi kamaráda na rychlý 1v1 duel nebo počkej na odpověď na výzvu!",
+    "emptyFinishedTitle": "Zatím žádné dokončené duely",
+    "emptyFinishedBody": "Zde se zobrazí tvé dokončené duely a výsledky soubojů.",
+    "statsTotalScore": "Celkové skóre v duelech",
+    "statsPointsUnit": "bodů",
+    "statsWins": "Výhry",
+    "statsLosses": "Prohry",
+    "statsDraws": "Remízy",
+    "statsTotalDuels": "Celkem duelů",
+    "statsWinRate": "Úspěšnost",
+    "waitingForOpponent": "Čeká na soupeře",
+    "copyLink": "Kopírovat odkaz"
   },
   "themes": {
     "worldScience": "Svět a Věda 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Přiblížit",
       "zoomOut": "Oddálit",
       "loading": "Načítání RonTown…",
-      "rotatingBanner": "Klepni na pole nebo budovu pro otočení"
+      "rotatingBanner": "Klepni na pole nebo budovu pro otočení",
+      "cellItemAria": "{item} na ({x}, {y})"
     },
     "status": {
       "connecting": "Připojování…",

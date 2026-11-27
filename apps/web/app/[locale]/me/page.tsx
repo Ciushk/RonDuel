@@ -88,23 +88,6 @@ interface ProfileData {
   topicAccuracy: Array<{ topic: string; accuracyPct: number; total: number }>;
 }
 
-function formatStreakText(
-  days: number,
-  locale: string,
-  t: (key: string, values?: Record<string, any>) => string,
-): string {
-  if (locale === 'ro') {
-    if (days === 1) return t('profile.streakOne');
-    const mod100 = days % 100;
-    if (days === 0 || (mod100 >= 2 && mod100 <= 19)) {
-      return t('profile.streakFew', { days });
-    }
-    return t('profile.streakMany', { days });
-  }
-  if (days === 1) return t('profile.streakOne');
-  return t('profile.streakFew', { days });
-}
-
 export default function ProfilePage() {
   const t = useTranslations();
   const locale = useLocale();
@@ -708,7 +691,7 @@ export default function ProfilePage() {
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <Chip tone="volt" className="shrink-0 whitespace-nowrap">
             <Flame size={14} weight="fill" aria-hidden="true" />
-            <span>{formatStreakText(profile.streakCurrent, locale, t)}</span>
+            <span>{t('common.daysCount', { count: profile.streakCurrent })}</span>
           </Chip>
           <button
             type="button"

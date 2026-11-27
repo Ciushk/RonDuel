@@ -12,6 +12,7 @@ const CreateLeagueSchema = z.object({
   themeEmoji: z.string().optional(),
   themeColor: z.string().optional(),
   plan: z.enum(['free', 'pro_trial', 'pro']).optional(),
+  nickname: z.string().max(40).optional(),
 });
 
 export async function POST(req: Request) {
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
       themeEmoji: body.themeEmoji,
       themeColor: body.themeColor,
       plan: body.plan,
+      nickname: body.nickname,
     });
     return NextResponse.json({
       id: league.id,

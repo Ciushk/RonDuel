@@ -9,20 +9,22 @@ export interface TimerBarProps {
   limitMs: number;
   label?: string;
   className?: string;
+  paused?: boolean;
 }
 
-export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarProps) {
+export function TimerBar({ remainingMs, limitMs, label, className, paused = false }: TimerBarProps) {
   const t = useTranslations();
   const clamped = Math.max(0, Math.min(limitMs, remainingMs));
   const pct = limitMs > 0 ? (clamped / limitMs) * 100 : 0;
   const secondsLeft = Math.ceil(clamped / 1000);
-  const isUrgent = clamped > 0 && clamped <= 3_000;
+  const isUrgent = !paused && clamped > 0 && clamped <= 3_000;
 
   return (
-    <div className={cn('w-full space-y-1', className)}>
+    <div className={cn('w-full space-y-1', className)} data-paused={paused ? 'true' : 'false'}>
       <div className="flex items-center justify-between text-xs font-bold">
         <span className="text-muted">{label || t('play.timeLeft')}</span>
         <span
+          data-testid="timer-seconds"
           className={cn('rd-tabular text-sm font-bold', isUrgent ? 'text-ron-strong' : 'text-ink')}
         >
           {secondsLeft}s
@@ -38,7 +40,8 @@ export function TimerBar({ remainingMs, limitMs, label, className }: TimerBarPro
       >
         <div
           className={cn(
-            'h-full rounded-full transition-[width] duration-100 ease-linear',
+            'h-full rounded-full',
+            paused ? 'transition-none' : 'transition-[width] duration-100 ease-linear',
             isUrgent ? 'bg-ron animate-pulse' : 'bg-duel',
           )}
           style={{ width: `${pct}%` }}

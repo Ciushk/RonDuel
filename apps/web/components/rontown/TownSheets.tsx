@@ -2,6 +2,7 @@
 
 import {
   ArrowsOutCardinal,
+  Buildings,
   CheckCircle,
   Gift,
   Hammer,
@@ -399,9 +400,12 @@ export function TownSheets({
                               draggable={false}
                             />
                           ) : (
-                            <span className="text-muted font-mono text-[10px] font-black uppercase">
-                              {item.id.slice(0, 3)}
-                            </span>
+                            <Buildings
+                              size={24}
+                              weight="duotone"
+                              aria-hidden="true"
+                              className="text-muted"
+                            />
                           )}
                         </div>
                         <div className="min-w-0 space-y-0.5">

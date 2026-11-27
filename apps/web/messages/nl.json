@@ -61,7 +61,7 @@
     "streak": "{days}-daagse streak",
     "shareCta": "Deel met je groep",
     "shareHint": "Deel met je groep. Dit wordt jullie competitie.",
-    "copied": "Resultaat gekopieerd naar klembord!",
+    "copied": "Resultaat gekopieerd! Plak het in je groep.",
     "reviewTitle": "Antwoorden bekijken",
     "openLeague": "Open stand van competitie",
     "challengeFriend": "Daag een vriend uit (1v1 Duel)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Je ronde is geregistreerd. Tik op Opnieuw proberen om je score en de ranglijst te zien.",
     "backHome": "Terug naar start",
     "shareStreak": "🔥 {count, plural, one {#-daagse streak} other {#-daagse streak}}",
-    "shareBeatMe": "Versla mij maar eens → {url}"
+    "shareBeatMe": "Versla mij maar eens → {url}",
+    "returningHomeIn": "Terug naar startpagina over {seconds}s"
   },
   "league": {
     "joinTitle": "Je bent uitgenodigd voor {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Je doet nu mee aan de competitie!",
     "privateJoinSheetHint": "Deze competitie is privé. Vul de code van de eigenaar in om deel te nemen:",
     "joinErrorGeneric": "Onjuiste code of fout bij het deelnemen.",
-    "full": "Competitie is vol ({count}/{max})"
+    "full": "Competitie is vol ({count}/{max})",
+    "notFoundTitle": "Competitie niet gevonden"
   },
   "duel": {
-    "title": "1v1 Scherm-duel",
+    "title": "1v1-duel",
     "subtitle": "5 snelle vragen · 24 uur op de klok",
     "yourTurn": "Speel jouw 5 vragen",
     "waitingOpponent": "Wachten tot tegenstander speelt (venster van 24 uur)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Profiel & Streak",
-    "bestStreak": "Beste streak: {days} dagen",
+    "bestStreak": "{days, plural, one {Beste reeks: 1 dag} other {Beste reeks: # dagen}}",
     "upgradeTitle": "Bewaar je streak op al je apparaten",
     "upgradeBody": "Koppel een e-mail of Google-account. Je UID, streak en competities blijven behouden.",
     "emailPlaceholder": "jij@voorbeeld.nl",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Competities tot 200 leden & privé-toelatingsbeheer",
     "benefitDuels": "Onbeperkt 1v1 duels (i.p.v. 4/maand gratis)",
     "benefitShield": "1 automatisch wekelijks streak-schild",
-    "benefitThemes": "3 exclusieve Split Court thema's (Midnight, Clay, Neon)",
+    "benefitThemes": "3 exclusieve thema's (Middernachtbaan, Gravelbaan, Neon Arcadehal)",
     "benefitStats": "Geavanceerde onderwerpnauwkeurigheid & archief van eerdere rondes",
     "euConsent": "Ik vraag onmiddellijke toegang tot de digitale inhoud van RonDuel Pro en bevestig dat mijn 14-daagse wettelijke herroepingsrecht in de EU vervalt bij activatie.",
     "upgradeFirst": "Gastgegevens worden maar 7 dagen bewaard. Log in of maak een gratis account aan om een abonnement te nemen, zodat je Pro aan een permanent profiel gekoppeld blijft.",
@@ -400,8 +402,8 @@
     "deleted": "Je lokale sessie en gegevens zijn verwijderd.",
     "languageSearchPlaceholder": "Zoek een taal…",
     "languageNoResults": "Geen taal gevonden",
-    "themeLight": "Licht (Cream Paper)",
-    "themeDark": "Donker (Ink Night)",
+    "themeLight": "Licht",
+    "themeDark": "Donker",
     "themeHighContrast": "Hoog contrast",
     "themeProMidnight": "Pro: Middernachtbaan",
     "themeProClay": "Pro: Gravelbaan",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Geen competities gevonden.",
     "emptyTitle": "Speel met je vrienden!",
     "emptyBody": "Maak een competitie voor je kantoor, familie of vriendengroep. Gratis tot {max} leden.",
-    "createFirst": "Maak je eerste competitie"
+    "createFirst": "Maak je eerste competitie",
+    "leagueWorldRank": "Competitie staat #{rank} wereldwijd"
   },
   "duels": {
     "shareText": "Ik daag je uit voor een duel op RonDuel! Je krijgt 5 snelle vragen: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Je hebt al een actief duel. Rond het af of word Pro voor onbeperkte duels.",
     "errorCreate": "Kon het duel niet aanmaken",
     "yourTurn": "Jouw beurt",
-    "waitingOpponent": "Wachten op je tegenstander"
+    "waitingOpponent": "Wachten op je tegenstander",
+    "tabActive": "Actief",
+    "tabFinished": "Afgerond",
+    "tabStats": "Mijn score",
+    "emptyActiveTitle": "Geen actieve duels",
+    "emptyActiveBody": "Daag een vriend uit voor een snel 1v1-duel of wacht op een reactie!",
+    "emptyFinishedTitle": "Nog geen afgeronde duels",
+    "emptyFinishedBody": "Hier verschijnen je afgeronde duels en uitslagen.",
+    "statsTotalScore": "Totale duelscore",
+    "statsPointsUnit": "punten",
+    "statsWins": "Gewonnen",
+    "statsLosses": "Verloren",
+    "statsDraws": "Gelijkspel",
+    "statsTotalDuels": "Totaal duels",
+    "statsWinRate": "Winstpercentage",
+    "waitingForOpponent": "Wacht op tegenstander",
+    "copyLink": "Link kopiëren"
   },
   "themes": {
     "worldScience": "Wereld & wetenschap 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Inzoomen",
       "zoomOut": "Uitzoomen",
       "loading": "RonTown laden…",
-      "rotatingBanner": "Tik op een tegel of gebouw om te draaien"
+      "rotatingBanner": "Tik op een tegel of gebouw om te draaien",
+      "cellItemAria": "{item} op ({x}, {y})"
     },
     "status": {
       "connecting": "Verbinden…",

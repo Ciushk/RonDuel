@@ -1,6 +1,15 @@
 'use client';
 
-import { Clock, Crown, Play, Plus, ShareNetwork, Sword, Trophy, User } from '@phosphor-icons/react';
+import {
+  Clock,
+  Copy,
+  Crown,
+  Play,
+  Plus,
+  ShareNetwork,
+  Sword,
+  User,
+} from '@phosphor-icons/react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,6 +17,7 @@ import { useEffect, useState } from 'react';
 
 import { Avatar, Button, Card, Chip, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { getBrowserTimeZone, getLocalSession } from '@/lib/session';
 
 interface DuelSummary {
@@ -56,6 +66,10 @@ interface DuelsResponse {
 function formatHoursLeft(ms: number, t: (key: any, values?: any) => string): string {
   const hours = Math.max(1, Math.ceil(ms / (1000 * 60 * 60)));
   return t('common.hoursLeft', { hours });
+}
+
+function hasOpponentJoined(duel: DuelSummary): boolean {
+  return Boolean(duel.opponentUid && duel.opponentNickname?.trim());
 }
 
 export default function DuelsPage() {
@@ -124,33 +138,39 @@ export default function DuelsPage() {
     }
   };
 
-  const handleShareDuel = async (duelId: string) => {
+  const handleShareDuel = async (duelId: string, copyOnly = false) => {
     const link = `${window.location.origin}/${locale}/duel/${encodeURIComponent(duelId)}`;
     const shareText = t('duels.shareText', { link });
 
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    if (!copyOnly && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({ text: shareText, url: link });
         return;
-      } catch {}
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+      }
     }
-    await navigator.clipboard.writeText(shareText).catch(() => {});
+    await copyTextToClipboard(copyOnly ? link : shareText);
     setToast(t('duel.linkCopied'));
     setTimeout(() => setToast(''), 3000);
   };
 
-  const yourTurn = duelsData?.yourTurn ?? [];
-  const waiting = duelsData?.waiting ?? [];
+  // Defensively ensure open duels without an opponent always appear in the Waiting group
+  const rawYourTurn = duelsData?.yourTurn ?? [];
+  const rawWaiting = duelsData?.waiting ?? [];
+  const yourTurn = rawYourTurn.filter((d) => hasOpponentJoined(d));
+  const waiting = [...rawYourTurn.filter((d) => !hasOpponentJoined(d)), ...rawWaiting];
   const finished = duelsData?.finished ?? [];
-  const totalDuels = yourTurn.length + waiting.length + finished.length;
 
   const startedCount = yourTurn.length + waiting.length;
 
   const statsWins = duelsData?.stats?.wins ?? finished.filter((d) => d.isWinner).length;
   const statsDraws = duelsData?.stats?.draws ?? finished.filter((d) => d.isTie).length;
-  const statsLosses = duelsData?.stats?.losses ?? finished.filter((d) => !d.isWinner && !d.isTie).length;
-  const statsTotalScore = duelsData?.stats?.totalScore ?? finished.reduce((sum, d) => sum + (d.myScore ?? 0), 0);
-  const statsPlayed = duelsData?.stats?.played ?? (statsWins + statsDraws + statsLosses);
+  const statsLosses =
+    duelsData?.stats?.losses ?? finished.filter((d) => !d.isWinner && !d.isTie).length;
+  const statsTotalScore =
+    duelsData?.stats?.totalScore ?? finished.reduce((sum, d) => sum + (d.myScore ?? 0), 0);
+  const statsPlayed = duelsData?.stats?.played ?? statsWins + statsDraws + statsLosses;
   const winRate = statsPlayed > 0 ? Math.round((statsWins / statsPlayed) * 100) : 0;
 
   return (
@@ -177,21 +197,21 @@ export default function DuelsPage() {
         </div>
       </div>
 
-      {/* Card Incepe un duel nou */}
+      {/* Start a new duel card */}
       <Card
         variant="sticker"
         className="border-border bg-surface text-ink flex flex-col gap-3.5 border-2 p-4 shadow-[var(--rd-shadow-key)]"
       >
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="border-border bg-volt text-[#16131F] flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 shadow-sm">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="border-border bg-volt flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 text-[#16131F] shadow-sm">
               <Sword size={22} weight="fill" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-display truncate text-base font-extrabold text-ink">
+              <h2 className="font-display text-ink truncate text-base font-extrabold">
                 {t('duels.startNew')}
               </h2>
-              <p className="text-muted text-xs font-bold truncate">
+              <p className="text-muted truncate text-xs font-bold">
                 {duelsData?.isPro ? (
                   <span className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400">
                     <Crown size={14} weight="fill" />
@@ -219,22 +239,25 @@ export default function DuelsPage() {
         </div>
       </Card>
 
-      {/* 3 Taburi sub cardul Incepe un duel nou */}
-      <div className="grid grid-cols-3 gap-1.5 rounded-2xl border-2 border-border bg-surface-2 p-1.5 shadow-sm" role="tablist">
+      {/* 3 Tabs */}
+      <div
+        className="border-border bg-surface-2 grid grid-cols-3 gap-1.5 rounded-2xl border-2 p-1.5 shadow-sm"
+        role="tablist"
+      >
         <button
           type="button"
           role="tab"
           aria-selected={tab === 'active'}
           onClick={() => setTab('active')}
-          className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs font-black transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-xs font-black transition-all ${
             tab === 'active'
-              ? 'bg-surface text-ink border-2 border-border shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+              ? 'bg-surface text-ink border-border border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
               : 'text-muted hover:text-ink'
           }`}
         >
-          <span>Începute</span>
+          <span className="truncate">{t('duels.tabActive')}</span>
           {startedCount > 0 && (
-            <span className="bg-volt-strong text-[#16131F] flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-black">
+            <span className="bg-volt-strong flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-black text-[#16131F]">
               {startedCount}
             </span>
           )}
@@ -245,15 +268,15 @@ export default function DuelsPage() {
           role="tab"
           aria-selected={tab === 'finished'}
           onClick={() => setTab('finished')}
-          className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs font-black transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-xs font-black transition-all ${
             tab === 'finished'
-              ? 'bg-surface text-ink border-2 border-border shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+              ? 'bg-surface text-ink border-border border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
               : 'text-muted hover:text-ink'
           }`}
         >
-          <span>Terminate</span>
+          <span className="truncate">{t('duels.tabFinished')}</span>
           {finished.length > 0 && (
-            <span className="bg-surface border border-border text-ink flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-black">
+            <span className="bg-surface border-border text-ink flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full border px-1 text-[10px] font-black">
               {finished.length}
             </span>
           )}
@@ -264,13 +287,13 @@ export default function DuelsPage() {
           role="tab"
           aria-selected={tab === 'stats'}
           onClick={() => setTab('stats')}
-          className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs font-black transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-xs font-black transition-all ${
             tab === 'stats'
-              ? 'bg-surface text-ink border-2 border-border shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
+              ? 'bg-surface text-ink border-border border-2 shadow-[2px_2px_0px_0px_var(--border-color,#16131F)]'
               : 'text-muted hover:text-ink'
           }`}
         >
-          <span>Scorul meu</span>
+          <span className="truncate">{t('duels.tabStats')}</span>
         </button>
       </div>
 
@@ -296,12 +319,16 @@ export default function DuelsPage() {
       )}
 
       {toast && (
-        <div className="flex justify-center">
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--bottom-stack,64px)+12px+env(safe-area-inset-bottom,0px))] z-50 flex justify-center px-4"
+        >
           <Toast message={toast} tone="success" />
         </div>
       )}
 
-      {/* TAB 1: DUELURI INCEPUTE */}
+      {/* TAB 1: ACTIVE DUELS */}
       {tab === 'active' && (
         <div className="space-y-4">
           {startedCount === 0 && !loading && (
@@ -310,9 +337,11 @@ export default function DuelsPage() {
                 <Sword size={24} weight="bold" className="text-volt-strong dark:text-volt" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-display text-ink text-base font-black">Niciun duel în derulare</h3>
+                <h3 className="font-display text-ink text-base font-black">
+                  {t('duels.emptyActiveTitle')}
+                </h3>
                 <p className="text-muted mx-auto max-w-[280px] text-xs">
-                  Provoacă un prieten la un duel 1v1 rapid sau așteaptă să răspundă la provocare!
+                  {t('duels.emptyActiveBody')}
                 </p>
               </div>
               <div className="flex justify-center pt-2">
@@ -385,59 +414,115 @@ export default function DuelsPage() {
                 {t('duels.sectionWaiting', { count: waiting.length })}
               </h2>
               <div className="space-y-2">
-                {waiting.map((duel) => (
-                  <div
-                    key={duel.id}
-                    className="border-border bg-surface flex items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)]"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar nickname={duel.opponentNickname} size="md" />
-                      <div className="min-w-0">
-                        <p className="font-display truncate text-sm font-extrabold">
-                          {t('common.versus', { name: duel.opponentNickname })}
-                        </p>
-                        <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
-                          <span>
-                            {t('duels.yourScore', { score: duel.myScore ?? 0 })} ·{' '}
-                            {formatHoursLeft(duel.timeLeftMs, t)}
-                          </span>
-                          {duel.h2h && (
-                            <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
-                              H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
+                {waiting.map((duel) => {
+                  const joined = hasOpponentJoined(duel);
+                  return (
+                    <div
+                      key={duel.id}
+                      className="border-border bg-surface flex items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)]"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        {joined ? (
+                          <Avatar nickname={duel.opponentNickname} size="md" />
+                        ) : (
+                          <div
+                            aria-hidden="true"
+                            className="border-border bg-surface-2 text-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2"
+                          >
+                            <User size={18} weight="bold" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-display truncate text-sm font-extrabold">
+                            {joined
+                              ? t('common.versus', { name: duel.opponentNickname })
+                              : t('duels.waitingForOpponent')}
+                          </p>
+                          <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
+                            <span>
+                              {duel.myTurn
+                                ? formatHoursLeft(duel.timeLeftMs, t)
+                                : `${t('duels.yourScore', { score: duel.myScore ?? 0 })} · ${formatHoursLeft(duel.timeLeftMs, t)}`}
                             </span>
-                          )}
-                          {duel.h2h && duel.h2h.winStreak >= 3 && (
-                            <span className="text-ron-strong text-[11px] font-black">
-                              🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
-                            </span>
-                          )}
+                            {joined && duel.h2h && (
+                              <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
+                                H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
+                              </span>
+                            )}
+                            {joined && duel.h2h && duel.h2h.winStreak >= 3 && (
+                              <span className="text-ron-strong text-[11px] font-black">
+                                🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {!joined && duel.myTurn ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-10 px-2.5 text-xs font-bold"
+                              aria-label={t('duels.copyLink')}
+                              onClick={() => void handleShareDuel(duel.id, true)}
+                            >
+                              <Copy size={16} weight="bold" />
+                            </Button>
+                            <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
+                              <Button
+                                size="sm"
+                                variant="volt"
+                                className="h-10 shrink-0 px-3 text-xs font-black"
+                              >
+                                <Play size={14} weight="fill" />
+                                <span>{t('common.playNow')}</span>
+                              </Button>
+                            </Link>
+                          </>
+                        ) : !joined && !duel.myTurn ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-10 shrink-0 px-3 text-xs font-bold"
+                            onClick={() => void handleShareDuel(duel.id, true)}
+                          >
+                            <Copy size={15} weight="bold" />
+                            <span>{t('duels.copyLink')}</span>
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-10 px-2.5 text-xs font-bold"
+                              aria-label={t('duels.copyLink')}
+                              onClick={() => void handleShareDuel(duel.id)}
+                            >
+                              <ShareNetwork size={16} weight="bold" />
+                            </Button>
+                            <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="h-10 px-3 text-xs font-bold"
+                              >
+                                {t('common.open')}
+                              </Button>
+                            </Link>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-10 px-2.5 text-xs font-bold"
-                        onClick={() => handleShareDuel(duel.id)}
-                      >
-                        <ShareNetwork size={16} weight="bold" />
-                      </Button>
-                      <Link href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}>
-                        <Button size="sm" variant="secondary" className="h-10 px-3 text-xs font-bold">
-                          {t('common.open')}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}
         </div>
       )}
 
-      {/* TAB 2: DUELURI TERMINATE */}
+      {/* TAB 2: FINISHED DUELS */}
       {tab === 'finished' && (
         <section className="space-y-2.5">
           <div className="flex items-center justify-between">
@@ -451,89 +536,107 @@ export default function DuelsPage() {
                 🏆
               </div>
               <div className="space-y-1">
-                <h3 className="font-display text-ink text-base font-black">Niciun duel finalizat încă</h3>
+                <h3 className="font-display text-ink text-base font-black">
+                  {t('duels.emptyFinishedTitle')}
+                </h3>
                 <p className="text-muted mx-auto max-w-[280px] text-xs">
-                  Aici vor apărea duelurile tale terminate și rezultatele confruntărilor!
+                  {t('duels.emptyFinishedBody')}
                 </p>
               </div>
             </Card>
           ) : (
             <div className="space-y-2">
-              {finished.map((duel) => (
-                <Link
-                  key={duel.id}
-                  href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}
-                  className="border-border bg-surface text-ink hover:border-border-subtle flex select-none items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Avatar nickname={duel.opponentNickname} size="md" />
-                    <div className="min-w-0">
-                      <p className="font-display truncate text-sm font-extrabold">
-                        {t('common.versus', { name: duel.opponentNickname })}
-                      </p>
-                      <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
-                        <span>
-                          {duel.myScore} - {duel.opponentScore}{' '}
-                          {t('common.points', { points: '' }).trim()}
-                        </span>
-                        {duel.h2h && (
-                          <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
-                            H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
+              {finished.map((duel) => {
+                const joined = hasOpponentJoined(duel);
+                return (
+                  <Link
+                    key={duel.id}
+                    href={`/${locale}/duel/${encodeURIComponent(duel.id)}`}
+                    className="border-border bg-surface text-ink hover:border-border-subtle flex select-none items-center justify-between gap-3 rounded-2xl border-2 p-4 shadow-[var(--rd-shadow-key)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      {joined ? (
+                        <Avatar nickname={duel.opponentNickname} size="md" />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="border-border bg-surface-2 text-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2"
+                        >
+                          <User size={18} weight="bold" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-display truncate text-sm font-extrabold">
+                          {joined
+                            ? t('common.versus', { name: duel.opponentNickname })
+                            : t('duels.waitingForOpponent')}
+                        </p>
+                        <div className="text-muted flex flex-wrap items-center gap-1.5 text-xs">
+                          <span>
+                            {duel.myScore} - {duel.opponentScore}{' '}
+                            {t('common.points', { points: '' }).trim()}
                           </span>
-                        )}
-                        {duel.h2h && duel.h2h.winStreak >= 3 && (
-                          <span className="text-ron-strong text-[11px] font-black">
-                            🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
-                          </span>
+                          {joined && duel.h2h && (
+                            <span className="border-border bg-surface-2 text-ink py-0.2 rounded border px-1.5 text-[10px] font-black">
+                              H2H: {duel.h2h.myWins}–{duel.h2h.opponentWins}
+                            </span>
+                          )}
+                          {joined && duel.h2h && duel.h2h.winStreak >= 3 && (
+                            <span className="text-ron-strong text-[11px] font-black">
+                              🔥 {t('duels.winStreak', { count: duel.h2h.winStreak })}
+                            </span>
+                          )}
+                        </div>
+                        {duel.walkover && (
+                          <p className="text-ron-strong mt-0.5 text-[11px] font-bold">
+                            {duel.walkoverNote || t('duels.walkoverBadge')}
+                          </p>
                         )}
                       </div>
-                      {duel.walkover && (
-                        <p className="text-ron-strong mt-0.5 text-[11px] font-bold">
-                          {duel.walkoverNote || t('duels.walkoverBadge')}
-                        </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {duel.isWinner ? (
+                        <Chip tone="volt" className="text-xs font-black">
+                          {duel.walkover ? t('duels.walkoverBadge') : t('duels.won')}
+                        </Chip>
+                      ) : duel.isTie ? (
+                        <Chip tone="neutral" className="text-xs font-bold">
+                          {t('duels.draw')}
+                        </Chip>
+                      ) : (
+                        <Chip tone="neutral" className="text-muted text-xs font-bold">
+                          {t('duels.lost')}
+                        </Chip>
                       )}
                     </div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {duel.isWinner ? (
-                      <Chip tone="volt" className="text-xs font-black">
-                        {duel.walkover ? t('duels.walkoverBadge') : t('duels.won')}
-                      </Chip>
-                    ) : duel.isTie ? (
-                      <Chip tone="neutral" className="text-xs font-bold">
-                        {t('duels.draw')}
-                      </Chip>
-                    ) : (
-                      <Chip tone="neutral" className="text-muted text-xs font-bold">
-                        {t('duels.lost')}
-                      </Chip>
-                    )}
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>
       )}
 
-      {/* TAB 3: SCORUL MEU TOTAL PE DUELURI */}
+      {/* TAB 3: MY DUEL STATS */}
       {tab === 'stats' && (
         <section className="space-y-4">
           <Card
             variant="sticker"
             className="border-border bg-surface text-ink space-y-4 border-2 p-5 shadow-[var(--rd-shadow-key)]"
           >
-            <div className="flex items-center justify-between border-b-2 border-border pb-3">
+            <div className="border-border flex items-center justify-between border-b-2 pb-3">
               <div>
-                <span className="text-xs font-black uppercase tracking-wider text-muted">
-                  Scor total dueluri
+                <span className="text-muted text-xs font-black uppercase tracking-wider">
+                  {t('duels.statsTotalScore')}
                 </span>
-                <p className="font-display rd-tabular text-3xl font-black text-ink mt-0.5">
+                <p className="font-display rd-tabular text-ink mt-0.5 text-3xl font-black">
                   {statsTotalScore.toLocaleString()}{' '}
-                  <span className="text-base font-bold text-muted">puncte</span>
+                  <span className="text-muted text-base font-bold">
+                    {t('duels.statsPointsUnit')}
+                  </span>
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-border bg-volt text-2xl shadow-sm">
+              <div className="border-border bg-volt flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-2xl shadow-sm">
                 ⚡
               </div>
             </div>
@@ -543,30 +646,30 @@ export default function DuelsPage() {
                 <span className="block text-2xl font-black text-emerald-600 dark:text-emerald-400">
                   {statsWins}
                 </span>
-                <span className="text-xs font-extrabold text-ink">Câștiguri</span>
+                <span className="text-ink text-xs font-extrabold">{t('duels.statsWins')}</span>
               </div>
               <div className="rounded-xl border-2 border-rose-500/30 bg-rose-500/10 p-3">
                 <span className="block text-2xl font-black text-rose-600 dark:text-rose-400">
                   {statsLosses}
                 </span>
-                <span className="text-xs font-extrabold text-ink">Pierderi</span>
+                <span className="text-ink text-xs font-extrabold">{t('duels.statsLosses')}</span>
               </div>
               <div className="rounded-xl border-2 border-amber-500/30 bg-amber-500/10 p-3">
                 <span className="block text-2xl font-black text-amber-600 dark:text-amber-400">
                   {statsDraws}
                 </span>
-                <span className="text-xs font-extrabold text-ink">Egalități</span>
+                <span className="text-ink text-xs font-extrabold">{t('duels.statsDraws')}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <div className="flex items-center justify-between rounded-xl border border-border bg-surface-2 p-3 text-xs">
-                <span className="font-bold text-muted">Total dueluri</span>
-                <span className="font-black text-ink rd-tabular text-sm">{statsPlayed}</span>
+              <div className="border-border bg-surface-2 flex items-center justify-between rounded-xl border p-3 text-xs">
+                <span className="text-muted font-bold">{t('duels.statsTotalDuels')}</span>
+                <span className="text-ink rd-tabular text-sm font-black">{statsPlayed}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-border bg-surface-2 p-3 text-xs">
-                <span className="font-bold text-muted">Rată de victorie</span>
-                <span className="font-black text-volt-strong rd-tabular text-sm">{winRate}%</span>
+              <div className="border-border bg-surface-2 flex items-center justify-between rounded-xl border p-3 text-xs">
+                <span className="text-muted font-bold">{t('duels.statsWinRate')}</span>
+                <span className="text-volt-strong rd-tabular text-sm font-black">{winRate}%</span>
               </div>
             </div>
           </Card>

@@ -27,6 +27,7 @@ if (getApps().length === 0) {
 
 import {
   approveAdminQuestion,
+  backfillLeagueNicknamesFromUsers,
   createDuel,
   createLeague,
   createOrUpdateAdminQuestion,
@@ -73,6 +74,7 @@ import { authorizeRonBotChat } from '../../apps/web/lib/ronbot-auth.js';
 import {
   adoptAuthUid,
   deleteUserFromFirestore,
+  ensureUsersHydratedFromFirestore,
   findUserByEmail,
   flushDirtyUsersToFirestore,
   getDb,
@@ -173,6 +175,8 @@ function readStripeSignatureHeader(header: string | string[] | undefined): strin
   return undefined;
 }
 
+let didInitialNicknameBackfill = false;
+
 export const api = onRequest(apiOptions, async (req, res) => {
   res.setHeader(
     'Cache-Control',
@@ -187,7 +191,11 @@ export const api = onRequest(apiOptions, async (req, res) => {
     const isStripeWebhookRoute =
       method === 'POST' && (pathname === '/billing/webhook' || pathname === '/town/stripe-webhook');
     const body = isStripeWebhookRoute ? {} : ((req.body ?? {}) as Record<string, unknown>);
-    await storePersistence.ensureHydrated();
+    await Promise.all([storePersistence.ensureHydrated(), ensureUsersHydratedFromFirestore()]);
+    if (!didInitialNicknameBackfill) {
+      didInitialNicknameBackfill = true;
+      backfillLeagueNicknamesFromUsers();
+    }
     if (!isStripeWebhookRoute && pathname !== '/billing/checkout') {
       for (const uid of collectRequestUids(body, url)) {
         if (!getStore().users[uid]) {
@@ -200,9 +208,9 @@ export const api = onRequest(apiOptions, async (req, res) => {
     res.json = ((payload?: unknown) => {
       if (flushed) return originalJson(payload);
       flushed = true;
-      return flushDirtyUsersToFirestore()
-        .then(() => storePersistence.flushNow())
-        .then(() => originalJson(payload));
+      return Promise.all([flushDirtyUsersToFirestore(), storePersistence.flushNow()]).then(() =>
+        originalJson(payload),
+      );
     }) as typeof res.json;
 
     if (method === 'POST' && pathname === '/chat') {
@@ -841,8 +849,6 @@ export const api = onRequest(apiOptions, async (req, res) => {
     if (method === 'POST' && pathname === '/game/finish') {
       const uid = String(body.uid);
       const finishRes = finishRound(uid, String(body.playId), body.clientSummary as any);
-      const user = getOrCreateUser({ uid });
-      await syncUserToFirestore(user);
       res.status(200).json(finishRes);
       return;
     }
@@ -867,6 +873,7 @@ export const api = onRequest(apiOptions, async (req, res) => {
       const lg = createLeague({
         uid: String(body.uid),
         name: body.name ? String(body.name) : undefined,
+        nickname: body.nickname ? String(body.nickname) : undefined,
         tz: String(body.tz ?? 'UTC'),
         locale: (body.locale as Locale) ?? 'en',
         themeEmoji: body.themeEmoji ? String(body.themeEmoji) : undefined,

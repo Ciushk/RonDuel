@@ -61,7 +61,7 @@
     "streak": "Stéig de {days} lá",
     "shareCta": "Roinn le do ghrúpa",
     "shareHint": "Roinn le do ghrúpa. Déanfar do shraith de go huathoibríoch.",
-    "copied": "Toradh cóipeáilte chuig an ngearrthaisce!",
+    "copied": "Toradh cóipeáilte! Greamaigh i do ghrúpa é.",
     "reviewTitle": "Athbhreithniú ar na freagraí",
     "openLeague": "Oscail clár ceannais na sraithe",
     "challengeFriend": "Tabhair dúshlán do chara (Comhrac 1v1)",
@@ -107,7 +107,8 @@
     "savedRetryHint": "Taifeadadh do bhabhta. Tapáil Bain triail eile as chun do scór agus an clár ceannais a fheiceáil.",
     "backHome": "Ar ais abhaile",
     "shareStreak": "🔥 {count, plural, one {stéig # lá} two {stéig # lá} few {stéig # lá} many {stéig # lá} other {stéig # lá}}",
-    "shareBeatMe": "Buaigh orm → {url}"
+    "shareBeatMe": "Buaigh orm → {url}",
+    "returningHomeIn": "Ag filleadh ar an leathanach baile i gceann {seconds} s"
   },
   "league": {
     "joinTitle": "Tugadh cuireadh duit chuig {name}",
@@ -256,10 +257,11 @@
     "joinedSuccess": "Chuaigh tú isteach sa tsraith!",
     "privateJoinSheetHint": "Tá an tsraith seo príobháideach. Cuir isteach an cód ón úinéir chun dul isteach:",
     "joinErrorGeneric": "Cód mícheart, nó níorbh fhéidir thú a chur leis an tsraith.",
-    "full": "Tá an tsraith lán ({count}/{max})"
+    "full": "Tá an tsraith lán ({count}/{max})",
+    "notFoundTitle": "Níor aimsíodh an tsraith"
   },
   "duel": {
-    "title": "Comhrac 1v1 Split Court",
+    "title": "Comhrac 1v1",
     "subtitle": "5 cheist thapa · 24 uair ar an gclog",
     "yourTurn": "Imir do 5 cheist",
     "waitingOpponent": "Ag fanacht ar an gcéile comhraic imirt (fuinneog 24 uair)",
@@ -285,7 +287,7 @@
   },
   "profile": {
     "title": "Próifíl & Stéig",
-    "bestStreak": "Stéig is fearr: {days} lá",
+    "bestStreak": "{days, plural, one {Stéig is fearr: 1 lá} two {Stéig is fearr: # lá} few {Stéig is fearr: # lá} many {Stéig is fearr: # lá} other {Stéig is fearr: # lá}}",
     "upgradeTitle": "Sábháil do stéig ar gach gléas",
     "upgradeBody": "Nasc ríomhphost nó cuntas Google. Fanfaidh do UID, do stéig agus do shraitheanna slán.",
     "emailPlaceholder": "tusa@sampla.com",
@@ -380,7 +382,7 @@
     "benefitLeagues": "Sraitheanna suas le 200 ball & ceadú príobháideach",
     "benefitDuels": "Comhraic 1v1 gan teorainn (in aghaidh 4/mí saor in aisce)",
     "benefitShield": "1 sciath stéige seachtainiúil uathoibríoch",
-    "benefitThemes": "3 théama eisiacha Split Court (Midnight, Clay, Neon)",
+    "benefitThemes": "3 théama eisiacha (Cúirt Meán Oíche, Cúirt Chré, Stuara Neon)",
     "benefitStats": "Cruinneas casta de réir ábhair & cartlann babhtaí roimhe seo",
     "euConsent": "Iarraim rochtain láithreach ar ábhar digiteach RonDuel Pro agus aithním go dtagann deireadh le mo cheart tarraingthe siar 14 lá an AE nuair a ghníomhachtaítear é.",
     "upgradeFirst": "Ní choinnítear sonraí aíonna ach ar feadh 7 lá. Logáil isteach nó cruthaigh cuntas saor in aisce chun síntiús a ghlacadh, ionas go bhfanfaidh do Pro ceangailte le próifíl bhuan.",
@@ -400,8 +402,8 @@
     "deleted": "Baineadh do sheisiún agus do shonraí áitiúla.",
     "languageSearchPlaceholder": "Cuardaigh teanga…",
     "languageNoResults": "Ní bhfuarthas aon teanga",
-    "themeLight": "Geal (Cream Paper)",
-    "themeDark": "Dorcha (Ink Night)",
+    "themeLight": "Geal",
+    "themeDark": "Dorcha",
     "themeHighContrast": "Codarsnacht ard",
     "themeProMidnight": "Pro: Cúirt Meán Oíche",
     "themeProClay": "Pro: Cúirt Chré",
@@ -799,7 +801,8 @@
     "noLeaguesFound": "Ní bhfuarthas aon sraitheanna.",
     "emptyTitle": "Imir le do chairde!",
     "emptyBody": "Cruthaigh sraith d'oifig, do theaghlach nó do do chairde. Tá sé saor in aisce do suas le {max} ball.",
-    "createFirst": "Cruthaigh do chéad sraith"
+    "createFirst": "Cruthaigh do chéad sraith",
+    "leagueWorldRank": "Tá an tsraith #{rank} ar domhan"
   },
   "duels": {
     "shareText": "Tugaim dúshlán duit i gcomhrac ar RonDuel! Faigheann tú 5 cheist thapa: {link}",
@@ -826,7 +829,23 @@
     "errorActiveDuel": "Tá comhrac gníomhach agat cheana féin. Críochnaigh é nó téigh go Pro le haghaidh comhraic gan teorainn.",
     "errorCreate": "Níorbh fhéidir an comhrac a chruthú",
     "yourTurn": "Do sheal",
-    "waitingOpponent": "Ag fanacht ar do chéile comhraic"
+    "waitingOpponent": "Ag fanacht ar do chéile comhraic",
+    "tabActive": "Ar siúl",
+    "tabFinished": "Críochnaithe",
+    "tabStats": "Mo scór",
+    "emptyActiveTitle": "Níl aon chomhrac ar siúl",
+    "emptyActiveBody": "Tabhair dúshlán do chara i gcomhrac 1v1 gasta nó fan le freagra!",
+    "emptyFinishedTitle": "Níl aon chomhrac críochnaithe fós",
+    "emptyFinishedBody": "Taispeánfar do chomhraic chríochnaithe agus torthaí anseo.",
+    "statsTotalScore": "Scór iomlán na gcomhrac",
+    "statsPointsUnit": "pointe",
+    "statsWins": "Buanna",
+    "statsLosses": "Caillteanais",
+    "statsDraws": "Comhscóir",
+    "statsTotalDuels": "Comhraic san iomlán",
+    "statsWinRate": "Ráta bua",
+    "waitingForOpponent": "Ag fanacht le comhraic",
+    "copyLink": "Cóipeáil an nasc"
   },
   "themes": {
     "worldScience": "An Domhan & Eolaíocht 🌍",
@@ -1128,7 +1147,8 @@
       "zoomIn": "Zúmáil isteach",
       "zoomOut": "Zúmáil amach",
       "loading": "Ag lódáil RonTown…",
-      "rotatingBanner": "Tapáil ar chearnóg nó foirgneamh chun é a rothlú"
+      "rotatingBanner": "Tapáil ar chearnóg nó foirgneamh chun é a rothlú",
+      "cellItemAria": "{item} ag ({x}, {y})"
     },
     "status": {
       "connecting": "Ag ceangal…",

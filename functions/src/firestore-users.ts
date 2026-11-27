@@ -9,16 +9,20 @@ import {
 import { formatUserDoc as buildUserDoc } from '../../apps/web/lib/user-doc.js';
 import {
   adoptAnonymousUid,
+  backfillLeagueNicknamesFromUsers,
   consumeDirtyUsers,
   getStore,
+  isPlaceholderNickname,
   markUserDirty,
   purgeAnonymousFromStore,
+  syncNicknameToLeagues,
   type UserRecord,
 } from '../../apps/web/lib/server-store.js';
 
 export { ANON_RETENTION_DAYS } from '../../apps/web/lib/anon-retention.js';
 
 const PURGE_BATCH = 400;
+let usersHydrationPromise: Promise<void> | null = null;
 
 export function getDb() {
   return getFirestore();
@@ -214,11 +218,46 @@ export async function getUserFromFirestore(uid: string): Promise<UserRecord | nu
 
     const userRecord = mapFirestoreUser(uid, data);
     getStore().users[uid] = userRecord;
+    if (!isPlaceholderNickname(userRecord.nickname)) {
+      syncNicknameToLeagues(uid, userRecord.nickname);
+    }
     return userRecord;
   } catch (err) {
     console.error(`[Firestore] Failed to get user ${uid}:`, err);
     return null;
   }
+}
+
+/**
+ * Loads all user docs into store.users once per Cloud Functions instance so every
+ * league leaderboard, admin panel, and world ranking resolves from user.nickname
+ * rather than stale Player_xxxx rows in store_leagues.
+ */
+export function ensureUsersHydratedFromFirestore(): Promise<void> {
+  if (!usersHydrationPromise) {
+    usersHydrationPromise = (async () => {
+      const snap = await getDb().collection('users').get();
+      const store = getStore();
+      let loaded = 0;
+      for (const doc of snap.docs) {
+        const data = doc.data() ?? {};
+        const userRecord = mapFirestoreUser(doc.id, data);
+        const existing = store.users[doc.id];
+        if (!existing || (isPlaceholderNickname(existing.nickname) && !isPlaceholderNickname(userRecord.nickname))) {
+          store.users[doc.id] = userRecord;
+        }
+        loaded += 1;
+      }
+      const backfilled = backfillLeagueNicknamesFromUsers();
+      console.log(
+        `[Firestore] Hydrated ${loaded} users (backfilled ${backfilled} league/duel nickname rows).`,
+      );
+    })().catch((err) => {
+      usersHydrationPromise = null;
+      console.error('[Firestore] Failed to hydrate users:', err);
+    });
+  }
+  return usersHydrationPromise;
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
