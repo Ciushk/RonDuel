@@ -600,4 +600,247 @@ test.describe('PaymentAuthGate on RonTown coin packs', () => {
     await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
     await expect(page.getByTestId('payment-gate-auth-loading')).toHaveCount(0);
   });
+
+  for (const viewport of [
+    { name: '390x844', width: 390, height: 844 },
+    { name: '1280x800', width: 1280, height: 800 },
+  ]) {
+    test(`signed-in RonDuel account without Firebase Auth user buys coins from RonTown (${viewport.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+
+      const checkoutBodies: Array<Record<string, unknown>> = [];
+
+      await page.addInitScript(() => {
+        window.sessionStorage.setItem('ronduel_splash_seen_v2', '1');
+        window.localStorage.setItem('rd_last_active_at', String(Date.now()));
+        window.localStorage.setItem('ff_town_enabled', '1');
+        window.localStorage.setItem('ff_coins_purchase_enabled', '1');
+        // Real RonDuel local session ONLY — no Firebase Auth user seeded anywhere!
+        window.localStorage.setItem(
+          'ronduel_session_v1',
+          JSON.stringify({
+            uid: 'u_e2e_real',
+            nickname: 'E2E',
+            ageConfirmed16: true,
+            relaxedTimer: false,
+            theme: 'light',
+            analyticsConsent: 'rejected',
+            email: 'e2e@ronduel.test',
+            isAnonymous: false,
+            authProvider: 'google',
+          }),
+        );
+      });
+
+      await page.route('**/api/me/profile**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            uid: 'u_e2e_real',
+            isAnonymous: false,
+            email: 'e2e@ronduel.test',
+            authProvider: 'google.com',
+          }),
+        });
+      });
+
+      await page.route('**/api/town/init*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(buildTownInitPayload()),
+        });
+      });
+      await page.route('**/api/town/inventory*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ crops: {} }),
+        });
+      });
+      await page.route('**/api/town/orders*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ orders: [], unlocked: false }),
+        });
+      });
+      await page.route('**/api/town/checkout*', async (route) => {
+        try {
+          checkoutBodies.push(route.request().postDataJSON() as Record<string, unknown>);
+        } catch {
+          checkoutBodies.push({});
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ checkoutUrl: '/ro/town?checkout=mock' }),
+        });
+      });
+
+      await page.goto('/ro/town', { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
+
+      await page.getByTestId('town-wallet-balance').click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible({ timeout: 5_000 });
+      await dialog.getByRole('button', { name: /€4\.99/i }).click();
+
+      // Gate must NEVER appear at any point; checkout request fires with uid u_e2e_real
+      await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
+      await expect.poll(() => checkoutBodies.length, { timeout: 10_000 }).toBe(1);
+      expect(checkoutBodies[0]?.uid).toBe('u_e2e_real');
+      await expect(page.getByTestId('payment-auth-gate')).toHaveCount(0);
+    });
+  }
+
+  test('guest on /ro/town sees PaymentAuthGate and checkout never fires', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    let checkoutCalls = 0;
+
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('ronduel_splash_seen_v2', '1');
+      window.localStorage.setItem('rd_last_active_at', String(Date.now()));
+      window.localStorage.setItem('ff_town_enabled', '1');
+      window.localStorage.setItem('ff_coins_purchase_enabled', '1');
+      window.localStorage.setItem(
+        'ronduel_session_v1',
+        JSON.stringify({
+          uid: 'u_e2e_ro_guest',
+          nickname: 'GuestRO',
+          ageConfirmed16: true,
+          relaxedTimer: false,
+          theme: 'light',
+          analyticsConsent: 'rejected',
+          isAnonymous: true,
+          authProvider: 'anonymous',
+        }),
+      );
+    });
+
+    await page.route('**/api/town/init*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildTownInitPayload()),
+      });
+    });
+    await page.route('**/api/town/inventory*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ crops: {} }),
+      });
+    });
+    await page.route('**/api/town/orders*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ orders: [], unlocked: false }),
+      });
+    });
+    await page.route('**/api/town/checkout*', async (route) => {
+      checkoutCalls += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ checkoutUrl: '/ro/town?checkout=mock' }),
+      });
+    });
+
+    await page.goto('/ro/town', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+
+    await page.getByTestId('town-wallet-balance').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    await dialog.getByRole('button', { name: /€4\.99/i }).click();
+
+    await expect(page.getByTestId('payment-auth-gate')).toBeVisible({ timeout: 5_000 });
+    expect(checkoutCalls).toBe(0);
+  });
+
+  test('spoofed local real session whose /api/me/profile returns isAnonymous=true still opens PaymentAuthGate', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    let checkoutCalls = 0;
+
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('ronduel_splash_seen_v2', '1');
+      window.localStorage.setItem('rd_last_active_at', String(Date.now()));
+      window.localStorage.setItem('ff_town_enabled', '1');
+      window.localStorage.setItem('ff_coins_purchase_enabled', '1');
+      window.localStorage.setItem(
+        'ronduel_session_v1',
+        JSON.stringify({
+          uid: 'u_e2e_spoofed',
+          nickname: 'Spoofed',
+          ageConfirmed16: true,
+          relaxedTimer: false,
+          theme: 'light',
+          analyticsConsent: 'rejected',
+          email: 'spoof@ronduel.test',
+          isAnonymous: false,
+          authProvider: 'google',
+        }),
+      );
+    });
+
+    await page.route('**/api/me/profile**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          uid: 'u_e2e_spoofed',
+          isAnonymous: true,
+          email: 'spoof@ronduel.test',
+        }),
+      });
+    });
+    await page.route('**/api/town/init*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(buildTownInitPayload()),
+      });
+    });
+    await page.route('**/api/town/inventory*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ crops: {} }),
+      });
+    });
+    await page.route('**/api/town/orders*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ orders: [], unlocked: false }),
+      });
+    });
+    await page.route('**/api/town/checkout*', async (route) => {
+      checkoutCalls += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ checkoutUrl: '/ro/town?checkout=mock' }),
+      });
+    });
+
+    await page.goto('/ro/town', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+
+    await page.getByTestId('town-wallet-balance').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    await dialog.getByRole('button', { name: /€4\.99/i }).click();
+
+    await expect(page.getByTestId('payment-auth-gate')).toBeVisible({ timeout: 5_000 });
+    expect(checkoutCalls).toBe(0);
+  });
 });

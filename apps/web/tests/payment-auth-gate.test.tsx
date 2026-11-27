@@ -69,7 +69,7 @@ vi.mock('@/lib/analytics', () => ({
 
 import ProPaywallPage from '@/app/[locale]/pro/page';
 import { PaymentAuthGateProvider, usePaymentAuthGate } from '@/components/PaymentAuthGate';
-import { hasRealAccount } from '@/lib/account-state';
+import { clearServerAccountCache, hasRealAccount } from '@/lib/account-state';
 import { saveLocalSession } from '@/lib/session';
 
 function TestTrigger({ onPay }: { onPay: () => void }) {
@@ -90,6 +90,7 @@ function TestTrigger({ onPay }: { onPay: () => void }) {
 describe('PaymentAuthGate & hasRealAccount', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearServerAccountCache();
     mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: false });
     window.localStorage.clear();
     window.sessionStorage.clear();
@@ -296,24 +297,23 @@ describe('PaymentAuthGate & hasRealAccount', () => {
     expect(onPay).not.toHaveBeenCalled();
   });
 
-  it('treats legacy email_link-only local sessions as not real accounts and accepts normalized Google/email providers', async () => {
-    saveLocalSession({
-      uid: 'u_legacy_email_link',
-      nickname: 'Legacy',
-      ageConfirmed16: true,
-      relaxedTimer: false,
-      theme: 'light',
-      analyticsConsent: 'rejected',
-      email: 'unverified@example.com',
-      isAnonymous: false,
-      authProvider: 'email_link',
-    });
+  it('confirms non-anonymous local sessions via /api/me/profile including email_link/google/password and rejects anonymous', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({
+        isAnonymous: false,
+        email: 'verified@example.com',
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
 
-    const isReal = await hasRealAccount({ getAuthFn: () => null });
-    expect(isReal).toBe(false);
-
-    // Verified password / google / email_password providers ARE treated as real when Firebase Auth is unavailable
-    for (const provider of ['password', 'google', 'google.com', 'email_password'] as const) {
+    for (const provider of [
+      'password',
+      'google',
+      'google.com',
+      'email_password',
+      'email_link',
+    ] as const) {
       saveLocalSession({
         uid: `u_verified_${provider}`,
         nickname: 'Verified',
@@ -325,9 +325,82 @@ describe('PaymentAuthGate & hasRealAccount', () => {
         isAnonymous: false,
         authProvider: provider,
       });
-      const isVerifiedReal = await hasRealAccount({ getAuthFn: () => null });
-      expect(isVerifiedReal, `fallback provider ${provider}`).toBe(true);
+      const isVerifiedReal = await hasRealAccount({ getAuthFn: () => null, fetchFn: fetchMock });
+      expect(isVerifiedReal, `provider ${provider}`).toBe(true);
     }
+
+    saveLocalSession({
+      uid: 'u_guest_local',
+      nickname: 'Guest',
+      ageConfirmed16: true,
+      relaxedTimer: false,
+      theme: 'light',
+      analyticsConsent: 'rejected',
+      email: 'verified@example.com',
+      isAnonymous: false,
+      authProvider: 'anonymous',
+    });
+    expect(await hasRealAccount({ getAuthFn: () => null, fetchFn: fetchMock })).toBe(false);
+  });
+
+  it('bypasses PaymentAuthGate for a user without Firebase Auth whose RonDuel session is confirmed by /api/me/profile', async () => {
+    const mockAuthWithNullUser = {
+      currentUser: null,
+      authStateReady: () => Promise.resolve(),
+      onAuthStateChanged: () => () => {},
+      onIdTokenChanged: () => () => {},
+    };
+    mockGetFirebaseAuth.mockReturnValue(mockAuthWithNullUser);
+
+    saveLocalSession({
+      uid: 'u_andrei89',
+      nickname: 'Andrei',
+      ageConfirmed16: true,
+      relaxedTimer: false,
+      theme: 'light',
+      analyticsConsent: 'rejected',
+      email: 'eu.andrei89@gmail.com',
+      isAnonymous: false,
+      authProvider: 'google',
+    });
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        uid: 'u_andrei89',
+        isAnonymous: false,
+        email: 'eu.andrei89@gmail.com',
+        authProvider: 'google',
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Delegate requireAccount's hasRealAccount() to the real implementation with Firebase currentUser=null
+    mockUseIsRealAccount.mockReturnValue({ ready: true, isReal: true });
+    mockHasRealAccount.mockImplementation(() =>
+      hasRealAccount({
+        getAuthFn: () => mockAuthWithNullUser as unknown as import('firebase/auth').Auth,
+        fetchFn: fetchMock,
+      }),
+    );
+
+    const onPay = vi.fn();
+    render(
+      <PaymentAuthGateProvider>
+        <TestTrigger onPay={onPay} />
+      </PaymentAuthGateProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId('pay-trigger'));
+
+    await waitFor(() => {
+      expect(onPay).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.queryByTestId('payment-auth-gate')).toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/me/profile?uid=u_andrei89',
+      expect.objectContaining({ method: 'GET' }),
+    );
   });
 
   it('/pro hides upgradeFirst box when isReal is true or ready is false, and renders it only for ready guests', async () => {

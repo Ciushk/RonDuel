@@ -5,8 +5,11 @@ import type { Auth } from 'firebase/auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  clearServerAccountCache,
+  confirmServerAccount,
   hasRealAccount,
   isRealAccount,
+  isRealLocalSession,
   normalizeAuthProvider,
   useIsRealAccount,
   type AccountUserLike,
@@ -70,10 +73,13 @@ function createMockAuth(opts: {
 describe('account-state (single source of truth)', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    clearServerAccountCache();
   });
 
   afterEach(() => {
     cleanup();
+    clearServerAccountCache();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -210,7 +216,141 @@ describe('account-state (single source of truth)', () => {
       await expect(checkPromise).resolves.toBe(true);
     });
 
-    it('accepts normalized real providers and rejects email_link / anonymous in local-session fallback', async () => {
+    it('returns true when Firebase currentUser is null but local RonDuel session is confirmed by /api/me/profile', async () => {
+      const mock = createMockAuth({ currentUser: null });
+      saveLocalSession({
+        uid: 'u_andrei89',
+        nickname: 'Andrei',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        email: 'EU.Andrei89@gmail.com',
+        isAnonymous: false,
+        authProvider: 'google',
+      });
+
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          uid: 'u_andrei89',
+          isAnonymous: false,
+          email: 'eu.andrei89@gmail.com',
+          authProvider: 'google',
+        }),
+      });
+
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: fetchMock }),
+      ).resolves.toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/me/profile?uid=u_andrei89',
+        expect.objectContaining({ method: 'GET' }),
+      );
+
+      // Positive confirmation is cached per uid for 10 min (no duplicate fetch)
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: fetchMock }),
+      ).resolves.toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns false (and does not cache) when /api/me/profile returns isAnonymous=true or a different email', async () => {
+      const mock = createMockAuth({ currentUser: null });
+      saveLocalSession({
+        uid: 'u_mismatch',
+        nickname: 'Player',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        email: 'player@example.com',
+        isAnonymous: false,
+        authProvider: 'google',
+      });
+
+      const anonFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ isAnonymous: true, email: 'player@example.com' }),
+      });
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: anonFetch }),
+      ).resolves.toBe(false);
+
+      const wrongEmailFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ isAnonymous: false, email: 'other@example.com' }),
+      });
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: wrongEmailFetch }),
+      ).resolves.toBe(false);
+
+      // Negative results are NOT cached, so a subsequent valid response still succeeds
+      const validFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ isAnonymous: false, email: 'player@example.com' }),
+      });
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: validFetch }),
+      ).resolves.toBe(true);
+    });
+
+    it('returns false without firing any fetch for anonymous local sessions', async () => {
+      const mock = createMockAuth({ currentUser: null });
+      saveLocalSession({
+        uid: 'u_guest_1',
+        nickname: 'Guest',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        isAnonymous: true,
+        authProvider: 'anonymous',
+      });
+
+      const fetchMock = vi.fn();
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: fetchMock }),
+      ).resolves.toBe(false);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('returns false on network error or timeout (4s) without caching', async () => {
+      const mock = createMockAuth({ currentUser: null });
+      saveLocalSession({
+        uid: 'u_net_err',
+        nickname: 'Player',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        email: 'player@example.com',
+        isAnonymous: false,
+        authProvider: 'google',
+      });
+
+      const failingFetch = vi.fn().mockRejectedValue(new Error('network down'));
+      await expect(
+        hasRealAccount({ getAuthFn: () => mock.auth, fetchFn: failingFetch }),
+      ).resolves.toBe(false);
+
+      // Timeout test
+      const hangingFetch = vi.fn(
+        () =>
+          new Promise<Response>(() => {
+            // never resolves
+          }),
+      );
+      await expect(
+        confirmServerAccount('u_net_err', 'player@example.com', {
+          fetchFn: hangingFetch,
+          timeoutMs: 25,
+        }),
+      ).resolves.toBe(false);
+    });
+
+    it('treats google, google.com, password, email_password, and email_link as real local providers, and rejects anonymous / anon / u_ssr', async () => {
       const base = {
         uid: 'u_fallback',
         nickname: 'Player',
@@ -222,15 +362,37 @@ describe('account-state (single source of truth)', () => {
         isAnonymous: false,
       };
 
-      for (const provider of ['google', 'google.com', 'password', 'email_password'] as const) {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ isAnonymous: false, email: 'player@example.com' }),
+      });
+
+      for (const provider of [
+        'google',
+        'google.com',
+        'password',
+        'email_password',
+        'email_link',
+      ] as const) {
+        clearServerAccountCache();
+        expect(isRealLocalSession({ ...base, authProvider: provider })).toBe(true);
         saveLocalSession({ ...base, authProvider: provider });
-        await expect(hasRealAccount({ getAuthFn: () => null })).resolves.toBe(true);
+        await expect(hasRealAccount({ getAuthFn: () => null, fetchFn: fetchMock })).resolves.toBe(
+          true,
+        );
       }
 
-      for (const provider of ['email_link', 'anonymous'] as const) {
-        saveLocalSession({ ...base, authProvider: provider });
-        await expect(hasRealAccount({ getAuthFn: () => null })).resolves.toBe(false);
-      }
+      expect(isRealLocalSession({ ...base, authProvider: 'anonymous' })).toBe(false);
+      expect(isRealLocalSession({ ...base, uid: 'anon', authProvider: 'google' })).toBe(false);
+      expect(isRealLocalSession({ ...base, uid: 'u_ssr', authProvider: 'google' })).toBe(false);
+      expect(isRealLocalSession({ ...base, email: '', authProvider: 'google' })).toBe(false);
+
+      saveLocalSession({ ...base, authProvider: 'anonymous' });
+      const noFetch = vi.fn();
+      await expect(hasRealAccount({ getAuthFn: () => null, fetchFn: noFetch })).resolves.toBe(
+        false,
+      );
+      expect(noFetch).not.toHaveBeenCalled();
     });
   });
 
@@ -284,6 +446,61 @@ describe('account-state (single source of truth)', () => {
       await waitFor(() => {
         expect(result.current).toEqual({ ready: true, isReal: false });
       });
+    });
+
+    it('never flashes ready=true, isReal=false while confirming a real local session against /api/me/profile', async () => {
+      saveLocalSession({
+        uid: 'u_andrei89',
+        nickname: 'Andrei',
+        ageConfirmed16: true,
+        relaxedTimer: false,
+        theme: 'light',
+        analyticsConsent: 'rejected',
+        email: 'eu.andrei89@gmail.com',
+        isAnonymous: false,
+        authProvider: 'google',
+      });
+
+      const serverDeferred = createDeferred<Response>();
+      const fetchMock = vi.fn(() => serverDeferred.promise);
+      const mock = createMockAuth({
+        currentUser: null,
+        authStateReady: () => Promise.resolve(),
+      });
+
+      const observed: Array<{ ready: boolean; isReal: boolean }> = [];
+      const { result } = renderHook(() => {
+        const state = useIsRealAccount({ getAuthFn: () => mock.auth, fetchFn: fetchMock });
+        observed.push(state);
+        return state;
+      });
+
+      // Wait until /api/me/profile has been requested
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+      });
+
+      // Must STILL be ready=false (never ready=true, isReal=false!) while fetch is pending
+      expect(result.current).toEqual({ ready: false, isReal: false });
+      expect(observed.some((s) => s.ready && !s.isReal)).toBe(false);
+
+      // Resolve server confirmation
+      await act(async () => {
+        serverDeferred.resolve({
+          ok: true,
+          json: async () => ({
+            uid: 'u_andrei89',
+            isAnonymous: false,
+            email: 'eu.andrei89@gmail.com',
+          }),
+        } as unknown as Response);
+        await serverDeferred.promise;
+      });
+
+      await waitFor(() => {
+        expect(result.current).toEqual({ ready: true, isReal: true });
+      });
+      expect(observed.some((s) => s.ready && !s.isReal)).toBe(false);
     });
   });
 });

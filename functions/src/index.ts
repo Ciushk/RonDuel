@@ -1170,9 +1170,19 @@ export const api = onRequest(apiOptions, async (req, res) => {
       if (result.uid && result.uid !== oldUid) {
         await deleteUserFromFirestore(oldUid);
         try {
-          await getAuth().deleteUser(oldUid);
+          const authRecord = await getAuth().getUser(oldUid);
+          const isAnonymousAuthUser =
+            !Array.isArray(authRecord.providerData) || authRecord.providerData.length === 0;
+          if (isAnonymousAuthUser) {
+            await getAuth().deleteUser(oldUid);
+            console.log(`[Upgrade] Deleted anonymous Auth user ${oldUid} after merge`);
+          } else {
+            console.log(
+              `[Upgrade] Preserved real Auth user ${oldUid} after merge (providers=${authRecord.providerData.length})`,
+            );
+          }
         } catch {
-          // Local guest ids are not always Auth users.
+          console.log(`[Upgrade] Skipped Auth deletion for ${oldUid} (not found or lookup failed)`);
         }
       }
       const finalUid = result.uid || oldUid;
