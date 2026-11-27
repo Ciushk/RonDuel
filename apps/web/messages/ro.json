@@ -1140,7 +1140,7 @@
       "readyShort": "Gata",
       "harvestBadgeAria": "Recoltează {crop} la ({x}, {y})",
       "placingBanner": "Apasă pe un teren liber pentru a plasa {item}",
-      "movingPickBanner": "Apasă pe o clădire sau un decor pentru a-l muta",
+      "movingPickBanner": "Apasă pe o clădire, un decor sau o alee pentru a muta",
       "movingDestBanner": "Apasă pe un teren liber pentru a muta ({x}, {y})",
       "plantingBanner": "Apasă pe iarbă, pământ sau o parcelă liberă pentru a planta {crop}",
       "cancel": "Anulează",

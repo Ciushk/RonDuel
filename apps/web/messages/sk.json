@@ -1140,7 +1140,7 @@
       "readyShort": "Hotovo",
       "harvestBadgeAria": "Zozbierať hotovú plodinu {crop} na ({x}, {y})",
       "placingBanner": "Ťukni na vlastné zelené pole pre umiestnenie {item}",
-      "movingPickBanner": "Ťukni na budovu alebo dekoráciu pre presun",
+      "movingPickBanner": "Ťukni na budovu, dekoráciu alebo ulicu pre presun",
       "movingDestBanner": "Ťukni na voľné pole pre presun ({x}, {y})",
       "plantingBanner": "Ťukni na trávu, hlinu alebo voľný záhon pre {crop}",
       "cancel": "Zrušiť",

@@ -29,6 +29,7 @@ import {
   BUBBLE_KINDS,
   BUBBLE_SPRITES,
   CATALOG_SPRITES,
+  createRoadPresenceChecker,
   CROP_BUTTON_SPRITES,
   GROUND_SPRITES,
   HEART_FLOAT_SPRITE,
@@ -601,5 +602,71 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
   it('excludes child-villager from cyclic RESIDENT_VILLAGER_KINDS so only the family event spawns it', () => {
     expect(RESIDENT_VILLAGER_KINDS).not.toContain('child-villager');
     expect(VILLAGER_SPRITES['child-villager']).toBeDefined();
+  });
+
+  it('autotile move preview disconnects lifted road/street origin, connects valid destination, and preserves isolated rot', () => {
+    const tiles = {
+      '2_1': { itemId: 'road' },
+      '2_2': { itemId: 'road' },
+      '2_3': { itemId: 'road' },
+      '3_2': { itemId: 'road' },
+      '1_2': { itemId: 'road' },
+      '5_5': { itemId: 'road' },
+    };
+    const land = {
+      '2_1': 'basic-block' as const,
+      '2_2': 'basic-block' as const,
+      '2_3': 'basic-block' as const,
+      '3_2': 'basic-block' as const,
+      '1_2': 'basic-block' as const,
+      '5_5': 'basic-block' as const,
+      '5_4': 'basic-block' as const,
+      '0_0': 'basic-block' as const,
+      '6_2': 'basic-block-street' as const,
+    };
+
+    // Baseline: (2,2) is 4-way intersection, (5,5) is isolated
+    const base = createRoadPresenceChecker({ tiles, land });
+    expect(resolveRoadSprite(2, 2, base).src).toContain('basic-block-intersection.png');
+    expect(resolveRoadSprite(5, 5, base).src).toContain('basic-block-street.png');
+
+    // Lifting (2,1) and hovering (5,4): (2,2) disconnects N -> T-junction E+S+W,
+    // (5,5) connects N -> dead-end N, and preview at (5,4) connects S -> dead-end S
+    const movingToNeighbour = createRoadPresenceChecker({
+      tiles,
+      land,
+      movingRoadOrigin: { x: 2, y: 1, layer: 'item' },
+      previewRoadCell: { x: 5, y: 4 },
+    });
+    expect(resolveRoadSprite(2, 2, movingToNeighbour).src).toContain(
+      'basic-block-street-t-esw.png',
+    );
+    expect(resolveRoadSprite(5, 5, movingToNeighbour).src).toContain(
+      'basic-block-street-end-n.png',
+    );
+    expect(resolveRoadSprite(5, 4, movingToNeighbour, 1).src).toContain(
+      'basic-block-street-end-s.png',
+    );
+
+    // Moving an isolated rot=1 road to an isolated cell (0,0) preserves flipX
+    const movingIsolated = createRoadPresenceChecker({
+      tiles,
+      land,
+      movingRoadOrigin: { x: 2, y: 1, layer: 'item' },
+      previewRoadCell: { x: 0, y: 0 },
+    });
+    const isolatedSpec = resolveRoadSprite(0, 0, movingIsolated, 1);
+    expect(isolatedSpec.src).toContain('basic-block-street.png');
+    expect(isolatedSpec.flipX).toBe(true);
+
+    // Lifting a street ground slab (6,2) removes it from road presence
+    const liftingStreetGround = createRoadPresenceChecker({
+      tiles,
+      land,
+      movingRoadOrigin: { x: 6, y: 2, layer: 'ground' },
+      previewRoadCell: { x: 5, y: 4 },
+    });
+    expect(liftingStreetGround(6, 2)).toBe(false);
+    expect(liftingStreetGround(5, 4)).toBe(true);
   });
 });

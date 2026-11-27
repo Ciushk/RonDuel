@@ -1140,7 +1140,7 @@
       "readyShort": "Pripravljeno",
       "harvestBadgeAria": "Požanji pripravljeno {crop} na ({x}, {y})",
       "placingBanner": "Tapni svoje zeleno polje za postavitev {item}",
-      "movingPickBanner": "Tapni stavbo ali okras za premik",
+      "movingPickBanner": "Tapni stavbo, okras ali ulico za premik",
       "movingDestBanner": "Tapni prosto polje za premik ({x}, {y})",
       "plantingBanner": "Tapni travo, zemljo ali prazno gredico za {crop}",
       "cancel": "Prekliči",

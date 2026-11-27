@@ -16,8 +16,10 @@ import {
   getPlotPrice,
   getPreviousPlotPrice,
   isRonCoinPriceCutActive,
+  isStreetGround,
   PREVIOUS_RONCOIN_PRICES,
   type CatalogItem,
+  type GroundTileType,
   type TownCatalogDoc,
   type TownDoc,
   type TownOrderItem,
@@ -47,6 +49,8 @@ interface TownSheetsProps {
   coinsTransferEnabled: boolean;
   townHelpEnabled: boolean;
   town: TownDoc | null;
+  land: Record<string, GroundTileType>;
+  landRot?: Record<string, 1 | 2 | 3>;
   landCount: number;
   catalog: TownCatalogDoc;
   catalogList: CatalogItem[];
@@ -88,6 +92,8 @@ export function TownSheets({
   coinsTransferEnabled,
   townHelpEnabled,
   town,
+  land,
+  landRot,
   landCount,
   catalog,
   catalogList,
@@ -535,6 +541,10 @@ export function TownSheets({
               {!isVisitMode &&
                 selectedTile.itemId === 'empty' &&
                 (() => {
+                  const cellKey = `${selectedTile.x}_${selectedTile.y}`;
+                  const selectedGround = land[cellKey];
+                  const selectedGroundRot = landRot?.[cellKey];
+                  const canMoveStreetGround = isStreetGround(selectedGround);
                   const ownedPlots = town?.plotsOwned ?? 2;
                   const plotPrice = getPlotPrice(ownedPlots);
                   const prevPlotPrice = getPreviousPlotPrice(ownedPlots);
@@ -542,6 +552,23 @@ export function TownSheets({
                     isRonCoinPriceCutActive() && plotPrice > 0 && prevPlotPrice > plotPrice;
                   return (
                     <div className="space-y-2">
+                      {canMoveStreetGround && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onStartMove({
+                              ...selectedTile,
+                              moveGroundType: selectedGround,
+                              ...(selectedGroundRot ? { moveGroundRot: selectedGroundRot } : {}),
+                            })
+                          }
+                          className="border-border bg-surface-2 text-ink flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
+                        >
+                          <ArrowsOutCardinal size={18} weight="bold" aria-hidden="true" />
+                          {t('town.tiles.move')}
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => {

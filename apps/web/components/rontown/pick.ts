@@ -386,7 +386,7 @@ export interface DomPickOptions {
 function isIgnoredOverlay(el: Element): boolean {
   return Boolean(
     el.closest(
-      '[data-zoom-control="true"], [data-villager-id], [data-villager-bubble], [data-rt-hover-outline="true"], [data-rt-cursor-overlay="true"], [role="tooltip"], [role="status"]',
+      '[data-zoom-control="true"], [data-villager-id], [data-villager-bubble], [data-rt-hover-outline="true"], [data-rt-lifted-outline="true"], [data-rt-move-flight="true"], [data-rt-cursor-overlay="true"], [role="tooltip"], [role="status"]',
     ),
   );
 }

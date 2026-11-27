@@ -1140,7 +1140,7 @@
       "readyShort": "Prêt",
       "harvestBadgeAria": "Récolter {crop} prêt en ({x}, {y})",
       "placingBanner": "Touchez une case verte pour placer {item}",
-      "movingPickBanner": "Touchez un bâtiment ou décor pour le déplacer",
+      "movingPickBanner": "Touchez un bâtiment, un décor ou une allée pour le déplacer",
       "movingDestBanner": "Touchez une case libre pour déplacer ({x}, {y})",
       "plantingBanner": "Touchez herbe, terre ou parcelle vide pour planter {crop}",
       "cancel": "Annuler",

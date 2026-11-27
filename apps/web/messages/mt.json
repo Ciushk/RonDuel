@@ -1140,7 +1140,7 @@
       "readyShort": "Lest",
       "harvestBadgeAria": "Aħsad {crop} lest f’({x}, {y})",
       "placingBanner": "Agħfas maduma ħadra tiegħek biex tpoġġi {item}",
-      "movingPickBanner": "Agħfas bini jew dekorazzjoni biex tmexxiha",
+      "movingPickBanner": "Agħfas bini, dekorazzjoni jew triq biex tmexxiha",
       "movingDestBanner": "Agħfas maduma vojta biex tmexxi ({x}, {y})",
       "plantingBanner": "Agħfas ħaxix, ħamrija jew għalqa vojta biex tħawwel {crop}",
       "cancel": "Ikkanċella",

@@ -10,6 +10,7 @@ import {
   isCellInExpandRing,
   isGroundTileType,
   isGroundWalkable,
+  isStreetGround,
   LAND_PRICES,
   type CatalogItem,
   type GroundTileType,
@@ -356,131 +357,184 @@ export async function moveTile(
   await assertTownFeatureEnabled(db);
   const catalog = await getTownCatalog(db);
 
-  const fromRef = db
-    .collection('users')
-    .doc(uid)
-    .collection('townTiles')
-    .doc(`${params.fromX}_${params.fromY}`);
+  const fromKey = `${params.fromX}_${params.fromY}`;
+  const toKey = `${params.toX}_${params.toY}`;
+  const tilesCol = db.collection('users').doc(uid).collection('townTiles');
+  const fromRef = tilesCol.doc(fromKey);
   const townRef = db.collection('users').doc(uid).collection('town').doc('main');
 
   const result = await db.runTransaction(async (tx) => {
+    // Read all required documents before any writes
     const fromSnap = await tx.get(fromRef);
-    if (!fromSnap.exists) {
+    const townSnap = await tx.get(townRef);
+    const tilesSnap = await tx.get(tilesCol);
+
+    if (!townSnap.exists) {
+      throw new Error('Town not initialized');
+    }
+    const townData = townSnap.data() as TownDoc;
+
+    // Branch A: Moving a placed object (building, decor, road, plot)
+    if (fromSnap.exists) {
+      const tileData = fromSnap.data() as TownTileDoc & { parentTile?: string };
+      if (tileData.parentTile) {
+        throw new Error('Please select the main building tile to move');
+      }
+
+      const item = catalog.items[tileData.itemId];
+      const w = item?.footprint.w ?? 1;
+      const h = item?.footprint.h ?? 1;
+
+      if (
+        !Number.isInteger(params.toX) ||
+        !Number.isInteger(params.toY) ||
+        params.toX < 0 ||
+        params.toY < 0 ||
+        params.toX + w > townData.gridSize ||
+        params.toY + h > townData.gridSize
+      ) {
+        throw new Error('Destination out of bounds');
+      }
+
+      const hasLandMap = Boolean(townData.land && Object.keys(townData.land).length > 0);
+      if (hasLandMap) {
+        for (let dx = 0; dx < w; dx++) {
+          for (let dy = 0; dy < h; dy++) {
+            const destKey = `${params.toX + dx}_${params.toY + dy}`;
+            const ground = townData.land?.[destKey];
+            if (!ground) {
+              throw new Error(
+                `Destination tile (${params.toX + dx}, ${params.toY + dy}) is not owned land`,
+              );
+            }
+            if (!isGroundWalkable(ground)) {
+              throw new Error(
+                `Cannot move onto water or shoreline at (${params.toX + dx}, ${params.toY + dy})`,
+              );
+            }
+          }
+        }
+      }
+
+      // Check collision at destination
+      for (const doc of tilesSnap.docs) {
+        const t = doc.data() as TownTileDoc;
+        // Exclude self footprint tiles
+        const isSelf =
+          t.x >= params.fromX &&
+          t.x < params.fromX + w &&
+          t.y >= params.fromY &&
+          t.y < params.fromY + h;
+        if (isSelf) continue;
+
+        for (let dx = 0; dx < w; dx++) {
+          for (let dy = 0; dy < h; dy++) {
+            if (t.x === params.toX + dx && t.y === params.toY + dy) {
+              throw new Error(
+                `Destination tile (${params.toX + dx}, ${params.toY + dy}) is already occupied`,
+              );
+            }
+          }
+        }
+      }
+
+      // Delete old tile(s)
+      tx.delete(fromRef);
+      if (w > 1 || h > 1) {
+        for (let dx = 0; dx < w; dx++) {
+          for (let dy = 0; dy < h; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            tx.delete(tilesCol.doc(`${params.fromX + dx}_${params.fromY + dy}`));
+          }
+        }
+      }
+
+      // Place at new destination (preserves rot and any other tile fields)
+      const toRef = tilesCol.doc(toKey);
+      tx.set(toRef, {
+        ...tileData,
+        x: params.toX,
+        y: params.toY,
+      });
+
+      if (w > 1 || h > 1) {
+        for (let dx = 0; dx < w; dx++) {
+          for (let dy = 0; dy < h; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            tx.set(tilesCol.doc(`${params.toX + dx}_${params.toY + dy}`), {
+              itemId: `part:${tileData.itemId}`,
+              x: params.toX + dx,
+              y: params.toY + dy,
+              parentTile: toKey,
+              placedAt: FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      }
+
+      return { success: true };
+    }
+
+    // Branch B: No object on origin — allow swapping street ground slabs (free, no townTiles write)
+    const fromGround = townData.land?.[fromKey];
+    if (!isStreetGround(fromGround)) {
       throw new Error(`No tile at (${params.fromX}, ${params.fromY})`);
     }
-    const tileData = fromSnap.data() as TownTileDoc & { parentTile?: string };
-    if (tileData.parentTile) {
-      throw new Error('Please select the main building tile to move');
-    }
-
-    const townSnap = await tx.get(townRef);
-    const townData = townSnap.data() as TownDoc;
-    const item = catalog.items[tileData.itemId];
-    const w = item?.footprint.w ?? 1;
-    const h = item?.footprint.h ?? 1;
 
     if (
+      !Number.isInteger(params.toX) ||
+      !Number.isInteger(params.toY) ||
       params.toX < 0 ||
       params.toY < 0 ||
-      params.toX + w > townData.gridSize ||
-      params.toY + h > townData.gridSize
+      params.toX >= townData.gridSize ||
+      params.toY >= townData.gridSize
     ) {
       throw new Error('Destination out of bounds');
     }
 
-    const hasLandMap = Boolean(townData.land && Object.keys(townData.land).length > 0);
-    if (hasLandMap) {
-      for (let dx = 0; dx < w; dx++) {
-        for (let dy = 0; dy < h; dy++) {
-          const destKey = `${params.toX + dx}_${params.toY + dy}`;
-          const ground = townData.land?.[destKey];
-          if (!ground) {
-            throw new Error(
-              `Destination tile (${params.toX + dx}, ${params.toY + dy}) is not owned land`,
-            );
-          }
-          if (!isGroundWalkable(ground)) {
-            throw new Error(
-              `Cannot move onto water or shoreline at (${params.toX + dx}, ${params.toY + dy})`,
-            );
-          }
-        }
-      }
+    const destGround = townData.land?.[toKey];
+    if (!destGround) {
+      throw new Error(`Destination tile (${params.toX}, ${params.toY}) is not owned land`);
+    }
+    if (!isGroundWalkable(destGround)) {
+      throw new Error(`Cannot move onto water or shoreline at (${params.toX}, ${params.toY})`);
     }
 
-    // Check collision at destination
-    const tilesSnap = await tx.get(db.collection('users').doc(uid).collection('townTiles'));
     for (const doc of tilesSnap.docs) {
       const t = doc.data() as TownTileDoc;
-      // Exclude self footprint tiles
-      const isSelf =
-        t.x >= params.fromX &&
-        t.x < params.fromX + w &&
-        t.y >= params.fromY &&
-        t.y < params.fromY + h;
-      if (isSelf) continue;
-
-      for (let dx = 0; dx < w; dx++) {
-        for (let dy = 0; dy < h; dy++) {
-          if (t.x === params.toX + dx && t.y === params.toY + dy) {
-            throw new Error(
-              `Destination tile (${params.toX + dx}, ${params.toY + dy}) is already occupied`,
-            );
-          }
-        }
+      if (t.x === params.toX && t.y === params.toY) {
+        throw new Error(`Destination tile (${params.toX}, ${params.toY}) is already occupied`);
       }
     }
 
-    // Delete old tile(s)
-    tx.delete(fromRef);
-    if (w > 1 || h > 1) {
-      for (let dx = 0; dx < w; dx++) {
-        for (let dy = 0; dy < h; dy++) {
-          if (dx === 0 && dy === 0) continue;
-          tx.delete(
-            db
-              .collection('users')
-              .doc(uid)
-              .collection('townTiles')
-              .doc(`${params.fromX + dx}_${params.fromY + dy}`),
-          );
-        }
-      }
+    if (fromKey === toKey) {
+      return { success: true };
     }
 
-    // Place at new destination
-    const toRef = db
-      .collection('users')
-      .doc(uid)
-      .collection('townTiles')
-      .doc(`${params.toX}_${params.toY}`);
-    tx.set(toRef, {
-      ...tileData,
-      x: params.toX,
-      y: params.toY,
+    const nextLand: Record<string, GroundTileType> = {
+      ...(townData.land ?? {}),
+      [fromKey]: destGround,
+      [toKey]: fromGround!,
+    };
+    const nextLandRot: Record<string, 1 | 2 | 3> = { ...(townData.landRot ?? {}) };
+    const fromRot = nextLandRot[fromKey];
+    const toRot = nextLandRot[toKey];
+    if (toRot) {
+      nextLandRot[fromKey] = toRot;
+    } else {
+      delete nextLandRot[fromKey];
+    }
+    if (fromRot) {
+      nextLandRot[toKey] = fromRot;
+    } else {
+      delete nextLandRot[toKey];
+    }
+
+    tx.update(townRef, {
+      land: nextLand,
+      landRot: nextLandRot,
+      updatedAt: FieldValue.serverTimestamp(),
     });
-
-    if (w > 1 || h > 1) {
-      for (let dx = 0; dx < w; dx++) {
-        for (let dy = 0; dy < h; dy++) {
-          if (dx === 0 && dy === 0) continue;
-          tx.set(
-            db
-              .collection('users')
-              .doc(uid)
-              .collection('townTiles')
-              .doc(`${params.toX + dx}_${params.toY + dy}`),
-            {
-              itemId: `part:${tileData.itemId}`,
-              x: params.toX + dx,
-              y: params.toY + dy,
-              parentTile: `${params.toX}_${params.toY}`,
-              placedAt: FieldValue.serverTimestamp(),
-            },
-          );
-        }
-      }
-    }
 
     return { success: true };
   });

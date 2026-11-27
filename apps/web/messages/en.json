@@ -1140,7 +1140,7 @@
       "readyShort": "Ready",
       "harvestBadgeAria": "Harvest ready {crop} at ({x}, {y})",
       "placingBanner": "Tap an owned green tile to place {item}",
-      "movingPickBanner": "Tap any building or decor to move it",
+      "movingPickBanner": "Tap a building, decor, or street to move it",
       "movingDestBanner": "Tap a free tile to move ({x}, {y})",
       "plantingBanner": "Tap grass, dirt, or an empty plot to plant {crop}",
       "cancel": "Cancel",

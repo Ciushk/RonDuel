@@ -19,6 +19,7 @@ import {
   isGroundPlantable,
   isGroundWalkable,
   isRonCoinPriceCutActive,
+  isStreetGround,
   LAND_PRICES,
   LedgerEntrySchema,
   niceHalfCoins,
@@ -594,5 +595,26 @@ describe('getFamilyEventTriggerAt', () => {
       seenDays.add(days);
     }
     expect(seenDays.size).toBe(5);
+  });
+});
+
+describe('isStreetGround', () => {
+  it('returns true only for the 3 street ground types and false for all other 9 types and undefined', () => {
+    const streetTypes = new Set<GroundTileType>([
+      'basic-block-street',
+      'basic-block-street-curve',
+      'basic-block-intersection',
+    ]);
+    let trueCount = 0;
+    let falseCount = 0;
+    for (const gt of GROUND_TILE_TYPES) {
+      const actual = isStreetGround(gt);
+      expect(actual, `isStreetGround(${gt})`).toBe(streetTypes.has(gt));
+      if (actual) trueCount += 1;
+      else falseCount += 1;
+    }
+    expect(trueCount).toBe(3);
+    expect(falseCount).toBe(9);
+    expect(isStreetGround(undefined)).toBe(false);
   });
 });

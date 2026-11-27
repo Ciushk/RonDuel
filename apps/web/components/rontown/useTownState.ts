@@ -12,6 +12,7 @@ import {
   getPlotPrice,
   isGroundPlantable,
   isGroundWalkable,
+  isStreetGround,
   LAND_PRICES,
   type GridCoord,
   type GroundTileType,
@@ -34,6 +35,10 @@ export interface TileInfo extends TownTileDoc {
   x: number;
   y: number;
   parentTile?: string;
+  /** Set when moving a street ground slab (not a townTiles document). */
+  moveGroundType?: GroundTileType;
+  /** Preserved ground rotation (1..3) when moving a street ground slab. */
+  moveGroundRot?: 1 | 2 | 3;
 }
 
 export interface FloatingReward {
@@ -842,16 +847,70 @@ export function useTownState(params: {
     async (fromX: number, fromY: number, toX: number, toY: number): Promise<boolean> => {
       if (!serverReadyRef.current) return false;
       const fromKey = `${fromX}_${fromY}`;
+      const toKey = `${toX}_${toY}`;
       const current = tiles[fromKey];
-      if (!current || current.parentTile) return false;
-      const item = catalog.items[current.itemId];
-      const w = item?.footprint.w ?? 1;
-      const h = item?.footprint.h ?? 1;
 
-      if (!canPlaceAt(toX, toY, w, h, { x: fromX, y: fromY, w, h })) {
+      if (current) {
+        if (current.parentTile) return false;
+        const item = catalog.items[current.itemId];
+        const w = item?.footprint.w ?? 1;
+        const h = item?.footprint.h ?? 1;
+
+        if (!canPlaceAt(toX, toY, w, h, { x: fromX, y: fromY, w, h })) {
+          showToast(t('town.toast.destOccupiedOrInvalid'));
+          return false;
+        }
+
+        const session = getLocalSession();
+        try {
+          const res = await fetch('/api/town/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: session.uid, fromX, fromY, toX, toY }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            showErrorToast(err.error, 'town.toast.moveFailed');
+            return false;
+          }
+        } catch {
+          // local fallback
+        }
+
+        setTiles((prev) => {
+          const next = { ...prev };
+          for (let dx = 0; dx < w; dx++) {
+            for (let dy = 0; dy < h; dy++) {
+              delete next[`${fromX + dx}_${fromY + dy}`];
+            }
+          }
+          next[`${toX}_${toY}`] = { ...current, x: toX, y: toY };
+          for (let dx = 0; dx < w; dx++) {
+            for (let dy = 0; dy < h; dy++) {
+              if (dx === 0 && dy === 0) continue;
+              next[`${toX + dx}_${toY + dy}`] = {
+                x: toX + dx,
+                y: toY + dy,
+                itemId: `part:${current.itemId}`,
+                parentTile: `${toX}_${toY}`,
+              };
+            }
+          }
+          return next;
+        });
+        return true;
+      }
+
+      // Street ground slab swap (when origin has no object and is street ground)
+      const fromGround = land[fromKey];
+      if (!isStreetGround(fromGround)) return false;
+
+      if (!canPlaceAt(toX, toY, 1, 1, { x: fromX, y: fromY, w: 1, h: 1 })) {
         showToast(t('town.toast.destOccupiedOrInvalid'));
         return false;
       }
+
+      if (fromKey === toKey) return true;
 
       const session = getLocalSession();
       try {
@@ -869,30 +928,39 @@ export function useTownState(params: {
         // local fallback
       }
 
-      setTiles((prev) => {
-        const next = { ...prev };
-        for (let dx = 0; dx < w; dx++) {
-          for (let dy = 0; dy < h; dy++) {
-            delete next[`${fromX + dx}_${fromY + dy}`];
-          }
+      setTown((prev) => {
+        if (!prev) return prev;
+        const prevLand = prev.land ?? land;
+        const srcGround = prevLand[fromKey];
+        const dstGround = prevLand[toKey];
+        if (!srcGround || !dstGround) return prev;
+        const nextLand: Record<string, GroundTileType> = {
+          ...prevLand,
+          [fromKey]: dstGround,
+          [toKey]: srcGround,
+        };
+        const nextLandRot: Record<string, 1 | 2 | 3> = { ...(prev.landRot ?? {}) };
+        const fromRot = nextLandRot[fromKey];
+        const toRot = nextLandRot[toKey];
+        if (toRot) {
+          nextLandRot[fromKey] = toRot;
+        } else {
+          delete nextLandRot[fromKey];
         }
-        next[`${toX}_${toY}`] = { ...current, x: toX, y: toY };
-        for (let dx = 0; dx < w; dx++) {
-          for (let dy = 0; dy < h; dy++) {
-            if (dx === 0 && dy === 0) continue;
-            next[`${toX + dx}_${toY + dy}`] = {
-              x: toX + dx,
-              y: toY + dy,
-              itemId: `part:${current.itemId}`,
-              parentTile: `${toX}_${toY}`,
-            };
-          }
+        if (fromRot) {
+          nextLandRot[toKey] = fromRot;
+        } else {
+          delete nextLandRot[toKey];
         }
-        return next;
+        return {
+          ...prev,
+          land: nextLand,
+          landRot: nextLandRot,
+        };
       });
       return true;
     },
-    [tiles, catalog, canPlaceAt, showToast, showErrorToast, t],
+    [tiles, land, catalog, canPlaceAt, showToast, showErrorToast, t],
   );
 
   const executeRotate = useCallback(

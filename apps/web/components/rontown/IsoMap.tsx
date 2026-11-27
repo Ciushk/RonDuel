@@ -6,6 +6,7 @@ import {
   calculateSpeedupCost,
   getRotationKind,
   isRonCoinPriceCutActive,
+  isStreetGround,
   PREVIOUS_RONCOIN_PRICES,
   type GridCoord,
   type GroundTileType,
@@ -36,6 +37,7 @@ import {
 import {
   BUBBLE_SPRITES,
   CATALOG_SPRITES,
+  createRoadPresenceChecker,
   GROUND_LABEL_KEY,
   GROUND_SPRITES,
   HEART_FLOAT_SPRITE,
@@ -45,6 +47,7 @@ import {
   resolveRoadSprite,
   UI_SPRITES,
   VILLAGER_SPRITES,
+  type MovingRoadOrigin,
 } from './sprites';
 import { pickDomAtPoint, TOUCH_TOLERANCE_PX } from './pick';
 import type { FloatingReward, TileInfo } from './useTownState';
@@ -62,6 +65,17 @@ export interface RotatingTarget {
   tick: number;
 }
 
+export interface MovedRoadFlight {
+  id: number;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  layer: 'road' | 'ground';
+  groundType?: GroundTileType;
+  rot?: 0 | 1 | 2 | 3;
+}
+
 interface IsoMapProps {
   land: Record<string, GroundTileType>;
   landRot?: Record<string, 1 | 2 | 3>;
@@ -76,6 +90,8 @@ interface IsoMapProps {
   rotateModeActive?: boolean;
   rotatingTarget?: RotatingTarget | null;
   movingTile: TileInfo | null;
+  movedRoadFlight?: MovedRoadFlight | null;
+  onMovedRoadFlightEnd?: (id: number) => void;
   selectedSeed: string | null;
   floatingRewards: FloatingReward[];
   speedupEnabled?: boolean;
@@ -117,8 +133,11 @@ interface StaticWorldProps {
   speedupSparkleKey: string | null;
   nowMs: number;
   reducedMotion: boolean;
+  movingRoadOrigin: MovingRoadOrigin | null;
   previewRoadCell: GridCoord | null;
-  placingRoadRot: 0 | 1;
+  previewRoadRot: 0 | 1 | 2 | 3;
+  previewStreetGround: GroundTileType | null;
+  previewStreetGroundRot: 1 | 2 | 3 | undefined;
   roadRotateTick: number;
   onHoverCell: (cell: GridCoord | null) => void;
   onFocusCell: (cell: GridCoord | null) => void;
@@ -144,8 +163,11 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   speedupSparkleKey,
   nowMs,
   reducedMotion,
+  movingRoadOrigin,
   previewRoadCell,
-  placingRoadRot,
+  previewRoadRot,
+  previewStreetGround,
+  previewStreetGroundRot,
   roadRotateTick,
   onHoverCell,
   onFocusCell,
@@ -171,25 +193,15 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
     return list;
   }, [land]);
 
-  const isRoadAt = useCallback(
-    (nx: number, ny: number) => {
-      const k = `${nx}_${ny}`;
-      if (tiles[k]?.itemId === 'road') return true;
-      const g = land[k];
-      return (
-        g === 'basic-block-street' ||
-        g === 'basic-block-street-curve' ||
-        g === 'basic-block-intersection'
-      );
-    },
-    [tiles, land],
-  );
-
-  const isRoadWithPreview = useCallback(
-    (nx: number, ny: number) =>
-      isRoadAt(nx, ny) ||
-      (previewRoadCell !== null && nx === previewRoadCell.x && ny === previewRoadCell.y),
-    [isRoadAt, previewRoadCell],
+  const isRoadWithPreview = useMemo(
+    () =>
+      createRoadPresenceChecker({
+        tiles,
+        land,
+        movingRoadOrigin,
+        previewRoadCell,
+      }),
+    [tiles, land, movingRoadOrigin, previewRoadCell],
   );
 
   // Main buildings / decor / plots sorted by their front footprint cell (largest col + row)
@@ -267,6 +279,11 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           cellLabel = t('town.map.groundCell', { x, y });
         }
 
+        const isLiftedStreetGround =
+          movingRoadOrigin?.layer === 'ground' &&
+          movingRoadOrigin.x === x &&
+          movingRoadOrigin.y === y;
+
         return (
           <div
             key={`ground_${key}`}
@@ -290,6 +307,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 className={`pointer-events-none block select-none ${groundFlip2Class}`}
                 style={{
                   transform: spec.flipX ? 'scaleX(-1)' : undefined,
+                  opacity: isLiftedStreetGround ? 0.45 : undefined,
                 }}
                 draggable={false}
               />
@@ -379,29 +397,42 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         if (tile.itemId === 'road') {
           const spec = resolveRoadSprite(tile.x, tile.y, isRoadWithPreview, tile.rot);
           const origin = isoToScreen(tile.x, tile.y);
+          const roadZ = floorZ(tile.x, tile.y, 1);
           const isItemRotating = rotatingTarget?.key === key && rotatingTarget.layer === 'item';
           const roadFlipClass = isItemRotating
             ? rotatingTarget.toRot % 2 === 1
               ? 'rt-flip2-to1'
               : 'rt-flip2-to0'
             : '';
+          const isLiftedRoad =
+            movingRoadOrigin?.layer === 'item' &&
+            movingRoadOrigin.x === tile.x &&
+            movingRoadOrigin.y === tile.y;
           return (
             <img
               key={`obj_${key}`}
               data-road-tile={key}
               data-item-tile={key}
+              data-rt-pick="sprite"
+              data-rt-key={key}
+              data-rt-x={tile.x}
+              data-rt-y={tile.y}
+              data-rt-flip-x={spec.flipX ? '1' : undefined}
+              data-rt-object-z={roadZ}
+              aria-hidden="true"
               src={spec.src}
               alt=""
               width={spec.width}
               height={spec.height}
               loading="lazy"
               decoding="async"
-              className={`pointer-events-none absolute block select-none ${roadFlipClass}`}
+              className={`rt-pick-object pointer-events-auto absolute block select-none ${roadFlipClass}`}
               style={{
                 left: origin.x - boundsMinX,
                 top: origin.y - boundsMinY,
-                zIndex: floorZ(tile.x, tile.y, 1),
+                zIndex: roadZ,
                 transform: spec.flipX ? 'scaleX(-1)' : undefined,
+                opacity: isLiftedRoad ? 0.4 : undefined,
               }}
               draggable={false}
             />
@@ -707,15 +738,17 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
         );
       })}
 
-      {/* 4. Road placement preview (50% opacity in floor band under cursor) */}
+      {/* 4. Road placement / move preview (50% opacity in floor band under cursor) */}
       {previewRoadCell &&
         (() => {
-          const spec = resolveRoadSprite(
-            previewRoadCell.x,
-            previewRoadCell.y,
-            isRoadWithPreview,
-            placingRoadRot,
-          );
+          const spec = previewStreetGround
+            ? resolveGroundSprite(previewStreetGround, previewStreetGroundRot)
+            : resolveRoadSprite(
+                previewRoadCell.x,
+                previewRoadCell.y,
+                isRoadWithPreview,
+                previewRoadRot,
+              );
           const origin = isoToScreen(previewRoadCell.x, previewRoadCell.y);
           const dipClass =
             roadRotateTick > 0
@@ -786,6 +819,8 @@ export function IsoMap({
   rotateModeActive = false,
   rotatingTarget = null,
   movingTile,
+  movedRoadFlight = null,
+  onMovedRoadFlightEnd,
   selectedSeed,
   floatingRewards,
   speedupEnabled = false,
@@ -1199,19 +1234,40 @@ export function IsoMap({
     }
   }, [groundTargetMode]);
 
-  // Keep hover highlight synchronized if the hovered building is rotated, moved, or removed
+  // Keep hover highlight synchronized if the hovered building, road, or street ground is rotated, moved, or removed
   useEffect(() => {
     setHoveredObject((prev) => {
       if (!prev) return null;
       const tile = tiles[prev.key];
-      if (!tile || (tile.itemId === 'plot' && !tile.cropId)) return null;
-      const nextFlipX = (tile.rot ?? 0) % 2 === 1;
-      if (prev.flipX !== nextFlipX) {
-        return { ...prev, flipX: nextFlipX };
+      if (tile) {
+        if (tile.itemId === 'plot' && !tile.cropId) return null;
+        if (tile.itemId === 'road') {
+          const checker = createRoadPresenceChecker({ tiles, land });
+          const spec = resolveRoadSprite(tile.x, tile.y, checker, tile.rot);
+          const nextFlipX = Boolean(spec.flipX);
+          if (prev.src !== spec.src || prev.flipX !== nextFlipX) {
+            return { ...prev, src: spec.src, flipX: nextFlipX };
+          }
+          return prev;
+        }
+        const nextFlipX = (tile.rot ?? 0) % 2 === 1;
+        if (prev.flipX !== nextFlipX) {
+          return { ...prev, flipX: nextFlipX };
+        }
+        return prev;
       }
-      return prev;
+      const ground = land[prev.key];
+      if (isStreetGround(ground)) {
+        const spec = resolveGroundSprite(ground!, landRot[prev.key]);
+        const nextFlipX = Boolean(spec.flipX);
+        if (prev.src !== spec.src || prev.flipX !== nextFlipX) {
+          return { ...prev, src: spec.src, flipX: nextFlipX };
+        }
+        return prev;
+      }
+      return null;
     });
-  }, [tiles]);
+  }, [tiles, land, landRot]);
 
   const updateMouseHover = useCallback(
     (clientX: number, clientY: number) => {
@@ -1251,16 +1307,57 @@ export function IsoMap({
           };
         });
         setHoveredCellStable({ x: hit.originX, y: hit.originY });
+      } else if (hit && hit.kind === 'ground') {
+        const key = `${hit.x}_${hit.y}`;
+        const ground = land[key];
+        if (!tiles[key] && isStreetGround(ground)) {
+          const spec = resolveGroundSprite(ground!, landRot[key]);
+          const origin = isoToScreen(hit.x, hit.y);
+          const left = origin.x - bounds.minX;
+          const top = origin.y - bounds.minY;
+          const zIndex = floorZ(hit.x, hit.y, 1);
+          const flipX = Boolean(spec.flipX);
+          setHoveredObject((prev) => {
+            if (
+              prev &&
+              prev.key === key &&
+              prev.src === spec.src &&
+              prev.flipX === flipX &&
+              prev.left === left &&
+              prev.top === top &&
+              prev.width === spec.width &&
+              prev.height === spec.height &&
+              prev.zIndex === zIndex &&
+              !prev.clipPath
+            ) {
+              return prev;
+            }
+            return {
+              key,
+              src: spec.src,
+              left,
+              top,
+              width: spec.width,
+              height: spec.height,
+              flipX,
+              zIndex,
+              isPlaceholder: false,
+            };
+          });
+        } else {
+          setHoveredObject((prev) => (prev === null ? prev : null));
+        }
+        setHoveredCellStable({ x: hit.x, y: hit.y });
       } else {
         setHoveredObject((prev) => (prev === null ? prev : null));
-        if (hit && (hit.kind === 'ground' || hit.kind === 'expand')) {
+        if (hit && hit.kind === 'expand') {
           setHoveredCellStable({ x: hit.x, y: hit.y });
         } else {
           setHoveredCellStable(null);
         }
       }
     },
-    [setHoveredCellStable],
+    [setHoveredCellStable, land, landRot, tiles, bounds.minX, bounds.minY],
   );
 
   // Pointer handlers for 1-pointer drag + 2-pointer pinch
@@ -1563,13 +1660,15 @@ export function IsoMap({
       const item = catalog.items[placingItemId];
       isValid = canPlaceAt(x, y, item?.footprint.w ?? 1, item?.footprint.h ?? 1);
     } else if (movingTile) {
-      const item = catalog.items[movingTile.itemId];
+      const item = movingTile.moveGroundType ? undefined : catalog.items[movingTile.itemId];
       const w = item?.footprint.w ?? 1;
       const h = item?.footprint.h ?? 1;
       isValid = canPlaceAt(x, y, w, h, { x: movingTile.x, y: movingTile.y, w, h });
     } else if (moveModeActive) {
-      const tile = tiles[`${x}_${y}`];
-      isValid = Boolean(tile && !tile.parentTile);
+      const key = `${x}_${y}`;
+      const raw = tiles[key];
+      const tile = raw?.parentTile ? tiles[raw.parentTile] : raw;
+      isValid = Boolean(tile) || isStreetGround(land[key]);
     } else if (rotateModeActive) {
       const raw = tiles[`${x}_${y}`];
       const tile = raw?.parentTile ? tiles[raw.parentTile] : raw;
@@ -1665,12 +1764,119 @@ export function IsoMap({
     return { x: clamped.x, y: clamped.y, z };
   }, [viewportSize.w, viewportSize.h, stageW, stageH, zoomRange.fitScale]);
 
-  // Road placement preview cell (valid hovered cell while placingItemId === 'road')
+  // Lifted road object or street ground slab origin during Move mode
+  const movingRoadOrigin = useMemo<MovingRoadOrigin | null>(() => {
+    if (!movingTile) return null;
+    if (movingTile.moveGroundType && isStreetGround(movingTile.moveGroundType)) {
+      return { x: movingTile.x, y: movingTile.y, layer: 'ground' };
+    }
+    if (movingTile.itemId === 'road') {
+      return { x: movingTile.x, y: movingTile.y, layer: 'item' };
+    }
+    return null;
+  }, [movingTile]);
+
+  // Road placement or move preview cell (valid hovered cell for placing road OR moving road/street)
   const previewRoadCell = useMemo<GridCoord | null>(() => {
-    if (isVisitMode || placingItemId !== 'road' || !hoveredCell) return null;
-    if (!canPlaceAt(hoveredCell.x, hoveredCell.y, 1, 1)) return null;
-    return hoveredCell;
-  }, [isVisitMode, placingItemId, hoveredCell, canPlaceAt]);
+    if (isVisitMode || !hoveredCell) return null;
+    if (placingItemId === 'road') {
+      return canPlaceAt(hoveredCell.x, hoveredCell.y, 1, 1) ? hoveredCell : null;
+    }
+    if (movingRoadOrigin) {
+      if (hoveredCell.x === movingRoadOrigin.x && hoveredCell.y === movingRoadOrigin.y) {
+        return null;
+      }
+      return canPlaceAt(hoveredCell.x, hoveredCell.y, 1, 1, {
+        x: movingRoadOrigin.x,
+        y: movingRoadOrigin.y,
+        w: 1,
+        h: 1,
+      })
+        ? hoveredCell
+        : null;
+    }
+    return null;
+  }, [isVisitMode, placingItemId, movingRoadOrigin, hoveredCell, canPlaceAt]);
+
+  const previewRoadRot: 0 | 1 | 2 | 3 =
+    placingItemId === 'road' ? placingRoadRot : (movingTile?.rot ?? 0);
+  const previewStreetGround: GroundTileType | null =
+    placingItemId === 'road'
+      ? null
+      : movingTile?.moveGroundType && isStreetGround(movingTile.moveGroundType)
+        ? movingTile.moveGroundType
+        : null;
+  const previewStreetGroundRot: 1 | 2 | 3 | undefined = previewStreetGround
+    ? movingTile?.moveGroundRot
+    : undefined;
+
+  // Volt silhouette outline on the lifted origin cell while moving a road, street ground, or object
+  const liftedOutline = useMemo<HoveredObject | null>(() => {
+    if (isVisitMode || !movingTile) return null;
+    const key = `${movingTile.x}_${movingTile.y}`;
+    if (movingTile.moveGroundType && isStreetGround(movingTile.moveGroundType)) {
+      const spec = resolveGroundSprite(movingTile.moveGroundType, movingTile.moveGroundRot);
+      const origin = isoToScreen(movingTile.x, movingTile.y);
+      return {
+        key,
+        src: spec.src,
+        left: origin.x - bounds.minX,
+        top: origin.y - bounds.minY,
+        width: spec.width,
+        height: spec.height,
+        flipX: Boolean(spec.flipX),
+        zIndex: floorZ(movingTile.x, movingTile.y, 1),
+        isPlaceholder: false,
+      };
+    }
+    if (movingTile.itemId === 'road') {
+      const checker = createRoadPresenceChecker({ tiles, land });
+      const spec = resolveRoadSprite(movingTile.x, movingTile.y, checker, movingTile.rot);
+      const origin = isoToScreen(movingTile.x, movingTile.y);
+      return {
+        key,
+        src: spec.src,
+        left: origin.x - bounds.minX,
+        top: origin.y - bounds.minY,
+        width: spec.width,
+        height: spec.height,
+        flipX: Boolean(spec.flipX),
+        zIndex: floorZ(movingTile.x, movingTile.y, 1),
+        isPlaceholder: false,
+      };
+    }
+    return null;
+  }, [isVisitMode, movingTile, tiles, land, bounds.minX, bounds.minY]);
+
+  // Short-lived 200ms drop flight animation for moved cobblestone roads and street ground slabs
+  const flightOverlay = useMemo(() => {
+    if (!movedRoadFlight || reducedMotion) return null;
+    const fromOrigin = isoToScreen(movedRoadFlight.fromX, movedRoadFlight.fromY);
+    const toOrigin = isoToScreen(movedRoadFlight.toX, movedRoadFlight.toY);
+    const dx = fromOrigin.x - toOrigin.x;
+    const dy = fromOrigin.y - toOrigin.y;
+    const spec =
+      movedRoadFlight.layer === 'ground' && movedRoadFlight.groundType
+        ? resolveGroundSprite(movedRoadFlight.groundType, movedRoadFlight.rot)
+        : resolveRoadSprite(
+            movedRoadFlight.toX,
+            movedRoadFlight.toY,
+            createRoadPresenceChecker({ tiles, land }),
+            movedRoadFlight.rot,
+          );
+    return {
+      id: movedRoadFlight.id,
+      left: toOrigin.x - bounds.minX,
+      top: toOrigin.y - bounds.minY,
+      dx,
+      dy,
+      width: spec.width,
+      height: spec.height,
+      src: spec.src,
+      flipX: Boolean(spec.flipX),
+      zIndex: floorZ(movedRoadFlight.toX, movedRoadFlight.toY, 2),
+    };
+  }, [movedRoadFlight, reducedMotion, tiles, land, bounds.minX, bounds.minY]);
 
   return (
     <div
@@ -1721,8 +1927,11 @@ export function IsoMap({
           speedupSparkleKey={speedupSparkleKey}
           nowMs={nowMs}
           reducedMotion={reducedMotion}
+          movingRoadOrigin={movingRoadOrigin}
           previewRoadCell={previewRoadCell}
-          placingRoadRot={placingRoadRot}
+          previewRoadRot={previewRoadRot}
+          previewStreetGround={previewStreetGround}
+          previewStreetGroundRot={previewStreetGroundRot}
           roadRotateTick={roadRotateTick}
           onHoverCell={handleDiamondMouseHover}
           onFocusCell={setHoveredCellStable}
@@ -1731,6 +1940,74 @@ export function IsoMap({
           onHarvestTap={handleHarvestTap}
           onSpeedupTap={onSpeedupTap}
         />
+
+        {/* Lifted road / street ground volt silhouette highlight (opacity transition only) */}
+        {liftedOutline && (
+          <div
+            key={`lifted_${liftedOutline.key}`}
+            aria-hidden="true"
+            data-rt-lifted-outline="true"
+            data-rt-lifted-key={liftedOutline.key}
+            className="rt-object-hover pointer-events-none absolute select-none"
+            style={{
+              left: liftedOutline.left,
+              top: liftedOutline.top,
+              width: liftedOutline.width,
+              height: liftedOutline.height,
+              zIndex: liftedOutline.zIndex + 1,
+            }}
+          >
+            {liftedOutline.src && (
+              <img
+                src={liftedOutline.src}
+                alt=""
+                width={liftedOutline.width}
+                height={liftedOutline.height}
+                decoding="async"
+                draggable={false}
+                className="pointer-events-none block select-none"
+                style={{
+                  transform: liftedOutline.flipX ? 'scaleX(-1)' : undefined,
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Short-lived 200ms drop flight animation (transform + opacity only; unmounts on animationend) */}
+        {flightOverlay && (
+          <div
+            key={`flight_${flightOverlay.id}`}
+            aria-hidden="true"
+            data-rt-move-flight="true"
+            onAnimationEnd={() => onMovedRoadFlightEnd?.(flightOverlay.id)}
+            className="rt-move-drop-fly pointer-events-none absolute select-none"
+            style={
+              {
+                left: flightOverlay.left,
+                top: flightOverlay.top,
+                width: flightOverlay.width,
+                height: flightOverlay.height,
+                zIndex: flightOverlay.zIndex,
+                '--rt-fly-dx': `${flightOverlay.dx}px`,
+                '--rt-fly-dy': `${flightOverlay.dy}px`,
+              } as React.CSSProperties
+            }
+          >
+            <img
+              src={flightOverlay.src}
+              alt=""
+              width={flightOverlay.width}
+              height={flightOverlay.height}
+              decoding="async"
+              draggable={false}
+              className="pointer-events-none block select-none"
+              style={{
+                transform: flightOverlay.flipX ? 'scaleX(-1)' : undefined,
+              }}
+            />
+          </div>
+        )}
 
         {/* Desktop hover silhouette highlight (opacity transition only, outside StaticWorldLayer) */}
         {hoveredObject && !groundTargetMode && (

@@ -1140,7 +1140,7 @@
       "readyShort": "Paruošta",
       "harvestBadgeAria": "Nuimti paruoštą {crop} ties ({x}, {y})",
       "placingBanner": "Palieskite savo žalią langelį, kad pastatytumėte {item}",
-      "movingPickBanner": "Palieskite pastatą ar dekoraciją, kad perkeltumėte",
+      "movingPickBanner": "Palieskite pastatą, dekoraciją ar gatvę, kad perkeltumėte",
       "movingDestBanner": "Palieskite laisvą langelį, kad perkeltumėte ({x}, {y})",
       "plantingBanner": "Palieskite žolę, žemę ar tuščią lysvę, kad pasėtumėte {crop}",
       "cancel": "Atšaukti",

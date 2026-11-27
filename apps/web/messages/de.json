@@ -1140,7 +1140,7 @@
       "readyShort": "Fertig",
       "harvestBadgeAria": "Erntereife {crop} bei ({x}, {y}) ernten",
       "placingBanner": "Tippe auf ein eigenes grünes Feld, um {item} zu platzieren",
-      "movingPickBanner": "Tippe auf ein Gebäude oder Deko zum Bewegen",
+      "movingPickBanner": "Tippe auf ein Gebäude, Deko oder eine Straße zum Bewegen",
       "movingDestBanner": "Tippe auf ein freies Feld, um ({x}, {y}) zu bewegen",
       "plantingBanner": "Tippe auf Wiese, Erde oder ein leeres Beet für {crop}",
       "cancel": "Abbrechen",

@@ -1140,7 +1140,7 @@
       "readyShort": "Klar",
       "harvestBadgeAria": "Høst klar {crop} ved ({x}, {y})",
       "placingBanner": "Trykk på en egen grønn rute for å plassere {item}",
-      "movingPickBanner": "Trykk på en bygning eller dekor for å flytte",
+      "movingPickBanner": "Trykk på en bygning, dekor eller gate for å flytte",
       "movingDestBanner": "Trykk på en ledig rute for å flytte ({x}, {y})",
       "plantingBanner": "Trykk på gress, jord eller ledig åker for å plante {crop}",
       "cancel": "Avbryt",

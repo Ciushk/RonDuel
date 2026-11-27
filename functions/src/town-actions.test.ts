@@ -196,6 +196,128 @@ describe('town-actions server business logic', () => {
         'already occupied',
       );
     });
+
+    it('moves a cobblestone road (1,2) -> (5,5), preserves rot: 1, and leaves wallet & land untouched', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 2,
+        serviceCapacity: 4,
+        populationCap: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: {
+          '1_2': 'basic-block',
+          '5_5': 'basic-block-flowers',
+          '3_3': 'basic-block',
+        },
+      });
+      await buildItem(mockDb, 'u1', { itemId: 'road', x: 1, y: 2, rot: 1 });
+      const walletBefore = (store.get('users/u1/wallet/main') as any).balance;
+
+      const res = await moveTile(mockDb, 'u1', { fromX: 1, fromY: 2, toX: 5, toY: 5 });
+      expect(res.success).toBe(true);
+
+      expect(store.has('users/u1/townTiles/1_2')).toBe(false);
+      const moved = store.get('users/u1/townTiles/5_5');
+      expect(moved?.itemId).toBe('road');
+      expect(moved?.x).toBe(5);
+      expect(moved?.y).toBe(5);
+      expect(moved?.rot).toBe(1);
+
+      // Wallet and ground slabs untouched
+      expect((store.get('users/u1/wallet/main') as any).balance).toBe(walletBefore);
+      const town = store.get('users/u1/town/main') as any;
+      expect(town.land['1_2']).toBe('basic-block');
+      expect(town.land['5_5']).toBe('basic-block-flowers');
+    });
+
+    it('rejects moving a road onto a cell occupied by another road', async () => {
+      await buildItem(mockDb, 'u1', { itemId: 'road', x: 1, y: 2, rot: 1 });
+      await buildItem(mockDb, 'u1', { itemId: 'road', x: 2, y: 2 });
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 2, toX: 2, toY: 2 })).rejects.toThrow(
+        'already occupied',
+      );
+    });
+
+    it('swaps a street ground slab (and its landRot) onto a free walkable cell without touching wallet or townTiles', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 2,
+        serviceCapacity: 4,
+        populationCap: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: {
+          '1_1': 'basic-block-street',
+          '4_4': 'basic-block',
+          '3_3': 'basic-block',
+        },
+        landRot: {
+          '1_1': 1,
+        },
+      });
+      const walletBefore = (store.get('users/u1/wallet/main') as any).balance;
+
+      const res = await moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 4, toY: 4 });
+      expect(res.success).toBe(true);
+
+      const town = store.get('users/u1/town/main') as any;
+      expect(town.land['4_4']).toBe('basic-block-street');
+      expect(town.land['1_1']).toBe('basic-block');
+      expect(town.landRot['4_4']).toBe(1);
+      expect(town.landRot['1_1']).toBeUndefined();
+
+      // Wallet untouched and no documents created in townTiles
+      expect((store.get('users/u1/wallet/main') as any).balance).toBe(walletBefore);
+      expect(store.has('users/u1/townTiles/1_1')).toBe(false);
+      expect(store.has('users/u1/townTiles/4_4')).toBe(false);
+    });
+
+    it('rejects moving street ground onto an occupied tile, water/shore, unowned land, or moving plain grass', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 2,
+        serviceCapacity: 4,
+        populationCap: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: {
+          '1_1': 'basic-block-street-curve',
+          '2_2': 'basic-block',
+          '3_3': 'basic-block',
+          '4_4': 'basic-block-wather',
+          '4_5': 'basic-block-wather-grass-50-50',
+        },
+        landRot: { '1_1': 2 },
+      });
+
+      // Onto starter_house at (3,3)
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 3, toY: 3 })).rejects.toThrow(
+        'already occupied',
+      );
+      // Onto water
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 4, toY: 4 })).rejects.toThrow(
+        'water or shoreline',
+      );
+      // Onto shoreline
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 4, toY: 5 })).rejects.toThrow(
+        'water or shoreline',
+      );
+      // Onto unowned land
+      await expect(moveTile(mockDb, 'u1', { fromX: 1, fromY: 1, toX: 6, toY: 6 })).rejects.toThrow(
+        'not owned land',
+      );
+      // Moving plain grass with no object must fail
+      await expect(moveTile(mockDb, 'u1', { fromX: 2, fromY: 2, toX: 1, toY: 1 })).rejects.toThrow(
+        'No tile at (2, 2)',
+      );
+    });
   });
 
   describe('buyFarmPlot', () => {

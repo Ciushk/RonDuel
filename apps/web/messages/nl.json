@@ -1140,7 +1140,7 @@
       "readyShort": "Klaar",
       "harvestBadgeAria": "Oogstklare {crop} bij ({x}, {y}) oogsten",
       "placingBanner": "Tik op een eigen groene tegel om {item} te plaatsen",
-      "movingPickBanner": "Tik op een gebouw of decoratie om te verplaatsen",
+      "movingPickBanner": "Tik op een gebouw, decoratie of straat om te verplaatsen",
       "movingDestBanner": "Tik op een vrije tegel om ({x}, {y}) te verplaatsen",
       "plantingBanner": "Tik op gras, aarde of leeg akkerveld om {crop} te planten",
       "cancel": "Annuleren",

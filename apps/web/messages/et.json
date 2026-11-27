@@ -1140,7 +1140,7 @@
       "readyShort": "Valmis",
       "harvestBadgeAria": "Korista valmis {crop} ruudult ({x}, {y})",
       "placingBanner": "Puuduta oma rohelist ruutu, et paigutada {item}",
-      "movingPickBanner": "Puuduta hoonet või kaunistust teisaldamiseks",
+      "movingPickBanner": "Puuduta hoonet, kaunistust või tänavat teisaldamiseks",
       "movingDestBanner": "Puuduta vaba ruutu, et teisaldada ({x}, {y})",
       "plantingBanner": "Puuduta muru, mulda või tühja peenart, et külvata {crop}",
       "cancel": "Tühista",

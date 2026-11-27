@@ -190,6 +190,12 @@ export const PLANTABLE_GROUND_TYPES: ReadonlySet<GroundTileType> = new Set<Groun
   'basic-block-dirt',
 ]);
 
+export const STREET_GROUND_TYPES: ReadonlySet<GroundTileType> = new Set<GroundTileType>([
+  'basic-block-street',
+  'basic-block-street-curve',
+  'basic-block-intersection',
+]);
+
 export function isGroundTileType(value: string): value is GroundTileType {
   return (GROUND_TILE_TYPES as readonly string[]).includes(value);
 }
@@ -200,6 +206,10 @@ export function isGroundWalkable(ground: GroundTileType | undefined): boolean {
 
 export function isGroundPlantable(ground: GroundTileType | undefined): boolean {
   return ground !== undefined && PLANTABLE_GROUND_TYPES.has(ground);
+}
+
+export function isStreetGround(ground: GroundTileType | undefined): boolean {
+  return ground !== undefined && STREET_GROUND_TYPES.has(ground);
 }
 
 export type RotationKind = 'none' | 'flip2' | 'rot4';

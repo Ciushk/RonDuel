@@ -1,4 +1,4 @@
-import type { GroundTileType } from '@ronduel/shared';
+import { isStreetGround, type GroundTileType } from '@ronduel/shared';
 
 export interface SpriteSpec {
   src: string;
@@ -399,6 +399,49 @@ export function resolveRoadSprite(
     default:
       return GROUND_SPRITES['basic-block-intersection'];
   }
+}
+
+export interface MovingRoadOrigin {
+  x: number;
+  y: number;
+  layer: 'item' | 'ground';
+}
+
+export interface RoadPresenceOptions {
+  tiles: Record<string, { itemId: string }>;
+  land: Record<string, GroundTileType>;
+  /** Currently lifted road object or street ground slab (excluded from neighbours during Move). */
+  movingRoadOrigin?: MovingRoadOrigin | null;
+  /** Valid hovered/focused destination cell in road Place or Move mode (included in neighbours). */
+  previewRoadCell?: { x: number; y: number } | null;
+}
+
+/**
+ * Creates a road-presence predicate for 16-way autotiling, accounting for an optional
+ * lifted road/street origin (disconnected during Move) and hovered destination preview cell.
+ */
+export function createRoadPresenceChecker({
+  tiles,
+  land,
+  movingRoadOrigin = null,
+  previewRoadCell = null,
+}: RoadPresenceOptions): (nx: number, ny: number) => boolean {
+  return (nx: number, ny: number) => {
+    if (previewRoadCell && nx === previewRoadCell.x && ny === previewRoadCell.y) {
+      return true;
+    }
+    const k = `${nx}_${ny}`;
+    const isOrigin =
+      movingRoadOrigin !== null && nx === movingRoadOrigin.x && ny === movingRoadOrigin.y;
+    if (isOrigin) {
+      // Lifting a road object reveals the underlying ground (which might still be street ground);
+      // lifting a street ground slab removes the street from the origin cell.
+      if (movingRoadOrigin.layer === 'ground') return false;
+      return isStreetGround(land[k]);
+    }
+    if (tiles[k]?.itemId === 'road') return true;
+    return isStreetGround(land[k]);
+  };
 }
 
 export type VillagerKind =

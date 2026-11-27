@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ActionBar, type SeedChoiceId } from '@/components/rontown/ActionBar';
-import { IsoMap, type RotatingTarget } from '@/components/rontown/IsoMap';
+import { IsoMap, type MovedRoadFlight, type RotatingTarget } from '@/components/rontown/IsoMap';
 import { isoToScreen, TILE_H, TILE_W } from '@/components/rontown/iso';
 import { RonCoinIcon } from '@/components/rontown/RonCoinIcon';
 import { GROUND_LABEL_KEY, GROUND_SPRITES } from '@/components/rontown/sprites';
@@ -27,6 +27,7 @@ import { getLocalSession } from '@/lib/session';
 import {
   getFamilyEventTriggerAt,
   getRotationKind,
+  isStreetGround,
   type GridCoord,
   type GroundTileType,
 } from '@ronduel/shared';
@@ -214,6 +215,9 @@ export default function TownPage() {
   const [roadRotateTick, setRoadRotateTick] = useState<number>(0);
   const [moveModeActive, setMoveModeActive] = useState<boolean>(false);
   const [movingTile, setMovingTile] = useState<TileInfo | null>(null);
+  const [movedRoadFlight, setMovedRoadFlight] = useState<MovedRoadFlight | null>(null);
+  const moveFlightIdRef = useRef<number>(0);
+  const moveFlightClearTimerRef = useRef<number | null>(null);
   const [rotateModeActive, setRotateModeActive] = useState<boolean>(false);
   const [rotatingTarget, setRotatingTarget] = useState<RotatingTarget | null>(null);
   const [rotateAnnouncement, setRotateAnnouncement] = useState<string>('');
@@ -250,12 +254,19 @@ export default function TownPage() {
     type: 'harvest' | 'build' | 'plant';
   } | null>(null);
 
+  const handleMovedRoadFlightEnd = useCallback((id: number) => {
+    setMovedRoadFlight((cur) => (cur && cur.id === id ? null : cur));
+  }, []);
+
   useEffect(() => {
     return () => {
       if (rotateSwapTimerRef.current !== null) window.clearTimeout(rotateSwapTimerRef.current);
       if (rotateClearTimerRef.current !== null) window.clearTimeout(rotateClearTimerRef.current);
       if (speedupSparkleTimerRef.current !== null) {
         window.clearTimeout(speedupSparkleTimerRef.current);
+      }
+      if (moveFlightClearTimerRef.current !== null) {
+        window.clearTimeout(moveFlightClearTimerRef.current);
       }
     };
   }, []);
@@ -598,6 +609,31 @@ export default function TownPage() {
         }
         const ok = await executeMove(activeMovingTile.x, activeMovingTile.y, x, y);
         if (ok) {
+          const isRoadObj = activeMovingTile.itemId === 'road';
+          const isStreetSlab = Boolean(
+            activeMovingTile.moveGroundType && isStreetGround(activeMovingTile.moveGroundType),
+          );
+          if (!reducedMotion && (isRoadObj || isStreetSlab)) {
+            moveFlightIdRef.current += 1;
+            const flightId = moveFlightIdRef.current;
+            setMovedRoadFlight({
+              id: flightId,
+              fromX: activeMovingTile.x,
+              fromY: activeMovingTile.y,
+              toX: x,
+              toY: y,
+              layer: isStreetSlab ? 'ground' : 'road',
+              groundType: activeMovingTile.moveGroundType,
+              rot: isStreetSlab ? activeMovingTile.moveGroundRot : activeMovingTile.rot,
+            });
+            if (moveFlightClearTimerRef.current !== null) {
+              window.clearTimeout(moveFlightClearTimerRef.current);
+            }
+            moveFlightClearTimerRef.current = window.setTimeout(() => {
+              setMovedRoadFlight((cur) => (cur && cur.id === flightId ? null : cur));
+              moveFlightClearTimerRef.current = null;
+            }, 260);
+          }
           movingTileRef.current = null;
           moveModeActiveRef.current = false;
           setMovingTile(null);
@@ -607,12 +643,25 @@ export default function TownPage() {
       }
 
       if (moveModeActiveRef.current) {
-        if (!tile) {
-          showToast(t('town.map.movingPickBanner'));
+        if (tile) {
+          movingTileRef.current = tile;
+          setMovingTile(tile);
           return;
         }
-        movingTileRef.current = tile;
-        setMovingTile(tile);
+        const ground = land[key];
+        if (isStreetGround(ground)) {
+          const streetMoving: TileInfo = {
+            x,
+            y,
+            itemId: 'empty',
+            moveGroundType: ground,
+            ...(landRot[key] ? { moveGroundRot: landRot[key] } : {}),
+          };
+          movingTileRef.current = streetMoving;
+          setMovingTile(streetMoving);
+          return;
+        }
+        showToast(t('town.map.movingPickBanner'));
         return;
       }
 
@@ -634,6 +683,9 @@ export default function TownPage() {
     },
     [
       tiles,
+      land,
+      landRot,
+      reducedMotion,
       isVisitMode,
       isServerReady,
       handleRotateCell,
@@ -951,6 +1003,13 @@ export default function TownPage() {
               {rotateAnnouncement}
             </div>
           )}
+          {(moveModeActive || movingTile) && (
+            <div role="status" aria-live="polite" data-testid="move-live" className="sr-only">
+              {movingTile
+                ? t('town.map.movingDestBanner', { x: movingTile.x, y: movingTile.y })
+                : t('town.map.movingPickBanner')}
+            </div>
+          )}
         </div>
       )}
 
@@ -1065,6 +1124,8 @@ export default function TownPage() {
               rotateModeActive={rotateModeActive}
               rotatingTarget={rotatingTarget}
               movingTile={movingTile}
+              movedRoadFlight={movedRoadFlight}
+              onMovedRoadFlightEnd={handleMovedRoadFlightEnd}
               selectedSeed={selectedSeed}
               floatingRewards={floatingRewards}
               speedupEnabled={speedupEnabled}
@@ -1255,6 +1316,8 @@ export default function TownPage() {
           coinsTransferEnabled={coinsTransferEnabled}
           townHelpEnabled={townHelpEnabled}
           town={town}
+          land={land}
+          landRot={landRot}
           landCount={Object.keys(land).length}
           catalog={catalog}
           catalogList={catalogList}

@@ -1140,7 +1140,7 @@
       "readyShort": "Kész",
       "harvestBadgeAria": "Érett {crop} aratása itt: ({x}, {y})",
       "placingBanner": "Érints egy saját zöld mezőt {item} elhelyezéséhez",
-      "movingPickBanner": "Érints egy épületet vagy díszt a mozgatáshoz",
+      "movingPickBanner": "Érints egy épületet, díszt vagy utcát a mozgatáshoz",
       "movingDestBanner": "Érints egy szabad mezőt ({x}, {y}) mozgatásához",
       "plantingBanner": "Érints füvet, földet vagy üres parcellát {crop} ültetéséhez",
       "cancel": "Mégse",

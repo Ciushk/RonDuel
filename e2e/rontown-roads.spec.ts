@@ -312,4 +312,167 @@ test.describe('RonTown Roads (16-way auto-tiling + preview + optional rotate)', 
     );
     await ctx.close();
   });
+
+  test('Move tool lifts cobblestone road via sprite hit-test, previews autotiling, preserves rot, and swaps street ground slab', async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const movePayloads: Array<{ fromX: number; fromY: number; toX: number; toY: number }> = [];
+    const payloadWithStreetGround = {
+      ...roadNetworkPayload,
+      town: {
+        ...roadNetworkPayload.town,
+        land: {
+          ...roadNetworkPayload.town.land,
+          '0_2': 'basic-block-street-curve',
+        },
+        landRot: {
+          '0_2': 1,
+        },
+      },
+      tiles: {
+        ...roadNetworkPayload.tiles,
+        '1_0': { x: 1, y: 0, itemId: 'road', rot: 1 },
+      },
+    };
+
+    await seedSessionAndRoutes(page, 'u_roads_move');
+    await page.route('**/api/town/init*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(payloadWithStreetGround),
+      });
+    });
+    await page.route('**/api/town/move*', async (route) => {
+      const body = route.request().postDataJSON() as {
+        fromX: number;
+        fromY: number;
+        toX: number;
+        toY: number;
+      };
+      movePayloads.push(body);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    await page.goto('/en/town', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('[data-road-tile="1_0"]')).toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(250);
+
+    // 1. Activate Move tool -> banner mentions street/road (plus polite aria-live announcement)
+    await page.getByRole('button', { name: 'Move' }).first().click();
+    await expect(
+      page.getByText(/Tap a building, decor, or street to move it/i).first(),
+    ).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(page.getByTestId('move-live')).toContainText(
+      /Tap a building, decor, or street to move it/i,
+    );
+    await page.waitForTimeout(150);
+
+    // Pick up isolated rot=1 road at (1, 0) by clicking its road sprite directly (sprite-aware hit-test)
+    const road10 = page.locator('[data-road-tile="1_0"]');
+    const roadBox = await road10.boundingBox();
+    expect(roadBox).not.toBeNull();
+    await page.mouse.click(roadBox!.x + roadBox!.width * 0.5, roadBox!.y + roadBox!.height * 0.5);
+
+    // Lifted volt silhouette appears at (1,0) and stage switches to ground-target mode
+    await expect(
+      page.locator('[data-rt-lifted-outline="true"][data-rt-lifted-key="1_0"]'),
+    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('[data-rontown-stage="true"]')).toHaveAttribute(
+      'data-rt-ground-target',
+      'true',
+    );
+
+    // Focus isolated cell (4, 0) -> preview preserves rot=1 (scaleX(-1))
+    const dest40 = page.locator('[data-rontown-stage="true"] button[aria-label*="4, 0"]').first();
+    await dest40.focus();
+    const preview = page.locator('[data-road-preview="true"]');
+    await expect(preview).toBeVisible({ timeout: 5_000 });
+    expect(await preview.evaluate((el) => el.style.transform)).toBe('scaleX(-1)');
+
+    // Focus (2, 0) north of (2, 1) -> neighbour (2, 1) re-tiles from end-s to straight street in preview
+    const north20 = page.locator('[data-rontown-stage="true"] button[aria-label*="2, 0"]').first();
+    await north20.focus();
+    await expect(page.locator('[data-road-tile="2_1"]')).toHaveAttribute(
+      'src',
+      /basic-block-street\.png/,
+    );
+    await expect(preview).toHaveAttribute('src', /basic-block-street-end-s\.png/);
+
+    // Drop on (4, 0) -> sends POST /api/town/move, preserves scaleX(-1), wallet unchanged
+    await dest40.click({ force: true });
+    await expect.poll(() => movePayloads.length, { timeout: 5_000 }).toBe(1);
+    expect(movePayloads[0]).toMatchObject({ fromX: 1, fromY: 0, toX: 4, toY: 0 });
+    await expect(page.locator('[data-road-tile="1_0"]')).toHaveCount(0);
+    const moved40 = page.locator('[data-road-tile="4_0"]');
+    await expect(moved40).toBeVisible({ timeout: 5_000 });
+    expect(await moved40.evaluate((el) => el.style.transform)).toContain('scaleX(-1)');
+    await expect(page.getByTestId('town-wallet-balance')).toHaveText('500');
+
+    // 2. Move road (2, 1) out of the 4-way cross -> (2, 2) re-tiles from intersection to T-junction (esw)
+    await page.getByRole('button', { name: 'Move' }).first().click();
+    await page.waitForTimeout(150);
+    await page
+      .locator('[data-rontown-stage="true"] button[aria-label*="2, 1"]')
+      .first()
+      .click({ force: true });
+    await expect(
+      page.locator('[data-rt-lifted-outline="true"][data-rt-lifted-key="2_1"]'),
+    ).toBeVisible({ timeout: 5_000 });
+    // Even before drop, (2, 2) already previews as T-junction (esw) because (2, 1) is lifted
+    await expect(page.locator('[data-road-tile="2_2"]')).toHaveAttribute(
+      'src',
+      /basic-block-street-t-esw\.png/,
+    );
+    await page
+      .locator('[data-rontown-stage="true"] button[aria-label*="5, 0"]')
+      .first()
+      .click({ force: true });
+    await expect.poll(() => movePayloads.length, { timeout: 5_000 }).toBe(2);
+    expect(movePayloads[1]).toMatchObject({ fromX: 2, fromY: 1, toX: 5, toY: 0 });
+    await expect(page.locator('[data-road-tile="2_2"]')).toHaveAttribute(
+      'src',
+      /basic-block-street-t-esw\.png/,
+    );
+
+    // 3. Street ground slab (0, 2) shows Move (without Remove) in tile sheet and swaps onto (1, 0)
+    await page
+      .locator('[data-rontown-stage="true"] button[aria-label*="0, 2"]')
+      .first()
+      .click({ force: true });
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    const moveSheetBtn = dialog.getByRole('button', { name: /^move$/i });
+    await expect(moveSheetBtn).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /remove/i })).toHaveCount(0);
+    await moveSheetBtn.click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.locator('[data-rt-lifted-outline="true"][data-rt-lifted-key="0_2"]'),
+    ).toBeVisible({ timeout: 5_000 });
+
+    await page
+      .locator('[data-rontown-stage="true"] button[aria-label*="1, 0"]')
+      .first()
+      .click({ force: true });
+    await expect.poll(() => movePayloads.length, { timeout: 5_000 }).toBe(3);
+    expect(movePayloads[2]).toMatchObject({ fromX: 0, fromY: 2, toX: 1, toY: 0 });
+    await expect(page.locator('img[data-ground-tile="1_0"]')).toHaveAttribute(
+      'src',
+      /basic-block-street-curve-se\.png/,
+    );
+    await expect(page.locator('img[data-ground-tile="0_2"]')).toHaveAttribute(
+      'src',
+      /basic-block\.png/,
+    );
+    await expect(page.getByTestId('town-wallet-balance')).toHaveText('500');
+  });
 });

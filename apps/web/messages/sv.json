@@ -1140,7 +1140,7 @@
       "readyShort": "Klar",
       "harvestBadgeAria": "Skörda klar {crop} vid ({x}, {y})",
       "placingBanner": "Tryck på en egen grön ruta för att placera {item}",
-      "movingPickBanner": "Tryck på en byggnad eller dekoration att flytta",
+      "movingPickBanner": "Tryck på en byggnad, dekoration eller gata för att flytta",
       "movingDestBanner": "Tryck på en ledig ruta för att flytta ({x}, {y})",
       "plantingBanner": "Tryck på gräs, jord eller tom odling för att så {crop}",
       "cancel": "Avbryt",

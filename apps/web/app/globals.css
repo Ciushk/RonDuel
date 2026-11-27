@@ -947,6 +947,22 @@ html[data-theme='dark'] {
   }
 }
 
+/* Move drop flight animation (200ms ease-out, transform & opacity only; unmounts on animationend) */
+@keyframes rt-move-drop-fly {
+  0% {
+    opacity: 0.72;
+    transform: translate3d(var(--rt-fly-dx, 0px), var(--rt-fly-dy, 0px), 0) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.rt-move-drop-fly {
+  animation: rt-move-drop-fly 200ms ease-out 1 both;
+}
+
 /* 7-day RonCoin price-cut badge entrance (180ms transform + opacity only, no loop) */
 @keyframes rt-price-cut-in {
   from {
@@ -1032,6 +1048,12 @@ html[data-theme='dark'] {
 
   .rt-object-hover {
     transition: none !important;
+  }
+
+  .rt-move-drop-fly {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 
   .rt-price-cut-badge {

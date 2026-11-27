@@ -1140,7 +1140,7 @@
       "readyShort": "Valmis",
       "harvestBadgeAria": "Korjaa valmis {crop} ruudusta ({x}, {y})",
       "placingBanner": "Napauta omaa vihreää ruutua sijoittaaksesi: {item}",
-      "movingPickBanner": "Napauta rakennusta tai koristetta siirtääksesi",
+      "movingPickBanner": "Napauta rakennusta, koristetta tai katua siirtääksesi",
       "movingDestBanner": "Napauta vapaata ruutua siirtääksesi ({x}, {y})",
       "plantingBanner": "Napauta nurmea, multaa tai tyhjää peltoa kylvääksesi {crop}",
       "cancel": "Peruuta",

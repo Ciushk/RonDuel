@@ -1140,7 +1140,7 @@
       "readyShort": "Réidh",
       "harvestBadgeAria": "Bain {crop} réidh ag ({x}, {y})",
       "placingBanner": "Tapáil ar chearnóg ghlas de do chuid chun {item} a chur",
-      "movingPickBanner": "Tapáil ar fhoirgneamh nó maisiúchán chun é a bhogadh",
+      "movingPickBanner": "Tapáil ar fhoirgneamh, maisiúchán nó sráid chun é a bhogadh",
       "movingDestBanner": "Tapáil ar chearnóg shaor chun ({x}, {y}) a bhogadh",
       "plantingBanner": "Tapáil ar fhéar, chré nó cheapach fholamh chun {crop} a chur",
       "cancel": "Cealaigh",

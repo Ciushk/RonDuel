@@ -1140,7 +1140,7 @@
       "readyShort": "Gatavs",
       "harvestBadgeAria": "Novākt gatavu {crop} pie ({x}, {y})",
       "placingBanner": "Pieskaries savam zaļajam lauciņam, lai novietotu {item}",
-      "movingPickBanner": "Pieskaries ēkai vai dekoram, lai pārvietotu",
+      "movingPickBanner": "Pieskaries ēkai, dekoram vai ielai, lai pārvietotu",
       "movingDestBanner": "Pieskaries brīvam lauciņam, lai pārvietotu ({x}, {y})",
       "plantingBanner": "Pieskaries zālei, zemei vai tukšai dobei, lai stādītu {crop}",
       "cancel": "Atcelt",

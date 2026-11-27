@@ -1140,7 +1140,7 @@
       "readyShort": "Gotowe",
       "harvestBadgeAria": "Zbierz gotowe {crop} na ({x}, {y})",
       "placingBanner": "Dotknij własnego zielonego pola, aby postawić {item}",
-      "movingPickBanner": "Dotknij budynku lub dekoracji, aby przenieść",
+      "movingPickBanner": "Dotknij budynku, dekoracji lub alejki, aby przenieść",
       "movingDestBanner": "Dotknij wolnego pola, aby przenieść ({x}, {y})",
       "plantingBanner": "Dotknij trawy, ziemi lub pustej grządki, aby posiać {crop}",
       "cancel": "Anuluj",

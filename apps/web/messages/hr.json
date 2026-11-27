@@ -1140,7 +1140,7 @@
       "readyShort": "Spremno",
       "harvestBadgeAria": "Požanji spremno {crop} na ({x}, {y})",
       "placingBanner": "Dodirni svoje zeleno polje za postavljanje {item}",
-      "movingPickBanner": "Dodirni zgradu ili ukras za premještanje",
+      "movingPickBanner": "Dodirni zgradu, ukras ili ulicu za premještanje",
       "movingDestBanner": "Dodirni slobodno polje za premještanje ({x}, {y})",
       "plantingBanner": "Dodirni travu, zemlju ili praznu gredicu za {crop}",
       "cancel": "Odustani",
