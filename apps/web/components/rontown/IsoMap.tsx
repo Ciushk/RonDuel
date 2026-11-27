@@ -44,6 +44,7 @@ import {
   UI_SPRITES,
   VILLAGER_SPRITES,
 } from './sprites';
+import { pickDomAtPoint, TOUCH_TOLERANCE_PX } from './pick';
 import type { FloatingReward, TileInfo } from './useTownState';
 import { useReducedMotion, useVillagers } from './useVillagers';
 
@@ -118,6 +119,7 @@ interface StaticWorldProps {
   placingRoadRot: 0 | 1;
   roadRotateTick: number;
   onHoverCell: (cell: GridCoord | null) => void;
+  onFocusCell: (cell: GridCoord | null) => void;
   onTileTap: (x: number, y: number) => void;
   onExpandTap: (x: number, y: number) => void;
   onHarvestTap: (x: number, y: number) => void;
@@ -144,6 +146,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
   placingRoadRot,
   roadRotateTick,
   onHoverCell,
+  onFocusCell,
   onTileTap,
   onExpandTap,
   onHarvestTap,
@@ -291,10 +294,13 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
             </div>
             <button
               type="button"
+              data-rt-ground-btn="true"
+              data-rt-x={x}
+              data-rt-y={y}
               onClick={() => onTileTap(x, y)}
               onMouseEnter={() => onHoverCell({ x, y })}
               onMouseLeave={() => onHoverCell(null)}
-              onFocus={() => onHoverCell({ x, y })}
+              onFocus={() => onFocusCell({ x, y })}
               onBlur={(e) => {
                 if (
                   e.relatedTarget instanceof HTMLElement &&
@@ -302,7 +308,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                 ) {
                   return;
                 }
-                onHoverCell(null);
+                onFocusCell(null);
               }}
               aria-label={cellLabel}
               className="focus-visible:outline-3 pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
@@ -345,11 +351,14 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               />
               <button
                 type="button"
+                data-rt-expand-btn="true"
+                data-rt-x={x}
+                data-rt-y={y}
                 onClick={() => onExpandTap(x, y)}
                 onMouseEnter={() => onHoverCell({ x, y })}
                 onMouseLeave={() => onHoverCell(null)}
-                onFocus={() => onHoverCell({ x, y })}
-                onBlur={() => onHoverCell(null)}
+                onFocus={() => onFocusCell({ x, y })}
+                onBlur={() => onFocusCell(null)}
                 aria-label={t('town.land.expandAria', { x, y })}
                 className="focus-visible:outline-3 pointer-events-auto absolute left-0 top-0 cursor-pointer bg-transparent focus-visible:outline-offset-[-2px] focus-visible:outline-[#C6FF3D]"
                 style={{
@@ -453,13 +462,19 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               />
 
               <img
+                data-rt-pick="sprite"
+                data-rt-key={key}
+                data-rt-x={tile.x}
+                data-rt-y={tile.y}
+                data-rt-object-z={objectZ(sortKey, Z_LAYER.crop)}
+                aria-hidden="true"
                 src={cropSpec.src}
                 alt=""
                 width={cropSpec.width}
                 height={cropSpec.height}
                 loading="lazy"
                 decoding="async"
-                className="pointer-events-none absolute block select-none"
+                className="rt-pick-object pointer-events-auto absolute block select-none"
                 style={{
                   left: pos.x - boundsMinX,
                   top: pos.y - boundsMinY,
@@ -473,6 +488,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
               {growth.isReady ? (
                 <button
                   type="button"
+                  data-rt-badge-btn="true"
                   disabled={isVisitMode || interactiveMode}
                   onClick={() => onHarvestTap(tile.x, tile.y)}
                   aria-label={t('town.map.harvestBadgeAria', {
@@ -530,6 +546,7 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     {!isVisitMode && !interactiveMode && speedupEnabled && onSpeedupTap && (
                       <button
                         type="button"
+                        data-rt-badge-btn="true"
                         data-testid={`speedup-chip-${key}`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -593,22 +610,35 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
           : '';
         if (!spec || spec.isPlaceholder) {
           const anchor = getBuildingPlacement(tile.x, tile.y, w, h, 96, 96);
+          const placeholderZ = objectZ(anchor.sortKey, Z_LAYER.building);
           return (
             <div
               key={`obj_${key}`}
               data-item-tile={key}
+              data-rt-pick="placeholder"
+              data-rt-key={key}
+              data-rt-x={tile.x}
+              data-rt-y={tile.y}
+              data-rt-flip-x={isFlipped ? '1' : undefined}
+              data-rt-object-z={placeholderZ}
               aria-hidden="true"
-              className={`rt-pixel-bubble pointer-events-none absolute flex items-center justify-center p-2 ${itemFlipClass}`}
+              className={`rt-pixel-bubble rt-pick-object pointer-events-auto absolute flex select-none items-center justify-center p-2 ${itemFlipClass}`}
               style={{
                 left: anchor.x - boundsMinX,
                 top: anchor.y - boundsMinY,
                 width: 96,
                 height: 96,
-                zIndex: objectZ(anchor.sortKey, Z_LAYER.building),
+                zIndex: placeholderZ,
                 transform: isFlipped ? 'scaleX(-1)' : undefined,
               }}
             >
-              <svg width="48" height="48" viewBox="0 0 16 16" shapeRendering="crispEdges">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 16 16"
+                shapeRendering="crispEdges"
+                className="pointer-events-none"
+              >
                 <polygon points="8,2 14,7 2,7" fill="#D45C44" />
                 <rect x="3" y="7" width="10" height="7" fill="#F2E0C4" />
                 <rect x="6" y="10" width="4" height="4" fill="#6C422C" />
@@ -619,21 +649,29 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
         const placement = getBuildingPlacement(tile.x, tile.y, w, h, spec.width, spec.height);
         const isStarter = tile.itemId === 'starter_house';
+        const buildingZ = objectZ(placement.sortKey, Z_LAYER.building);
         return (
           <img
             key={`obj_${key}`}
             data-item-tile={key}
+            data-rt-pick="sprite"
+            data-rt-key={key}
+            data-rt-x={tile.x}
+            data-rt-y={tile.y}
+            data-rt-flip-x={isFlipped ? '1' : undefined}
+            data-rt-object-z={buildingZ}
+            aria-hidden="true"
             src={spec.src}
             alt=""
             width={spec.width}
             height={spec.height}
             loading={isStarter ? 'eager' : 'lazy'}
             decoding="async"
-            className={`pointer-events-none absolute block select-none ${itemFlipClass}`}
+            className={`rt-pick-object pointer-events-auto absolute block select-none ${itemFlipClass}`}
             style={{
               left: placement.x - boundsMinX,
               top: placement.y - boundsMinY,
-              zIndex: objectZ(placement.sortKey, Z_LAYER.building),
+              zIndex: buildingZ,
               transform: isFlipped ? 'scaleX(-1)' : undefined,
             }}
             draggable={false}
@@ -693,6 +731,19 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
 
 const EMPTY_LAND_ROT: Record<string, 1 | 2 | 3> = {};
 
+interface HoveredObject {
+  key: string;
+  src: string | null;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  flipX: boolean;
+  zIndex: number;
+  clipPath?: string;
+  isPlaceholder: boolean;
+}
+
 export function IsoMap({
   land,
   landRot = EMPTY_LAND_ROT,
@@ -728,6 +779,7 @@ export function IsoMap({
   const t = useTranslations();
   const reducedMotion = useReducedMotion();
   const [hoveredCell, setHoveredCell] = useState<GridCoord | null>(null);
+  const [hoveredObject, setHoveredObject] = useState<HoveredObject | null>(null);
   const [nowMs, setNowMs] = useState<number>(0);
   const [tabHidden, setTabHidden] = useState<boolean>(false);
   const [viewportSize, setViewportSize] = useState<{ w: number; h: number }>({ w: 390, h: 660 });
@@ -739,6 +791,12 @@ export function IsoMap({
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+
+  // Ground-target modes (place, plant, drop moved item) bypass standing sprites so players can aim behind roofs
+  const groundTargetMode = Boolean(placingItemId || selectedSeed || movingTile);
+  const groundTargetModeRef = useRef(groundTargetMode);
+  groundTargetModeRef.current = groundTargetMode;
+  const lastPointerTypeRef = useRef<string>('mouse');
 
   // Compute source-pixel content bounds around owned land + expand ring (~1 tile padding)
   const bounds = useMemo(() => {
@@ -1090,8 +1148,96 @@ export function IsoMap({
     [isVisitMode, dispatchHarvest, notifyTownEvent, onHarvestComplete],
   );
 
+  const setHoveredCellStable = useCallback((next: GridCoord | null) => {
+    setHoveredCell((prev) => {
+      if (prev === null && next === null) return prev;
+      if (prev && next && prev.x === next.x && prev.y === next.y) return prev;
+      return next;
+    });
+  }, []);
+
+  const handleDiamondMouseHover = useCallback(
+    (cell: GridCoord | null) => {
+      if (!groundTargetModeRef.current) return;
+      setHoveredCellStable(cell);
+    },
+    [setHoveredCellStable],
+  );
+
+  // Clear hover highlight when entering a ground-target mode (place / plant / drop-move)
+  useEffect(() => {
+    if (groundTargetMode) {
+      setHoveredObject(null);
+    }
+  }, [groundTargetMode]);
+
+  // Keep hover highlight synchronized if the hovered building is rotated, moved, or removed
+  useEffect(() => {
+    setHoveredObject((prev) => {
+      if (!prev) return null;
+      const tile = tiles[prev.key];
+      if (!tile || (tile.itemId === 'plot' && !tile.cropId)) return null;
+      const nextFlipX = (tile.rot ?? 0) % 2 === 1;
+      if (prev.flipX !== nextFlipX) {
+        return { ...prev, flipX: nextFlipX };
+      }
+      return prev;
+    });
+  }, [tiles]);
+
+  const updateMouseHover = useCallback(
+    (clientX: number, clientY: number) => {
+      const hit = pickDomAtPoint(clientX, clientY, {
+        groundOnly: false,
+        tolerancePx: 0,
+        stageEl: stageRef.current,
+      });
+
+      if (hit && hit.kind === 'object') {
+        setHoveredObject((prev) => {
+          if (
+            prev &&
+            prev.key === hit.key &&
+            prev.src === hit.src &&
+            prev.flipX === hit.flipX &&
+            prev.left === hit.left &&
+            prev.top === hit.top &&
+            prev.width === hit.width &&
+            prev.height === hit.height &&
+            prev.zIndex === hit.zIndex &&
+            prev.clipPath === hit.clipPath
+          ) {
+            return prev;
+          }
+          return {
+            key: hit.key,
+            src: hit.src,
+            left: hit.left,
+            top: hit.top,
+            width: hit.width,
+            height: hit.height,
+            flipX: hit.flipX,
+            zIndex: hit.zIndex,
+            clipPath: hit.clipPath,
+            isPlaceholder: hit.isPlaceholder,
+          };
+        });
+        setHoveredCellStable({ x: hit.originX, y: hit.originY });
+      } else {
+        setHoveredObject((prev) => (prev === null ? prev : null));
+        if (hit && (hit.kind === 'ground' || hit.kind === 'expand')) {
+          setHoveredCellStable({ x: hit.x, y: hit.y });
+        } else {
+          setHoveredCellStable(null);
+        }
+      }
+    },
+    [setHoveredCellStable],
+  );
+
   // Pointer handlers for 1-pointer drag + 2-pointer pinch
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    lastPointerTypeRef.current = e.pointerType || 'mouse';
     // Ignore clicks on zoom controls
     if ((e.target as HTMLElement).closest('[data-zoom-control="true"]')) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -1134,7 +1280,17 @@ export function IsoMap({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!pointersRef.current.has(e.pointerId)) return;
+      if (!pointersRef.current.has(e.pointerId)) {
+        if (e.pointerType === 'mouse' && !groundTargetModeRef.current) {
+          if ((e.target as HTMLElement | null)?.closest('[data-zoom-control="true"]')) {
+            setHoveredObject((prev) => (prev === null ? prev : null));
+            setHoveredCellStable(null);
+          } else {
+            updateMouseHover(e.clientX, e.clientY);
+          }
+        }
+        return;
+      }
       pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       // Two-pointer pinch-to-zoom anchored at midpoint
@@ -1178,6 +1334,7 @@ export function IsoMap({
         if (Math.hypot(dx, dy) <= DRAG_THRESHOLD_PX) return;
         drag.exceededThreshold = true;
         suppressClickUntilRef.current = performance.now() + 300;
+        setHoveredObject((prev) => (prev === null ? prev : null));
         try {
           viewportRef.current?.setPointerCapture(e.pointerId);
         } catch {
@@ -1195,11 +1352,14 @@ export function IsoMap({
       cam.panY = applyRubberBand(drag.startPanY + dy, limY.min, limY.max, reducedMotionRef.current);
       scheduleTransformWrite();
     },
-    [scheduleTransformWrite, syncZoomButtons],
+    [scheduleTransformWrite, syncZoomButtons, updateMouseHover, setHoveredCellStable],
   );
 
   const finishPointer = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.pointerType) {
+        lastPointerTypeRef.current = e.pointerType;
+      }
       pointersRef.current.delete(e.pointerId);
 
       if (pinchGestureRef.current.active && pointersRef.current.size < 2) {
@@ -1239,6 +1399,18 @@ export function IsoMap({
     [flushTransformNow],
   );
 
+  const handlePointerLeave = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.pointerType === 'mouse') {
+        setHoveredObject((prev) => (prev === null ? prev : null));
+        if (!groundTargetModeRef.current) {
+          setHoveredCellStable(null);
+        }
+      }
+    },
+    [setHoveredCellStable],
+  );
+
   // Suppress tile/button clicks immediately after a >6px drag or pinch
   const handleClickCapture = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('[data-zoom-control="true"]')) return;
@@ -1248,6 +1420,51 @@ export function IsoMap({
       suppressClickUntilRef.current = 0;
     }
   }, []);
+
+  // Sprite-aware click interception with alpha fallthrough & touch tolerance.
+  // Event-target rule: never intercept clicks whose target is already a ground, expand,
+  // harvest, speed-up, or zoom button — let their native onClick handlers run untouched.
+  const handleStageClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (groundTargetModeRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      if (
+        target.closest(
+          '[data-rt-ground-btn="true"], [data-rt-expand-btn="true"], [data-rt-badge-btn="true"], [data-zoom-control="true"]',
+        )
+      ) {
+        return;
+      }
+
+      const pickEl = target.closest<HTMLElement>('[data-rt-pick]');
+      if (!pickEl) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nativePointerType = (e.nativeEvent as PointerEvent).pointerType;
+      const pointerType = nativePointerType || lastPointerTypeRef.current || 'mouse';
+      const tolerancePx = pointerType !== 'mouse' ? TOUCH_TOLERANCE_PX : 0;
+
+      const hit = pickDomAtPoint(e.clientX, e.clientY, {
+        groundOnly: false,
+        tolerancePx,
+        stageEl: stageRef.current,
+      });
+
+      if (!hit || hit.kind === 'passthrough') return;
+      if (hit.kind === 'object') {
+        onTileTap(hit.originX, hit.originY);
+      } else if (hit.kind === 'ground') {
+        onTileTap(hit.x, hit.y);
+      } else if (hit.kind === 'expand') {
+        onExpandTap(hit.x, hit.y);
+      }
+    },
+    [onTileTap, onExpandTap],
+  );
 
   // Keyboard panning (Arrow keys), zooming (+ / -), and R rotate when map has focus
   const handleKeyDown = useCallback(
@@ -1437,6 +1654,7 @@ export function IsoMap({
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointer}
       onPointerCancel={finishPointer}
+      onPointerLeave={handlePointerLeave}
       onClickCapture={handleClickCapture}
       onKeyDown={handleKeyDown}
       className={`focus-visible:outline-3 relative h-full w-full flex-1 touch-none select-none overflow-hidden overscroll-none bg-[#132013] focus-visible:outline-offset-[-3px] focus-visible:outline-[#C6FF3D] ${
@@ -1447,6 +1665,8 @@ export function IsoMap({
       <div
         ref={stageRef}
         data-rontown-stage="true"
+        data-rt-ground-target={groundTargetMode ? 'true' : undefined}
+        onClick={handleStageClick}
         className="absolute left-0 top-0 origin-top-left will-change-transform"
         style={{
           width: stageW,
@@ -1476,12 +1696,54 @@ export function IsoMap({
           previewRoadCell={previewRoadCell}
           placingRoadRot={placingRoadRot}
           roadRotateTick={roadRotateTick}
-          onHoverCell={setHoveredCell}
+          onHoverCell={handleDiamondMouseHover}
+          onFocusCell={setHoveredCellStable}
           onTileTap={onTileTap}
           onExpandTap={onExpandTap}
           onHarvestTap={handleHarvestTap}
           onSpeedupTap={onSpeedupTap}
         />
+
+        {/* Desktop hover silhouette highlight (opacity transition only, outside StaticWorldLayer) */}
+        {hoveredObject && !groundTargetMode && (
+          <div
+            key={`hover_${hoveredObject.key}`}
+            aria-hidden="true"
+            data-rt-hover-outline="true"
+            data-rt-hover-key={hoveredObject.key}
+            className="rt-object-hover pointer-events-none absolute select-none"
+            style={{
+              left: hoveredObject.left,
+              top: hoveredObject.top,
+              width: hoveredObject.width,
+              height: hoveredObject.height,
+              zIndex: hoveredObject.zIndex + 1,
+            }}
+          >
+            {hoveredObject.src ? (
+              <img
+                src={hoveredObject.src}
+                alt=""
+                width={hoveredObject.width}
+                height={hoveredObject.height}
+                decoding="async"
+                draggable={false}
+                className="pointer-events-none block select-none"
+                style={{
+                  transform: hoveredObject.flipX ? 'scaleX(-1)' : undefined,
+                  clipPath: hoveredObject.clipPath,
+                }}
+              />
+            ) : (
+              <div
+                className="pointer-events-none h-full w-full border-2 border-[#C6FF3D]"
+                style={{
+                  transform: hoveredObject.flipX ? 'scaleX(-1)' : undefined,
+                }}
+              />
+            )}
+          </div>
+        )}
 
         {/* Animated villager layer (transform-only GPU updates via single rAF loop) */}
         {villagerList.map((v) => {
@@ -1597,6 +1859,7 @@ export function IsoMap({
         {/* Placement / Move / Plant cursor */}
         {cursorOverlay && (
           <img
+            data-rt-cursor-overlay="true"
             src={cursorOverlay.src}
             alt=""
             width={cursorOverlay.width}

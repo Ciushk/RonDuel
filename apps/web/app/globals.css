@@ -928,6 +928,25 @@ html[data-theme='dark'] {
   animation: rt-heart-float 1200ms ease-out infinite both;
 }
 
+/* Sprite-aware picking: force standing objects transparent to clicks in ground-target modes */
+[data-rt-ground-target='true'] .rt-pick-object {
+  pointer-events: none !important;
+}
+
+/* Desktop hover silhouette outline (static drop-shadow, opacity transition only) */
+.rt-object-hover {
+  opacity: 1;
+  filter: drop-shadow(2px 0 0 #c6ff3d) drop-shadow(-2px 0 0 #c6ff3d) drop-shadow(0 2px 0 #c6ff3d)
+    drop-shadow(0 -2px 0 #c6ff3d);
+  transition: opacity 150ms ease;
+}
+
+@starting-style {
+  .rt-object-hover {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rt-harvest-pulse {
     animation: none !important;
@@ -993,6 +1012,10 @@ html[data-theme='dark'] {
   .rt-heart-float {
     animation: rt-heart-float-reduced 1200ms ease-out infinite both !important;
     transform: none !important;
+  }
+
+  .rt-object-hover {
+    transition: none !important;
   }
 
   .rd-gate-scrim-in,

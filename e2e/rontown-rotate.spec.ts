@@ -134,19 +134,31 @@ test.describe('RonTown Rotate mode + pixel-art Rotate toolbar button', () => {
     // Toggle Rotate mode ON
     await rotateBtn.click();
     await expect(rotateBtn).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(150);
 
-    // Shore tile (2,2): tap 3 times -> -r1, -r2, -r3
+    // Shore tile (2,2) sits behind starter_house (3,3); tap its uncovered left diamond corner
+    // (starter_house roof is transparent there -> alpha fallthrough hits (2,2)) 3 times -> -r1, -r2, -r3
+    const houseImg = page.locator('img[data-item-tile="3_3"]');
+    await expect
+      .poll(() => houseImg.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0), {
+        timeout: 5_000,
+      })
+      .toBe(true);
     const shoreImg = page.locator('[data-ground-tile="2_2"]');
     const shoreBtn = page.locator('button[aria-label*="(2, 2)"]');
     await expect(shoreImg).toHaveAttribute('src', /basic-block-wather-grass-50-50\.png/);
+    const shoreBox = await shoreBtn.boundingBox();
+    expect(shoreBox).not.toBeNull();
+    const shoreTapX = shoreBox!.x + shoreBox!.width * 0.06;
+    const shoreTapY = shoreBox!.y + shoreBox!.height * 0.5;
 
-    await shoreBtn.click({ force: true });
+    await page.mouse.click(shoreTapX, shoreTapY);
     await expect(shoreImg).toHaveAttribute('src', /basic-block-wather-grass-50-50-r1\.png/);
 
-    await shoreBtn.click({ force: true });
+    await page.mouse.click(shoreTapX, shoreTapY);
     await expect(shoreImg).toHaveAttribute('src', /basic-block-wather-grass-50-50-r2\.png/);
 
-    await shoreBtn.click({ force: true });
+    await page.mouse.click(shoreTapX, shoreTapY);
     await expect(shoreImg).toHaveAttribute('src', /basic-block-wather-grass-50-50-r3\.png/);
 
     // Fence item (3,2): tap -> scaleX(-1)
@@ -216,10 +228,24 @@ test.describe('RonTown Rotate mode + pixel-art Rotate toolbar button', () => {
     await page.goto('/en/town', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
 
-    await page.getByTestId('toolbar-rotate-btn').click();
+    const rotateBtn = page.getByTestId('toolbar-rotate-btn');
+    await rotateBtn.click();
+    await expect(rotateBtn).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(150);
+    const houseImg = page.locator('img[data-item-tile="3_3"]');
+    await expect
+      .poll(() => houseImg.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0), {
+        timeout: 5_000,
+      })
+      .toBe(true);
     const shoreImg = page.locator('[data-ground-tile="2_2"]');
     const shoreBtn = page.locator('button[aria-label*="(2, 2)"]');
-    await shoreBtn.click({ force: true });
+    const shoreBox = await shoreBtn.boundingBox();
+    expect(shoreBox).not.toBeNull();
+    await page.mouse.click(
+      shoreBox!.x + shoreBox!.width * 0.06,
+      shoreBox!.y + shoreBox!.height * 0.5,
+    );
 
     // Under reducedMotion, swap happens immediately (not delayed 90ms)
     await expect(shoreImg).toHaveAttribute('src', /basic-block-wather-grass-50-50-r1\.png/);
