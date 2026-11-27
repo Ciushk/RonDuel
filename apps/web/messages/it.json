@@ -354,7 +354,22 @@
     "nicknameIntro": "Scegli un nickname univoco. Puoi cambiarlo solo una volta ogni 30 giorni.",
     "nicknameNewLabel": "Nuovo nickname (2–20 caratteri)",
     "nicknameSuggestions": "Suggerimenti disponibili:",
-    "nicknameSave": "Salva nickname"
+    "nicknameSave": "Salva nickname",
+    "notif": {
+      "pushUnavailable": "Le notifiche push non sono temporaneamente disponibili. I promemoria via email funzionano ancora.",
+      "pushUnsupported": "Questo browser non supporta le notifiche push. Usa i promemoria via email o installa l'app.",
+      "iosInstallFirst": "Su iPhone le notifiche funzionano solo nell'app installata (iOS 16.4+).",
+      "showInstallHowTo": "Mostrami come installarla",
+      "pushDismissed": "Non hai consentito le notifiche. Tocca di nuovo per riprovare.",
+      "pushOn": "Notifiche push attive",
+      "pushOff": "Notifiche push disattivate",
+      "emailOn": "Promemoria email attivi",
+      "emailOff": "Promemoria email disattivati",
+      "emailNeedsAccount": "Accedi con Google o email per ricevere i promemoria via email.",
+      "signIn": "Accedi",
+      "saveFailed": "Impossibile salvare. Riprova.",
+      "saving": "Salvataggio…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

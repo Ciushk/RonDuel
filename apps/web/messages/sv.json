@@ -354,7 +354,22 @@
     "nicknameIntro": "Välj ett unikt användarnamn. Du kan bara ändra det en gång var 30:e dag.",
     "nicknameNewLabel": "Nytt användarnamn (2–20 tecken)",
     "nicknameSuggestions": "Tillgängliga förslag:",
-    "nicknameSave": "Spara användarnamn"
+    "nicknameSave": "Spara användarnamn",
+    "notif": {
+      "pushUnavailable": "Push-notiser är tillfälligt otillgängliga. E-postpåminnelser fungerar fortfarande.",
+      "pushUnsupported": "Den här webbläsaren kan inte ta emot push-notiser. Använd e-postpåminnelser eller installera appen.",
+      "iosInstallFirst": "På iPhone fungerar notiser bara i den installerade appen (iOS 16.4+).",
+      "showInstallHowTo": "Visa hur jag installerar",
+      "pushDismissed": "Du tillät inte notiser. Tryck igen för att försöka på nytt.",
+      "pushOn": "Push-notiser på",
+      "pushOff": "Push-notiser av",
+      "emailOn": "E-postpåminnelser på",
+      "emailOff": "E-postpåminnelser av",
+      "emailNeedsAccount": "Logga in med Google eller e-post för att få e-postpåminnelser.",
+      "signIn": "Logga in",
+      "saveFailed": "Kunde inte spara. Försök igen.",
+      "saving": "Sparar…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

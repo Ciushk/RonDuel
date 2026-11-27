@@ -354,7 +354,22 @@
     "nicknameIntro": "Kies een unieke bijnaam. Je kunt deze slechts één keer per 30 dagen wijzigen.",
     "nicknameNewLabel": "Nieuwe bijnaam (2–20 tekens)",
     "nicknameSuggestions": "Beschikbare suggesties:",
-    "nicknameSave": "Bijnaam opslaan"
+    "nicknameSave": "Bijnaam opslaan",
+    "notif": {
+      "pushUnavailable": "Pushmeldingen zijn tijdelijk niet beschikbaar. E-mailherinneringen werken nog steeds.",
+      "pushUnsupported": "Deze browser kan geen pushmeldingen ontvangen. Gebruik e-mailherinneringen of installeer de app.",
+      "iosInstallFirst": "Op iPhone werken meldingen alleen in de geïnstalleerde app (iOS 16.4+).",
+      "showInstallHowTo": "Laat zien hoe ik installeer",
+      "pushDismissed": "Je hebt meldingen niet toegestaan. Tik nogmaals om het opnieuw te proberen.",
+      "pushOn": "Pushmeldingen aan",
+      "pushOff": "Pushmeldingen uit",
+      "emailOn": "E-mailherinneringen aan",
+      "emailOff": "E-mailherinneringen uit",
+      "emailNeedsAccount": "Log in met Google of e-mail om e-mailherinneringen te ontvangen.",
+      "signIn": "Inloggen",
+      "saveFailed": "Opslaan mislukt. Probeer opnieuw.",
+      "saving": "Opslaan…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

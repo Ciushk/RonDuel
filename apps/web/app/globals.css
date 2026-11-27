@@ -1223,3 +1223,166 @@ html[data-theme='dark'] {
     opacity: 1 !important;
   }
 }
+
+/* --- Split Court Switch, disabled status shake & in-card notif toast (transform & opacity only) --- */
+@keyframes rd-switch-squash-on {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.15);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rd-switch-squash-off {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.15);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rd-switch-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rd-notif-shake-a {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes rd-notif-shake-b {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes rd-notif-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rd-notif-toast-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rd-switch-track {
+  transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rd-switch-btn:active:not([aria-disabled='true']) .rd-switch-track {
+  transform: scale(0.96);
+}
+
+.rd-switch-overlay {
+  transition: opacity 150ms ease;
+}
+
+.rd-switch-knob-slide {
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rd-switch-knob-squash-on {
+  animation: rd-switch-squash-on 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.rd-switch-knob-squash-off {
+  animation: rd-switch-squash-off 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.rd-switch-glyph {
+  transition: opacity 150ms ease;
+}
+
+.rd-switch-spinner-ring {
+  animation: rd-switch-spin 700ms linear infinite;
+}
+
+.rd-switch-spinner-static {
+  display: none;
+}
+
+.rd-notif-shake-a {
+  animation: rd-notif-shake-a 200ms ease-in-out both;
+}
+
+.rd-notif-shake-b {
+  animation: rd-notif-shake-b 200ms ease-in-out both;
+}
+
+.rd-notif-toast-enter {
+  animation: rd-notif-toast-enter 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-switch-track,
+  .rd-switch-overlay,
+  .rd-switch-knob-slide,
+  .rd-switch-glyph {
+    transition: none !important;
+  }
+
+  .rd-switch-btn:active:not([aria-disabled='true']) .rd-switch-track {
+    transform: none !important;
+  }
+
+  .rd-switch-knob-squash-on,
+  .rd-switch-knob-squash-off,
+  .rd-notif-shake-a,
+  .rd-notif-shake-b {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rd-switch-spinner-ring {
+    display: none !important;
+    animation: none !important;
+  }
+
+  .rd-switch-spinner-static {
+    display: inline-flex !important;
+  }
+
+  .rd-notif-toast-enter {
+    animation: rd-notif-toast-fade 150ms ease-out both !important;
+    transform: none !important;
+  }
+}

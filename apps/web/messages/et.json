@@ -354,7 +354,22 @@
     "nicknameIntro": "Vali unikaalne hüüdnimi. Saad seda muuta vaid kord 30 päeva jooksul.",
     "nicknameNewLabel": "Uus hüüdnimi (2–20 tähemärki)",
     "nicknameSuggestions": "Saadaolevad soovitused:",
-    "nicknameSave": "Salvesta hüüdnimi"
+    "nicknameSave": "Salvesta hüüdnimi",
+    "notif": {
+      "pushUnavailable": "Tõuketeated ei ole ajutiselt saadaval. E-posti meeldetuletused töötavad endiselt.",
+      "pushUnsupported": "See brauser ei saa tõuketeateid vastu võtta. Kasuta e-posti meeldetuletusi või paigalda rakendus.",
+      "iosInstallFirst": "iPhone'is töötavad teavitused ainult paigaldatud rakenduses (iOS 16.4+).",
+      "showInstallHowTo": "Näita, kuidas paigaldada",
+      "pushDismissed": "Sa ei lubanud teavitusi. Uuesti proovimiseks puuduta uuesti.",
+      "pushOn": "Tõuketeated sees",
+      "pushOff": "Tõuketeated väljas",
+      "emailOn": "E-posti meeldetuletused sees",
+      "emailOff": "E-posti meeldetuletused väljas",
+      "emailNeedsAccount": "E-posti meeldetuletuste saamiseks logi sisse Google'i või e-postiga.",
+      "signIn": "Logi sisse",
+      "saveFailed": "Salvestamine ebaõnnestus. Proovi uuesti.",
+      "saving": "Salvestamine…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

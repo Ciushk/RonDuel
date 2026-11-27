@@ -354,7 +354,22 @@
     "nicknameIntro": "Pasirink unikalų slapyvardį. Jį pakeisti galėsi tik kartą per 30 dienų.",
     "nicknameNewLabel": "Naujas slapyvardis (2–20 simbolių)",
     "nicknameSuggestions": "Galimi pasiūlymai:",
-    "nicknameSave": "Išsaugoti slapyvardį"
+    "nicknameSave": "Išsaugoti slapyvardį",
+    "notif": {
+      "pushUnavailable": "Tiesioginiai pranešimai laikinai nepasiekiami. Priminimai el. paštu vis dar veikia.",
+      "pushUnsupported": "Ši naršyklė negali gauti tiesioginių pranešimų. Naudok priminimus el. paštu arba įdiek programėlę.",
+      "iosInstallFirst": "„iPhone“ įrenginyje pranešimai veikia tik įdiegtoje programėlėje („iOS 16.4+“).",
+      "showInstallHowTo": "Parodyti, kaip įdiegti",
+      "pushDismissed": "Neleidai pranešimų. Bakstelėk dar kartą, kad pabandytum iš naujo.",
+      "pushOn": "Tiesioginiai pranešimai įjungti",
+      "pushOff": "Tiesioginiai pranešimai išjungti",
+      "emailOn": "Priminimai el. paštu įjungti",
+      "emailOff": "Priminimai el. paštu išjungti",
+      "emailNeedsAccount": "Prisijunk su „Google“ arba el. paštu, kad gautum priminimus el. paštu.",
+      "signIn": "Prisijungti",
+      "saveFailed": "Nepavyko išsaugoti. Bandyk dar kartą.",
+      "saving": "Išsaugoma…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

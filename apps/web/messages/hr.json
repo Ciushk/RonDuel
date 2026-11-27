@@ -354,7 +354,22 @@
     "nicknameIntro": "Odaberi jedinstveni nadimak. Možeš ga promijeniti samo jednom svakih 30 dana.",
     "nicknameNewLabel": "Novi nadimak (2–20 znakova)",
     "nicknameSuggestions": "Dostupni prijedlozi:",
-    "nicknameSave": "Spremi nadimak"
+    "nicknameSave": "Spremi nadimak",
+    "notif": {
+      "pushUnavailable": "Push obavijesti su privremeno nedostupne. Podsjetnici e-poštom i dalje rade.",
+      "pushUnsupported": "Ovaj preglednik ne može primati push obavijesti. Koristi podsjetnike e-poštom ili instaliraj aplikaciju.",
+      "iosInstallFirst": "Na iPhoneu obavijesti rade samo u instaliranoj aplikaciji (iOS 16.4+).",
+      "showInstallHowTo": "Pokaži kako instalirati",
+      "pushDismissed": "Nisi dopustio/la obavijesti. Dodirni ponovno za novi pokušaj.",
+      "pushOn": "Push obavijesti uključene",
+      "pushOff": "Push obavijesti isključene",
+      "emailOn": "Podsjetnici e-poštom uključeni",
+      "emailOff": "Podsjetnici e-poštom isključeni",
+      "emailNeedsAccount": "Prijavi se putem Googlea ili e-pošte za primanje podsjetnika e-poštom.",
+      "signIn": "Prijavi se",
+      "saveFailed": "Spremanje nije uspjelo. Pokušaj ponovno.",
+      "saving": "Spremanje…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

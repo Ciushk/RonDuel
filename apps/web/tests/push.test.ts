@@ -194,10 +194,13 @@ describe('client web push helper (apps/web/lib/push.ts)', () => {
       locale: 'ro',
     });
 
-    // Token stored locally and prefs synced
+    // Token stored locally and prefs synced with Bearer header
     expect(window.localStorage.getItem(PUSH_TOKEN_STORAGE_KEY)).toBe('fcm_token_valid_1234567890');
     const prefsCall = fetchMock.mock.calls.find(([url]) => String(url) === '/api/notify/prefs');
     expect(prefsCall).toBeTruthy();
+    expect((prefsCall![1]?.headers as Record<string, string>)?.Authorization).toBe(
+      'Bearer firebase_id_token_abc',
+    );
     expect(JSON.parse(String(prefsCall![1]?.body)).pushEnabled).toBe(true);
   });
 
@@ -291,5 +294,13 @@ describe('client web push helper (apps/web/lib/push.ts)', () => {
       '/api/notify/token',
       expect.objectContaining({ method: 'DELETE' }),
     );
+    const disablePrefsCall = fetchMock.mock.calls.find(
+      ([url]) => String(url) === '/api/notify/prefs',
+    );
+    expect(disablePrefsCall).toBeTruthy();
+    expect((disablePrefsCall![1]?.headers as Record<string, string>)?.Authorization).toBe(
+      'Bearer firebase_id_token_abc',
+    );
+    expect(JSON.parse(String(disablePrefsCall![1]?.body)).pushEnabled).toBe(false);
   });
 });

@@ -354,7 +354,22 @@
     "nicknameIntro": "Valitse uniikki nimimerkki. Voit vaihtaa sen vain kerran 30 päivässä.",
     "nicknameNewLabel": "Uusi nimimerkki (2–20 merkkiä)",
     "nicknameSuggestions": "Käytettävissä olevat ehdotukset:",
-    "nicknameSave": "Tallenna nimimerkki"
+    "nicknameSave": "Tallenna nimimerkki",
+    "notif": {
+      "pushUnavailable": "Push-ilmoitukset eivät ole tilapäisesti käytettävissä. Sähköpostimuistutukset toimivat yhä.",
+      "pushUnsupported": "Tämä selain ei voi vastaanottaa push-ilmoituksia. Käytä sähköpostimuistutuksia tai asenna sovellus.",
+      "iosInstallFirst": "iPhonessa ilmoitukset toimivat vain asennetussa sovelluksessa (iOS 16.4+).",
+      "showInstallHowTo": "Näytä asennusohjeet",
+      "pushDismissed": "Et sallinut ilmoituksia. Yritä uudelleen napauttamalla.",
+      "pushOn": "Push-ilmoitukset päällä",
+      "pushOff": "Push-ilmoitukset pois päältä",
+      "emailOn": "Sähköpostimuistutukset päällä",
+      "emailOff": "Sähköpostimuistutukset pois päältä",
+      "emailNeedsAccount": "Kirjaudu sisään Googlella tai sähköpostilla saadaksesi sähköpostimuistutuksia.",
+      "signIn": "Kirjaudu sisään",
+      "saveFailed": "Tallentaminen epäonnistui. Yritä uudelleen.",
+      "saving": "Tallennetaan…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

@@ -354,7 +354,22 @@
     "nicknameIntro": "Vyber si jedinečnú prezývku. Môžeš ju zmeniť iba raz za 30 dní.",
     "nicknameNewLabel": "Nová prezývka (2–20 znakov)",
     "nicknameSuggestions": "Dostupné návrhy:",
-    "nicknameSave": "Uložiť prezývku"
+    "nicknameSave": "Uložiť prezývku",
+    "notif": {
+      "pushUnavailable": "Push upozornenia sú dočasne nedostupné. E-mailové pripomienky stále fungujú.",
+      "pushUnsupported": "Tento prehliadač nepodporuje push upozornenia. Použi e-mailové pripomienky alebo si nainštaluj aplikáciu.",
+      "iosInstallFirst": "Na iPhone fungujú upozornenia iba v nainštalovanej aplikácii (iOS 16.4+).",
+      "showInstallHowTo": "Ukáž mi, ako nainštalovať",
+      "pushDismissed": "Nepovolil/a si upozornenia. Ťukni znova a skús to ešte raz.",
+      "pushOn": "Push upozornenia zapnuté",
+      "pushOff": "Push upozornenia vypnuté",
+      "emailOn": "E-mailové pripomienky zapnuté",
+      "emailOff": "E-mailové pripomienky vypnuté",
+      "emailNeedsAccount": "Prihlás sa cez Google alebo e-mail, aby si dostával/a e-mailové pripomienky.",
+      "signIn": "Prihlásiť sa",
+      "saveFailed": "Nepodarilo sa uložiť. Skús to znova.",
+      "saving": "Ukladanie…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

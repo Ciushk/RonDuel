@@ -354,7 +354,22 @@
     "nicknameIntro": "Alege o poreclă unică. O poți schimba o singură dată la 30 de zile.",
     "nicknameNewLabel": "Poreclă nouă (2–20 caractere)",
     "nicknameSuggestions": "Sugestii disponibile:",
-    "nicknameSave": "Salvează porecla"
+    "nicknameSave": "Salvează porecla",
+    "notif": {
+      "pushUnavailable": "Notificările push sunt momentan indisponibile. Reminderele pe email merg în continuare.",
+      "pushUnsupported": "Browserul ăsta nu poate primi notificări push. Folosește reminderele pe email sau instalează aplicația.",
+      "iosInstallFirst": "Pe iPhone, notificările merg doar în aplicația instalată (iOS 16.4+).",
+      "showInstallHowTo": "Arată-mi cum o instalez",
+      "pushDismissed": "N-ai permis notificările. Apasă din nou ca să încerci iar.",
+      "pushOn": "Notificări push pornite",
+      "pushOff": "Notificări push oprite",
+      "emailOn": "Reminder pe email pornit",
+      "emailOff": "Reminder pe email oprit",
+      "emailNeedsAccount": "Conectează-te cu Google sau email ca să primești remindere pe email.",
+      "signIn": "Conectează-te",
+      "saveFailed": "Nu s-a salvat. Încearcă din nou.",
+      "saving": "Se salvează…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

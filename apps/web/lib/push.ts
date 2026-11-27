@@ -4,7 +4,6 @@ import { signInAnonymously } from 'firebase/auth';
 
 import { getFirebaseApp, getFirebaseAuth } from '@/lib/firebase';
 import { iosVersion, isAndroid, isIOS, isStandalone } from '@/lib/pwa-env';
-import { getLocalSession } from '@/lib/session';
 
 export type PushPermissionState = 'default' | 'granted' | 'denied' | 'unsupported';
 export type PushEnableOutcome = 'granted' | 'denied' | 'default' | 'unsupported' | 'error';
@@ -117,7 +116,7 @@ export function shouldShowPushOptInCard(opts: {
   return true;
 }
 
-async function getBearerIdToken(): Promise<{ idToken: string; uid: string } | null> {
+export async function getBearerIdToken(): Promise<{ idToken: string; uid: string } | null> {
   const auth = getFirebaseAuth();
   if (!auth) return null;
   let user = auth.currentUser;
@@ -139,13 +138,17 @@ async function getBearerIdToken(): Promise<{ idToken: string; uid: string } | nu
 
 async function syncPushPref(opts: {
   uid: string;
+  idToken: string;
   pushEnabled: boolean;
   emailEnabled?: boolean;
   reminderLocalTime?: string;
 }): Promise<void> {
   await fetch('/api/notify/prefs', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${opts.idToken}`,
+    },
     body: JSON.stringify({
       uid: opts.uid,
       pushEnabled: opts.pushEnabled,
@@ -217,9 +220,9 @@ export async function enablePush(opts: EnablePushOptions = {}): Promise<PushEnab
       // Ignore storage write errors
     }
 
-    const sessionUid = opts.uid || authInfo.uid || getLocalSession().uid;
     await syncPushPref({
-      uid: sessionUid,
+      uid: authInfo.uid,
+      idToken: authInfo.idToken,
       pushEnabled: true,
       emailEnabled: opts.emailEnabled,
       reminderLocalTime: opts.reminderLocalTime,
@@ -282,10 +285,10 @@ export async function disablePush(
     }
   }
 
-  const sessionUid = opts.uid || authInfo?.uid || getLocalSession().uid;
-  if (sessionUid && sessionUid !== 'u_ssr') {
+  if (authInfo && authInfo.uid && authInfo.uid !== 'u_ssr') {
     await syncPushPref({
-      uid: sessionUid,
+      uid: authInfo.uid,
+      idToken: authInfo.idToken,
       pushEnabled: false,
       emailEnabled: opts.emailEnabled,
       reminderLocalTime: opts.reminderLocalTime,

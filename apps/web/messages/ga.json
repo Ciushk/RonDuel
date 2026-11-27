@@ -354,7 +354,22 @@
     "nicknameIntro": "Roghnaigh leasainm uathúil. Ní féidir leat é a athrú ach uair amháin gach 30 lá.",
     "nicknameNewLabel": "Leasainm nua (2–20 carachtar)",
     "nicknameSuggestions": "Moltaí ar fáil:",
-    "nicknameSave": "Sábháil leasainm"
+    "nicknameSave": "Sábháil leasainm",
+    "notif": {
+      "pushUnavailable": "Níl fógraí brúite ar fáil faoi láthair. Oibríonn meabhrúcháin ríomhphoist fós.",
+      "pushUnsupported": "Ní féidir leis an mbrabhsálaí seo fógraí brúite a fháil. Úsáid meabhrúcháin ríomhphoist nó suiteáil an aip.",
+      "iosInstallFirst": "Ar iPhone, ní oibríonn fógraí ach san aip shuiteáilte (iOS 16.4+).",
+      "showInstallHowTo": "Taispeáin dom conas é a shuiteáil",
+      "pushDismissed": "Níor cheadaigh tú fógraí. Tapáil arís chun triail eile a bhaint as.",
+      "pushOn": "Fógraí brúite air",
+      "pushOff": "Fógraí brúite as",
+      "emailOn": "Meabhrúcháin ríomhphoist air",
+      "emailOff": "Meabhrúcháin ríomhphoist as",
+      "emailNeedsAccount": "Sínigh isteach le Google nó ríomhphost chun meabhrúcháin ríomhphoist a fháil.",
+      "signIn": "Sínigh isteach",
+      "saveFailed": "Níorbh fhéidir sábháil. Bain triail as arís.",
+      "saving": "Á shábháil…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

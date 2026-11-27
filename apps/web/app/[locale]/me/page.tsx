@@ -6,6 +6,7 @@ import {
   CaretRight,
   CheckCircle,
   Crown,
+  DeviceMobile,
   EnvelopeSimple,
   Flame,
   GearSix,
@@ -17,31 +18,35 @@ import {
   Trophy,
   WarningCircle,
 } from '@phosphor-icons/react';
-import { getNotificationChannelCapability } from '@ronduel/shared';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { AuthModal, type AuthMode } from '@/components/AuthModal';
 import { CreateLeagueWizard } from '@/components/CreateLeagueWizard';
 import { GuestAccountNotice } from '@/components/GuestAccountNotice';
+import { InstallAppSheet } from '@/components/InstallAppSheet';
 import { usePaymentAuthGate } from '@/components/PaymentAuthGate';
-import { Avatar, Button, Card, Chip, Sheet, Toast } from '@/components/ui';
+import { Avatar, Button, Card, Chip, Sheet, Switch, Toast } from '@/components/ui';
 import { trackEvent } from '@/lib/analytics';
 import { getFirebaseAuth, logoutUser, updateProfile } from '@/lib/firebase';
 import { linkSessionWithGoogle } from '@/lib/link-account';
 import {
   disablePush,
   enablePush,
+  getBearerIdToken,
   getPermission,
   getPushPlatform,
   hasVapidKey,
   sendTestPush,
+  type PushEnableOutcome,
   type PushPermissionState,
 } from '@/lib/push';
-import { isIOS, isStandalone } from '@/lib/pwa-env';
+import { iosVersion, isIOS, isStandalone } from '@/lib/pwa-env';
 import { clearLocalSession, getLocalSession, saveLocalSession } from '@/lib/session';
+
+type PushUiState = 'no-vapid' | 'ios-tab' | 'unsupported' | 'denied' | 'busy' | 'on' | 'off';
 
 interface ProfileData {
   uid: string;
@@ -100,57 +105,34 @@ function formatStreakText(
   return t('profile.streakFew', { days });
 }
 
-function AppToggle({
-  checked,
-  onChange,
-  label,
-  disabled = false,
-}: {
-  checked: boolean;
-  onChange: (val: boolean) => void;
-  label: string;
-  disabled?: boolean;
-}) {
-  const id = `toggle-${label.replace(/\s+/g, '-').toLowerCase()}`;
-  return (
-    <div className="flex min-h-12 items-center justify-between gap-3 text-sm font-bold">
-      <span id={id}>{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-labelledby={id}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rd-blue-strong)] focus-visible:ring-offset-2 ${
-          checked ? 'bg-[var(--rd-blue-strong)]' : 'border-border bg-surface-2'
-        }`}
-      >
-        <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-            checked ? 'translate-x-5' : 'translate-x-0.5'
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
-
 export default function ProfilePage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { requireAccount } = usePaymentAuthGate();
+  const pushStatusId = useId();
+  const emailStatusId = useId();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [toast, setToast] = useState('');
   const [isIosSafariTab, setIsIosSafariTab] = useState(false);
+  const [isOldIos, setIsOldIos] = useState(false);
   const [pushPerm, setPushPerm] = useState<PushPermissionState>('default');
   const [pushBusy, setPushBusy] = useState(false);
-  const [pushError, setPushError] = useState('');
+  const [emailBusy, setEmailBusy] = useState(false);
   const [pushTestBusy, setPushTestBusy] = useState(false);
   const [pushTestSent, setPushTestSent] = useState(false);
+  const [installSheetOpen, setInstallSheetOpen] = useState(false);
+  const [pushShakeCount, setPushShakeCount] = useState(0);
+  const [emailShakeCount, setEmailShakeCount] = useState(0);
+  const [notifToast, setNotifToast] = useState<{
+    message: string;
+    tone: 'info' | 'success' | 'error';
+    id: number;
+  } | null>(null);
+  const notifToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loggedMissingVapidRef = useRef(false);
   const [isCreateLeagueOpen, setIsCreateLeagueOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>('login');
@@ -161,6 +143,28 @@ export default function ProfilePage() {
   const [nickError, setNickError] = useState('');
   const [nickSuggestions, setNickSuggestions] = useState<string[]>([]);
   const [nickSaving, setNickSaving] = useState(false);
+
+  const showNotifToast = useCallback(
+    (message: string, tone: 'info' | 'success' | 'error' = 'info') => {
+      if (notifToastTimerRef.current) {
+        clearTimeout(notifToastTimerRef.current);
+      }
+      setNotifToast({ message, tone, id: Date.now() + Math.random() });
+      notifToastTimerRef.current = setTimeout(() => {
+        notifToastTimerRef.current = null;
+        setNotifToast(null);
+      }, 3500);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (notifToastTimerRef.current) {
+        clearTimeout(notifToastTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleOpenAuth = (mode: AuthMode) => {
     setAuthModalMode(mode);
@@ -236,8 +240,23 @@ export default function ProfilePage() {
     }
 
     // Detect iOS / iPadOS non-standalone browser tab and current notification permission
-    setIsIosSafariTab(isIOS() && !isStandalone());
+    const iosDetected = isIOS();
+    const detectedIosVer = iosDetected ? iosVersion() : null;
+    setIsOldIos(detectedIosVer !== null && detectedIosVer < 16.4);
+    setIsIosSafariTab(iosDetected && !isStandalone());
     setPushPerm(getPermission());
+
+    if (
+      !hasVapidKey() &&
+      process.env.NODE_ENV !== 'production' &&
+      !loggedMissingVapidRef.current &&
+      typeof console !== 'undefined'
+    ) {
+      loggedMissingVapidRef.current = true;
+      console.error(
+        '[RonDuel push] NEXT_PUBLIC_FIREBASE_VAPID_KEY missing — set the GitHub secret',
+      );
+    }
 
     // Fetch latest profile from server
     loadProfile();
@@ -379,28 +398,88 @@ export default function ProfilePage() {
   };
 
   const updateNotif = async (patch: Partial<ProfileData['notif']>) => {
-    if (!profile) return;
-    const next = { ...profile.notif, ...patch };
-    const res = await fetch('/api/notify/prefs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uid: profile.uid,
-        ...next,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setToast(data.error ?? t('common.error'));
-      setTimeout(() => setToast(''), 3000);
-      return;
+    if (!profile || emailBusy) return;
+    const prevNotif = profile.notif;
+    const next = { ...prevNotif, ...patch };
+
+    // Optimistic update + busy spinner; roll back if anything fails
+    setEmailBusy(true);
+    setProfile((prev) => (prev ? { ...prev, notif: next } : prev));
+
+    try {
+      const authInfo = await getBearerIdToken();
+      if (!authInfo) {
+        setProfile((prev) => (prev ? { ...prev, notif: prevNotif } : prev));
+        showNotifToast(t('profile.notif.emailNeedsAccount'), 'error');
+        return;
+      }
+
+      const res = await fetch('/api/notify/prefs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authInfo.idToken}`,
+        },
+        body: JSON.stringify({
+          uid: authInfo.uid,
+          ...next,
+        }),
+      });
+
+      let data: Record<string, unknown> | null = null;
+      const contentType = res.headers?.get?.('content-type') ?? '';
+      if (contentType.includes('json')) {
+        try {
+          data = (await res.json()) as Record<string, unknown>;
+        } catch {
+          data = null;
+        }
+      }
+
+      if (!res.ok) {
+        setProfile((prev) => (prev ? { ...prev, notif: prevNotif } : prev));
+        if (res.status === 400 && data?.code === 'EMAIL_ACCOUNT_REQUIRED') {
+          showNotifToast(t('profile.notif.emailNeedsAccount'), 'error');
+        } else {
+          showNotifToast(t('profile.notif.saveFailed'), 'error');
+        }
+        return;
+      }
+
+      if (data && typeof data.pushEnabled === 'boolean' && typeof data.emailEnabled === 'boolean') {
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                notif: {
+                  pushEnabled: data.pushEnabled as boolean,
+                  emailEnabled: data.emailEnabled as boolean,
+                  reminderLocalTime:
+                    typeof data.reminderLocalTime === 'string'
+                      ? data.reminderLocalTime
+                      : next.reminderLocalTime,
+                },
+              }
+            : prev,
+        );
+      }
+
+      if (typeof patch.emailEnabled === 'boolean') {
+        showNotifToast(
+          patch.emailEnabled ? t('profile.notif.emailOn') : t('profile.notif.emailOff'),
+          'success',
+        );
+      }
+    } catch {
+      setProfile((prev) => (prev ? { ...prev, notif: prevNotif } : prev));
+      showNotifToast(t('common.networkError'), 'error');
+    } finally {
+      setEmailBusy(false);
     }
-    setProfile({ ...profile, notif: data });
   };
 
   const handlePushToggle = (val: boolean) => {
     if (!profile || pushBusy) return;
-    setPushError('');
     setPushTestSent(false);
     setPushBusy(true);
 
@@ -412,19 +491,26 @@ export default function ProfilePage() {
         uid: profile.uid,
         emailEnabled: profile.notif.emailEnabled,
         reminderLocalTime: profile.notif.reminderLocalTime,
-      }).then((outcome) => {
-        setPushBusy(false);
-        setPushPerm(getPermission());
-        if (outcome === 'granted') {
-          setProfile((prev) =>
-            prev ? { ...prev, notif: { ...prev.notif, pushEnabled: true } } : prev,
-          );
-        } else if (outcome === 'denied') {
-          setPushPerm('denied');
-        } else if (outcome === 'error' || outcome === 'unsupported') {
-          setPushError(t('push.error'));
-        }
-      });
+      })
+        .catch((): PushEnableOutcome => 'error')
+        .then((outcome) => {
+          setPushPerm(getPermission());
+          if (outcome === 'granted') {
+            setProfile((prev) =>
+              prev ? { ...prev, notif: { ...prev.notif, pushEnabled: true } } : prev,
+            );
+            showNotifToast(t('profile.notif.pushOn'), 'success');
+          } else if (outcome === 'denied') {
+            setPushPerm('denied');
+          } else if (outcome === 'default') {
+            showNotifToast(t('profile.notif.pushDismissed'), 'info');
+          } else {
+            showNotifToast(t('push.error'), 'error');
+          }
+        })
+        .finally(() => {
+          setPushBusy(false);
+        });
       return;
     }
 
@@ -432,25 +518,36 @@ export default function ProfilePage() {
       uid: profile.uid,
       emailEnabled: profile.notif.emailEnabled,
       reminderLocalTime: profile.notif.reminderLocalTime,
-    }).then(() => {
-      setPushBusy(false);
-      setPushPerm(getPermission());
-      setProfile((prev) =>
-        prev ? { ...prev, notif: { ...prev.notif, pushEnabled: false } } : prev,
-      );
-    });
+    })
+      .then(() => {
+        setPushPerm(getPermission());
+        setProfile((prev) =>
+          prev ? { ...prev, notif: { ...prev.notif, pushEnabled: false } } : prev,
+        );
+        showNotifToast(t('profile.notif.pushOff'), 'success');
+      })
+      .catch(() => {
+        showNotifToast(t('profile.notif.saveFailed'), 'error');
+      })
+      .finally(() => {
+        setPushBusy(false);
+      });
   };
 
   const handleSendTestPush = async () => {
     if (pushTestBusy) return;
     setPushTestBusy(true);
-    setPushError('');
-    const res = await sendTestPush(locale);
-    setPushTestBusy(false);
-    if (res.ok) {
-      setPushTestSent(true);
-    } else {
-      setPushError(t('push.error'));
+    try {
+      const res = await sendTestPush(locale);
+      if (res.ok) {
+        setPushTestSent(true);
+      } else {
+        showNotifToast(t('push.error'), 'error');
+      }
+    } catch {
+      showNotifToast(t('push.error'), 'error');
+    } finally {
+      setPushTestBusy(false);
     }
   };
 
@@ -472,6 +569,40 @@ export default function ProfilePage() {
       </main>
     );
   }
+
+  const vapidReady = hasVapidKey();
+  const pushState: PushUiState = pushBusy
+    ? 'busy'
+    : !vapidReady
+      ? 'no-vapid'
+      : isOldIos
+        ? 'unsupported'
+        : isIosSafariTab
+          ? 'ios-tab'
+          : pushPerm === 'unsupported'
+            ? 'unsupported'
+            : pushPerm === 'denied'
+              ? 'denied'
+              : profile.notif.pushEnabled && pushPerm === 'granted'
+                ? 'on'
+                : 'off';
+
+  const pushDisabled =
+    pushState === 'no-vapid' ||
+    pushState === 'ios-tab' ||
+    pushState === 'unsupported' ||
+    pushState === 'denied';
+
+  const emailDisabled = profile.isAnonymous || !profile.email;
+
+  const pushShakeClass =
+    pushShakeCount === 0 ? '' : pushShakeCount % 2 === 1 ? 'rd-notif-shake-a' : 'rd-notif-shake-b';
+  const emailShakeClass =
+    emailShakeCount === 0
+      ? ''
+      : emailShakeCount % 2 === 1
+        ? 'rd-notif-shake-a'
+        : 'rd-notif-shake-b';
 
   return (
     <main className="mx-auto flex max-w-[480px] flex-col gap-5 px-4 py-6">
@@ -721,94 +852,200 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* Phase 4 Notifications with iOS Safari tab detection and real Web Push opt-in */}
-      <Card className="space-y-3">
+      {/* Phase 4 Notifications with Split Court switches, explicit disabled reasons, and in-card toasts */}
+      <Card className="space-y-3" data-testid="profile-notif-card">
         <h2 className="font-display text-xl font-extrabold">
           <Bell size={18} weight="fill" className="mr-1.5 inline" aria-hidden="true" />
           {t('profile.notifTitle')}
         </h2>
 
-        {isIosSafariTab ? (
-          <p className="border-border bg-surface-2 text-muted rounded-[12px] border p-3 text-xs font-bold">
-            {t('profile.iosSafariNotice')}
-          </p>
-        ) : (
-          <div className="space-y-2">
-            <AppToggle
-              label={t('profile.pushLabel')}
-              checked={profile.notif.pushEnabled && pushPerm === 'granted'}
-              disabled={
-                pushBusy || pushPerm === 'denied' || pushPerm === 'unsupported' || !hasVapidKey()
-              }
-              onChange={handlePushToggle}
-            />
+        {/* Web Push row */}
+        <div className="space-y-2">
+          <Switch
+            label={t('profile.pushLabel')}
+            checked={profile.notif.pushEnabled && pushPerm === 'granted'}
+            busy={pushState === 'busy'}
+            busyLabel={t('profile.notif.saving')}
+            disabled={pushDisabled}
+            describedById={pushDisabled ? pushStatusId : undefined}
+            testId="profile-push-switch"
+            onDisabledClick={() => setPushShakeCount((c) => c + 1)}
+            onChange={handlePushToggle}
+          />
 
-            {pushPerm === 'denied' && (
-              <div
-                role="status"
-                data-testid="profile-push-blocked"
-                className="border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs"
-              >
-                <BellSlash
-                  size={18}
-                  weight="fill"
-                  aria-hidden="true"
-                  className="text-wrong mt-0.5 shrink-0"
-                />
-                <div className="space-y-0.5">
-                  <p className="text-ink font-extrabold">{t('push.blocked')}</p>
-                  <p className="text-muted font-semibold leading-snug">
-                    {t(
-                      getPushPlatform() === 'android'
-                        ? 'push.blockedHelpAndroid'
-                        : getPushPlatform() === 'ios'
-                          ? 'push.blockedHelpIos'
-                          : 'push.blockedHelpDesktop',
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
+          {pushState === 'no-vapid' && (
+            <div
+              id={pushStatusId}
+              role="status"
+              data-testid="profile-push-unavailable"
+              className={`border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs ${pushShakeClass}`}
+            >
+              <span aria-hidden="true" className="mt-0.5 shrink-0 text-sm leading-none">
+                ⏳
+              </span>
+              <p className="text-muted font-semibold leading-snug">
+                {t('profile.notif.pushUnavailable')}
+              </p>
+            </div>
+          )}
 
-            {profile.notif.pushEnabled && pushPerm === 'granted' && (
-              <div className="space-y-1.5">
+          {pushState === 'ios-tab' && (
+            <div
+              id={pushStatusId}
+              role="status"
+              data-testid="profile-push-ios-tab"
+              className={`border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs ${pushShakeClass}`}
+            >
+              <DeviceMobile
+                size={18}
+                weight="bold"
+                aria-hidden="true"
+                className="text-duel-strong mt-0.5 shrink-0"
+              />
+              <div className="space-y-1">
+                <p className="text-muted font-semibold leading-snug">
+                  {t('profile.notif.iosInstallFirst')}
+                </p>
                 <button
                   type="button"
-                  disabled={pushTestBusy}
-                  onClick={() => void handleSendTestPush()}
-                  data-testid="profile-send-test-btn"
-                  className="text-duel-strong hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-1.5 text-xs font-extrabold underline underline-offset-4 disabled:opacity-50"
+                  data-testid="profile-ios-install-btn"
+                  onClick={() => setInstallSheetOpen(true)}
+                  className="text-duel-strong hover:text-ink inline-flex min-h-9 cursor-pointer items-center font-extrabold underline underline-offset-4"
                 >
-                  <PaperPlaneTilt size={15} weight="bold" aria-hidden="true" />
-                  <span>{t('push.sendTest')}</span>
+                  {t('profile.notif.showInstallHowTo')}
                 </button>
-                {pushTestSent && (
-                  <p
-                    role="status"
-                    data-testid="profile-test-sent-msg"
-                    className="text-correct-text flex items-center gap-1.5 text-xs font-bold"
-                  >
-                    <CheckCircle size={15} weight="fill" aria-hidden="true" className="shrink-0" />
-                    <span>{t('push.testSent')}</span>
-                  </p>
-                )}
               </div>
-            )}
+            </div>
+          )}
 
-            {pushError && (
-              <p role="status" className="text-wrong flex items-center gap-1.5 text-xs font-bold">
-                <WarningCircle size={15} weight="fill" aria-hidden="true" className="shrink-0" />
-                <span>{pushError}</span>
+          {pushState === 'unsupported' && (
+            <div
+              id={pushStatusId}
+              role="status"
+              data-testid="profile-push-unsupported"
+              className={`border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs ${pushShakeClass}`}
+            >
+              <WarningCircle
+                size={18}
+                weight="fill"
+                aria-hidden="true"
+                className="text-muted mt-0.5 shrink-0"
+              />
+              <p className="text-muted font-semibold leading-snug">
+                {t('profile.notif.pushUnsupported')}
               </p>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        <AppToggle
-          label={t('profile.emailLabel')}
-          checked={profile.notif.emailEnabled}
-          onChange={(val) => void updateNotif({ emailEnabled: val })}
-        />
+          {pushState === 'denied' && (
+            <div
+              id={pushStatusId}
+              role="status"
+              data-testid="profile-push-blocked"
+              className={`border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs ${pushShakeClass}`}
+            >
+              <BellSlash
+                size={18}
+                weight="fill"
+                aria-hidden="true"
+                className="text-wrong mt-0.5 shrink-0"
+              />
+              <div className="space-y-0.5">
+                <p className="text-ink font-extrabold">{t('push.blocked')}</p>
+                <p className="text-muted font-semibold leading-snug">
+                  {t(
+                    getPushPlatform() === 'android'
+                      ? 'push.blockedHelpAndroid'
+                      : getPushPlatform() === 'ios'
+                        ? 'push.blockedHelpIos'
+                        : 'push.blockedHelpDesktop',
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {pushState === 'on' && (
+            <div className="space-y-1.5">
+              <button
+                type="button"
+                disabled={pushTestBusy}
+                onClick={() => void handleSendTestPush()}
+                data-testid="profile-send-test-btn"
+                className="text-duel-strong hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-1.5 text-xs font-extrabold underline underline-offset-4 disabled:opacity-50"
+              >
+                <PaperPlaneTilt size={15} weight="bold" aria-hidden="true" />
+                <span>{t('push.sendTest')}</span>
+              </button>
+              {pushTestSent && (
+                <p
+                  role="status"
+                  data-testid="profile-test-sent-msg"
+                  className="text-correct-text flex items-center gap-1.5 text-xs font-bold"
+                >
+                  <CheckCircle size={15} weight="fill" aria-hidden="true" className="shrink-0" />
+                  <span>{t('push.testSent')}</span>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Email reminders row */}
+        <div className="space-y-2">
+          <Switch
+            label={t('profile.emailLabel')}
+            checked={profile.notif.emailEnabled}
+            busy={emailBusy}
+            busyLabel={t('profile.notif.saving')}
+            disabled={emailDisabled}
+            describedById={emailDisabled ? emailStatusId : undefined}
+            testId="profile-email-switch"
+            onDisabledClick={() => setEmailShakeCount((c) => c + 1)}
+            onChange={(val) => void updateNotif({ emailEnabled: val })}
+          />
+
+          {emailDisabled && (
+            <div
+              id={emailStatusId}
+              role="status"
+              data-testid="profile-email-needs-account"
+              className={`border-border-subtle bg-surface-2 flex items-start gap-2 rounded-xl border p-3 text-xs ${emailShakeClass}`}
+            >
+              <EnvelopeSimple
+                size={18}
+                weight="bold"
+                aria-hidden="true"
+                className="text-duel-strong mt-0.5 shrink-0"
+              />
+              <div className="space-y-1">
+                <p className="text-muted font-semibold leading-snug">
+                  {t('profile.notif.emailNeedsAccount')}
+                </p>
+                <button
+                  type="button"
+                  data-testid="profile-email-signin-btn"
+                  onClick={() => handleOpenAuth('login')}
+                  className="text-duel-strong hover:text-ink inline-flex min-h-9 cursor-pointer items-center font-extrabold underline underline-offset-4"
+                >
+                  {t('profile.notif.signIn')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* In-card notification feedback toast */}
+        <div aria-live="polite" data-testid="profile-notif-toast-slot">
+          {notifToast && (
+            <Toast
+              key={notifToast.id}
+              message={notifToast.message}
+              tone={notifToast.tone}
+              className="rd-notif-toast-enter w-full text-xs"
+            />
+          )}
+        </div>
       </Card>
 
       {/* Pro Topic Accuracy */}
@@ -1053,6 +1290,12 @@ export default function ProfilePage() {
           setToast(t('profile.linkedBadge', { email: user.email }));
           setTimeout(() => setToast(''), 3000);
         }}
+      />
+
+      <InstallAppSheet
+        open={installSheetOpen}
+        platform="ios-howto"
+        onClose={() => setInstallSheetOpen(false)}
       />
 
       {/* Edit Nickname Sheet with Uniqueness Check and 30-day Cooldown */}

@@ -354,7 +354,22 @@
     "nicknameIntro": "Vælg et unikt brugernavn. Du kan kun ændre det én gang hver 30. dag.",
     "nicknameNewLabel": "Nyt brugernavn (2–20 tegn)",
     "nicknameSuggestions": "Tilgængelige forslag:",
-    "nicknameSave": "Gem brugernavn"
+    "nicknameSave": "Gem brugernavn",
+    "notif": {
+      "pushUnavailable": "Push-notifikationer er midlertidigt utilgængelige. E-mailpåmindelser virker stadig.",
+      "pushUnsupported": "Denne browser kan ikke modtage push-notifikationer. Brug e-mailpåmindelser eller installer appen.",
+      "iosInstallFirst": "På iPhone virker notifikationer kun i den installerede app (iOS 16.4+).",
+      "showInstallHowTo": "Vis mig hvordan man installerer",
+      "pushDismissed": "Du gav ikke tilladelse til notifikationer. Tryk igen for at prøve på ny.",
+      "pushOn": "Push-notifikationer til",
+      "pushOff": "Push-notifikationer fra",
+      "emailOn": "E-mailpåmindelser til",
+      "emailOff": "E-mailpåmindelser fra",
+      "emailNeedsAccount": "Log ind med Google eller e-mail for at få e-mailpåmindelser.",
+      "signIn": "Log ind",
+      "saveFailed": "Kunne ikke gemme. Prøv igen.",
+      "saving": "Gemmer…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

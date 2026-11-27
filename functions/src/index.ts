@@ -105,6 +105,7 @@ import { getFriendWaterStatus, waterFriendCrop } from './town-help.js';
 import { batchReconcileLedgers } from './town-wallet.js';
 import { notifyCropsReady } from './town-notifications.js';
 import {
+  handleNotifyPrefsRequest,
   handleNotifyTestRequest,
   handleNotifyTokenRequest,
   runHourlyReminders,
@@ -1202,16 +1203,19 @@ export const api = onRequest(apiOptions, async (req, res) => {
     }
 
     if (method === 'POST' && pathname === '/notify/prefs') {
-      const uid = String(body.uid);
-      const prefs = updateNotificationPrefs({
-        uid,
-        pushEnabled: Boolean(body.pushEnabled),
-        emailEnabled: Boolean(body.emailEnabled),
-        reminderLocalTime: String(body.reminderLocalTime ?? '18:00'),
+      const result = await handleNotifyPrefsRequest({
+        authHeader: String(req.headers['authorization'] ?? ''),
+        body,
+        verifyIdToken: async (token) => getAuth().verifyIdToken(token),
+        getUser: (uid) => getStore().users[uid],
+        getUserFromFirestore,
+        updateNotificationPrefs,
+        syncUserToFirestore: async (uid) => {
+          const user = getOrCreateUser({ uid });
+          await syncUserToFirestore(user);
+        },
       });
-      const user = getOrCreateUser({ uid });
-      await syncUserToFirestore(user);
-      res.status(200).json(prefs);
+      res.status(result.status).json(result.body);
       return;
     }
 

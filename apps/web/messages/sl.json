@@ -354,7 +354,22 @@
     "nicknameIntro": "Izberi edinstven vzdevek. Spremeniš ga lahko le enkrat na 30 dni.",
     "nicknameNewLabel": "Nov vzdevek (2–20 znakov)",
     "nicknameSuggestions": "Razpoložljivi predlogi:",
-    "nicknameSave": "Shrani vzdevek"
+    "nicknameSave": "Shrani vzdevek",
+    "notif": {
+      "pushUnavailable": "Potisna obvestila začasno niso na voljo. E-poštni opomniki še vedno delujejo.",
+      "pushUnsupported": "Ta brskalnik ne podpira potisnih obvestil. Uporabi e-poštne opomnike ali namesti aplikacijo.",
+      "iosInstallFirst": "Na iPhonu obvestila delujejo samo v nameščeni aplikaciji (iOS 16.4+).",
+      "showInstallHowTo": "Pokaži, kako namestiti",
+      "pushDismissed": "Obvestil nisi dovolil/a. Tapni znova za ponoven poskus.",
+      "pushOn": "Potisna obvestila vklopljena",
+      "pushOff": "Potisna obvestila izklopljena",
+      "emailOn": "E-poštni opomniki vklopljeni",
+      "emailOff": "E-poštni opomniki izklopljeni",
+      "emailNeedsAccount": "Prijavi se z Googlom ali e-pošto za prejemanje e-poštnih opomnikov.",
+      "signIn": "Prijava",
+      "saveFailed": "Shranjevanje ni uspelo. Poskusi znova.",
+      "saving": "Shranjevanje…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

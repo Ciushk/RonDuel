@@ -354,7 +354,22 @@
     "nicknameIntro": "Choisis un pseudo unique. Tu ne pourras le changer qu'une fois tous les 30 jours.",
     "nicknameNewLabel": "Nouveau pseudo (2 à 20 caractères)",
     "nicknameSuggestions": "Suggestions disponibles :",
-    "nicknameSave": "Enregistrer le pseudo"
+    "nicknameSave": "Enregistrer le pseudo",
+    "notif": {
+      "pushUnavailable": "Les notifications push sont temporairement indisponibles. Les rappels par e-mail fonctionnent toujours.",
+      "pushUnsupported": "Ce navigateur ne peut pas recevoir de notifications push. Utilise les rappels par e-mail ou installe l'application.",
+      "iosInstallFirst": "Sur iPhone, les notifications ne fonctionnent que dans l'application installée (iOS 16.4+).",
+      "showInstallHowTo": "Voir comment installer",
+      "pushDismissed": "Tu n'as pas autorisé les notifications. Appuie de nouveau pour réessayer.",
+      "pushOn": "Notifications push activées",
+      "pushOff": "Notifications push désactivées",
+      "emailOn": "Rappels par e-mail activés",
+      "emailOff": "Rappels par e-mail désactivés",
+      "emailNeedsAccount": "Connecte-toi avec Google ou par e-mail pour recevoir des rappels par e-mail.",
+      "signIn": "Se connecter",
+      "saveFailed": "Impossible d'enregistrer. Réessaie.",
+      "saving": "Enregistrement…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

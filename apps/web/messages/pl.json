@@ -354,7 +354,22 @@
     "nicknameIntro": "Wybierz unikalny pseudonim. Możesz go zmienić tylko raz na 30 dni.",
     "nicknameNewLabel": "Nowy pseudonim (2–20 znaków)",
     "nicknameSuggestions": "Dostępne propozycje:",
-    "nicknameSave": "Zapisz pseudonim"
+    "nicknameSave": "Zapisz pseudonim",
+    "notif": {
+      "pushUnavailable": "Powiadomienia push są tymczasowo niedostępne. Przypomnienia e-mail nadal działają.",
+      "pushUnsupported": "Ta przeglądarka nie obsługuje powiadomień push. Użyj przypomnień e-mail lub zainstaluj aplikację.",
+      "iosInstallFirst": "Na iPhonie powiadomienia działają tylko w zainstalowanej aplikacji (iOS 16.4+).",
+      "showInstallHowTo": "Pokaż, jak zainstalować",
+      "pushDismissed": "Nie zezwolono na powiadomienia. Dotknij ponownie, aby spróbować jeszcze raz.",
+      "pushOn": "Powiadomienia push włączone",
+      "pushOff": "Powiadomienia push wyłączone",
+      "emailOn": "Przypomnienia e-mail włączone",
+      "emailOff": "Przypomnienia e-mail wyłączone",
+      "emailNeedsAccount": "Zaloguj się przez Google lub e-mail, aby otrzymywać przypomnienia e-mail.",
+      "signIn": "Zaloguj się",
+      "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
+      "saving": "Zapisywanie…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

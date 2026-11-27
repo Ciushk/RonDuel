@@ -358,18 +358,93 @@ export async function deletePushToken(
   return { deleted: true };
 }
 
-export async function verifyBearerUid(
+export async function verifyBearerToken(
   authHeader: string | undefined,
-  verifyIdToken: (token: string) => Promise<{ uid: string }>,
-): Promise<string | null> {
+  verifyIdToken: (token: string) => Promise<{ uid: string; email?: string }>,
+): Promise<{ uid: string; email?: string } | null> {
   if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) return null;
   const token = authHeader.slice(7).trim();
   if (!token) return null;
   try {
     const decoded = await verifyIdToken(token);
-    return decoded?.uid ? String(decoded.uid) : null;
+    if (!decoded?.uid) return null;
+    return {
+      uid: String(decoded.uid),
+      email: typeof decoded.email === 'string' && decoded.email ? decoded.email : undefined,
+    };
   } catch {
     return null;
+  }
+}
+
+export async function verifyBearerUid(
+  authHeader: string | undefined,
+  verifyIdToken: (token: string) => Promise<{ uid: string }>,
+): Promise<string | null> {
+  const decoded = await verifyBearerToken(authHeader, verifyIdToken);
+  return decoded?.uid ?? null;
+}
+
+export async function handleNotifyPrefsRequest(params: {
+  authHeader?: string;
+  body: Record<string, unknown>;
+  verifyIdToken: (token: string) => Promise<{ uid: string; email?: string }>;
+  getUser: (uid: string) => { isAnonymous?: boolean; email?: string } | undefined;
+  getUserFromFirestore: (uid: string) => Promise<{ isAnonymous?: boolean; email?: string } | null>;
+  updateNotificationPrefs: (input: {
+    uid: string;
+    pushEnabled: boolean;
+    emailEnabled: boolean;
+    reminderLocalTime: string;
+  }) => Record<string, unknown>;
+  syncUserToFirestore: (uid: string) => Promise<void>;
+}): Promise<{ status: number; body: Record<string, unknown> }> {
+  const decoded = await verifyBearerToken(params.authHeader, params.verifyIdToken);
+  if (!decoded) {
+    return { status: 401, body: { error: 'Unauthorized', code: 'UNAUTHORIZED' } };
+  }
+
+  const rawBodyUid = params.body.uid;
+  if (rawBodyUid !== undefined && rawBodyUid !== null && String(rawBodyUid).trim() !== '') {
+    if (String(rawBodyUid) !== decoded.uid) {
+      return { status: 403, body: { error: 'Forbidden', code: 'FORBIDDEN' } };
+    }
+  }
+
+  const uid = decoded.uid;
+  const pushEnabled = Boolean(params.body.pushEnabled);
+  const emailEnabled = Boolean(params.body.emailEnabled);
+  const rawTime =
+    typeof params.body.reminderLocalTime === 'string' &&
+    /^\d{2}:\d{2}$/.test(params.body.reminderLocalTime)
+      ? params.body.reminderLocalTime
+      : '18:00';
+
+  if (emailEnabled) {
+    const existing = params.getUser(uid);
+    if (!existing || (existing.isAnonymous && Boolean(decoded.email))) {
+      await params.getUserFromFirestore(uid);
+    }
+  }
+
+  try {
+    const prefs = params.updateNotificationPrefs({
+      uid,
+      pushEnabled,
+      emailEnabled,
+      reminderLocalTime: rawTime,
+    });
+    await params.syncUserToFirestore(uid);
+    return { status: 200, body: prefs };
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code || 'BAD_REQUEST';
+    return {
+      status: 400,
+      body: {
+        error: err instanceof Error ? err.message : 'Bad request',
+        code,
+      },
+    };
   }
 }
 

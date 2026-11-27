@@ -354,7 +354,22 @@
     "nicknameIntro": "Válassz egyedi becenevet. Csak 30 naponta egyszer módosíthatod.",
     "nicknameNewLabel": "Új becenév (2–20 karakter)",
     "nicknameSuggestions": "Elérhető javaslatok:",
-    "nicknameSave": "Becenév mentése"
+    "nicknameSave": "Becenév mentése",
+    "notif": {
+      "pushUnavailable": "A push értesítések átmenetileg nem érhetők el. Az e-mail emlékeztetők továbbra is működnek.",
+      "pushUnsupported": "Ez a böngésző nem tud push értesítéseket fogadni. Használd az e-mail emlékeztetőket, vagy telepítsd az alkalmazást.",
+      "iosInstallFirst": "iPhone-on az értesítések csak a telepített alkalmazásban működnek (iOS 16.4+).",
+      "showInstallHowTo": "Mutasd, hogyan telepítsem",
+      "pushDismissed": "Nem engedélyezted az értesítéseket. Koppints újra az ismétléshez.",
+      "pushOn": "Push értesítések bekapcsolva",
+      "pushOff": "Push értesítések kikapcsolva",
+      "emailOn": "E-mail emlékeztetők bekapcsolva",
+      "emailOff": "E-mail emlékeztetők kikapcsolva",
+      "emailNeedsAccount": "Jelentkezz be Google-fiókkal vagy e-mail-címmel az e-mail emlékeztetőkhöz.",
+      "signIn": "Bejelentkezés",
+      "saveFailed": "Nem sikerült menteni. Próbáld újra.",
+      "saving": "Mentés…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

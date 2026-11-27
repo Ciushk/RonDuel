@@ -354,7 +354,22 @@
     "nicknameIntro": "Velg et unikt kallenavn. Du kan bare endre det én gang hver 30. dag.",
     "nicknameNewLabel": "Nytt kallenavn (2–20 tegn)",
     "nicknameSuggestions": "Tilgjengelige forslag:",
-    "nicknameSave": "Lagre kallenavn"
+    "nicknameSave": "Lagre kallenavn",
+    "notif": {
+      "pushUnavailable": "Push-varsler er midlertidig utilgjengelige. E-postpåminnelser fungerer fortsatt.",
+      "pushUnsupported": "Denne nettleseren kan ikke motta push-varsler. Bruk e-postpåminnelser eller installer appen.",
+      "iosInstallFirst": "På iPhone fungerer varsler bare i den installerte appen (iOS 16.4+).",
+      "showInstallHowTo": "Vis meg hvordan jeg installerer",
+      "pushDismissed": "Du tillot ikke varsler. Trykk igjen for å prøve på nytt.",
+      "pushOn": "Push-varsler på",
+      "pushOff": "Push-varsler av",
+      "emailOn": "E-postpåminnelser på",
+      "emailOff": "E-postpåminnelser av",
+      "emailNeedsAccount": "Logg inn med Google eller e-post for å få e-postpåminnelser.",
+      "signIn": "Logg inn",
+      "saveFailed": "Kunne ikke lagre. Prøv igjen.",
+      "saving": "Lagrer…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

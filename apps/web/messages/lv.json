@@ -354,7 +354,22 @@
     "nicknameIntro": "Izvēlies unikālu segvārdu. To vari mainīt tikai reizi 30 dienās.",
     "nicknameNewLabel": "Jauns segvārds (2–20 rakstzīmes)",
     "nicknameSuggestions": "Pieejamie ieteikumi:",
-    "nicknameSave": "Saglabāt segvārdu"
+    "nicknameSave": "Saglabāt segvārdu",
+    "notif": {
+      "pushUnavailable": "Pašpiegādes paziņojumi īslaicīgi nav pieejami. E-pasta atgādinājumi joprojām darbojas.",
+      "pushUnsupported": "Šī pārlūkprogramma nevar saņemt pašpiegādes paziņojumus. Izmanto e-pasta atgādinājumus vai instalē lietotni.",
+      "iosInstallFirst": "iPhone ierīcē paziņojumi darbojas tikai instalētajā lietotnē (iOS 16.4+).",
+      "showInstallHowTo": "Parādīt, kā instalēt",
+      "pushDismissed": "Tu neatļāvi paziņojumus. Pieskaries vēlreiz, lai mēģinātu atkārtoti.",
+      "pushOn": "Pašpiegādes paziņojumi ieslēgti",
+      "pushOff": "Pašpiegādes paziņojumi izslēgti",
+      "emailOn": "E-pasta atgādinājumi ieslēgti",
+      "emailOff": "E-pasta atgādinājumi izslēgti",
+      "emailNeedsAccount": "Pieraksties ar Google vai e-pastu, lai saņemtu e-pasta atgādinājumus.",
+      "signIn": "Pierakstīties",
+      "saveFailed": "Neizdevās saglabāt. Mēģini vēlreiz.",
+      "saving": "Saglabā…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

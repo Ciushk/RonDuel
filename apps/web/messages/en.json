@@ -354,7 +354,22 @@
     "nicknameIntro": "Pick a unique nickname. You can change it only once every 30 days.",
     "nicknameNewLabel": "New nickname (2–20 characters)",
     "nicknameSuggestions": "Available suggestions:",
-    "nicknameSave": "Save nickname"
+    "nicknameSave": "Save nickname",
+    "notif": {
+      "pushUnavailable": "Push notifications are temporarily unavailable. Email reminders still work.",
+      "pushUnsupported": "This browser can't receive push notifications. Use email reminders or install the app.",
+      "iosInstallFirst": "On iPhone, notifications work only in the installed app (iOS 16.4+).",
+      "showInstallHowTo": "Show me how to install",
+      "pushDismissed": "You didn't allow notifications. Tap again to retry.",
+      "pushOn": "Push notifications on",
+      "pushOff": "Push notifications off",
+      "emailOn": "Email reminders on",
+      "emailOff": "Email reminders off",
+      "emailNeedsAccount": "Sign in with Google or email to get email reminders.",
+      "signIn": "Sign in",
+      "saveFailed": "Couldn't save. Try again.",
+      "saving": "Saving…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

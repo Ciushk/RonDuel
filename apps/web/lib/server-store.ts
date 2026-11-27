@@ -3270,7 +3270,11 @@ export function updateNotificationPrefs(params: {
 }) {
   const user = getOrCreateUser({ uid: params.uid });
   if (params.emailEnabled && user.isAnonymous) {
-    throw new Error('Email reminders require a linked email account.');
+    const err = new Error('Email reminders require a linked email account.') as Error & {
+      code?: string;
+    };
+    err.code = 'EMAIL_ACCOUNT_REQUIRED';
+    throw err;
   }
   user.notif = {
     ...user.notif,

@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  getOrCreateUser,
+  getStore,
+  updateNotificationPrefs,
+} from '../../apps/web/lib/server-store.js';
+import {
+  handleNotifyPrefsRequest,
   handleNotifyTestRequest,
   handleNotifyTokenRequest,
   hashPushToken,
@@ -392,5 +398,100 @@ describe('functions/src/push.ts', () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]!.webpush?.data?.title).toBe('Dagens runde venter ⚡');
     expect(sent[0]!.webpush?.data?.url).toBe('/nb');
+  });
+
+  it('/notify/prefs enforces Bearer auth (401), uid match (403), EMAIL_ACCOUNT_REQUIRED (400), and reloads stale user from Firestore', async () => {
+    const store = getStore();
+    delete store.users['u_prefs_anon'];
+    delete store.users['u_prefs_stale'];
+
+    const synced: string[] = [];
+    const verify = async (token: string) => {
+      if (token === 'tok_anon') return { uid: 'u_prefs_anon' };
+      if (token === 'tok_linked') {
+        return { uid: 'u_prefs_stale', email: 'player@example.com' };
+      }
+      throw new Error('invalid');
+    };
+
+    // 1. Missing Bearer -> 401
+    const rMissing = await handleNotifyPrefsRequest({
+      authHeader: '',
+      body: { pushEnabled: true, emailEnabled: false },
+      verifyIdToken: verify,
+      getUser: (uid) => store.users[uid],
+      getUserFromFirestore: async () => null,
+      updateNotificationPrefs,
+      syncUserToFirestore: async (uid) => {
+        synced.push(uid);
+      },
+    });
+    expect(rMissing.status).toBe(401);
+    expect(rMissing.body.code).toBe('UNAUTHORIZED');
+
+    // 2. uid mismatch -> 403
+    const rMismatch = await handleNotifyPrefsRequest({
+      authHeader: 'Bearer tok_anon',
+      body: { uid: 'u_someone_else', pushEnabled: true, emailEnabled: false },
+      verifyIdToken: verify,
+      getUser: (uid) => store.users[uid],
+      getUserFromFirestore: async () => null,
+      updateNotificationPrefs,
+      syncUserToFirestore: async (uid) => {
+        synced.push(uid);
+      },
+    });
+    expect(rMismatch.status).toBe(403);
+    expect(rMismatch.body.code).toBe('FORBIDDEN');
+
+    // 3. Anonymous user + emailEnabled -> 400 EMAIL_ACCOUNT_REQUIRED
+    getOrCreateUser({ uid: 'u_prefs_anon' });
+    const rAnonEmail = await handleNotifyPrefsRequest({
+      authHeader: 'Bearer tok_anon',
+      body: { uid: 'u_prefs_anon', pushEnabled: false, emailEnabled: true },
+      verifyIdToken: verify,
+      getUser: (uid) => store.users[uid],
+      getUserFromFirestore: async () => null,
+      updateNotificationPrefs,
+      syncUserToFirestore: async (uid) => {
+        synced.push(uid);
+      },
+    });
+    expect(rAnonEmail.status).toBe(400);
+    expect(rAnonEmail.body.code).toBe('EMAIL_ACCOUNT_REQUIRED');
+
+    // 4. Stale in-memory anonymous user whose verified token has email -> reloads from Firestore and succeeds (200)
+    const staleUser = getOrCreateUser({ uid: 'u_prefs_stale' });
+    expect(staleUser.isAnonymous).toBe(true);
+    let reloadedFromFirestore = false;
+    const rReloaded = await handleNotifyPrefsRequest({
+      authHeader: 'Bearer tok_linked',
+      body: {
+        uid: 'u_prefs_stale',
+        pushEnabled: false,
+        emailEnabled: true,
+        reminderLocalTime: '19:00',
+      },
+      verifyIdToken: verify,
+      getUser: (uid) => store.users[uid],
+      getUserFromFirestore: async (uid) => {
+        reloadedFromFirestore = true;
+        store.users[uid] = {
+          ...staleUser,
+          isAnonymous: false,
+          email: 'player@example.com',
+        };
+        return store.users[uid]!;
+      },
+      updateNotificationPrefs,
+      syncUserToFirestore: async (uid) => {
+        synced.push(uid);
+      },
+    });
+    expect(reloadedFromFirestore).toBe(true);
+    expect(rReloaded.status).toBe(200);
+    expect(rReloaded.body.emailEnabled).toBe(true);
+    expect(rReloaded.body.reminderLocalTime).toBe('19:00');
+    expect(synced).toContain('u_prefs_stale');
   });
 });

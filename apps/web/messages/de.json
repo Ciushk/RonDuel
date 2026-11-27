@@ -354,7 +354,22 @@
     "nicknameIntro": "Wähle einen eindeutigen Spitznamen. Du kannst ihn nur einmal alle 30 Tage ändern.",
     "nicknameNewLabel": "Neuer Spitzname (2–20 Zeichen)",
     "nicknameSuggestions": "Verfügbare Vorschläge:",
-    "nicknameSave": "Spitznamen speichern"
+    "nicknameSave": "Spitznamen speichern",
+    "notif": {
+      "pushUnavailable": "Push-Benachrichtigungen sind vorübergehend nicht verfügbar. E-Mail-Erinnerungen funktionieren weiterhin.",
+      "pushUnsupported": "Dieser Browser unterstützt keine Push-Benachrichtigungen. Nutze E-Mail-Erinnerungen oder installiere die App.",
+      "iosInstallFirst": "Auf dem iPhone funktionieren Benachrichtigungen nur in der installierten App (iOS 16.4+).",
+      "showInstallHowTo": "Installationsanleitung anzeigen",
+      "pushDismissed": "Du hast Benachrichtigungen nicht erlaubt. Tippe erneut, um es noch einmal zu versuchen.",
+      "pushOn": "Push-Benachrichtigungen an",
+      "pushOff": "Push-Benachrichtigungen aus",
+      "emailOn": "E-Mail-Erinnerungen an",
+      "emailOff": "E-Mail-Erinnerungen aus",
+      "emailNeedsAccount": "Melde dich mit Google oder E-Mail an, um E-Mail-Erinnerungen zu erhalten.",
+      "signIn": "Anmelden",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+      "saving": "Wird gespeichert…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",

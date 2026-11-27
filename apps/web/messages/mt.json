@@ -354,7 +354,22 @@
     "nicknameIntro": "Agħżel laqam uniku. Tista' tbiddlu darba biss kull 30 jum.",
     "nicknameNewLabel": "Laqam ġdid (2–20 karattru)",
     "nicknameSuggestions": "Suġġerimenti disponibbli:",
-    "nicknameSave": "Salva l-laqam"
+    "nicknameSave": "Salva l-laqam",
+    "notif": {
+      "pushUnavailable": "In-notifiki push bħalissa mhumiex disponibbli. It-tfakkiriet bl-email xorta jaħdmu.",
+      "pushUnsupported": "Dan il-browser ma jistax jirċievi notifiki push. Uża t-tfakkiriet bl-email jew installa l-app.",
+      "iosInstallFirst": "Fuq iPhone, in-notifiki jaħdmu biss fl-app installata (iOS 16.4+).",
+      "showInstallHowTo": "Urini kif ninstallaha",
+      "pushDismissed": "Ma ħallejtx in-notifiki. Agħfas mill-ġdid biex terġa' tipprova.",
+      "pushOn": "Notifiki push mixgħula",
+      "pushOff": "Notifiki push mitfija",
+      "emailOn": "Tfakkiriet bl-email mixgħula",
+      "emailOff": "Tfakkiriet bl-email mitfija",
+      "emailNeedsAccount": "Idħol b'Google jew bl-email biex tirċievi tfakkiriet bl-email.",
+      "signIn": "Idħol",
+      "saveFailed": "Ma stajniex insalvaw. Erġa' pprova.",
+      "saving": "Qed jissalva…"
+    }
   },
   "pro": {
     "title": "RonDuel Pro",
