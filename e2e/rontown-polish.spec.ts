@@ -448,6 +448,246 @@ test.describe('RonTown Polish (Parts 1-5)', () => {
     ).toBeGreaterThan(rgb.b + 15);
   });
 
+  test('Part 2b: freshly planted sprout (land-farm-one) sits flush with rear and front grass at 390px and 1280px', async ({
+    browser,
+  }) => {
+    const landCoords: Array<[number, number, string]> = [];
+    for (let x = 2; x <= 5; x++) {
+      for (let y = 2; y <= 5; y++) {
+        landCoords.push([x, y, 'basic-block']);
+      }
+    }
+
+    const now = Date.now();
+    const townPayload = {
+      town: {
+        gridSize: 8,
+        population: 2,
+        housingCapacity: 4,
+        serviceCapacity: 4,
+        populationCap: 4,
+        level: 2,
+        maxLevelReached: 2,
+        tutorialStep: 3,
+        likesCount: 0,
+        plotsOwned: 8,
+        land: buildLandGrid(landCoords),
+      },
+      tiles: {
+        // Freshly planted sprout surrounded by plain grass on all 4 edges: (3,2), (2,3), (4,3), (3,4)
+        '3_3': {
+          x: 3,
+          y: 3,
+          itemId: 'plot',
+          cropId: 'wheat',
+          plantedAt: now,
+          readyAt: now + 3_600_000,
+        },
+        // Additional crops across sprout/half/done for visual & layout verification
+        '2_4': {
+          x: 2,
+          y: 4,
+          itemId: 'plot',
+          cropId: 'oats',
+          plantedAt: now,
+          readyAt: now + 3_600_000,
+        },
+        '5_2': {
+          x: 5,
+          y: 2,
+          itemId: 'plot',
+          cropId: 'wheat',
+          plantedAt: now - 50_000,
+          readyAt: now + 50_000,
+        },
+        '5_3': {
+          x: 5,
+          y: 3,
+          itemId: 'plot',
+          cropId: 'wheat',
+          plantedAt: now - 120_000,
+          readyAt: now - 5_000,
+        },
+        '5_4': {
+          x: 5,
+          y: 4,
+          itemId: 'plot',
+          cropId: 'cabbage',
+          plantedAt: now - 50_000,
+          readyAt: now + 50_000,
+        },
+        '4_5': {
+          x: 4,
+          y: 5,
+          itemId: 'plot',
+          cropId: 'cabbage',
+          plantedAt: now - 120_000,
+          readyAt: now - 5_000,
+        },
+        '3_5': {
+          x: 3,
+          y: 5,
+          itemId: 'plot',
+          cropId: 'pumpkin',
+          plantedAt: now - 50_000,
+          readyAt: now + 50_000,
+        },
+        '2_5': {
+          x: 2,
+          y: 5,
+          itemId: 'plot',
+          cropId: 'pumpkin',
+          plantedAt: now - 120_000,
+          readyAt: now - 5_000,
+        },
+      },
+      walletBalance: 150,
+      inventory: {},
+      orders: [],
+      ordersUnlocked: true,
+    };
+
+    for (const vp of [
+      { width: 390, height: 844 },
+      { width: 1280, height: 800 },
+    ]) {
+      const ctx = await browser.newContext({
+        viewport: vp,
+        serviceWorkers: 'block',
+      });
+      const page = await ctx.newPage();
+      await seedSessionAndFlags(page, `u_sprout_${vp.width}`);
+      await page.route('**/api/town/init*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(townPayload),
+        });
+      });
+
+      await page.goto('/en/town', { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator('img[src*="land-farm-one"]').first()).toBeVisible({
+        timeout: 10_000,
+      });
+      await page.waitForTimeout(300);
+
+      const out = shotPath(`rontown_crop_align_sprout_${vp.width}.png`);
+      if (out) await page.screenshot({ path: out });
+
+      const check = await page.evaluate(() => {
+        const stage = document.querySelector('[data-rontown-stage="true"]');
+        if (!stage) return null;
+
+        const findBtn = (coord: string) =>
+          Array.from(stage.querySelectorAll<HTMLButtonElement>('button[aria-label]')).find((b) =>
+            (b.getAttribute('aria-label') || '').includes(coord),
+          );
+
+        const sproutBtn = findBtn('(3, 3)');
+        const grassDiv = sproutBtn?.parentElement as HTMLElement | null;
+        if (!grassDiv) return null;
+        const grassLeft = parseFloat(grassDiv.style.left);
+        const grassTop = parseFloat(grassDiv.style.top);
+
+        // Locate the land-farm-one sprout img placed at (3,3)
+        const sproutImg = Array.from(
+          stage.querySelectorAll<HTMLImageElement>('img[src*="land-farm-one"]'),
+        ).find((img) => Math.abs(parseFloat(img.style.left) - grassLeft) <= 1);
+        if (!sproutImg) return null;
+
+        const sproutTop = parseFloat(sproutImg.style.top);
+        const sproutClip = window.getComputedStyle(sproutImg).clipPath || sproutImg.style.clipPath;
+        const clipMatch =
+          /polygon\(\s*0(?:px)?\s+0(?:px)?,\s*100%\s+0(?:px)?,\s*100%\s+(-?\d+(?:\.\d+)?)px,\s*50%\s+(-?\d+(?:\.\d+)?)px,\s*0(?:px)?\s+(-?\d+(?:\.\d+)?)px\s*\)/.exec(
+            sproutClip,
+          );
+
+        // Rear grass tile (3,2) — top-right behind (3,3), sampling near the shared edge onto (3,2)'s top face
+        const rearBtn = findBtn('(3, 2)');
+        const rearRect = rearBtn?.getBoundingClientRect();
+        // Front grass tile (3,4) — bottom-left in front of (3,3)
+        const frontBtn = findBtn('(3, 4)');
+        const frontRect = frontBtn?.getBoundingClientRect();
+
+        return {
+          grassTop,
+          sproutTop,
+          clipBottom: clipMatch ? parseFloat(clipMatch[2]!) : NaN,
+          rearSampleCss: rearRect
+            ? {
+                // Inside (3,2)'s lower-left top-face near the shared edge with (3,3)
+                x: rearRect.left + rearRect.width * 0.35,
+                y: rearRect.top + rearRect.height * 0.62,
+              }
+            : null,
+          frontSampleCss: frontRect
+            ? {
+                x: frontRect.left + frontRect.width / 2,
+                y: frontRect.top + frontRect.height / 2 - 4,
+              }
+            : null,
+          dpr: window.devicePixelRatio || 1,
+        };
+      });
+
+      expect(check, `layout check at ${vp.width}px`).not.toBeNull();
+      // resolveCropSprite('wheat', 'sprout') uses height=88, groundOffsetY=8 -> top = grassTop + (76 - 88 + 8) = grassTop - 4
+      expect(check!.sproutTop).toBe(check!.grassTop + (76 - 88 + 8));
+      expect(Number.isFinite(check!.clipBottom)).toBe(true);
+      expect(
+        Math.abs(check!.sproutTop + check!.clipBottom - (check!.grassTop + 64)),
+      ).toBeLessThanOrEqual(1);
+
+      // Hide villagers and floating crop badges briefly so pixel checks sample the grass/plot plane itself
+      await page.evaluate(() => {
+        document
+          .querySelectorAll<HTMLElement>(
+            '[data-villager-id], img[src*="farm-done-icon"], .rt-pixel-bubble',
+          )
+          .forEach((el) => {
+            el.style.visibility = 'hidden';
+          });
+      });
+
+      const screenshotBuf = await page.screenshot();
+
+      // Rear grass (3,2) near shared edge must be grass-green, not raised dirt-brown
+      expect(check!.rearSampleCss).not.toBeNull();
+      const rearRgb = samplePngRgba(
+        screenshotBuf,
+        check!.rearSampleCss!.x * check!.dpr,
+        check!.rearSampleCss!.y * check!.dpr,
+      );
+      expect(
+        rearRgb.g,
+        `Expected grass-green behind sprout at (3,2) (${vp.width}px), got rgb(${rearRgb.r},${rearRgb.g},${rearRgb.b})`,
+      ).toBeGreaterThan(rearRgb.r + 15);
+      expect(
+        rearRgb.g,
+        `Expected grass-green behind sprout at (3,2) (${vp.width}px), got rgb(${rearRgb.r},${rearRgb.g},${rearRgb.b})`,
+      ).toBeGreaterThan(rearRgb.b + 15);
+
+      // Front grass (3,4) must also stay grass-green
+      expect(check!.frontSampleCss).not.toBeNull();
+      const frontRgb = samplePngRgba(
+        screenshotBuf,
+        check!.frontSampleCss!.x * check!.dpr,
+        check!.frontSampleCss!.y * check!.dpr,
+      );
+      expect(
+        frontRgb.g,
+        `Expected grass-green in front of sprout at (3,4) (${vp.width}px), got rgb(${frontRgb.r},${frontRgb.g},${frontRgb.b})`,
+      ).toBeGreaterThan(frontRgb.r + 15);
+      expect(
+        frontRgb.g,
+        `Expected grass-green in front of sprout at (3,4) (${vp.width}px), got rgb(${frontRgb.r},${frontRgb.g},${frontRgb.b})`,
+      ).toBeGreaterThan(frontRgb.b + 15);
+
+      await ctx.close();
+    }
+  });
+
   test('Part 3: 6 villagers behave independently, avoid sharing cells, and respect reduced-motion', async ({
     page,
     browser,

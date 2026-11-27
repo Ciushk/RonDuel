@@ -412,7 +412,7 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
 
     const cropCases: Array<{
       cropId: string;
-      stage: 'half' | 'done';
+      stage: 'sprout' | 'half' | 'done';
       file: string;
       expectedOffset: number;
     }> = [
@@ -422,18 +422,38 @@ describe('RonTown 128px isometric math, camera bounds & sprite catalog', () => {
       { cropId: 'cabbage', stage: 'done', file: 'block-cabage-done.png', expectedOffset: 2 },
       { cropId: 'pumpkin', stage: 'half', file: 'block-pumpkin-half.png', expectedOffset: 2 },
       { cropId: 'pumpkin', stage: 'done', file: 'block-pumpkin-done.png', expectedOffset: 1 },
+      // Sprout stage for all six crops uses land-farm-one.png with groundOffsetY: 8
+      { cropId: 'wheat', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'cabbage', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'pumpkin', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'oats', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'carrots', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'sunflower', stage: 'sprout', file: 'land-farm-one.png', expectedOffset: 8 },
+      // Oats, carrots, and sunflower use land-farm-one.png stand-in for half and done too
+      { cropId: 'oats', stage: 'half', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'oats', stage: 'done', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'carrots', stage: 'half', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'carrots', stage: 'done', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'sunflower', stage: 'half', file: 'land-farm-one.png', expectedOffset: 8 },
+      { cropId: 'sunflower', stage: 'done', file: 'land-farm-one.png', expectedOffset: 8 },
     ];
 
     for (const { cropId, stage, file, expectedOffset } of cropCases) {
       const spec = resolveCropSprite(cropId, stage);
-      expect(spec.groundOffsetY).toBe(expectedOffset);
+      expect(spec.groundOffsetY, `${cropId}/${stage} groundOffsetY`).toBe(expectedOffset);
       const placed = getCropPlacement(0, 0, spec.height, spec.groundOffsetY);
       const corners = readCornerBottoms(file);
       expect(corners.h).toBe(spec.height);
       const placedLeft = placed.y + corners.left;
       const placedRight = placed.y + corners.right;
-      expect(Math.abs(placedLeft - 43), `${file} left=${placedLeft}`).toBeLessThanOrEqual(1);
-      expect(Math.abs(placedRight - 43), `${file} right=${placedRight}`).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(placedLeft - 43),
+        `${cropId}/${stage} ${file} left=${placedLeft}`,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(placedRight - 43),
+        `${cropId}/${stage} ${file} right=${placedRight}`,
+      ).toBeLessThanOrEqual(1);
     }
   });
 

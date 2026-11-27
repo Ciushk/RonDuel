@@ -284,11 +284,18 @@ export const CROP_BUTTON_SPRITES: Record<string, SpriteSpec> = {
   pumpkin: UI_SPRITES.seedPumpkin,
 };
 
+const LAND_FARM_ONE_SPEC: SpriteSpec = {
+  src: spriteUrl('land-farm-one.png'),
+  width: 128,
+  height: 88,
+  groundOffsetY: 8,
+};
+
 // TODO(art): Re-export the crop PNGs so the bottom 76 rows match basic-block-dirt.png's
 // silhouette exactly, with the plants overflowing upward. groundOffsetY can then go back to 0.
 export function resolveCropSprite(cropId: string, stage: CropGrowthStage): SpriteSpec {
   if (stage === 'sprout') {
-    return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
+    return LAND_FARM_ONE_SPEC;
   }
   if (cropId === 'wheat') {
     return stage === 'done'
@@ -306,7 +313,7 @@ export function resolveCropSprite(cropId: string, stage: CropGrowthStage): Sprit
       : { src: spriteUrl('block-pumpkin-half.png'), width: 128, height: 79, groundOffsetY: 2 };
   }
   // TODO(art): oats, carrots, sunflower use land-farm-one stand-in until crop PNGs arrive.
-  return { src: spriteUrl('land-farm-one.png'), width: 128, height: 88 };
+  return LAND_FARM_ONE_SPEC;
 }
 
 /**
