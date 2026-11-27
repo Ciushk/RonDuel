@@ -108,7 +108,7 @@ test.describe('RonTown Harvest Speed-Up (gated by speedupEnabled)', () => {
     await expect(page.getByTestId('speedup-chip-3_4')).toHaveCount(0);
   });
 
-  test('shows Volt chip when enabled, opens confirm sheet, debits Option C cost (wheat=8), and flips plot to Ready', async ({
+  test('shows Volt chip when enabled, opens confirm sheet, debits Option C cost (wheat=4), and flips plot to Ready', async ({
     page,
   }) => {
     const speedupBodies: Array<{ x: number; y: number; expectedCost: number }> = [];
@@ -136,10 +136,10 @@ test.describe('RonTown Harvest Speed-Up (gated by speedupEnabled)', () => {
           x: body.x,
           y: body.y,
           cropId: 'wheat',
-          cost: 8,
+          cost: 4,
           alreadyReady: false,
           readyAt: new Date(Date.now() - 1000).toISOString(),
-          balanceAfter: 92,
+          balanceAfter: 96,
         }),
       });
     });
@@ -149,26 +149,26 @@ test.describe('RonTown Harvest Speed-Up (gated by speedupEnabled)', () => {
 
     const chip = page.getByTestId('speedup-chip-3_4');
     await expect(chip).toBeVisible();
-    await expect(chip).toContainText('8');
+    await expect(chip).toContainText('4');
 
     // Open confirm sheet and capture 390px verification screenshot
     await chip.click({ force: true });
     const sheet = page.getByTestId('speedup-confirm-sheet');
     await expect(sheet).toBeVisible();
-    await expect(page.getByTestId('speedup-confirm-cost')).toHaveText('8');
+    await expect(page.getByTestId('speedup-confirm-cost')).toHaveText('4');
 
     const shot = shotPath('rontown_speedup_390.png');
     if (shot) {
       await page.screenshot({ path: shot });
     }
 
-    // Confirm speed-up -> POST /api/town/speedup, balance 100 -> 92, plot becomes Ready
+    // Confirm speed-up -> POST /api/town/speedup, balance 100 -> 96, plot becomes Ready
     await page.getByTestId('speedup-confirm-btn').click();
     await expect(sheet).toHaveCount(0);
     await expect(page.getByTestId('speedup-chip-3_4')).toHaveCount(0);
-    await expect(page.getByTestId('town-wallet-balance')).toHaveText('92');
-    await expect(page.locator('button[aria-label*="Harvest ready wheat"]')).toBeVisible();
-    expect(speedupBodies).toEqual([expect.objectContaining({ x: 3, y: 4, expectedCost: 8 })]);
+    await expect(page.getByTestId('town-wallet-balance')).toHaveText('96');
+    await expect(page.locator('button[aria-label*="Harvest ready wheat" i]')).toBeVisible();
+    expect(speedupBodies).toEqual([expect.objectContaining({ x: 3, y: 4, expectedCost: 4 })]);
   });
 
   test('disables confirm button and explains shortage when balance < cost', async ({ page }) => {
@@ -185,6 +185,6 @@ test.describe('RonTown Harvest Speed-Up (gated by speedupEnabled)', () => {
     await expect(page.locator('[data-rontown-stage="true"]')).toBeVisible({ timeout: 15_000 });
     await page.getByTestId('speedup-chip-3_4').click({ force: true });
     await expect(page.getByTestId('speedup-confirm-btn')).toBeDisabled();
-    await expect(page.getByTestId('speedup-confirm-sheet')).toContainText('Need 8 RonCoins');
+    await expect(page.getByTestId('speedup-confirm-sheet')).toContainText('Need 4 RonCoins');
   });
 });

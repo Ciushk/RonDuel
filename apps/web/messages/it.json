@@ -1049,7 +1049,9 @@
       "streakOnly": "Richiede serie di {days} giorni",
       "buy": "Costruisci",
       "insufficientFunds": "RonCoins insufficienti",
-      "maxCountReached": "Limite massimo raggiunto"
+      "maxCountReached": "Limite massimo raggiunto",
+      "priceCutBadge": "Nuovo prezzo",
+      "priceCutWasNow": "Prima {old} monete, ora {new} monete"
     },
     "tiles": {
       "emptyPlot": "Appezzamento Libero",

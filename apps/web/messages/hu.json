@@ -1049,7 +1049,9 @@
       "streakOnly": "{days} napos sorozat szükséges",
       "buy": "Építés",
       "insufficientFunds": "Nincs elég RonCoins érméd",
-      "maxCountReached": "Elérted a maximumot"
+      "maxCountReached": "Elérted a maximumot",
+      "priceCutBadge": "Új ár",
+      "priceCutWasNow": "Korábban {old} érme, most {new} érme"
     },
     "tiles": {
       "emptyPlot": "Szabad Termőföld",

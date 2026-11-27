@@ -14,6 +14,9 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   getPlotPrice,
+  getPreviousPlotPrice,
+  isRonCoinPriceCutActive,
+  PREVIOUS_RONCOIN_PRICES,
   type CatalogItem,
   type TownCatalogDoc,
   type TownDoc,
@@ -380,6 +383,9 @@ export function TownSheets({
                   const levelLocked = item.unlockLevel > maxLevel;
                   const disabled = !canAfford || levelLocked;
                   const sprite = CATALOG_SPRITES[item.spriteKey];
+                  const prevPrice = PREVIOUS_RONCOIN_PRICES.catalog[item.id] ?? 0;
+                  const hasPriceCut =
+                    isRonCoinPriceCutActive() && item.priceCoins > 0 && prevPrice > item.priceCoins;
 
                   return (
                     <div
@@ -429,9 +435,32 @@ export function TownSheets({
                               `${t('town.shop.serviceValue', { count: item.supports })} `}
                             {item.footprint.w > 1 && `(${item.footprint.w}×${item.footprint.h})`}
                           </p>
-                          <p className="text-ink inline-flex items-center gap-1 font-mono text-xs font-black tabular-nums">
+                          <p
+                            aria-label={
+                              hasPriceCut
+                                ? t('town.shop.priceCutWasNow', {
+                                    old: prevPrice,
+                                    new: item.priceCoins,
+                                  })
+                                : undefined
+                            }
+                            className="text-ink inline-flex flex-wrap items-center gap-1.5 font-mono text-xs font-black tabular-nums"
+                          >
                             <RonCoinIcon size={14} />
-                            {t('town.shop.priceCoins', { coins: item.priceCoins })}
+                            {hasPriceCut && (
+                              <span className="text-ink/60 tabular-nums line-through">
+                                {prevPrice}
+                              </span>
+                            )}
+                            <span>{t('town.shop.priceCoins', { coins: item.priceCoins })}</span>
+                            {hasPriceCut && (
+                              <span
+                                data-testid="price-cut-badge"
+                                className="rt-price-cut-badge rounded border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-sans text-[9px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]"
+                              >
+                                {t('town.shop.priceCutBadge')}
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -503,37 +532,64 @@ export function TownSheets({
                   </button>
                 )}
 
-              {!isVisitMode && selectedTile.itemId === 'empty' && (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShopTab('housing');
-                      openSheet('shop');
-                    }}
-                    className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-[#0E0D15] bg-[#C6FF3D] text-sm font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
-                  >
-                    <Hammer size={18} weight="fill" aria-hidden="true" />
-                    {t('town.toolbar.build')}
-                  </button>
+              {!isVisitMode &&
+                selectedTile.itemId === 'empty' &&
+                (() => {
+                  const ownedPlots = town?.plotsOwned ?? 2;
+                  const plotPrice = getPlotPrice(ownedPlots);
+                  const prevPlotPrice = getPreviousPlotPrice(ownedPlots);
+                  const hasPlotCut =
+                    isRonCoinPriceCutActive() && plotPrice > 0 && prevPlotPrice > plotPrice;
+                  return (
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShopTab('housing');
+                          openSheet('shop');
+                        }}
+                        className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-[#0E0D15] bg-[#C6FF3D] text-sm font-black text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]"
+                      >
+                        <Hammer size={18} weight="fill" aria-hidden="true" />
+                        {t('town.toolbar.build')}
+                      </button>
 
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const ok = await onBuyPlot(selectedTile.x, selectedTile.y);
-                      if (ok) closeSheet();
-                    }}
-                    className="border-border bg-surface-2 text-ink flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
-                  >
-                    <RonCoinIcon size={16} />
-                    {t('town.catalog.farm_plot.name')} (
-                    {t('town.shop.priceCoins', {
-                      coins: getPlotPrice(town?.plotsOwned ?? 2),
-                    })}
-                    )
-                  </button>
-                </div>
-              )}
+                      <button
+                        type="button"
+                        aria-label={
+                          hasPlotCut
+                            ? `${t('town.catalog.farm_plot.name')} — ${t('town.shop.priceCutWasNow', { old: prevPlotPrice, new: plotPrice })}`
+                            : undefined
+                        }
+                        onClick={async () => {
+                          const ok = await onBuyPlot(selectedTile.x, selectedTile.y);
+                          if (ok) closeSheet();
+                        }}
+                        className="border-border bg-surface-2 text-ink flex min-h-[48px] w-full cursor-pointer flex-wrap items-center justify-center gap-1.5 rounded-xl border-2 px-3 text-sm font-black shadow-[2px_2px_0px_0px_#0E0D15]"
+                      >
+                        <RonCoinIcon size={16} />
+                        <span>{t('town.catalog.farm_plot.name')}</span>
+                        <span className="inline-flex items-center gap-1 font-mono tabular-nums">
+                          (
+                          {hasPlotCut && (
+                            <span className="text-ink/60 tabular-nums line-through">
+                              {prevPlotPrice}
+                            </span>
+                          )}
+                          {t('town.shop.priceCoins', { coins: plotPrice })})
+                        </span>
+                        {hasPlotCut && (
+                          <span
+                            data-testid="price-cut-badge"
+                            className="rt-price-cut-badge rounded border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 font-sans text-[9px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]"
+                          >
+                            {t('town.shop.priceCutBadge')}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
 
               {!isVisitMode && selectedTile.itemId === 'plot' && !selectedTile.cropId && (
                 <div className="space-y-2">
@@ -541,6 +597,11 @@ export function TownSheets({
                     const locked = crop.unlockLevel > maxLevel;
                     const canAfford = walletBalance >= crop.priceCoins;
                     const icon = CROP_BUTTON_SPRITES[crop.id];
+                    const prevSeedPrice = PREVIOUS_RONCOIN_PRICES.catalog[crop.id] ?? 0;
+                    const hasSeedCut =
+                      isRonCoinPriceCutActive() &&
+                      crop.priceCoins > 0 &&
+                      prevSeedPrice > crop.priceCoins;
                     return (
                       <div
                         key={crop.id}
@@ -562,6 +623,33 @@ export function TownSheets({
                           <div>
                             <p className="text-ink text-xs font-black">{t(crop.nameKey)}</p>
                             <p className="text-muted text-[11px]">{t(crop.descKey)}</p>
+                            <p
+                              aria-label={
+                                hasSeedCut
+                                  ? t('town.shop.priceCutWasNow', {
+                                      old: prevSeedPrice,
+                                      new: crop.priceCoins,
+                                    })
+                                  : undefined
+                              }
+                              className="text-ink mt-0.5 inline-flex flex-wrap items-center gap-1 font-mono text-[11px] font-black tabular-nums"
+                            >
+                              <RonCoinIcon size={12} />
+                              {hasSeedCut && (
+                                <span className="text-ink/60 tabular-nums line-through">
+                                  {prevSeedPrice}
+                                </span>
+                              )}
+                              <span>{t('town.shop.priceCoins', { coins: crop.priceCoins })}</span>
+                              {hasSeedCut && (
+                                <span
+                                  data-testid="price-cut-badge"
+                                  className="rt-price-cut-badge rounded border-2 border-[#0E0D15] bg-[#C6FF3D] px-1 py-0.5 font-sans text-[9px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]"
+                                >
+                                  {t('town.shop.priceCutBadge')}
+                                </span>
+                              )}
+                            </p>
                           </div>
                         </div>
                         <button

@@ -65,7 +65,7 @@ describe('town-speedup', () => {
     await expect(speedupCrop(db, 'u_speed', { x: 3, y: 4, nowMs })).rejects.toThrow(/disabled/i);
   });
 
-  it('debits Option C tier cost (wheat=8, pumpkin=30), marks readyAt=now, enforces reads-before-writes, and is idempotent', async () => {
+  it('debits Option C tier cost (wheat=4, pumpkin=15), marks readyAt=now, enforces reads-before-writes, and is idempotent', async () => {
     const { db, store, nowMs, plantedAtSec } = setupMock({
       speedupEnabled: true,
       balance: 50,
@@ -73,26 +73,26 @@ describe('town-speedup', () => {
       remainingSec: 5400,
     });
 
-    const first = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 8, nowMs });
+    const first = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 4, nowMs });
     expect(first.ok).toBe(true);
-    expect(first.cost).toBe(8);
+    expect(first.cost).toBe(4);
     expect(first.alreadyReady).toBe(false);
-    expect(first.balanceAfter).toBe(42);
+    expect(first.balanceAfter).toBe(46);
 
     const wallet = store.get('users/u_speed/wallet/main') as { balance: number };
-    expect(wallet.balance).toBe(42);
+    expect(wallet.balance).toBe(46);
 
     const ledgerKey = encodeURIComponent(`speedup:u_speed:3_4:${plantedAtSec}`);
     expect(store.has(`ledger/${ledgerKey}`)).toBe(true);
 
     // Second call on the now-ready crop is a zero-cost idempotent no-op
-    const second = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 8, nowMs });
+    const second = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 4, nowMs });
     expect(second.alreadyReady).toBe(true);
     expect(second.cost).toBe(0);
-    expect((store.get('users/u_speed/wallet/main') as { balance: number }).balance).toBe(42);
+    expect((store.get('users/u_speed/wallet/main') as { balance: number }).balance).toBe(46);
   });
 
-  it('charges pumpkin tier cost (30) and rejects PRICE_CHANGED when expectedCost < cost', async () => {
+  it('charges pumpkin tier cost (15) and rejects PRICE_CHANGED when expectedCost < cost', async () => {
     const { db, store, nowMs } = setupMock({
       speedupEnabled: true,
       balance: 100,
@@ -105,23 +105,23 @@ describe('town-speedup', () => {
     ).rejects.toThrow(/PRICE_CHANGED/);
     expect((store.get('users/u_speed/wallet/main') as { balance: number }).balance).toBe(100);
 
-    const res = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 30, nowMs });
-    expect(res.cost).toBe(30);
-    expect(res.balanceAfter).toBe(70);
+    const res = await speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 15, nowMs });
+    expect(res.cost).toBe(15);
+    expect(res.balanceAfter).toBe(85);
   });
 
   it('rejects INSUFFICIENT_FUNDS without mutating wallet or tile', async () => {
     const { db, store, nowMs } = setupMock({
       speedupEnabled: true,
-      balance: 5,
+      balance: 3,
       cropId: 'wheat',
       remainingSec: 3600,
     });
 
     await expect(
-      speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 8, nowMs }),
+      speedupCrop(db, 'u_speed', { x: 3, y: 4, expectedCost: 4, nowMs }),
     ).rejects.toThrow(/INSUFFICIENT_FUNDS/);
-    expect((store.get('users/u_speed/wallet/main') as { balance: number }).balance).toBe(5);
+    expect((store.get('users/u_speed/wallet/main') as { balance: number }).balance).toBe(3);
     const tile = store.get('users/u_speed/townTiles/3_4') as { speedupAt?: unknown };
     expect(tile.speedupAt).toBeUndefined();
   });

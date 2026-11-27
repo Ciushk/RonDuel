@@ -1049,7 +1049,9 @@
       "streakOnly": "Requiert {days} jours de série",
       "buy": "Bâtir",
       "insufficientFunds": "RonCoins insuffisantes",
-      "maxCountReached": "Limite maximale atteinte"
+      "maxCountReached": "Limite maximale atteinte",
+      "priceCutBadge": "Nouveau prix",
+      "priceCutWasNow": "Avant {old} pièces, maintenant {new} pièces"
     },
     "tiles": {
       "emptyPlot": "Parcelle Libre",

@@ -154,22 +154,23 @@ export const GROUND_TILE_TYPES = [
 export type GroundTileType = (typeof GROUND_TILE_TYPES)[number];
 
 /**
- * Placeholder configurable prices (in RonCoins) for buying land expansion tiles.
- * Adjust here once final land economy pricing is locked.
+ * Prices (in RonCoins) for buying land tiles.
+ * Expansion tiles (grass, flowers, dirt) keep their original 20/25 cost;
+ * streets and water ground types are 2 RonCoins.
  */
 export const LAND_PRICES: Record<GroundTileType, number> = {
   'basic-block': 20,
   'basic-block-flowers': 25,
   'basic-block-flowers-two': 25,
   'basic-block-dirt': 20,
-  'basic-block-street': 30,
-  'basic-block-street-curve': 30,
-  'basic-block-intersection': 35,
-  'basic-block-wather': 40,
-  'basic-block-wather-two': 40,
-  'basic-block-wather-grass-50-50': 35,
-  'basic-block-water-grass-20-80': 35,
-  'basic-block-water-grass-80-20': 35,
+  'basic-block-street': 2,
+  'basic-block-street-curve': 2,
+  'basic-block-intersection': 2,
+  'basic-block-wather': 2,
+  'basic-block-wather-two': 2,
+  'basic-block-wather-grass-50-50': 2,
+  'basic-block-water-grass-20-80': 2,
+  'basic-block-water-grass-80-20': 2,
 };
 
 export const WALKABLE_GROUND_TYPES: ReadonlySet<GroundTileType> = new Set<GroundTileType>([
@@ -433,12 +434,12 @@ export const SPEEDUP_COST: SpeedupCostConfig = {
   minutesPerCoin: 30,
   coinsPerHour: 2,
   tiers: {
-    oats: 5,
-    cabbage: 8,
-    wheat: 8,
-    carrots: 12,
-    sunflower: 20,
-    pumpkin: 30,
+    oats: 3,
+    cabbage: 4,
+    wheat: 4,
+    carrots: 6,
+    sunflower: 10,
+    pumpkin: 15,
   },
 };
 
@@ -491,8 +492,93 @@ export interface TownCatalogDoc {
   items: Record<string, CatalogItem>;
 }
 
+/** Half, then nearest 1 if half < 10 (min 1); nearest 5 if half < 100; nearest 10 otherwise. Midpoints round half-up (JS Math.round). */
+export function niceHalfCoins(price: number): number {
+  if (!Number.isFinite(price) || price <= 0) return 0;
+  const half = price / 2;
+  if (half < 10) return Math.max(1, Math.round(half));
+  if (half < 100) return Math.round(half / 5) * 5;
+  return Math.round(half / 10) * 10;
+}
+
+/** Inclusive start of the "new lower price" shop badge (UTC). Set to the commit day's UTC midnight. */
+export const RONCOIN_PRICE_CUT_STARTED_AT_MS = Date.parse('2026-11-27T00:00:00.000Z');
+export const RONCOIN_PRICE_CUT_DURATION_MS = 7 * 86_400_000;
+
+export function isRonCoinPriceCutActive(nowMs: number = Date.now()): boolean {
+  return (
+    nowMs >= RONCOIN_PRICE_CUT_STARTED_AT_MS &&
+    nowMs < RONCOIN_PRICE_CUT_STARTED_AT_MS + RONCOIN_PRICE_CUT_DURATION_MS
+  );
+}
+
+/** Frozen pre-cut RonCoin prices used exclusively for the 7-day strikethrough badge in client UI. */
+export const PREVIOUS_RONCOIN_PRICES = Object.freeze({
+  catalog: Object.freeze({
+    starter_house: 0,
+    cottage: 120,
+    house: 300,
+    apartment: 900,
+    villa: 1500,
+    shop: 200,
+    town_hall: 400,
+    park: 250,
+    bakery: 350,
+    school: 600,
+    police_station: 700,
+    fire_station: 700,
+    hospital: 900,
+    plot: 50,
+    oats: 2,
+    wheat: 4,
+    cabbage: 5,
+    carrots: 6,
+    sunflower: 10,
+    pumpkin: 20,
+    road: 10,
+    fence: 15,
+    tree: 30,
+    lantern: 25,
+    bench: 40,
+    fountain: 150,
+    golden_fountain: 500,
+    windmill: 600,
+    clock_tower: 1200,
+    ronduel_statue: 3000,
+  }) as Readonly<Record<string, number>>,
+  land: Object.freeze({
+    'basic-block': 20,
+    'basic-block-flowers': 25,
+    'basic-block-flowers-two': 25,
+    'basic-block-dirt': 20,
+    'basic-block-street': 30,
+    'basic-block-street-curve': 30,
+    'basic-block-intersection': 35,
+    'basic-block-wather': 40,
+    'basic-block-wather-two': 40,
+    'basic-block-wather-grass-50-50': 35,
+    'basic-block-water-grass-20-80': 35,
+    'basic-block-water-grass-80-20': 35,
+  }) as Readonly<Record<GroundTileType, number>>,
+  plotTiers: Object.freeze([0, 0, 50, 100, 200, 400, 600]) as readonly number[],
+  speedupTiers: Object.freeze({
+    oats: 5,
+    cabbage: 8,
+    wheat: 8,
+    carrots: 12,
+    sunflower: 20,
+    pumpkin: 30,
+  }) as Readonly<Record<string, number>>,
+});
+
+export function getPreviousPlotPrice(currentPlotsOwned: number): number {
+  if (currentPlotsOwned < 2) return 0;
+  const idx = Math.min(currentPlotsOwned, PREVIOUS_RONCOIN_PRICES.plotTiers.length - 1);
+  return PREVIOUS_RONCOIN_PRICES.plotTiers[idx] ?? 600;
+}
+
 export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
-  version: 1,
+  version: 2,
   items: {
     // Housing
     starter_house: {
@@ -511,7 +597,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'housing',
       nameKey: 'town.catalog.cottage.name',
       descKey: 'town.catalog.cottage.desc',
-      priceCoins: 120,
+      priceCoins: 60,
       housing: 2,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
@@ -522,7 +608,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'housing',
       nameKey: 'town.catalog.house.name',
       descKey: 'town.catalog.house.desc',
-      priceCoins: 300,
+      priceCoins: 150,
       housing: 4,
       unlockLevel: 2,
       footprint: { w: 1, h: 1 },
@@ -533,7 +619,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'housing',
       nameKey: 'town.catalog.apartment.name',
       descKey: 'town.catalog.apartment.desc',
-      priceCoins: 900,
+      priceCoins: 450,
       housing: 10,
       unlockLevel: 3,
       footprint: { w: 2, h: 2 },
@@ -544,7 +630,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'housing',
       nameKey: 'town.catalog.villa.name',
       descKey: 'town.catalog.villa.desc',
-      priceCoins: 1500,
+      priceCoins: 750,
       housing: 6,
       unlockLevel: 4,
       footprint: { w: 2, h: 2 },
@@ -557,7 +643,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.shop.name',
       descKey: 'town.catalog.shop.desc',
-      priceCoins: 200,
+      priceCoins: 100,
       supports: 6,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
@@ -568,7 +654,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.town_hall.name',
       descKey: 'town.catalog.town_hall.desc',
-      priceCoins: 400,
+      priceCoins: 200,
       supports: 8,
       maxCount: 1,
       unlockLevel: 1,
@@ -581,7 +667,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.park.name',
       descKey: 'town.catalog.park.desc',
-      priceCoins: 250,
+      priceCoins: 130,
       supports: 4,
       unlockLevel: 2,
       footprint: { w: 1, h: 1 },
@@ -592,7 +678,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.bakery.name',
       descKey: 'town.catalog.bakery.desc',
-      priceCoins: 350,
+      priceCoins: 180,
       supports: 6,
       unlockLevel: 2,
       footprint: { w: 1, h: 1 },
@@ -603,7 +689,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.school.name',
       descKey: 'town.catalog.school.desc',
-      priceCoins: 600,
+      priceCoins: 300,
       supports: 10,
       unlockLevel: 2,
       footprint: { w: 2, h: 2 },
@@ -614,7 +700,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.police_station.name',
       descKey: 'town.catalog.police_station.desc',
-      priceCoins: 700,
+      priceCoins: 350,
       supports: 10,
       unlockLevel: 3,
       footprint: { w: 1, h: 1 },
@@ -625,7 +711,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.fire_station.name',
       descKey: 'town.catalog.fire_station.desc',
-      priceCoins: 700,
+      priceCoins: 350,
       supports: 10,
       unlockLevel: 3,
       footprint: { w: 1, h: 1 },
@@ -636,7 +722,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'service',
       nameKey: 'town.catalog.hospital.name',
       descKey: 'town.catalog.hospital.desc',
-      priceCoins: 900,
+      priceCoins: 450,
       supports: 12,
       unlockLevel: 3,
       gateFor: 4,
@@ -650,7 +736,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'plot',
       nameKey: 'town.catalog.farm_plot.name',
       descKey: 'town.catalog.farm_plot.desc',
-      priceCoins: 50,
+      priceCoins: 25,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'plot',
@@ -662,7 +748,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.oats.name',
       descKey: 'town.crops.oats.desc',
-      priceCoins: 2,
+      priceCoins: 1,
       growTimeSeconds: 14400,
       yieldCount: 2,
       orderValue: 5,
@@ -675,7 +761,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.wheat.name',
       descKey: 'town.crops.wheat.desc',
-      priceCoins: 4,
+      priceCoins: 2,
       growTimeSeconds: 28800,
       yieldCount: 2,
       orderValue: 10,
@@ -688,7 +774,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.cabbage.name',
       descKey: 'town.crops.cabbage.desc',
-      priceCoins: 5,
+      priceCoins: 3,
       growTimeSeconds: 21600,
       yieldCount: 2,
       orderValue: 12,
@@ -701,7 +787,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.carrots.name',
       descKey: 'town.crops.carrots.desc',
-      priceCoins: 6,
+      priceCoins: 3,
       growTimeSeconds: 43200,
       yieldCount: 2,
       orderValue: 15,
@@ -714,7 +800,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.sunflower.name',
       descKey: 'town.crops.sunflower.desc',
-      priceCoins: 10,
+      priceCoins: 5,
       growTimeSeconds: 86400,
       yieldCount: 2,
       orderValue: 25,
@@ -727,7 +813,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'crop',
       nameKey: 'town.crops.pumpkin.name',
       descKey: 'town.crops.pumpkin.desc',
-      priceCoins: 20,
+      priceCoins: 10,
       growTimeSeconds: 172800,
       yieldCount: 2,
       orderValue: 50,
@@ -742,7 +828,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.road.name',
       descKey: 'town.catalog.road.desc',
-      priceCoins: 10,
+      priceCoins: 2,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'road',
@@ -752,7 +838,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.fence.name',
       descKey: 'town.catalog.fence.desc',
-      priceCoins: 15,
+      priceCoins: 10,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'fence',
@@ -762,7 +848,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.tree.name',
       descKey: 'town.catalog.tree.desc',
-      priceCoins: 30,
+      priceCoins: 15,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'tree',
@@ -772,7 +858,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.lantern.name',
       descKey: 'town.catalog.lantern.desc',
-      priceCoins: 25,
+      priceCoins: 15,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'lantern',
@@ -782,7 +868,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.bench.name',
       descKey: 'town.catalog.bench.desc',
-      priceCoins: 40,
+      priceCoins: 20,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
       spriteKey: 'bench',
@@ -792,7 +878,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.fountain.name',
       descKey: 'town.catalog.fountain.desc',
-      priceCoins: 150,
+      priceCoins: 75,
       unlockLevel: 2,
       footprint: { w: 1, h: 1 },
       spriteKey: 'fountain',
@@ -802,7 +888,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.golden_fountain.name',
       descKey: 'town.catalog.golden_fountain.desc',
-      priceCoins: 500,
+      priceCoins: 250,
       proOnly: true,
       unlockLevel: 2,
       footprint: { w: 1, h: 1 },
@@ -813,7 +899,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.windmill.name',
       descKey: 'town.catalog.windmill.desc',
-      priceCoins: 600,
+      priceCoins: 300,
       streakUnlock: 7,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
@@ -824,7 +910,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.clock_tower.name',
       descKey: 'town.catalog.clock_tower.desc',
-      priceCoins: 1200,
+      priceCoins: 600,
       streakUnlock: 30,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
@@ -835,7 +921,7 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
       type: 'decor',
       nameKey: 'town.catalog.ronduel_statue.name',
       descKey: 'town.catalog.ronduel_statue.desc',
-      priceCoins: 3000,
+      priceCoins: 1500,
       streakUnlock: 100,
       unlockLevel: 1,
       footprint: { w: 1, h: 1 },
@@ -847,11 +933,11 @@ export const DEFAULT_TOWN_CATALOG: TownCatalogDoc = {
 /** Escalating farm plot price formula (plots 1-2 free at start, plots 3..12 escalate) */
 export function getPlotPrice(currentPlotsOwned: number): number {
   if (currentPlotsOwned < 2) return 0;
-  if (currentPlotsOwned === 2) return 50;
-  if (currentPlotsOwned === 3) return 100;
-  if (currentPlotsOwned === 4) return 200;
-  if (currentPlotsOwned === 5) return 400;
-  return 600;
+  if (currentPlotsOwned === 2) return 25;
+  if (currentPlotsOwned === 3) return 50;
+  if (currentPlotsOwned === 4) return 100;
+  if (currentPlotsOwned === 5) return 200;
+  return 300;
 }
 
 /** Determines town level based on villager count */

@@ -1049,7 +1049,9 @@
       "streakOnly": "Vaatii {days} päivän putken",
       "buy": "Rakenna",
       "insufficientFunds": "Ei tarpeeksi RonCoins-kolikoita",
-      "maxCountReached": "Enimmäismäärä saavutettu"
+      "maxCountReached": "Enimmäismäärä saavutettu",
+      "priceCutBadge": "Uusi hinta",
+      "priceCutWasNow": "Ennen {old} kolikkoa, nyt {new} kolikkoa"
     },
     "tiles": {
       "emptyPlot": "Tyhjä Palsta",

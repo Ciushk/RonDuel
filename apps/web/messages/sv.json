@@ -1049,7 +1049,9 @@
       "streakOnly": "Kräver {days} dagars svit",
       "buy": "Bygg",
       "insufficientFunds": "Inte tillräckligt med RonCoins",
-      "maxCountReached": "Maximalt antal uppnått"
+      "maxCountReached": "Maximalt antal uppnått",
+      "priceCutBadge": "Nytt pris",
+      "priceCutWasNow": "Tidigare {old} mynt, nu {new} mynt"
     },
     "tiles": {
       "emptyPlot": "Ledig Odlingslott",

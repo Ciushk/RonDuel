@@ -1049,7 +1049,9 @@
       "streakOnly": "Requires {days}-day streak",
       "buy": "Build",
       "insufficientFunds": "Not enough RonCoins",
-      "maxCountReached": "Maximum count reached"
+      "maxCountReached": "Maximum count reached",
+      "priceCutBadge": "New price",
+      "priceCutWasNow": "Was {old} coins, now {new} coins"
     },
     "tiles": {
       "emptyPlot": "Empty Farm Plot",

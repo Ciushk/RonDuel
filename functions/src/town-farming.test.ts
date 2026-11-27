@@ -40,14 +40,14 @@ describe('town-farming server business logic', () => {
   });
 
   describe('plantCrop', () => {
-    it('plants oats on plot, debits seed coins (2), sets timestamps and advances tutorial', async () => {
+    it('plants oats on plot, debits seed coins (1), sets timestamps and advances tutorial', async () => {
       const res = await plantCrop(mockDb, 'u1', { x: 3, y: 4, cropId: 'oats' });
       expect(res.success).toBe(true);
       expect(res.tile.cropId).toBe('oats');
       expect(res.tile.readyAt).toBeDefined();
 
       const wallet = store.get('users/u1/wallet/main') as any;
-      expect(wallet.balance).toBe(98); // 100 - 2
+      expect(wallet.balance).toBe(99); // 100 - 1
 
       const town = store.get('users/u1/town/main') as any;
       expect(town.tutorialStep).toBe(1);
@@ -85,7 +85,7 @@ describe('town-farming server business logic', () => {
       expect(town.land['2_3']).toBe('basic-block-dirt');
 
       const wallet = store.get('users/u1/wallet/main') as any;
-      expect(wallet.balance).toBe(95); // 100 - 5
+      expect(wallet.balance).toBe(97); // 100 - 3
     });
   });
 

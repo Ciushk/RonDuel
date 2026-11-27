@@ -3,7 +3,12 @@
 import { Lightning, X } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { calculateSpeedupCost, type TownCatalogDoc } from '@ronduel/shared';
+import {
+  calculateSpeedupCost,
+  isRonCoinPriceCutActive,
+  PREVIOUS_RONCOIN_PRICES,
+  type TownCatalogDoc,
+} from '@ronduel/shared';
 import { formatDurationShort, getCropGrowthInfo } from './iso';
 import { RonCoinIcon } from './RonCoinIcon';
 import type { TileInfo } from './useTownState';
@@ -57,6 +62,8 @@ export function SpeedupConfirmSheet({
   }, [growth.isReady, onClose]);
 
   const cost = calculateSpeedupCost(growth.remainingSeconds, cropId);
+  const prevCost = PREVIOUS_RONCOIN_PRICES.speedupTiers[cropId] ?? 0;
+  const hasPriceCut = isRonCoinPriceCutActive(nowMs) && cost > 0 && prevCost > cost;
   const canAfford = walletBalance >= cost;
   const cropName = t(`town.crops.${cropId}.name`);
 
@@ -105,10 +112,30 @@ export function SpeedupConfirmSheet({
           </button>
         </div>
 
-        <div className="mt-3 flex items-center justify-between rounded-xl border-2 border-[#0E0D15] bg-white px-3 py-2.5 text-sm font-black">
-          <span className="text-xs font-bold text-[#5B5668]">{t('town.speedup.costLabel')}</span>
+        <div
+          aria-label={
+            hasPriceCut ? t('town.shop.priceCutWasNow', { old: prevCost, new: cost }) : undefined
+          }
+          className="mt-3 flex items-center justify-between gap-2 rounded-xl border-2 border-[#0E0D15] bg-white px-3 py-2.5 text-sm font-black"
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-[#5B5668]">{t('town.speedup.costLabel')}</span>
+            {hasPriceCut && (
+              <span
+                data-testid="price-cut-badge"
+                className="rt-price-cut-badge rounded border-2 border-[#0E0D15] bg-[#C6FF3D] px-1.5 py-0.5 text-[9px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]"
+              >
+                {t('town.shop.priceCutBadge')}
+              </span>
+            )}
+          </div>
           <span className="flex items-center gap-1.5 font-mono text-base tabular-nums">
             <RonCoinIcon size={20} />
+            {hasPriceCut && (
+              <span className="text-xs tabular-nums text-[#0E0D15]/60 line-through">
+                {prevCost}
+              </span>
+            )}
             <span data-testid="speedup-confirm-cost">{cost}</span>
           </span>
         </div>

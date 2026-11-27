@@ -1049,7 +1049,9 @@
       "streakOnly": "Απαιτείται σερί {days} ημερών",
       "buy": "Κτίσιμο",
       "insufficientFunds": "Δεν υπάρχουν αρκετά RonCoins",
-      "maxCountReached": "Μέγιστο όριο"
+      "maxCountReached": "Μέγιστο όριο",
+      "priceCutBadge": "Νέα τιμή",
+      "priceCutWasNow": "Πριν {old} νομίσματα, τώρα {new} νομίσματα"
     },
     "tiles": {
       "emptyPlot": "Άδειο Χωράφι",

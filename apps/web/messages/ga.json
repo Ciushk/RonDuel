@@ -1049,7 +1049,9 @@
       "streakOnly": "Sraith {days} lá de dhíth",
       "buy": "Tóg",
       "insufficientFunds": "Easpa RonCoins",
-      "maxCountReached": "Uasmhéid bainte amach"
+      "maxCountReached": "Uasmhéid bainte amach",
+      "priceCutBadge": "Praghas nua",
+      "priceCutWasNow": "Roimhe {old} bonn, anois {new} bonn"
     },
     "tiles": {
       "emptyPlot": "Plota Folamh",

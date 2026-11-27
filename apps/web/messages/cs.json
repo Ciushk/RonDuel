@@ -1049,7 +1049,9 @@
       "streakOnly": "Vyžaduje sérii {days} dní",
       "buy": "Stavět",
       "insufficientFunds": "Nedostatek RonCoins",
-      "maxCountReached": "Dosaženo maxima"
+      "maxCountReached": "Dosaženo maxima",
+      "priceCutBadge": "Nová cena",
+      "priceCutWasNow": "Dříve {old} mincí, nyní {new} mincí"
     },
     "tiles": {
       "emptyPlot": "Prázdné Pole",

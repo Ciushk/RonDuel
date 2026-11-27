@@ -1049,7 +1049,9 @@
       "streakOnly": "Vereist streak van {days} dagen",
       "buy": "Bouwen",
       "insufficientFunds": "Onvoldoende RonCoins",
-      "maxCountReached": "Maximum aantal bereikt"
+      "maxCountReached": "Maximum aantal bereikt",
+      "priceCutBadge": "Nieuwe prijs",
+      "priceCutWasNow": "Eerst {old} munten, nu {new} munten"
     },
     "tiles": {
       "emptyPlot": "Lege Akker",

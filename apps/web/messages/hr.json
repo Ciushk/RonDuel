@@ -1049,7 +1049,9 @@
       "streakOnly": "Zahtijeva niz od {days} dana",
       "buy": "Gradi",
       "insufficientFunds": "Nedovoljno RonCoins novčića",
-      "maxCountReached": "Dosegnut je maksimum"
+      "maxCountReached": "Dosegnut je maksimum",
+      "priceCutBadge": "Nova cijena",
+      "priceCutWasNow": "Prije {old} novčića, sada {new} novčića"
     },
     "tiles": {
       "emptyPlot": "Prazna Parcela",

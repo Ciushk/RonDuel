@@ -1049,7 +1049,9 @@
       "streakOnly": "Nepieciešama {days} dienu sērija",
       "buy": "Būvēt",
       "insufficientFunds": "Nepietiek RonCoins monētu",
-      "maxCountReached": "Sasniegts maksimums"
+      "maxCountReached": "Sasniegts maksimums",
+      "priceCutBadge": "Jauna cena",
+      "priceCutWasNow": "Iepriekš {old} monētas, tagad {new} monētas"
     },
     "tiles": {
       "emptyPlot": "Brīvs Dārza Gabals",

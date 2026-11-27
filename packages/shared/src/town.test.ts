@@ -13,12 +13,18 @@ import {
   getFamilyEventTriggerAt,
   getGridSizeForLevel,
   getPlotPrice,
+  getPreviousPlotPrice,
   GROUND_TILE_TYPES,
   isCellInExpandRing,
   isGroundPlantable,
   isGroundWalkable,
+  isRonCoinPriceCutActive,
   LAND_PRICES,
   LedgerEntrySchema,
+  niceHalfCoins,
+  PREVIOUS_RONCOIN_PRICES,
+  RONCOIN_PRICE_CUT_DURATION_MS,
+  RONCOIN_PRICE_CUT_STARTED_AT_MS,
   SPEEDUP_COST,
   WalletDocSchema,
   type GroundTileType,
@@ -258,13 +264,14 @@ describe('calculateTownLevel and getGridSizeForLevel', () => {
   });
 
   it('calculates escalating plot prices', () => {
+    expect(getPlotPrice(0)).toBe(0);
     expect(getPlotPrice(1)).toBe(0);
-    expect(getPlotPrice(2)).toBe(50);
-    expect(getPlotPrice(3)).toBe(100);
-    expect(getPlotPrice(4)).toBe(200);
-    expect(getPlotPrice(5)).toBe(400);
-    expect(getPlotPrice(6)).toBe(600);
-    expect(getPlotPrice(11)).toBe(600);
+    expect(getPlotPrice(2)).toBe(25);
+    expect(getPlotPrice(3)).toBe(50);
+    expect(getPlotPrice(4)).toBe(100);
+    expect(getPlotPrice(5)).toBe(200);
+    expect(getPlotPrice(6)).toBe(300);
+    expect(getPlotPrice(11)).toBe(300);
   });
 });
 
@@ -385,12 +392,12 @@ describe('calculateSpeedupCost', () => {
   it('defaults to Option C tier pricing with speedupEnabled=false in DEFAULT_TOWN_ECONOMY', () => {
     expect(DEFAULT_TOWN_ECONOMY.speedupEnabled).toBe(false);
     expect(SPEEDUP_COST.mode).toBe('tier');
-    expect(calculateSpeedupCost(3600, 'oats')).toBe(5);
-    expect(calculateSpeedupCost(3600, 'cabbage')).toBe(8);
-    expect(calculateSpeedupCost(3600, 'wheat')).toBe(8);
-    expect(calculateSpeedupCost(3600, 'carrots')).toBe(12);
-    expect(calculateSpeedupCost(3600, 'sunflower')).toBe(20);
-    expect(calculateSpeedupCost(3600, 'pumpkin')).toBe(30);
+    expect(calculateSpeedupCost(3600, 'oats')).toBe(3);
+    expect(calculateSpeedupCost(3600, 'cabbage')).toBe(4);
+    expect(calculateSpeedupCost(3600, 'wheat')).toBe(4);
+    expect(calculateSpeedupCost(3600, 'carrots')).toBe(6);
+    expect(calculateSpeedupCost(3600, 'sunflower')).toBe(10);
+    expect(calculateSpeedupCost(3600, 'pumpkin')).toBe(15);
     expect(calculateSpeedupCost(0, 'wheat')).toBe(0);
     expect(calculateSpeedupCost(-10, 'wheat')).toBe(0);
     expect(calculateSpeedupCost(600, 'unknown_crop')).toBe(1);
@@ -414,6 +421,160 @@ describe('calculateSpeedupCost', () => {
         min: 1,
       }),
     ).toBe(4); // ceil(3700 / 3600) * 2 = 4
+  });
+});
+
+describe('RonCoin price cut (niceHalfCoins, exact catalog/land/plot/speedup table, 7-day badge window)', () => {
+  it('rounds halved RonCoin prices via niceHalfCoins', () => {
+    expect(niceHalfCoins(0)).toBe(0);
+    expect(niceHalfCoins(-5)).toBe(0);
+    expect(niceHalfCoins(2)).toBe(1);
+    expect(niceHalfCoins(4)).toBe(2);
+    expect(niceHalfCoins(5)).toBe(3);
+    expect(niceHalfCoins(6)).toBe(3);
+    expect(niceHalfCoins(10)).toBe(5);
+    expect(niceHalfCoins(20)).toBe(10);
+    expect(niceHalfCoins(25)).toBe(15);
+    expect(niceHalfCoins(30)).toBe(15);
+    expect(niceHalfCoins(40)).toBe(20);
+    expect(niceHalfCoins(50)).toBe(25);
+    expect(niceHalfCoins(120)).toBe(60);
+    expect(niceHalfCoins(150)).toBe(75);
+    expect(niceHalfCoins(200)).toBe(100);
+    expect(niceHalfCoins(250)).toBe(130);
+    expect(niceHalfCoins(300)).toBe(150);
+    expect(niceHalfCoins(350)).toBe(180);
+    expect(niceHalfCoins(400)).toBe(200);
+    expect(niceHalfCoins(500)).toBe(250);
+    expect(niceHalfCoins(600)).toBe(300);
+    expect(niceHalfCoins(700)).toBe(350);
+    expect(niceHalfCoins(900)).toBe(450);
+    expect(niceHalfCoins(1200)).toBe(600);
+    expect(niceHalfCoins(1500)).toBe(750);
+    expect(niceHalfCoins(3000)).toBe(1500);
+  });
+
+  it('matches the exact halved catalog table (version 2) plus literal overrides (road=2, fence=10)', () => {
+    expect(DEFAULT_TOWN_CATALOG.version).toBe(2);
+
+    const expectedCatalog: Record<string, number> = {
+      starter_house: 0,
+      cottage: 60,
+      house: 150,
+      apartment: 450,
+      villa: 750,
+      shop: 100,
+      town_hall: 200,
+      park: 130,
+      bakery: 180,
+      school: 300,
+      police_station: 350,
+      fire_station: 350,
+      hospital: 450,
+      plot: 25,
+      oats: 1,
+      wheat: 2,
+      cabbage: 3,
+      carrots: 3,
+      sunflower: 5,
+      pumpkin: 10,
+      road: 2,
+      fence: 10,
+      lantern: 15,
+      tree: 15,
+      bench: 20,
+      fountain: 75,
+      golden_fountain: 250,
+      windmill: 300,
+      clock_tower: 600,
+      ronduel_statue: 1500,
+    };
+
+    const literalCatalogOverrides = new Set(['road', 'fence']);
+    expect(Object.keys(DEFAULT_TOWN_CATALOG.items).sort()).toEqual(
+      Object.keys(expectedCatalog).sort(),
+    );
+
+    for (const [id, item] of Object.entries(DEFAULT_TOWN_CATALOG.items)) {
+      const expected = expectedCatalog[id]!;
+      expect(item.priceCoins, `catalog.${id}`).toBe(expected);
+      const prev = PREVIOUS_RONCOIN_PRICES.catalog[id];
+      expect(prev, `previous catalog.${id}`).toBeDefined();
+      if (!literalCatalogOverrides.has(id)) {
+        expect(item.priceCoins, `niceHalfCoins(prev) for ${id}`).toBe(niceHalfCoins(prev!));
+      }
+    }
+  });
+
+  it('keeps land expansion unchanged (20/25) and sets all streets and water ground types to 2', () => {
+    const expectedLand: Record<GroundTileType, number> = {
+      'basic-block': 20,
+      'basic-block-flowers': 25,
+      'basic-block-flowers-two': 25,
+      'basic-block-dirt': 20,
+      'basic-block-street': 2,
+      'basic-block-street-curve': 2,
+      'basic-block-intersection': 2,
+      'basic-block-wather': 2,
+      'basic-block-wather-two': 2,
+      'basic-block-wather-grass-50-50': 2,
+      'basic-block-water-grass-20-80': 2,
+      'basic-block-water-grass-80-20': 2,
+    };
+
+    for (const gt of GROUND_TILE_TYPES) {
+      expect(LAND_PRICES[gt], `LAND_PRICES[${gt}]`).toBe(expectedLand[gt]);
+    }
+    // Expansion tiles have previous === current so they never show the "New price" badge
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block']).toBe(LAND_PRICES['basic-block']);
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block-flowers']).toBe(
+      LAND_PRICES['basic-block-flowers'],
+    );
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block-flowers-two']).toBe(
+      LAND_PRICES['basic-block-flowers-two'],
+    );
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block-dirt']).toBe(LAND_PRICES['basic-block-dirt']);
+    // Streets and water dropped from 30/35/40 to 2
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block-street']).toBeGreaterThan(
+      LAND_PRICES['basic-block-street'],
+    );
+    expect(PREVIOUS_RONCOIN_PRICES.land['basic-block-wather']).toBeGreaterThan(
+      LAND_PRICES['basic-block-wather'],
+    );
+  });
+
+  it('halves every getPlotPrice and SPEEDUP_COST tier via niceHalfCoins', () => {
+    for (let owned = 0; owned <= 8; owned++) {
+      const prev = getPreviousPlotPrice(owned);
+      expect(getPlotPrice(owned), `getPlotPrice(${owned})`).toBe(niceHalfCoins(prev));
+    }
+    for (const [cropId, tier] of Object.entries(SPEEDUP_COST.tiers)) {
+      const prev = PREVIOUS_RONCOIN_PRICES.speedupTiers[cropId];
+      expect(prev, `previous speedup ${cropId}`).toBeDefined();
+      expect(tier, `SPEEDUP_COST.tiers.${cropId}`).toBe(niceHalfCoins(prev!));
+    }
+  });
+
+  it('activates the 7-day price-cut badge only within [start, start + 7d) and leaves EUR packs & earning untouched', () => {
+    expect(isRonCoinPriceCutActive(RONCOIN_PRICE_CUT_STARTED_AT_MS - 1)).toBe(false);
+    expect(isRonCoinPriceCutActive(RONCOIN_PRICE_CUT_STARTED_AT_MS)).toBe(true);
+    expect(
+      isRonCoinPriceCutActive(RONCOIN_PRICE_CUT_STARTED_AT_MS + RONCOIN_PRICE_CUT_DURATION_MS - 1),
+    ).toBe(true);
+    expect(
+      isRonCoinPriceCutActive(RONCOIN_PRICE_CUT_STARTED_AT_MS + RONCOIN_PRICE_CUT_DURATION_MS),
+    ).toBe(false);
+
+    // Guard rails: EUR packs, earning rates, and refund rate must remain untouched
+    expect(DEFAULT_TOWN_ECONOMY.purchase.packs).toEqual([
+      { id: 'pack_1000', coins: 1000, eur: 1.99 },
+      { id: 'pack_2800', coins: 2800, eur: 4.99 },
+      { id: 'pack_6000', coins: 6000, eur: 9.99 },
+      { id: 'pack_13000', coins: 13000, eur: 19.99 },
+    ]);
+    expect(DEFAULT_TOWN_ECONOMY.earnRate).toEqual({ pro: 10, free: 2 });
+    expect(DEFAULT_TOWN_ECONOMY.starterCoins).toBe(100);
+    expect(DEFAULT_TOWN_ECONOMY.removeRefundRate).toBe(0.5);
   });
 });
 

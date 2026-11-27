@@ -54,9 +54,9 @@ describe('town-actions server business logic', () => {
       expect(res.town.housingCapacity).toBe(4); // 2 starter + 2 cottage
       expect(res.town.tutorialStep).toBe(2);
 
-      // Wallet was debited 120 coins (500 - 120 = 380)
+      // Wallet was debited 60 coins (500 - 60 = 440)
       const wallet = store.get('users/u1/wallet/main') as any;
-      expect(wallet.balance).toBe(380);
+      expect(wallet.balance).toBe(440);
 
       // Tile placed
       const tile = store.get('users/u1/townTiles/1_1');
@@ -86,20 +86,20 @@ describe('town-actions server business logic', () => {
     });
 
     it('rejects building when funds are insufficient', async () => {
-      // Apartment costs 900 coins, player has 500
-      // Unlock level 3 is also needed, let's set level 3 to test insufficient funds
+      // Villa costs 750 coins, player has 500
+      // Unlock level 4 is also needed, let's set level 4 to test insufficient funds
       store.set('users/u1/town/main', {
         gridSize: 10,
-        population: 25,
-        housingCapacity: 20,
-        serviceCapacity: 20,
-        populationCap: 20,
-        level: 3,
-        maxLevelReached: 3,
+        population: 50,
+        housingCapacity: 50,
+        serviceCapacity: 50,
+        populationCap: 50,
+        level: 4,
+        maxLevelReached: 4,
         plotsOwned: 2,
       });
 
-      await expect(buildItem(mockDb, 'u1', { itemId: 'apartment', x: 5, y: 5 })).rejects.toThrow(
+      await expect(buildItem(mockDb, 'u1', { itemId: 'villa', x: 5, y: 5 })).rejects.toThrow(
         'INSUFFICIENT_FUNDS',
       );
     });
@@ -159,15 +159,15 @@ describe('town-actions server business logic', () => {
     it('removes cottage, refunds 50% coins to town bucket, and recalculates capacities', async () => {
       await buildItem(mockDb, 'u1', { itemId: 'cottage', x: 1, y: 1 });
       const walletBefore = store.get('users/u1/wallet/main') as any;
-      expect(walletBefore.balance).toBe(380);
+      expect(walletBefore.balance).toBe(440);
 
-      // Remove cottage (cost 120 -> 50% refund = 60)
+      // Remove cottage (cost 60 -> 50% refund = 30)
       const res = await removeTile(mockDb, 'u1', { x: 1, y: 1 });
       expect(res.success).toBe(true);
-      expect(res.refundCoins).toBe(60);
+      expect(res.refundCoins).toBe(30);
 
       const walletAfter = store.get('users/u1/wallet/main') as any;
-      expect(walletAfter.balance).toBe(440); // 380 + 60
+      expect(walletAfter.balance).toBe(470); // 440 + 30
 
       expect(store.has('users/u1/townTiles/1_1')).toBe(false);
 
@@ -199,17 +199,17 @@ describe('town-actions server business logic', () => {
   });
 
   describe('buyFarmPlot', () => {
-    it('buys extra plot with escalating cost (50 for plot 3) and places plot tile', async () => {
+    it('buys extra plot with escalating cost (25 for plot 3) and places plot tile', async () => {
       const res = await buyFarmPlot(mockDb, 'u1', { x: 0, y: 5 });
       expect(res.success).toBe(true);
-      expect(res.cost).toBe(50);
+      expect(res.cost).toBe(25);
       expect(res.plotsOwned).toBe(3);
 
       const tile = store.get('users/u1/townTiles/0_5');
       expect(tile?.itemId).toBe('plot');
 
       const wallet = store.get('users/u1/wallet/main') as any;
-      expect(wallet.balance).toBe(450); // 500 - 50
+      expect(wallet.balance).toBe(475); // 500 - 25
     });
 
     it('rejects buying more than 12 plots', async () => {
@@ -224,7 +224,7 @@ describe('town-actions server business logic', () => {
   });
 
   describe('buyLandTile', () => {
-    it('purchases an adjacent expand-ring tile, debits wallet, and updates town.land', async () => {
+    it('purchases an adjacent expand-ring flowers tile at unchanged cost (25), debits wallet, and updates town.land', async () => {
       store.set('users/u1/town/main', {
         gridSize: 8,
         population: 2,
@@ -245,6 +245,35 @@ describe('town-actions server business logic', () => {
 
       const wallet = store.get('users/u1/wallet/main') as any;
       expect(wallet.balance).toBe(475); // 500 - 25
+    });
+
+    it('purchases street and water ground tiles at 2 RonCoins each', async () => {
+      store.set('users/u1/town/main', {
+        gridSize: 8,
+        population: 2,
+        level: 1,
+        maxLevelReached: 1,
+        plotsOwned: 2,
+        land: { '3_3': 'basic-block', '3_4': 'basic-block' },
+      });
+
+      const streetRes = await buyLandTile(mockDb, 'u1', {
+        x: 4,
+        y: 3,
+        groundType: 'basic-block-street',
+      });
+      expect(streetRes.success).toBe(true);
+      expect(streetRes.cost).toBe(2);
+      expect((store.get('users/u1/wallet/main') as { balance: number }).balance).toBe(498); // 500 - 2
+
+      const waterRes = await buyLandTile(mockDb, 'u1', {
+        x: 2,
+        y: 3,
+        groundType: 'basic-block-wather',
+      });
+      expect(waterRes.success).toBe(true);
+      expect(waterRes.cost).toBe(2);
+      expect((store.get('users/u1/wallet/main') as { balance: number }).balance).toBe(496); // 498 - 2
     });
 
     it('rejects buying a tile that is not adjacent to owned land', async () => {

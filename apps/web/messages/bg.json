@@ -1049,7 +1049,9 @@
       "streakOnly": "Изисква серия от {days} дни",
       "buy": "Построй",
       "insufficientFunds": "Няма достатъчно RonCoins",
-      "maxCountReached": "Достигнат е лимитът"
+      "maxCountReached": "Достигнат е лимитът",
+      "priceCutBadge": "Нова цена",
+      "priceCutWasNow": "Беше {old} монети, сега {new} монети"
     },
     "tiles": {
       "emptyPlot": "Свободен Парцел",

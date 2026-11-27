@@ -1049,7 +1049,9 @@
       "streakOnly": "Zahteva {days}-dnevni niz",
       "buy": "Gradi",
       "insufficientFunds": "Premalo RonCoins",
-      "maxCountReached": "Dosežena omejitev"
+      "maxCountReached": "Dosežena omejitev",
+      "priceCutBadge": "Nova cena",
+      "priceCutWasNow": "Prej {old} kovancev, zdaj {new} kovancev"
     },
     "tiles": {
       "emptyPlot": "Prazna Greda",

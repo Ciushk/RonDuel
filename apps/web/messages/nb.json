@@ -1049,7 +1049,9 @@
       "streakOnly": "Krever {days} dagers rekke",
       "buy": "Bygg",
       "insufficientFunds": "Ikke nok RonCoins",
-      "maxCountReached": "Maksimalt antall nådd"
+      "maxCountReached": "Maksimalt antall nådd",
+      "priceCutBadge": "Ny pris",
+      "priceCutWasNow": "Før {old} mynter, nå {new} mynter"
     },
     "tiles": {
       "emptyPlot": "Ledig Dyrketeig",

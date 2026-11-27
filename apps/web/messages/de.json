@@ -1049,7 +1049,9 @@
       "streakOnly": "Erfordert {days}-Tage-Serie",
       "buy": "Bauen",
       "insufficientFunds": "Nicht genügend RonCoins",
-      "maxCountReached": "Maximale Anzahl erreicht"
+      "maxCountReached": "Maximale Anzahl erreicht",
+      "priceCutBadge": "Neuer Preis",
+      "priceCutWasNow": "Vorher {old} Münzen, jetzt {new} Münzen"
     },
     "tiles": {
       "emptyPlot": "Leeres Feld",

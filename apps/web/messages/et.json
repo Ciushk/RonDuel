@@ -1049,7 +1049,9 @@
       "streakOnly": "Vajab {days}-päevast seeriat",
       "buy": "Ehita",
       "insufficientFunds": "Pole piisavalt RonCoins münte",
-      "maxCountReached": "Maksimumlimiit täis"
+      "maxCountReached": "Maksimumlimiit täis",
+      "priceCutBadge": "Uus hind",
+      "priceCutWasNow": "Varem {old} münti, nüüd {new} münti"
     },
     "tiles": {
       "emptyPlot": "Vaba Põllulapp",

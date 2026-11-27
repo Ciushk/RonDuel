@@ -1049,7 +1049,9 @@
       "streakOnly": "Kræver {days} dages stime",
       "buy": "Byg",
       "insufficientFunds": "Ikke nok RonCoins",
-      "maxCountReached": "Maksimum antal nået"
+      "maxCountReached": "Maksimum antal nået",
+      "priceCutBadge": "Ny pris",
+      "priceCutWasNow": "Før {old} mønter, nu {new} mønter"
     },
     "tiles": {
       "emptyPlot": "Tomt Jordlod",

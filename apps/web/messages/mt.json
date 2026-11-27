@@ -1049,7 +1049,9 @@
       "streakOnly": "Jeħtieġ serje ta' {days} ijiem",
       "buy": "Ibni",
       "insufficientFunds": "M'għandekx biżżejjed RonCoins",
-      "maxCountReached": "Laħaq il-massimu"
+      "maxCountReached": "Laħaq il-massimu",
+      "priceCutBadge": "Prezz ġdid",
+      "priceCutWasNow": "Qabel {old} muniti, issa {new} muniti"
     },
     "tiles": {
       "emptyPlot": "Raba' Vojt",

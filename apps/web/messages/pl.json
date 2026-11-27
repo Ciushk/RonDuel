@@ -1049,7 +1049,9 @@
       "streakOnly": "Wymaga {days} dni serii",
       "buy": "Buduj",
       "insufficientFunds": "Za mało RonCoins",
-      "maxCountReached": "Osiągnięto limit"
+      "maxCountReached": "Osiągnięto limit",
+      "priceCutBadge": "Nowa cena",
+      "priceCutWasNow": "Wcześniej {old} monet, teraz {new} monet"
     },
     "tiles": {
       "emptyPlot": "Pusta Grządka",

@@ -1049,7 +1049,9 @@
       "streakOnly": "Reikia {days} d. serijos",
       "buy": "Statyti",
       "insufficientFunds": "Nepakanka RonCoins monetų",
-      "maxCountReached": "Pasiektas limitas"
+      "maxCountReached": "Pasiektas limitas",
+      "priceCutBadge": "Nauja kaina",
+      "priceCutWasNow": "Anksčiau {old} monetų, dabar {new} monetų"
     },
     "tiles": {
       "emptyPlot": "Laisvas Sklypas",

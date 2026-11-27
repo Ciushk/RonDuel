@@ -5,6 +5,8 @@ import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } fro
 import {
   calculateSpeedupCost,
   getRotationKind,
+  isRonCoinPriceCutActive,
+  PREVIOUS_RONCOIN_PRICES,
   type GridCoord,
   type GroundTileType,
   type TownCatalogDoc,
@@ -543,26 +545,52 @@ const StaticWorldLayer = memo(function StaticWorldLayer({
                     <span className="rt-pixel-bubble rt-pixel-bubble--tail whitespace-nowrap px-1.5 py-0.5 text-[14px] font-bold leading-tight">
                       {formatDurationShort(growth.remainingSeconds)}
                     </span>
-                    {!isVisitMode && !interactiveMode && speedupEnabled && onSpeedupTap && (
-                      <button
-                        type="button"
-                        data-rt-badge-btn="true"
-                        data-testid={`speedup-chip-${key}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSpeedupTap(tile);
-                        }}
-                        aria-label={t('town.speedup.chipAria', {
+                    {!isVisitMode &&
+                      !interactiveMode &&
+                      speedupEnabled &&
+                      onSpeedupTap &&
+                      (() => {
+                        const speedupCost = calculateSpeedupCost(
+                          growth.remainingSeconds,
+                          tile.cropId,
+                        );
+                        const prevSpeedupCost =
+                          PREVIOUS_RONCOIN_PRICES.speedupTiers[tile.cropId] ?? 0;
+                        const hasPriceCut =
+                          isRonCoinPriceCutActive(nowMs) &&
+                          speedupCost > 0 &&
+                          prevSpeedupCost > speedupCost;
+                        const baseAria = t('town.speedup.chipAria', {
                           crop: t(`town.crops.${tile.cropId}.name`),
-                          cost: calculateSpeedupCost(growth.remainingSeconds, tile.cropId),
-                        })}
-                        className="focus-visible:outline-3 pointer-events-auto -m-3 flex min-h-[88px] min-w-[88px] cursor-pointer items-center justify-center bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
-                      >
-                        <span className="whitespace-nowrap rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-1 font-mono text-[16px] font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]">
-                          ⚡ {calculateSpeedupCost(growth.remainingSeconds, tile.cropId)}
-                        </span>
-                      </button>
-                    )}
+                          cost: speedupCost,
+                        });
+                        const chipAria = hasPriceCut
+                          ? `${baseAria} — ${t('town.shop.priceCutWasNow', { old: prevSpeedupCost, new: speedupCost })}`
+                          : baseAria;
+                        return (
+                          <button
+                            type="button"
+                            data-rt-badge-btn="true"
+                            data-testid={`speedup-chip-${key}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSpeedupTap(tile);
+                            }}
+                            aria-label={chipAria}
+                            className="focus-visible:outline-3 pointer-events-auto -m-3 flex min-h-[88px] min-w-[88px] cursor-pointer items-center justify-center bg-transparent focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF]"
+                          >
+                            <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border-2 border-[#0E0D15] bg-[#C6FF3D] px-2 py-1 font-mono text-[16px] font-black leading-none text-[#0E0D15] shadow-[2px_2px_0px_0px_#0E0D15]">
+                              <span>⚡</span>
+                              {hasPriceCut && (
+                                <span className="text-[12px] tabular-nums text-[#0E0D15]/60 line-through">
+                                  {prevSpeedupCost}
+                                </span>
+                              )}
+                              <span className="tabular-nums">{speedupCost}</span>
+                            </span>
+                          </button>
+                        );
+                      })()}
                   </div>
                 </div>
               )}

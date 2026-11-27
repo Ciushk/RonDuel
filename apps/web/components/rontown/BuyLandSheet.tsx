@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import {
   GROUND_TILE_TYPES,
+  isRonCoinPriceCutActive,
   LAND_PRICES,
+  PREVIOUS_RONCOIN_PRICES,
   type GridCoord,
   type GroundTileType,
 } from '@ronduel/shared';
@@ -57,6 +59,7 @@ export function BuyLandSheet({
   const selectedPrice = LAND_PRICES[selectedGround];
   const canAfford = walletBalance >= selectedPrice;
   const deficit = Math.max(0, selectedPrice - walletBalance);
+  const priceCutActive = isRonCoinPriceCutActive();
 
   return (
     <div
@@ -111,9 +114,14 @@ export function BuyLandSheet({
           {GROUND_TILE_TYPES.map((groundType) => {
             const spec = GROUND_SPRITES[groundType];
             const price = LAND_PRICES[groundType];
+            const prevPrice = PREVIOUS_RONCOIN_PRICES.land[groundType];
+            const hasPriceCut = priceCutActive && price > 0 && prevPrice > price;
             const affordable = walletBalance >= price;
             const isSelected = selectedGround === groundType;
             const label = t(GROUND_LABEL_KEY[groundType]);
+            const priceAria = hasPriceCut
+              ? t('town.shop.priceCutWasNow', { old: prevPrice, new: price })
+              : t('town.shop.priceCoins', { coins: price });
 
             return (
               <button
@@ -121,15 +129,23 @@ export function BuyLandSheet({
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
-                aria-label={`${label} — ${t('town.shop.priceCoins', { coins: price })}`}
+                aria-label={`${label} — ${priceAria}`}
                 onClick={() => setSelectedGround(groundType)}
-                className={`focus-visible:outline-3 flex min-h-[112px] w-28 shrink-0 cursor-pointer flex-col items-center justify-between rounded-2xl border-2 p-2.5 text-center transition-transform focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
+                className={`focus-visible:outline-3 relative flex min-h-[120px] w-28 shrink-0 cursor-pointer flex-col items-center justify-between rounded-2xl border-2 p-2.5 text-center transition-transform focus-visible:outline-offset-2 focus-visible:outline-[#3D7BFF] motion-reduce:transition-none ${
                   isSelected
                     ? 'border-[#0E0D15] bg-[#C6FF3D]/30 shadow-[2px_2px_0px_0px_#0E0D15]'
                     : 'border-border bg-surface-2 hover:bg-surface'
                 }`}
               >
-                <div className="flex h-14 items-center justify-center">
+                {hasPriceCut && (
+                  <span
+                    data-testid="price-cut-badge"
+                    className="rt-price-cut-badge mb-0.5 rounded border-2 border-[#0E0D15] bg-[#C6FF3D] px-1 py-0.5 text-[9px] font-black leading-none text-[#0E0D15] shadow-[1px_1px_0px_0px_#0E0D15]"
+                  >
+                    {t('town.shop.priceCutBadge')}
+                  </span>
+                )}
+                <div className="flex h-12 items-center justify-center">
                   <img
                     src={spec.src}
                     alt=""
@@ -137,7 +153,7 @@ export function BuyLandSheet({
                     height={spec.height}
                     loading="lazy"
                     decoding="async"
-                    className="block h-12 w-20 select-none object-contain"
+                    className="block h-11 w-20 select-none object-contain"
                     draggable={false}
                   />
                 </div>
@@ -145,12 +161,16 @@ export function BuyLandSheet({
                   {label}
                 </span>
                 <span
+                  aria-label={priceAria}
                   className={`mt-1 inline-flex items-center gap-1 font-mono text-[11px] font-black tabular-nums ${
                     affordable ? 'text-ink' : 'text-red-600 dark:text-red-400'
                   }`}
                 >
                   <RonCoinIcon size={14} />
-                  {price}
+                  {hasPriceCut && (
+                    <span className="text-ink/60 tabular-nums line-through">{prevPrice}</span>
+                  )}
+                  <span>{price}</span>
                 </span>
               </button>
             );

@@ -1049,7 +1049,9 @@
       "streakOnly": "Вимагає серію з {days} днів",
       "buy": "Будувати",
       "insufficientFunds": "Недостатньо RonCoins",
-      "maxCountReached": "Досягнуто ліміту"
+      "maxCountReached": "Досягнуто ліміту",
+      "priceCutBadge": "Нова ціна",
+      "priceCutWasNow": "Було {old} монет, тепер {new} монет"
     },
     "tiles": {
       "emptyPlot": "Вільна Ділянка",

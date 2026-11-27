@@ -1049,7 +1049,9 @@
       "streakOnly": "Necesită o serie de {days} zile",
       "buy": "Construiește",
       "insufficientFunds": "RonCoins insuficiente",
-      "maxCountReached": "Numărul maxim a fost deja atins"
+      "maxCountReached": "Numărul maxim a fost deja atins",
+      "priceCutBadge": "Preț nou",
+      "priceCutWasNow": "Era {old} monede, acum {new} monede"
     },
     "tiles": {
       "emptyPlot": "Parcelă Agricolă Liberă",
